@@ -56,7 +56,7 @@ public enum RegistryFactory {
 	}
 	
 	public static RegistryContainer doCreateRegistry() throws RegistrationException {
-		System.err.println("looking for registry configuration.");
+		logger.info("looking for registry configuration.");
 		String value = System.getProperty(LCA_REGISTRY_CONFIG_KEY);
 		RegistryContainer retVal = null;
 		

@@ -18,10 +18,16 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 class DockerShellWrapper implements Shell {
+	
+	private static final Logger logger = LoggerFactory.getLogger(Shell.class);
+	
 	final DockerShell shell; 
 	DockerShellWrapper(DockerShell _shell) { shell = _shell; }
 	
@@ -41,6 +47,6 @@ class DockerShellWrapper implements Shell {
 	
 	private void checkResult(String command, ExecutionResult result) {
 		if(result.isSuccess()) return;
-		System.err.println("unsuccessull command '" + command + "': " + result.toString());
+		logger.warn("unsuccessull command '" + command + "': " + result.toString());
 	}
 }

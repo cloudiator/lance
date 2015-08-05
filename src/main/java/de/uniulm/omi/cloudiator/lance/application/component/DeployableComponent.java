@@ -25,13 +25,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public final class DeployableComponent implements Serializable {
 
+	private static final Logger logger = LoggerFactory.getLogger(DeployableComponent.class);
 	private static final long serialVersionUID = 5544457717632275252L;
+	
 	private final String name;
 	private final ComponentId myId;
 	private final LifecycleStore lifecycle;
@@ -83,7 +88,7 @@ public final class DeployableComponent implements Serializable {
 			Object o = ctx.getProperty(propertyName, type);
 			if(o == null) o = defaultValues.get(propertyName);
 			if(o == null) {
-				System.err.println("Warning: propery '" + propertyName + "' has not been defined for the application");
+				logger.warn("propery '" + propertyName + "' has not been defined for the application");
 				continue;
 			}
 			visitor.visit(propertyName, o.toString());

@@ -24,10 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class OutPortState {
+	
+	private static final Logger logger = LoggerFactory.getLogger(OutPort.class);
 
 	private final Object lock = new Object();
 	private final OutPort thePort;
@@ -54,7 +59,9 @@ public final class OutPortState {
 		PortDiff<DownstreamAddress> diff = new PortDiff<DownstreamAddress>(new_sinks, old_sinks, thePort.getName());
 		
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> comp_old_sinks = installNewSinks(new_sinks);
-		if(!old_sinks.equals(comp_old_sinks)) { System.err.println("old sinks do not match; do we have concurrency problems?"); }
+		if(!old_sinks.equals(comp_old_sinks)) {
+			logger.warn("old sinks do not match; do we have concurrency problems?"); 
+		}
 		return diff;
 	}
 	

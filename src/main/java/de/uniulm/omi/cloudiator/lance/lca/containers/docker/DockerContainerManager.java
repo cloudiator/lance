@@ -18,6 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
@@ -39,6 +42,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public class DockerContainerManager implements ContainerManager<DockerContainerLogic> {
 
+	private static final Logger logger = LoggerFactory.getLogger(ContainerManager.class);
+	
 	private final boolean isRemote;
 	private final HostContext hostContext;
 	private final String hostname;
@@ -48,6 +53,7 @@ public class DockerContainerManager implements ContainerManager<DockerContainerL
 	
 	public DockerContainerManager(HostContext vmId) {
 		this(vmId, "127.0.0.1", false);
+		logger.debug("using local host (127.0.0.1) as host name");
 	}
 
 	DockerContainerManager(HostContext vmId, String host) {
@@ -107,8 +113,9 @@ public class DockerContainerManager implements ContainerManager<DockerContainerL
 	public void terminate() {
 		try { hostContext.close(); }
 		catch(InterruptedException ie) {
-			System.err.println("shutting down interrupted");
+			logger.warn("shutting down interrupted");
 		}
+		logger.error("terminate has not been fully implemented");
 		// FIXME: add other parts to shut down //
 	}
 }

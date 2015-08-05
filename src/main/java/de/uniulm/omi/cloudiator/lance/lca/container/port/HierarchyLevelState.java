@@ -22,7 +22,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel> {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PortHierarchyLevel.class);
 
 	private final String name;
 	private final Map<PortHierarchyLevel, T> mapping = new HashMap<PortHierarchyLevel, T>(); 
@@ -38,7 +43,7 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
 		if(value == null) throw new NullPointerException("cannot register a hierarchy state that has the value null");
 		T i = mapping.put(level, value);
 		if(i != null) {
-			System.err.println("updating hierarchy state '" + name + "' for level '" + level + "': changin from " + i + " to " + value);
+			logger.info("updating hierarchy state '" + name + "' for level '" + level + "': changin from " + i + " to " + value);
 		}
 	}
 	

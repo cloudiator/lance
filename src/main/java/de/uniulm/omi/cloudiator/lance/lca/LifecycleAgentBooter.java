@@ -54,8 +54,7 @@ public final class LifecycleAgentBooter {
 	
 	private static LifecycleAgentImpl createAgentImplementation() {
 		HostContext ctx = EnvContext.fromEnvironment();
-		logger.warn("no valid etcd host name found, please provide the following information: <hostname1>:<port1>,<hostname2>:<port2>,...; falling back to localhost.");
-		System.err.println("LifecycleAgentBooter: created host context: " + ctx);
+		logger.info("LifecycleAgentBooter: created host context: " + ctx);
 		LifecycleAgentImpl impl = new LifecycleAgentImpl(ctx);
 		impl.init();
 		return impl;

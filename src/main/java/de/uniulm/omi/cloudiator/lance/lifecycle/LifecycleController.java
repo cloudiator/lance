@@ -18,6 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
@@ -32,6 +35,8 @@ import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
 
 public final class LifecycleController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(LifecycleController.class);
 
 	private final LifecycleStore store;
 	private final ExecutionContext ec;
@@ -131,7 +136,7 @@ public final class LifecycleController {
 							StartHandler h = store.getHandler(LifecycleHandlerType.START, StartHandler.class);
 							h.execute(ec);
 							// FIXME: run start detector and stop detector //
-							System.err.println("WARNING: run start detector and stop detector");
+							logger.warn("WARNING: run start detector and stop detector");
 						}
 				}). 
 				addSynchronousTransition(LifecycleHandlerType.START, LifecycleHandlerType.POST_START,

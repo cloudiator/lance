@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -33,6 +36,8 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 final class OutPortHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(OutPort.class);
+	
 	private static final Map<PortHierarchyLevel, List<DownstreamAddress>> EMPTY_VISIT_MAP;
 	
 	static {
@@ -79,7 +84,7 @@ final class OutPortHandler {
 	}
 
 	public void startPortUpdaters() {
-		System.err.println("Port updaters are currently not run.");
+		logger.error("Port updaters are currently not run.");
 	}
 	
 	private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> filterInstancesWithUnsetPorts(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances) {

@@ -44,7 +44,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 	@Override public LcaRegistry getRegistry() { return impl; }
 	
 	public static EtcdRegistryContainer create() throws RegistrationException {
-		System.err.println("checking for etcd hosts configuration: " + LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
+		logger.info("checking for etcd hosts configuration: " + LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
 		String value = System.getProperty(LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
 		
 		URI[] uris = doCreate(value);
