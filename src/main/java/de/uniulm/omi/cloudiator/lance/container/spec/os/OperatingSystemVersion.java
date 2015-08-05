@@ -31,12 +31,20 @@ public final class OperatingSystemVersion implements Serializable {
 	}
 	
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((version == null) ? 0 : version.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if(! (o instanceof OperatingSystemVersion)) return false;
 		OperatingSystemVersion that = (OperatingSystemVersion) o;
 		return this.version.equals(that.version);
 	}
-	
+
 	/**
 	 * 
 	 * @param year in 'y' or 'yy' format
