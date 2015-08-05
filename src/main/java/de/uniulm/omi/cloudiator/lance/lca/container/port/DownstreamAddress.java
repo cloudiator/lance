@@ -28,7 +28,7 @@ public final class DownstreamAddress{
 		port = i;
 	}
 
-	private static boolean equal(Object o1, Object o2) {
+	private static boolean equalObjects(Object o1, Object o2) {
 		if(o1 == null && o2 == null) return true;
 		if(o1 == null && o2 != null) return false;
 		if(o1 != null && o2 == null) return false;
@@ -48,7 +48,7 @@ public final class DownstreamAddress{
 	public boolean equals(Object o) {
 		if(! (o instanceof DownstreamAddress)) return false;
 		DownstreamAddress that = (DownstreamAddress) o;
-		return equal(this.host_ip, that.host_ip) && equal(this.port, that.port);
+		return equalObjects(this.host_ip, that.host_ip) && equalObjects(this.port, that.port);
 	}
 
 	@Override
