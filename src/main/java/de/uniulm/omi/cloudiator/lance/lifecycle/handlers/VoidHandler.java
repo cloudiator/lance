@@ -45,5 +45,5 @@ public final class VoidHandler implements LifecycleHandler {
 	@Override 
 	public void execute(ExecutionContext ec) {
 		throw new UnsupportedOperationException("method should never be called");
-	};
+	}
 }

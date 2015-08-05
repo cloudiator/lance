@@ -37,11 +37,12 @@ public final class DeployableComponent implements Serializable {
 	private final LifecycleStore lifecycle;
 	private final List<InPort> in_ports;
 	private final List<OutPort> out_ports;
-	private final Map<String, Class<?>> properties;
-	private final Map<String, Object> defaultValues;
+	private final HashMap<String, Class<?>> properties;
+	private final HashMap<String, ? extends Serializable> defaultValues;
 
 	DeployableComponent(String _name, ComponentId _id, LifecycleStore _lifecycleStore, List<InPort> _in_ports,
-			List<OutPort> _out_ports, Map<String, Class<?>> _ingoing_properties, Map<String, Object> _propertyValues) {
+			List<OutPort> _out_ports, Map<String, Class<?>> _ingoing_properties, 
+			HashMap<String, ? extends Serializable> _propertyValues) {
 		name = _name;
 		myId = _id;
 		lifecycle = _lifecycleStore;

@@ -56,7 +56,7 @@ public interface SetFilePropertiesCommand extends Command {
 				return new SetFilePropertiesCommandImpl (inPhase, access, users, reference);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		};
+		}
 	}
 }
 

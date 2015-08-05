@@ -40,7 +40,7 @@ public interface SystemServiceCommand extends Command {
 				return new SystemServiceCommandImpl(inPhase, serviceName, command);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		};
+		}
 	}
 }
 

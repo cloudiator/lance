@@ -38,7 +38,7 @@ public final class ContainerManagerFactory {
 		SpecificContainerManagerFactory sf = mapper.get(type);
 		if(sf == null) throw new IllegalArgumentException("Type: " + type + " not supported");
 		return sf.createContainerManager(myId);
-	};
+	}
 	
 	private ContainerManagerFactory() {
 		// empty constructor //

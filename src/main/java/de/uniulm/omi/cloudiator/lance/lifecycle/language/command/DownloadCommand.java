@@ -46,7 +46,7 @@ public interface DownloadCommand extends Command {
 				return new DownloadCommandImpl(inPhase, _uri);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		};
+		}
 	}
 }
 

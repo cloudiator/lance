@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.rmi.Remote;
+import java.io.Serializable;
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -30,7 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 /** interface to the global registry where 
  * properties are being stored; encapsulates 
  * the actual implementation */
-public interface LcaRegistry extends Remote {
+public interface LcaRegistry extends Serializable {
 
 	public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
 	public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;

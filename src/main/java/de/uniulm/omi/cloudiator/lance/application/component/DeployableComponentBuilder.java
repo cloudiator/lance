@@ -18,10 +18,10 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -34,10 +34,10 @@ public final class DeployableComponentBuilder {
 	private final List<InPort> inports = new ArrayList<InPort>();
 	private final List<OutPort> outports = new ArrayList<OutPort>();
 	private volatile LifecycleStore store;
-	private volatile boolean deploySequentially = false;
+	// private volatile boolean deploySequentially = false;
 	
-	private final Map<String, Class<?>> properties = new HashMap<String, Class<?>>();
-	private final Map<String, Object> propertyValues = new HashMap<String, Object>();
+	private final HashMap<String, Class<?>> properties = new HashMap<String, Class<?>>();
+	private final HashMap<String, Serializable> propertyValues = new HashMap<String, Serializable>();
 	
 	private DeployableComponentBuilder(String _name, ComponentId _id) {
 		name = _name;
@@ -80,7 +80,7 @@ public final class DeployableComponentBuilder {
 		store = lifecycleStore;
 	}
 
-	public void addProperty(String propertyName, Class<?> propertyType, Object defaultValue) {
+	public void addProperty(String propertyName, Class<?> propertyType, Serializable defaultValue) {
 		addProperty(propertyName, propertyType);
 		propertyValues.put(propertyName, defaultValue);
 	}
@@ -94,6 +94,7 @@ public final class DeployableComponentBuilder {
 	}
 
 	public void deploySequentially(boolean b) {
-		deploySequentially = b;
+		// deploySequentially = b;
+		throw new UnsupportedOperationException("parallel deployment not supported yet.");
 	}
 }

@@ -54,7 +54,7 @@ class InstallSystemPackageCommandImpl implements InstallSystemPackageCommand {
 	private final CommandResultReference result = new DefaultCommandResultReference();
 
 	InstallSystemPackageCommandImpl(LifecycleHandlerType _type, SystemApplication _app) {
-		application = _app;;
+		application = _app;
 		type = _type;
 	}
 	

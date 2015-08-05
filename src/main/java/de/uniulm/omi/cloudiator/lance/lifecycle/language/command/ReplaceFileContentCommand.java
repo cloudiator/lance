@@ -48,7 +48,7 @@ public interface ReplaceFileContentCommand extends Command {
 				return new ReplaceFileContentImpl(inPhase, _ref, pattern, replacement);
 			}
 			throw new IllegalStateException("ReplaceFileContentCommand cannot be executed at Lifecylce Phase " + inPhase);
-		};		
+		}
 	}
 }
 

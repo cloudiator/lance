@@ -46,7 +46,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 		if(uris == null) uris = doCreate("localhost:4001");
 		
 		return new EtcdRegistryContainer(new EtcdRegistryImpl(uris)); 
-	};
+	}
 	
 	private static URI[] doCreate(String value) {
 		if(value == null) return null;

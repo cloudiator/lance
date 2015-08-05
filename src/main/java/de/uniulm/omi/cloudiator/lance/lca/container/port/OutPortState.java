@@ -104,7 +104,7 @@ public final class OutPortState {
 		return l;
 	}
 	
-	private HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> installNewSinks(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> new_sinks) {
+	private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> installNewSinks(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> new_sinks) {
 		HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> old = null;
 		synchronized(lock) {
 			old = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(possible_sinks);

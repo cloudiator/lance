@@ -171,9 +171,10 @@ class BashStartHandler implements StartHandler {
 	}
 }
 
-class BashPortUpdateHandler implements PortUpdateHandler, Serializable {
+class BashPortUpdateHandler implements PortUpdateHandler {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = -7036692445701185053L;
+	
 	private final OperatingSystem os;
 	private final List<String[]> commands;
 	
