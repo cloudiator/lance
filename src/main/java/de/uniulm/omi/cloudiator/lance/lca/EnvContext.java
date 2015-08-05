@@ -44,8 +44,13 @@ final class EnvContext implements HostContext {
 	
 	EnvContext(Map<String,String> _ctx) {
 		hostContext = _ctx;
+		registerRmiAddress();
 	}
 	
+	private void registerRmiAddress() {
+		System.setProperty("java.rmi.server.hostname", getPublicIp());
+	}
+
 	static HostContext fromEnvironment() {
 		Map<String,String> values = new HashMap<String,String>();
 		for(String key : VALUES) {
