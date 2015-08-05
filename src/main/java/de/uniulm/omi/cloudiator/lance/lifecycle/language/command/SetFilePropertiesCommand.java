@@ -30,15 +30,19 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 public interface SetFilePropertiesCommand extends Command {
 
-	public static final int READ_ACCESS  = 1;
-	public static final int WRITE_ACCESS = 2;
-	public static final int EXECUTE_ACCESS = 4;
-	public static final int ALL_ACCESS = 7;
-	
-	public static final int FILE_OWNER = 1;
-	public static final int FILE_GROUP = 2;
-	public static final int FILE_WORLD = 4;
-	public static final int FILE_ALL = 7;
+	static final class SetFilePropertiesCommandConstants {
+		public static final int READ_ACCESS  = 1;
+		public static final int WRITE_ACCESS = 2;
+		public static final int EXECUTE_ACCESS = 4;
+		public static final int ALL_ACCESS = 7;
+		
+		public static final int FILE_OWNER = 1;
+		public static final int FILE_GROUP = 2;
+		public static final int FILE_WORLD = 4;
+		public static final int FILE_ALL = 7;
+		
+		private SetFilePropertiesCommandConstants(){}
+	}
 
 	public static class SetFilePropertiesCommandFactory {
 	
@@ -51,8 +55,8 @@ public interface SetFilePropertiesCommand extends Command {
 		public static SetFilePropertiesCommand setAccessRights(LifecycleHandlerType inPhase, int access, int users, CommandResultReference reference) {
 			
 			if(supportedLifecycles.contains(inPhase)) {
-				if(access > ALL_ACCESS || access < 0) throw new IllegalArgumentException("" + access);
-				if(users > FILE_ALL || users < 0) throw new IllegalArgumentException("" + access);
+				if(access > SetFilePropertiesCommandConstants.ALL_ACCESS || access < 0) throw new IllegalArgumentException("" + access);
+				if(users > SetFilePropertiesCommandConstants.FILE_ALL || users < 0) throw new IllegalArgumentException("" + access);
 				return new SetFilePropertiesCommandImpl (inPhase, access, users, reference);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
