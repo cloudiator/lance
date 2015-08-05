@@ -80,8 +80,7 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
 		
 		Object that = state.mapping.get(level);
 		
-		if(myElement == null && that == null) return true;
-		if(myElement == null && that != null) return false;
+		if(myElement == null) return that == null;
 		return myElement.equals(that);
 	}
 }
