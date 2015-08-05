@@ -30,12 +30,12 @@ final class EnvContext implements HostContext {
 	public static String PUBLIC_IP_KEY = "host.ip.public";
 	public static String PRIVATE_IP_KEY = "host.ip.private";
 	public static String HOST_OS_KEY = "host.os";
-	public static String TENANT_ID_KEY = "TENANT_ID";
-	public static String VM_CLOUD_ID = "host.vm.cloud.id";
-	public static String VM_ID_KEY = "VM_ID";
+	public static String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
+	public static String VM_ID_KEY = "host.vm.id";
+	public static String CLOUD_ID_KEY = "host.vm.cloud.id";
 	
 	private static String[] VALUES = new String[] {
-		PUBLIC_IP_KEY, PRIVATE_IP_KEY, HOST_OS_KEY, TENANT_ID_KEY, VM_ID_KEY, VM_CLOUD_ID,
+		PUBLIC_IP_KEY, PRIVATE_IP_KEY, HOST_OS_KEY, TENANT_ID_KEY, VM_ID_KEY, 
 	};
 	
 	private final Map<String,String> hostContext;
@@ -50,7 +50,10 @@ final class EnvContext implements HostContext {
 		Map<String,String> values = new HashMap<String,String>();
 		for(String key : VALUES) {
 			String s = System.getProperty(key);
-			if(s == null || s.isEmpty()) s = "<unknown>";
+			if(s == null || s.isEmpty()) {
+				// s = "<unknown>";
+				throw new IllegalStateException("property " + key + " needs to be set before LCA can start.");
+			}
 			values.put(key, s);
 		}
 		return new EnvContext(values);
@@ -89,6 +92,6 @@ final class EnvContext implements HostContext {
 
 	@Override
 	public String getCloudIdentifier() {
-		return hostContext.get(VM_CLOUD_ID);
+		return hostContext.get(CLOUD_ID_KEY);
 	}
 }

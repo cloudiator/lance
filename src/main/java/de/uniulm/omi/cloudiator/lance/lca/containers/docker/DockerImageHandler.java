@@ -64,7 +64,7 @@ final class DockerImageHandler {
 	}
 
 	
-	String doPullImages(ComponentInstanceId myId, String componentInstallId) {
+	String doPullImages(ComponentInstanceId myId, String componentInstallId) throws ContainerException {
 		// first step: try to find matching image for configured component
 		// currently not implemented; TODO: implement
 		
@@ -80,7 +80,7 @@ final class DockerImageHandler {
 		target = buildImageTagName(ImageCreationType.OPERATING_SYSTEM, null);
 		result = doGetSingleImage(target);
 		if(result == null) {
-			throw new RuntimeException(new ContainerException("cannot pull image: " + myId));
+			throw new ContainerException("cannot pull image: " + myId + " for key " + target);
 		}
 		initSource = ImageCreationType.OPERATING_SYSTEM;
 		return target;
