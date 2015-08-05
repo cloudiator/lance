@@ -51,7 +51,17 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
 		if(t == null) throw new NullPointerException("value at level '" + level + "' is not known");
 		return t;
 	}
+
 	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((mapping == null) ? 0 : mapping.hashCode());
+		// result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if(!(o instanceof HierarchyLevelState<?>)) return false;
@@ -63,7 +73,7 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
 		// make sure, there are not more than that.
 		return this.mapping.size() == that.mapping.size();
 	}
-	
+
 	private boolean containsEqualElementAtSameLevel(PortHierarchyLevel level, HierarchyLevelState<?> state) {
 		T myElement = mapping.get(level);
 		if(! state.mapping.containsKey(level)) return false;
