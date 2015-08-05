@@ -18,6 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -27,6 +30,8 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
 class Inprogress implements DockerShell {
+	
+	private static final Logger logger = LoggerFactory.getLogger(DockerShell.class);
 	
 	private final Process proc;
 	private final BufferedReader stdOut;
@@ -73,6 +78,7 @@ class Inprogress implements DockerShell {
 				builder.append((char) i);
 			}
 		} catch(IOException ioe){
+			
 			ioe.printStackTrace();
 		}
 		return builder.toString();
@@ -105,10 +111,10 @@ class Inprogress implements DockerShell {
 			if(processStillRunning()) { return ExecutionResult.success(stdOut, stdErr); }
 			else {						return ExecutionResult.systemFailure(stdErr);	 }
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
+			logger.warn("problem when reading from external process", ioe);
 			return ExecutionResult.systemFailure(ioe.getMessage());
 		} catch(Exception t){
-			t.printStackTrace();
+			logger.warn("problem when reading from external process", t);
 			return ExecutionResult.systemFailure(t.getMessage());
 		}
 	}
@@ -143,10 +149,10 @@ class Inprogress implements DockerShell {
 			int exit = drainAfterExitStatus(stdOut);
 			return exit == 0 ? ExecutionResult.success(stdOut, stdErr) : ExecutionResult.commandFailure(exit, stdOut, stdErr);
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
+			logger.warn("problem when reading from external process", ioe);
 			return ExecutionResult.systemFailure(ioe.getMessage());
 		} catch(Exception t){
-			t.printStackTrace();
+			logger.warn("problem when reading from external process", t);
 			return ExecutionResult.systemFailure(t.getMessage());
 		}
 	}

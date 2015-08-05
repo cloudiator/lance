@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedInputStream; 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,12 +28,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ProcessWrapper {
 	
-	private final static Logger log = Logger.getLogger(ProcessBasedConnector.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ProcessWrapper.class);
 	
 	private final Process proc;
 	private final InputStream stdout;
@@ -52,7 +53,7 @@ public final class ProcessWrapper {
 			Process proc = pb.start();
 			return new ProcessWrapper(proc, proc.getOutputStream(), proc.getInputStream(), proc.getErrorStream());
 		} catch(IOException ioe){
-			ioe.printStackTrace();
+			logger.info("could not start external process", ioe); 
 			return null;
 		}
 	}
@@ -76,10 +77,10 @@ public final class ProcessWrapper {
 			if(prog.processStillRunning()) {
 				String drowned = prog.readOutUntilBell();
 				drowned = drowned + "///" + prog.readErrAvailable();
-				log.info("created log running command: '" + drowned + "'");
+				logger.info("created log running command: '" + drowned + "'");
 			}
 		} catch (IOException ioe) {
-			log.log(Level.WARNING, "cannot start progressing command.", ioe);
+			logger.warn("cannot start progressing command.", ioe);
 			prog.close();
 		}
 		
@@ -103,7 +104,7 @@ public final class ProcessWrapper {
 		while(true) {
 			try { return result.build(pw.proc.waitFor()); }
 			catch(InterruptedException ioe) {
-				ioe.printStackTrace();
+				logger.info("IOException when waiting for external process to terminate", ioe);
 			}
 		}
 	}
@@ -133,7 +134,7 @@ public final class ProcessWrapper {
 
 			try { line = reader.readLine(); }
 			catch(IOException ioe) {
-				ioe.printStackTrace();
+				logger.info("could not fully drain process stream", ioe);
 				line = null;
 			}
 		}
@@ -147,7 +148,7 @@ public final class ProcessWrapper {
 		try {
 			stdin.close();
 		} catch(IOException ioe) {
-			System.err.print("IOException when closing process wrapper input");
+			logger.info("IOException when closing process wrapper input", ioe);
 		}
 	}
 }

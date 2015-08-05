@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
@@ -35,6 +38,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.PortUpdateCallback;
 
 public final class NetworkHandler implements PortUpdateCallback {
 
+	private static final Logger logger = LoggerFactory.getLogger(NetworkHandler.class);
+	
 	private final PortHierarchy portHierarchy;
 	private final DeployableComponent myComponent;
 	private final PortRegistryTranslator portAccessor;
@@ -107,14 +112,13 @@ public final class NetworkHandler implements PortUpdateCallback {
 			try { 
 				outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
 				if(outPorts.requiredDownstreamPortsSet()) return;
+			} catch (RegistrationException e) {
+				logger.warn("could not access registry for retrieving downstream ports", e);
 			}
-			catch (RegistrationException e) {
-				e.printStackTrace();
-			}
-			System.err.println("did not find initial values for all required out ports; sleeping for some time... ");
+			logger.info("did not find initial values for all required out ports; sleeping for some time... ");
 			try { Thread.sleep(3000); } 
 			catch(InterruptedException ie) {
-				ie.printStackTrace();
+				logger.info("thread interrupted (by system?)", ie);
 			}
 		}
 		// throw new IllegalStateException();
@@ -126,7 +130,7 @@ public final class NetworkHandler implements PortUpdateCallback {
 		for(PortHierarchyLevel level : ipAddresses) {
 			try { registryAccessor.registerLocalAddressAtLevel(level, ipAddresses.valueAtLevel(level)); } 
 			catch(RegistrationException de) {
-				de.printStackTrace(); 
+				logger.info("problem when accessing registry", de); 
 				failed.add(de.getLocalizedMessage());
 			}		
 		}
@@ -143,7 +147,7 @@ public final class NetworkHandler implements PortUpdateCallback {
 			for(PortHierarchyLevel level : state) {
 				try { registryAccessor.registerLocalPortAtLevel(entry.getKey(), level, state.valueAtLevel(level)); } 
 				catch(RegistrationException de) {
-					de.printStackTrace(); 
+					logger.info("problem when accessing registry", de); 
 					failed.add(de.getLocalizedMessage());
 				}		
 			}
@@ -168,9 +172,9 @@ public final class NetworkHandler implements PortUpdateCallback {
 			PortUpdateHandler handler = port.getUpdateHandler();
 			controller.blockingUpdatePorts(handler);
 		} catch(DockerException de) {
-			de.printStackTrace();
+			logger.info("problem when accessing registry", de); 
 		} catch (RegistrationException e) {
-			e.printStackTrace();
+			logger.info("problem when accessing registry", e); 
 		} finally {
 			shellFactory.closeShell();
 		}

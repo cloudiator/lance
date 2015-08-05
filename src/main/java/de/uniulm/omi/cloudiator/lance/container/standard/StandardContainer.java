@@ -18,6 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -37,6 +40,8 @@ import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContaine
 // FIXME: introduce error states to life cycle handling 
 public final class StandardContainer<T extends ContainerLogic> implements ContainerController {
 
+	private static final Logger logger = LoggerFactory.getLogger(ContainerController.class);
+	
 	private final StateMachine<ContainerStatus> stateMachine;
 	private final T logic;
 	private final ComponentInstanceId containerId;
@@ -83,7 +88,10 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
 				new TransitionAction() {					
 					@Override public void transit(Object[] params) { 
 						try { checkForCreationParameters(params); logic.doCreate(); }
-						catch(ContainerException ce) { ce.printStackTrace(); /* FIXME: change to error state */ }
+						catch(ContainerException ce) { 
+							logger.error("could not create container; FIXME add error state", ce); 
+							/* FIXME: change to error state */ 
+						}
 					}
 				});
 	}
@@ -93,7 +101,10 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
 				new TransitionAction() {					
 					@Override public void transit(Object[] params) { 
 						try { logic.doInit(checkForInitParameters(params)); }
-						catch(ContainerException ce) { ce.printStackTrace(); /* FIXME: change to error state */ }
+						catch(ContainerException ce) { 
+							logger.error("could not initialise container; FIXME add error state", ce); 
+							/* FIXME: change to error state */ 
+						}
 					}
 		});
 	}
@@ -103,7 +114,10 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
 				new TransitionAction() {					
 					@Override public void transit(Object[] params) { 
 						try { logic.doDestroy(); }
-						catch(ContainerException ce) { ce.printStackTrace(); /* FIXME: change to error state */}
+						catch(ContainerException ce) { 
+							logger.error("could not shut down container; FIXME add error state", ce); 
+							/* FIXME: change to error state */ 
+						}
 					}
 				});
 	}
