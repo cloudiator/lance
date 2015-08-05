@@ -29,13 +29,13 @@ final class EnvContext implements HostContext {
 
 	public static String PUBLIC_IP_KEY = "host.ip.public";
 	public static String PRIVATE_IP_KEY = "host.ip.private";
-	public static String HOST_OS_KEY = "host.os";
+	// public static String HOST_OS_KEY = "host.os";
 	public static String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
 	public static String VM_ID_KEY = "host.vm.id";
 	public static String CLOUD_ID_KEY = "host.vm.cloud.id";
 	
 	private static String[] VALUES = new String[] {
-		PUBLIC_IP_KEY, PRIVATE_IP_KEY, HOST_OS_KEY, TENANT_ID_KEY, VM_ID_KEY, 
+		PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY, 
 	};
 	
 	private final Map<String,String> hostContext;
