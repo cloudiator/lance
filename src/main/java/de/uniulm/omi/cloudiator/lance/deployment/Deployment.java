@@ -18,14 +18,17 @@
 
 package de.uniulm.omi.cloudiator.lance.deployment;
 
+import java.io.Serializable;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
-public class Deployment {
+public final class Deployment implements Serializable {
 
+	private static final long serialVersionUID = 4353942659952970587L;
+	
 	private final List<CommandSequence> sequences;
 	
 	Deployment(List<CommandSequence> seqs) {
