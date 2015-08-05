@@ -31,6 +31,7 @@ final class DockerOperatingSystemTranslator {
 		case LINUX:
 			return translateLinux(os);
 		case WINDOWS:
+			translateWindows(os);
 		case BSD:
 		default:
 			return translateOther(os);
