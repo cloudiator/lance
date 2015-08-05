@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
@@ -41,12 +42,14 @@ public interface SetFilePropertiesCommand extends Command {
 		public static final int FILE_WORLD = 4;
 		public static final int FILE_ALL = 7;
 		
-		private SetFilePropertiesCommandConstants(){}
+		private SetFilePropertiesCommandConstants(){
+			// no instances allowed so far //
+		}
 	}
 
 	public static class SetFilePropertiesCommandFactory {
 	
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
@@ -61,13 +64,17 @@ public interface SetFilePropertiesCommand extends Command {
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
 		}
+		
+		private SetFilePropertiesCommandFactory() {
+			// no instances so far //
+		}
 	}
 }
 
-class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
+final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
 	
 	private final LifecycleHandlerType type;
-	protected final boolean useRoot = true;
+	protected static final boolean useRoot = true;
 	private final CommandResultReference result = new DefaultCommandResultReference();
 	private final CommandResultReference input;
 	private final int[] props;
@@ -83,14 +90,18 @@ class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
 	}
 	
 	private String getUserString(int users, String string) {
-		if(users == 7) return string + string + string;
-		if(users == 6) return "0" + string + string;
-		if(users == 5) return string + "0" + string;
-		if(users == 4) return "00" + string;
-		if(users == 3) return string + string + "0";
-		if(users == 2) return "0" + string + "0";
-		if(users == 1) return string + "00";
-		return "000";
+		String retVal = "000";
+		switch(users) {
+		case 7: retVal = string + string + string; break;
+		case 6: retVal = "0" + string + string; break;
+		case 5: retVal = string + "0" + string; break;
+		case 4: retVal = "00" + string; break;
+		case 3: retVal = string + string + "0"; break;
+		case 2: retVal = "0" + string + "0"; break;
+		case 1: retVal = string + "00"; break;
+		default:
+		}
+		return retVal;
 	}
 	
 	@Override
@@ -99,8 +110,8 @@ class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
 	}
 
 	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
+	public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
+		return type == handlerType;
 	}
 
 	@Override

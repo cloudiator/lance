@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
@@ -32,7 +33,7 @@ public interface ExecuteOnShellCommand extends Command {
 
 	public static class ExecuteOnShellCommandFactory {
 			
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INIT,
@@ -59,6 +60,10 @@ public interface ExecuteOnShellCommand extends Command {
 				return new DeferredExecuteOnShellCommand(inPhase, f, false);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+		}
+		
+		private ExecuteOnShellCommandFactory() {
+			// no instances so far //
 		}
 	}
 }
@@ -112,8 +117,8 @@ final class DeferredExecuteOnShellCommand extends AbstractExecuteOnShellCommand 
 	}
 
 	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
+	public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
+		return type == handlerType;
 	}
 	
 	protected String buildLinuxCommand(OperatingSystem os) {

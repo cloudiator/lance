@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.net.URI;
 import java.util.EnumSet;
+import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
@@ -36,7 +37,7 @@ public interface GitCommand extends Command {
 
 	public static class GitCommandFactory {
 			
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
@@ -47,6 +48,10 @@ public interface GitCommand extends Command {
 				return new GitCommandImpl(inPhase, command, uri);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+		}
+		
+		private GitCommandFactory() {
+			// no instances so far //
 		}
 	}
 }

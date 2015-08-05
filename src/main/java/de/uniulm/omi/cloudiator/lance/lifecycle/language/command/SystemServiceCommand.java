@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
@@ -29,7 +30,7 @@ public interface SystemServiceCommand extends Command {
 
 	public static class SystemServiceCommandFactory {
 		
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.START);
@@ -40,6 +41,10 @@ public interface SystemServiceCommand extends Command {
 				return new SystemServiceCommandImpl(inPhase, serviceName, command);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+		}
+		
+		private SystemServiceCommandFactory() {
+			// no instances so far //
 		}
 	}
 }

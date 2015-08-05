@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
@@ -32,7 +33,7 @@ public interface ReplaceFileContentCommand extends Command {
 
 	public static class ReplaceFileContentCommandFactory {
 	
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL,
@@ -41,20 +42,25 @@ public interface ReplaceFileContentCommand extends Command {
 												LifecycleHandlerType.PRE_START);
 		}
 		
-		public static ReplaceFileContentCommand create(LifecycleHandlerType inPhase, CommandResultReference _ref, 
+		public static ReplaceFileContentCommand create(LifecycleHandlerType inPhase, CommandResultReference ref, 
 															String pattern, String replacement) {
 			
 			if(supportedLifecycles.contains(inPhase)) {
-				return new ReplaceFileContentImpl(inPhase, _ref, pattern, replacement);
+				return new ReplaceFileContentImpl(inPhase, ref, pattern, replacement);
 			}
 			throw new IllegalStateException("ReplaceFileContentCommand cannot be executed at Lifecylce Phase " + inPhase);
+		}
+		
+		private ReplaceFileContentCommandFactory() {
+			// no instances (so far)
 		}
 	}
 }
 
 class ReplaceFileContentImpl implements ReplaceFileContentCommand {
 
-	private final boolean useRoot = true;
+	// so far, we only support commands as root //
+	private final static boolean useRoot = true;
 	private final LifecycleHandlerType type;
 	private final CommandResultReference fileref;
 	private final String pattern;
@@ -74,8 +80,8 @@ class ReplaceFileContentImpl implements ReplaceFileContentCommand {
 	}
 
 	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
+	public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
+		return type == handlerType;
 	}
 
 	@Override

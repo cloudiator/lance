@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
@@ -31,7 +32,7 @@ public interface InstallSystemPackageCommand extends Command {
 
 	public static class InstallSystemPackageCommandFactory {
 		
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
@@ -42,6 +43,10 @@ public interface InstallSystemPackageCommand extends Command {
 				return new InstallSystemPackageCommandImpl(inPhase, _app);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+		}
+		
+		private InstallSystemPackageCommandFactory() {
+			// no instances so far //
 		}
 	}
 }

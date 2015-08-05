@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
 import java.net.URI;
 import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
@@ -34,7 +35,7 @@ public interface DownloadCommand extends Command {
 
 	public static class DownloadCommandFactory {
 	
-		private final static EnumSet<LifecycleHandlerType> supportedLifecycles;
+		private final static Set<LifecycleHandlerType> supportedLifecycles;
 		
 		static {
 			supportedLifecycles = EnumSet.of(LifecycleHandlerType.PRE_INSTALL);
@@ -46,6 +47,10 @@ public interface DownloadCommand extends Command {
 				return new DownloadCommandImpl(inPhase, _uri);
 			}
 			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+		}
+		
+		private DownloadCommandFactory() {
+			// no instances so far //
 		}
 	}
 }
