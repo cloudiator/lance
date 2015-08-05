@@ -18,7 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.bash;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
