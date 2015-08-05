@@ -37,7 +37,7 @@ public class DockerDeployment {
 
 		b.setPhase(LifecycleHandlerType.INSTALL);
 		// CommandResultReference f = 
-		b.setFileProperties(SetFilePropertiesCommand.ALL_ACCESS, SetFilePropertiesCommand.FILE_ALL, ref);
+		b.setFileProperties(SetFilePropertiesCommand.SetFilePropertiesCommandConstants.ALL_ACCESS, SetFilePropertiesCommand.SetFilePropertiesCommandConstants.FILE_ALL, ref);
 		b.executeOnShell(ref);
 		
 		b.setPhase(LifecycleHandlerType.POST_INSTALL);
