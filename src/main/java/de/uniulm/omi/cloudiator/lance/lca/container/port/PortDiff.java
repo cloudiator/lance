@@ -64,16 +64,8 @@ public final class PortDiff<T> {
 	 * @return true if the both elements do differ (are not equal to each other).
 	 */
 	private boolean diffCrititcalElements(HierarchyLevelState<T> old_elements, HierarchyLevelState<T> new_elements) {
-		if(old_elements == null && new_elements != null) return true;
-		if(old_elements == null && new_elements == null) return false;
+		if(old_elements == null) return new_elements != null;
 		return !old_elements.equals(new_elements);
-		
-		/*
-		return equalObjects(old_elements.get(portName), new_elements.get(portName));
-		if(! equalObjects(old_elements.get(HOST_PUBLIC_IP), new_elements.get(HOST_PUBLIC_IP))) return true;
-		if(! equalObjects(old_elements.get(HOST_INTERNAL_IP), new_elements.get(HOST_INTERNAL_IP))) return true;
-		if(! equalObjects(old_elements.get(LOCAL_IP), new_elements.get(LOCAL_IP))) return true;
-		return false;*/
 	}
 	
 	private static<T> Set<T> inFirstNotInSecond(Map<T,?> first, Map<T,?> second) {
