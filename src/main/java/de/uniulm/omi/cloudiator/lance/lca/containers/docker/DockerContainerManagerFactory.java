@@ -43,8 +43,11 @@ public enum DockerContainerManagerFactory implements SpecificContainerManagerFac
 		}
 	};
 	
+	public static void enableRemoteAccess() {
+		remote_enabled = true;
+	}
 
-	public static volatile boolean remote_enabled = false; 	
+	private static volatile boolean remote_enabled = false; 	
 
 
 	private static String PORT_HIERARCHY_2_NAME = "CONTAINER";

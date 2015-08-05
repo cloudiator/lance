@@ -36,8 +36,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 	private final ContainerManager<?> manager;
 	
 	LifecycleAgentImpl(HostContext contex) {
-		DockerContainerManagerFactory.remote_enabled = true;
-		 manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER_REMOTE);
+		DockerContainerManagerFactory.enableRemoteAccess();
+		manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER_REMOTE);
 	}
 	
 	synchronized void init() {
