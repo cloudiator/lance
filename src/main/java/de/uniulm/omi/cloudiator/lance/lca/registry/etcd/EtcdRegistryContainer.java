@@ -61,7 +61,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 		String[] split = value.split(",");
 		if(split.length == 0) return null;
 		List<URI> uris = createUris(split);
-		if(uris.size() == 0) {
+		if(uris.isEmpty()) {
 			return null;
 		}
 		return uris.toArray(new URI[uris.size()]);

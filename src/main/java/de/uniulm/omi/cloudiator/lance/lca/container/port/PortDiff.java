@@ -82,6 +82,6 @@ public final class PortDiff<T> {
 	}
 
 	public boolean hasDiffs() {
-		return added.size() > 0 || removed.size() > 0 || diffSet.size() > 0;
+		return !(added.isEmpty() && removed.isEmpty() && diffSet.isEmpty());
 	}
 }
