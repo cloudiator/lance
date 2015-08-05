@@ -89,7 +89,16 @@ public final class OperatingSystem implements Serializable {
 		throw new IllegalArgumentException(osversion + " is not a valid version for OperatingSytemType " + t + " or no "
 					+ "default version known for this type.");
 	}
-	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((version == null) ? 0 : version.hashCode());
+		return result;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if(! (o instanceof OperatingSystem)) return false;
