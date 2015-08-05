@@ -45,14 +45,14 @@ class Inprogress implements DockerShell {
 		stdIn = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
 	}
 	
-	public String readInLine() {
+	/*private String readInLine() {
 		try {
 			return stdOut.readLine();
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
+			logger.warn("IOExeception when reading line from external process", ioe);
 			return null;
 		}
-	}
+	}*/
 	
 	private final char BELL_CHAR = (char) 7;
 	String readOutUntilBell() {
@@ -78,8 +78,7 @@ class Inprogress implements DockerShell {
 				builder.append((char) i);
 			}
 		} catch(IOException ioe){
-			
-			ioe.printStackTrace();
+			logger.info("reading available bytes terminated due to exception", ioe);
 		}
 		return builder.toString();
 	}
@@ -164,7 +163,7 @@ class Inprogress implements DockerShell {
 			stdOut.close();
 			stdErr.close();
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
+			logger.info("exception when closing InProgress shell", ioe);
 		}
 	}
 }

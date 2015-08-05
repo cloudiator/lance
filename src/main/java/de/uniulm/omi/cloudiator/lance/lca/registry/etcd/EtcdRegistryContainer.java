@@ -22,6 +22,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryContainer;
@@ -29,6 +32,8 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryContainer;
 public final class EtcdRegistryContainer implements RegistryContainer {
 
 	public static final String LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY = "lca.client.config.registry.etcd.hosts";
+	
+	private static final Logger logger = LoggerFactory.getLogger(RegistryContainer.class);
 	
 	private final EtcdRegistryImpl impl;
 	
@@ -43,7 +48,10 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 		String value = System.getProperty(LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
 		
 		URI[] uris = doCreate(value);
-		if(uris == null) uris = doCreate("localhost:4001");
+		if(uris == null) {
+			logger.warn("no valid etcd host name found, please provide the following information: <hostname1>:<port1>,<hostname2>:<port2>,...; falling back to localhost.");
+			uris = doCreate("localhost:4001");
+		}
 		
 		return new EtcdRegistryContainer(new EtcdRegistryImpl(uris)); 
 	}
@@ -53,7 +61,9 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 		String[] split = value.split(",");
 		if(split.length == 0) return null;
 		List<URI> uris = createUris(split);
-		if(uris.size() == 0) return null;
+		if(uris.size() == 0) {
+			return null;
+		}
 		return uris.toArray(new URI[uris.size()]);
 	}
 	
@@ -65,6 +75,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 			if(uri == null) continue;
 			uris.add(uri);
 		}
+
 		return uris;
 	}
 		
@@ -77,7 +88,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 		else uri = uri + host;
 		try { return URI.create(uri); }
 		catch(IllegalArgumentException ia) {
-			ia.printStackTrace();
+			logger.warn("problems creating an URI from etcd parameters, ignoring: " + host, ia); 
 		}
 		return null;
 	}

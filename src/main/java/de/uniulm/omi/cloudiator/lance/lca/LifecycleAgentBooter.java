@@ -18,22 +18,23 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.rmi.AccessException;
+import java.rmi.AccessException; 
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.RemoteRef;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent.AGENT_REGISTRY_KEY;
 import static de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent.AGENT_RMI_PORT;
 
 public final class LifecycleAgentBooter {
 
-	private final static Logger log = Logger.getLogger(LifecycleAgentBooter.class.getName());
+	private final static Logger logger = LoggerFactory.getLogger(LifecycleAgentBooter.class);
 	
 	public static void main(String[] args) {
 		System.err.println("LifecycleAgentBooter: starting.");
@@ -44,15 +45,16 @@ public final class LifecycleAgentBooter {
 		// be an easy way to do it (i.e. relaying on standard interfaces)
 		if(stub != null && addToRegistry(stub)) {
 			// from here on RMI takes over //
-			System.err.println("LifecycleAgentBooter: agent exported. waiting for requests.");
-			return;
+			logger.info("LifecycleAgentBooter: agent exported. waiting for requests.");
+		} else {
+			logger.error("cannot start lifecycle agent; exiting.");
+			Runtime.getRuntime().exit(-128);
 		}
-		System.err.println("cannot start lifecycle agent");
-		Runtime.getRuntime().exit(-128);
 	}
 	
 	private static LifecycleAgentImpl createAgentImplementation() {
 		HostContext ctx = EnvContext.fromEnvironment();
+		logger.warn("no valid etcd host name found, please provide the following information: <hostname1>:<port1>,<hostname2>:<port2>,...; falling back to localhost.");
 		System.err.println("LifecycleAgentBooter: created host context: " + ctx);
 		LifecycleAgentImpl impl = new LifecycleAgentImpl(ctx);
 		impl.init();
@@ -63,7 +65,7 @@ public final class LifecycleAgentBooter {
 		try {
 			return (LifecycleAgent) UnicastRemoteObject.exportObject(agent, AGENT_RMI_PORT);
 		} catch(RemoteException re) {
-			log.log(Level.INFO, "got exception at export", re);
+			logger.error("got exception at export; quitting the platform", re);
 		}
 		return null;
 	}
@@ -74,10 +76,8 @@ public final class LifecycleAgentBooter {
 			removeExisting(reg);
 			reg.rebind(AGENT_REGISTRY_KEY, lca);
 			return true;
-		} catch(AccessException ae) {
-			log.log(Level.INFO, "got exception at startup", ae);
-		} catch(RemoteException re) {
-			log.log(Level.INFO, "got exception at startup", re);
+		} catch(RemoteException e) { // includes AccessException //
+			logger.error("got exception at startup: could not add lca to registry. aborting.", e);
 		} 
 		return false;
 	}
