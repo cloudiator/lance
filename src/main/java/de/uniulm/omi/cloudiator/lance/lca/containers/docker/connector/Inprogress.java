@@ -31,7 +31,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
 class Inprogress implements DockerShell {
 	
-	private static final Logger logger = LoggerFactory.getLogger(DockerShell.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DockerShell.class);
 	
 	private final Process proc;
 	private final BufferedReader stdOut;
@@ -78,7 +78,7 @@ class Inprogress implements DockerShell {
 				builder.append((char) i);
 			}
 		} catch(IOException ioe){
-			logger.info("reading available bytes terminated due to exception", ioe);
+			LOGGER.info("reading available bytes terminated due to exception", ioe);
 		}
 		return builder.toString();
 	}
@@ -110,10 +110,10 @@ class Inprogress implements DockerShell {
 			if(processStillRunning()) { return ExecutionResult.success(stdOut, stdErr); }
 			else {						return ExecutionResult.systemFailure(stdErr);	 }
 		} catch(IOException ioe) {
-			logger.warn("problem when reading from external process", ioe);
+			LOGGER.warn("problem when reading from external process", ioe);
 			return ExecutionResult.systemFailure(ioe.getMessage());
 		} catch(Exception t){
-			logger.warn("problem when reading from external process", t);
+			LOGGER.warn("problem when reading from external process", t);
 			return ExecutionResult.systemFailure(t.getMessage());
 		}
 	}
@@ -148,10 +148,10 @@ class Inprogress implements DockerShell {
 			int exit = drainAfterExitStatus(stdOut);
 			return exit == 0 ? ExecutionResult.success(stdOut, stdErr) : ExecutionResult.commandFailure(exit, stdOut, stdErr);
 		} catch(IOException ioe) {
-			logger.warn("problem when reading from external process", ioe);
+			LOGGER.warn("problem when reading from external process", ioe);
 			return ExecutionResult.systemFailure(ioe.getMessage());
 		} catch(Exception t){
-			logger.warn("problem when reading from external process", t);
+			LOGGER.warn("problem when reading from external process", t);
 			return ExecutionResult.systemFailure(t.getMessage());
 		}
 	}
@@ -163,7 +163,7 @@ class Inprogress implements DockerShell {
 			stdOut.close();
 			stdErr.close();
 		} catch(IOException ioe) {
-			logger.info("exception when closing InProgress shell", ioe);
+			LOGGER.info("exception when closing InProgress shell", ioe);
 		}
 	}
 }

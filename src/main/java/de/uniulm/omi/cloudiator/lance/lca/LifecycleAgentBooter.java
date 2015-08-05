@@ -34,10 +34,10 @@ import static de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent.AGENT_RMI_PORT;
 
 public final class LifecycleAgentBooter {
 
-	private final static Logger logger = LoggerFactory.getLogger(LifecycleAgentBooter.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentBooter.class);
 	
 	public static void main(String[] args) {
-		System.err.println("LifecycleAgentBooter: starting.");
+		LOGGER.info("LifecycleAgentBooter: starting.");
 		LifecycleAgentImpl lca = createAgentImplementation();
 		LifecycleAgent stub = exportAgent(lca);
 		// TODO: it might be worth exploiting ways to get rid of this
@@ -45,16 +45,16 @@ public final class LifecycleAgentBooter {
 		// be an easy way to do it (i.e. relaying on standard interfaces)
 		if(stub != null && addToRegistry(stub)) {
 			// from here on RMI takes over //
-			logger.info("LifecycleAgentBooter: agent exported. waiting for requests.");
+			LOGGER.info("LifecycleAgentBooter: agent exported. waiting for requests.");
 		} else {
-			logger.error("cannot start lifecycle agent; exiting.");
+			LOGGER.error("cannot start lifecycle agent; exiting.");
 			Runtime.getRuntime().exit(-128);
 		}
 	}
 	
 	private static LifecycleAgentImpl createAgentImplementation() {
 		HostContext ctx = EnvContext.fromEnvironment();
-		logger.info("LifecycleAgentBooter: created host context: " + ctx);
+		LOGGER.info("LifecycleAgentBooter: created host context: " + ctx);
 		LifecycleAgentImpl impl = new LifecycleAgentImpl(ctx);
 		impl.init();
 		return impl;
@@ -64,7 +64,7 @@ public final class LifecycleAgentBooter {
 		try {
 			return (LifecycleAgent) UnicastRemoteObject.exportObject(agent, AGENT_RMI_PORT);
 		} catch(RemoteException re) {
-			logger.error("got exception at export; quitting the platform", re);
+			LOGGER.error("got exception at export; quitting the platform", re);
 		}
 		return null;
 	}
@@ -76,7 +76,7 @@ public final class LifecycleAgentBooter {
 			reg.rebind(AGENT_REGISTRY_KEY, lca);
 			return true;
 		} catch(RemoteException e) { // includes AccessException //
-			logger.error("got exception at startup: could not add lca to registry. aborting.", e);
+			LOGGER.error("got exception at startup: could not add lca to registry. aborting.", e);
 		} 
 		return false;
 	}
@@ -110,7 +110,7 @@ public final class LifecycleAgentBooter {
 			UnicastRemoteObject.unexportObject(lifecycleAgentImpl, true);
 			// TODO: shutdown registry if possible //
 		} catch(NoSuchObjectException ex) {
-			logger.info("LCA has not been registered at this registry.", ex);
+			LOGGER.info("LCA has not been registered at this registry.", ex);
 		}
 	}
 

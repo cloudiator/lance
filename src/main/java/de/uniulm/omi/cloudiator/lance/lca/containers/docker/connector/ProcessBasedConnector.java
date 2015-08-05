@@ -42,7 +42,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
  */
 final class ProcessBasedConnector implements DockerConnector {
 
-	private final static Logger log = Logger.getLogger(ProcessBasedConnector.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ProcessBasedConnector.class.getName());
 	// never access this field directly except through
 	// the connect method
 	// private ProcessWrapper dockerClient;
@@ -105,7 +105,7 @@ final class ProcessBasedConnector implements DockerConnector {
 				if(id != null) return id;
 			}
 		} catch(IOException ioe) {
-			log.log(Level.SEVERE, "exception while reading from String", ioe);
+			LOGGER.log(Level.SEVERE, "exception while reading from String", ioe);
 		}
 		return null;
 	}

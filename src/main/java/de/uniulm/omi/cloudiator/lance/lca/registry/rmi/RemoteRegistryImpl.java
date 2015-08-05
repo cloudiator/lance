@@ -37,7 +37,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class RemoteRegistryImpl implements RmiLcaRegistry {
 
-	private static final Logger logger = LoggerFactory.getLogger(LcaRegistry.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
 	
 	private final Map<ApplicationInstanceId,AppInstanceContainer> apps = new HashMap<ApplicationInstanceId,AppInstanceContainer>();
 	
@@ -164,11 +164,11 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
 			Map<String,Object> props = instances.get(cinstId);
 			if(props == null) throw new IllegalArgumentException("not known: " + cinstId);
 			Object old = props.put(property, value);
-			if(old != null) logger.info("warning: overriding value!");
+			if(old != null) LOGGER.warn("warning: overriding value!");
 			//FIXME: wake up listeners (?)
-			logger.error("TODO: wake up listeners");
+			LOGGER.error("TODO: wake up listeners");
 			
-			logger.error("LcaRegistry: added property: " + this + "/" + cinstId + "." + property + "=" + value);
+			LOGGER.info("LcaRegistry: added property: " + this + "/" + cinstId + "." + property + "=" + value);
 		}
 
 		public void addComponentInstance(ComponentInstanceId cinstId) {
@@ -177,7 +177,7 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
 			map.put(LcaRegistryConstants.INSTANCE_NR, counter.incrementAndGet());
 			instances.put(cinstId, map);
 			
-			logger.error("LcaRegistry: added component instance: " + this + "/" + cinstId);
+			LOGGER.info("LcaRegistry: added component instance: " + this + "/" + cinstId);
 		}
 		
 		@Override

@@ -33,7 +33,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 
 	public static final String LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY = "lca.client.config.registry.etcd.hosts";
 	
-	private static final Logger logger = LoggerFactory.getLogger(RegistryContainer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RegistryContainer.class);
 	
 	private final EtcdRegistryImpl impl;
 	
@@ -44,12 +44,12 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 	@Override public LcaRegistry getRegistry() { return impl; }
 	
 	public static EtcdRegistryContainer create() throws RegistrationException {
-		logger.info("checking for etcd hosts configuration: " + LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
+		LOGGER.info("checking for etcd hosts configuration: " + LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
 		String value = System.getProperty(LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);
 		
 		URI[] uris = doCreate(value);
 		if(uris == null) {
-			logger.warn("no valid etcd host name found, please provide the following information: <hostname1>:<port1>,<hostname2>:<port2>,...; falling back to localhost.");
+			LOGGER.warn("no valid etcd host name found, please provide the following information: <hostname1>:<port1>,<hostname2>:<port2>,...; falling back to localhost.");
 			uris = doCreate("localhost:4001");
 		}
 		
@@ -88,7 +88,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 		else uri = uri + host;
 		try { return URI.create(uri); }
 		catch(IllegalArgumentException ia) {
-			logger.warn("problems creating an URI from etcd parameters, ignoring: " + host, ia); 
+			LOGGER.warn("problems creating an URI from etcd parameters, ignoring: " + host, ia); 
 		}
 		return null;
 	}

@@ -40,7 +40,7 @@ public enum RegistryFactory {
 	
 	abstract RegistryContainer create() throws RegistrationException;
 
-	private static final Logger logger = LoggerFactory.getLogger(LcaRegistry.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
 	
 	public static final String LCA_REGISTRY_CONFIG_KEY = "lca.client.config.registry";
 	public static final String LCA_REGISTRY_CONFIG_RMI_VALUE = "rmiregistry";
@@ -56,20 +56,20 @@ public enum RegistryFactory {
 	}
 	
 	public static RegistryContainer doCreateRegistry() throws RegistrationException {
-		logger.info("looking for registry configuration.");
+		LOGGER.info("looking for registry configuration.");
 		String value = System.getProperty(LCA_REGISTRY_CONFIG_KEY);
 		RegistryContainer retVal = null;
 		
 		if(LCA_REGISTRY_CONFIG_ETCD_VALUE.equals(value)) {
-			logger.debug("checking for etcd registry configuration.");
+			LOGGER.debug("checking for etcd registry configuration.");
 			retVal = ETCD_REGISTRY.create();
 		} else if (LCA_REGISTRY_CONFIG_RMI_VALUE.equals(value)) {
-			logger.debug("checking for rmi-based registry configuration.");
+			LOGGER.debug("checking for rmi-based registry configuration.");
 			retVal = RMI_REGISTRY.create();
 		}
 		
 		if(retVal != null) return retVal;
-		logger.warn("registry creation failed: falling back to RMI.");
+		LOGGER.warn("registry creation failed: falling back to RMI.");
 		return RMI_REGISTRY.create();
 	}
 }

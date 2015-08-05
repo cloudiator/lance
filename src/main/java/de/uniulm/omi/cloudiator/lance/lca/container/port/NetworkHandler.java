@@ -38,7 +38,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.PortUpdateCallback;
 
 public final class NetworkHandler implements PortUpdateCallback {
 
-	private static final Logger logger = LoggerFactory.getLogger(NetworkHandler.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHandler.class);
 	
 	private final PortHierarchy portHierarchy;
 	private final DeployableComponent myComponent;
@@ -113,12 +113,12 @@ public final class NetworkHandler implements PortUpdateCallback {
 				outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
 				if(outPorts.requiredDownstreamPortsSet()) return;
 			} catch (RegistrationException e) {
-				logger.warn("could not access registry for retrieving downstream ports", e);
+				LOGGER.warn("could not access registry for retrieving downstream ports", e);
 			}
-			logger.info("did not find initial values for all required out ports; sleeping for some time... ");
+			LOGGER.info("did not find initial values for all required out ports; sleeping for some time... ");
 			try { Thread.sleep(3000); } 
 			catch(InterruptedException ie) {
-				logger.info("thread interrupted (by system?)", ie);
+				LOGGER.info("thread interrupted (by system?)", ie);
 			}
 		}
 		// throw new IllegalStateException();
@@ -130,7 +130,7 @@ public final class NetworkHandler implements PortUpdateCallback {
 		for(PortHierarchyLevel level : ipAddresses) {
 			try { registryAccessor.registerLocalAddressAtLevel(level, ipAddresses.valueAtLevel(level)); } 
 			catch(RegistrationException de) {
-				logger.info("problem when accessing registry", de); 
+				LOGGER.info("problem when accessing registry", de); 
 				failed.add(de.getLocalizedMessage());
 			}		
 		}
@@ -147,7 +147,7 @@ public final class NetworkHandler implements PortUpdateCallback {
 			for(PortHierarchyLevel level : state) {
 				try { registryAccessor.registerLocalPortAtLevel(entry.getKey(), level, state.valueAtLevel(level)); } 
 				catch(RegistrationException de) {
-					logger.info("problem when accessing registry", de); 
+					LOGGER.info("problem when accessing registry", de); 
 					failed.add(de.getLocalizedMessage());
 				}		
 			}

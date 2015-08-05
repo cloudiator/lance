@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public final class ProcessWrapper {
 	
-	private static final Logger logger = LoggerFactory.getLogger(ProcessWrapper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProcessWrapper.class);
 	
 	private final Process proc;
 	private final InputStream stdout;
@@ -53,7 +53,7 @@ public final class ProcessWrapper {
 			Process proc = pb.start();
 			return new ProcessWrapper(proc, proc.getOutputStream(), proc.getInputStream(), proc.getErrorStream());
 		} catch(IOException ioe){
-			logger.info("could not start external process", ioe); 
+			LOGGER.info("could not start external process", ioe); 
 			return null;
 		}
 	}
@@ -77,10 +77,10 @@ public final class ProcessWrapper {
 			if(prog.processStillRunning()) {
 				String drowned = prog.readOutUntilBell();
 				drowned = drowned + "///" + prog.readErrAvailable();
-				logger.info("created log running command: '" + drowned + "'");
+				LOGGER.info("created log running command: '" + drowned + "'");
 			}
 		} catch (IOException ioe) {
-			logger.warn("cannot start progressing command.", ioe);
+			LOGGER.warn("cannot start progressing command.", ioe);
 			prog.close();
 		}
 		
@@ -104,7 +104,7 @@ public final class ProcessWrapper {
 		while(true) {
 			try { return result.build(pw.proc.waitFor()); }
 			catch(InterruptedException ioe) {
-				logger.info("IOException when waiting for external process to terminate", ioe);
+				LOGGER.info("IOException when waiting for external process to terminate", ioe);
 			}
 		}
 	}
@@ -134,7 +134,7 @@ public final class ProcessWrapper {
 
 			try { line = reader.readLine(); }
 			catch(IOException ioe) {
-				logger.info("could not fully drain process stream", ioe);
+				LOGGER.info("could not fully drain process stream", ioe);
 				line = null;
 			}
 		}
@@ -148,7 +148,7 @@ public final class ProcessWrapper {
 		try {
 			stdin.close();
 		} catch(IOException ioe) {
-			logger.info("IOException when closing process wrapper input", ioe);
+			LOGGER.info("IOException when closing process wrapper input", ioe);
 		}
 	}
 }
