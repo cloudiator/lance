@@ -30,7 +30,9 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public final class RmiWrapper implements LcaRegistry, Serializable {
-
+	
+	private static final long serialVersionUID = 1L;
+	
 	private final RmiLcaRegistry delegate;
 	
 	RmiWrapper(RmiLcaRegistry _delegate) {

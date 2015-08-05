@@ -31,6 +31,12 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StopHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.VoidHandler;
 import de.uniulm.omi.cloudiator.lance.util.state.State;
 
+/**
+ * even though being an Enum, this class class is not serialisable  
+ * 
+ * @author Joerg Domaschka
+ *
+ */
 public enum LifecycleHandlerType implements State {
 
 	NEW(VoidHandler.class, VoidHandler.FACTORY),

@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.deployment;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
@@ -31,7 +32,7 @@ public final class Deployment implements Serializable {
 	
 	private final List<CommandSequence> sequences;
 	
-	Deployment(List<CommandSequence> seqs) {
+	Deployment(ArrayList<CommandSequence> seqs) {
 		sequences = seqs;
 	}
 
