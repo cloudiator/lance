@@ -106,7 +106,7 @@ class Inprogress implements DockerShell {
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 			return ExecutionResult.systemFailure(ioe.getMessage());
-		} catch(Throwable t){
+		} catch(Exception t){
 			t.printStackTrace();
 			return ExecutionResult.systemFailure(t.getMessage());
 		}
@@ -144,7 +144,7 @@ class Inprogress implements DockerShell {
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 			return ExecutionResult.systemFailure(ioe.getMessage());
-		} catch(Throwable t){
+		} catch(Exception t){
 			t.printStackTrace();
 			return ExecutionResult.systemFailure(t.getMessage());
 		}
