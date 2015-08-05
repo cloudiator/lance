@@ -33,13 +33,13 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public final class PortRegistryTranslator {
 
-	private static String PORT_HIERARCHY_0_NAME = "PUBLIC";
-	private static String PORT_HIERARCHY_1_NAME = "CLOUD";
+	private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
+	private static final String PORT_HIERARCHY_1_NAME = "CLOUD";
 	
-	public static PortHierarchyLevel PORT_HIERARCHY_0 = PortHierarchyLevel.create(PORT_HIERARCHY_0_NAME);
-	public static PortHierarchyLevel PORT_HIERARCHY_1 = PortHierarchyLevel.create(PORT_HIERARCHY_1_NAME);
+	public static final PortHierarchyLevel PORT_HIERARCHY_0 = PortHierarchyLevel.create(PORT_HIERARCHY_0_NAME);
+	public static final PortHierarchyLevel PORT_HIERARCHY_1 = PortHierarchyLevel.create(PORT_HIERARCHY_1_NAME);
 	
-	public static final Integer unsetPort = Integer.valueOf(-1);
+	public static final Integer UNSET_PORT = Integer.valueOf(-1);
 	public static final String PORT_PREFIX = "ACCESS_";
 	public static final String HOST_PREFIX = "HOST_";
 	
@@ -84,7 +84,7 @@ public final class PortRegistryTranslator {
 		} catch(NumberFormatException nfe) {
 			throw new RegistrationException("value was not an expected number", nfe);
 		}
-		return unsetPort;
+		return UNSET_PORT;
 	}
 
 	public void shareHostAddresses(NetworkHandler portHandler) {
@@ -115,7 +115,7 @@ public final class PortRegistryTranslator {
 	private static boolean isValidPortOrUnset(Integer i) {
 		if(i == null) return false;
 		if(isValidPort(i)) return true;
-		if(i.intValue() == unsetPort) return true;
+		if(i.intValue() == UNSET_PORT) return true;
 		return false;
 	}
 	

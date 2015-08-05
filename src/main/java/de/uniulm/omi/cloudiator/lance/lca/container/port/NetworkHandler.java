@@ -39,24 +39,24 @@ public final class NetworkHandler implements PortUpdateCallback {
 	private final DeployableComponent myComponent;
 	private final PortRegistryTranslator portAccessor;
 	
-	private final HierarchyLevelState<String> ip_addresses;
-	private final Map<String,HierarchyLevelState<Integer>> in_ports = new HashMap<String,HierarchyLevelState<Integer>>();
+	private final HierarchyLevelState<String> ipAddresses;
+	private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<String,HierarchyLevelState<Integer>>();
 	
-	private final OutPortHandler out_ports;
+	private final OutPortHandler outPorts;
 	
 	public NetworkHandler(PortRegistryTranslator _portAccessor, PortHierarchy _portHierarchy,  DeployableComponent _myComponent) {
 		portHierarchy = _portHierarchy;
 		myComponent = _myComponent;
 		portAccessor = _portAccessor;
-		ip_addresses = new HierarchyLevelState<String>("ip_address", portHierarchy);
-		out_ports =  new OutPortHandler(myComponent);
+		ipAddresses = new HierarchyLevelState<String>("ip_address", portHierarchy);
+		outPorts =  new OutPortHandler(myComponent);
 	}
 
 	public void initPorts(PortHierarchyLevel hierarchy_level_2, String value) throws RegistrationException {
 		portAccessor.shareHostAddresses(this);
 		registerAddress(hierarchy_level_2, value);
 		initInPorts();
-		out_ports.initPortStates(portAccessor, portHierarchy);
+		outPorts.initPortStates(portAccessor, portHierarchy);
 		portAccessor.registerLocalAddressAtLevel(hierarchy_level_2, value);
 	}
 
@@ -65,31 +65,31 @@ public final class NetworkHandler implements PortUpdateCallback {
 		for(InPort in : inports) {
 			final String name = in.getPortName();
 			HierarchyLevelState<Integer> state = new HierarchyLevelState<Integer>(name, portHierarchy);
-			in_ports.put(name, state);
-			for(PortHierarchyLevel level : state) { state.registerValueAtLevel(level, PortRegistryTranslator.unsetPort); }
+			inPorts.put(name, state);
+			for(PortHierarchyLevel level : state) { state.registerValueAtLevel(level, PortRegistryTranslator.UNSET_PORT); }
 		}
 	}
 
 	public Map<Integer,Integer> findPortsToSet(DeploymentContext deploymentContext) {
-		List<InPort> in_ports = myComponent.getExposedPorts();
-		Map<Integer,Integer> ports_to_set = new HashMap<Integer, Integer>();
-		for(InPort in : in_ports) {
+		List<InPort> exposedPorts = myComponent.getExposedPorts();
+		Map<Integer,Integer> portsToSet = new HashMap<Integer, Integer>();
+		for(InPort in : exposedPorts) {
 			Integer portNumber = (Integer) deploymentContext.getProperty(in.getPortName(), InPort.class);
 			if(portNumber == null) throw new IllegalArgumentException("ports have to have a number");
-			Integer value = in.isPublic() ? portNumber : PortRegistryTranslator.unsetPort;
-			Integer old = ports_to_set.put(portNumber, value);
+			Integer value = in.isPublic() ? portNumber : PortRegistryTranslator.UNSET_PORT;
+			Integer old = portsToSet.put(portNumber, value);
 			if(old != null) throw new IllegalArgumentException("same port number set twice");
 		}
-		return ports_to_set;
+		return portsToSet;
 	}
 	
 	void registerAddress(PortHierarchyLevel level, String address) {
-		ip_addresses.registerValueAtLevel(level, address);
+		ipAddresses.registerValueAtLevel(level, address);
 	}
 
 	public void registerInPort(PortHierarchyLevel level, String portName, Integer portNumber) {
-		HierarchyLevelState<Integer> state = in_ports.get(portName);
-		if(state == null) { throw new IllegalStateException("attempt to register an unknown port '" + portName + "': " + in_ports); }
+		HierarchyLevelState<Integer> state = inPorts.get(portName);
+		if(state == null) { throw new IllegalStateException("attempt to register an unknown port '" + portName + "': " + inPorts); }
 		state.registerValueAtLevel(level, portNumber);
 	}
 
@@ -105,8 +105,8 @@ public final class NetworkHandler implements PortUpdateCallback {
 	public void pollForNeededConnections() {
 		while(true) {
 			try { 
-				out_ports.updateDownstreamPorts(portAccessor, portHierarchy);
-				if(out_ports.requiredDownstreamPortsSet()) return;
+				outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
+				if(outPorts.requiredDownstreamPortsSet()) return;
 			}
 			catch (RegistrationException e) {
 				e.printStackTrace();
@@ -123,8 +123,8 @@ public final class NetworkHandler implements PortUpdateCallback {
 	private void publishLocalAddresses(ComponentInstanceId myId, PortRegistryTranslator registryAccessor) throws ContainerException {
 		List<String> failed = new LinkedList<String>();
 		
-		for(PortHierarchyLevel level : ip_addresses) {
-			try { registryAccessor.registerLocalAddressAtLevel(level, ip_addresses.valueAtLevel(level)); } 
+		for(PortHierarchyLevel level : ipAddresses) {
+			try { registryAccessor.registerLocalAddressAtLevel(level, ipAddresses.valueAtLevel(level)); } 
 			catch(RegistrationException de) {
 				de.printStackTrace(); 
 				failed.add(de.getLocalizedMessage());
@@ -138,7 +138,7 @@ public final class NetworkHandler implements PortUpdateCallback {
 	private void publishLocalPorts(ComponentInstanceId myId, PortRegistryTranslator registryAccessor) throws ContainerException {
 		List<String> failed = new LinkedList<String>();
 		
-		for(Map.Entry<String, HierarchyLevelState<Integer>> entry : in_ports.entrySet()) {
+		for(Map.Entry<String, HierarchyLevelState<Integer>> entry : inPorts.entrySet()) {
 			HierarchyLevelState<Integer> state = entry.getValue();
 			for(PortHierarchyLevel level : state) {
 				try { registryAccessor.registerLocalPortAtLevel(entry.getKey(), level, state.valueAtLevel(level)); } 
@@ -180,15 +180,15 @@ public final class NetworkHandler implements PortUpdateCallback {
 	}
 
 	public void startPortUpdaters() {
-		out_ports.startPortUpdaters();
+		outPorts.startPortUpdaters();
 	}
 
 	public void accept(NetworkVisitor visitor) {
-		for(PortHierarchyLevel level : ip_addresses) {
-			visitor.visitNetworkAddress(level, ip_addresses.valueAtLevel(level));
+		for(PortHierarchyLevel level : ipAddresses) {
+			visitor.visitNetworkAddress(level, ipAddresses.valueAtLevel(level));
 		}
 		
-		for(Entry<String, HierarchyLevelState<Integer>> entry : in_ports.entrySet()) {
+		for(Entry<String, HierarchyLevelState<Integer>> entry : inPorts.entrySet()) {
 			String portName = entry.getKey();
 			HierarchyLevelState<Integer> state = entry.getValue();
 			for(PortHierarchyLevel level : state) {
@@ -196,7 +196,7 @@ public final class NetworkHandler implements PortUpdateCallback {
 			}	
 		}
 		
-		out_ports.accept(visitor);
+		outPorts.accept(visitor);
 	}
 
 	public void updateAddress(PortHierarchyLevel hierarchy_level_2, String containerIp) {
