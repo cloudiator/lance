@@ -30,28 +30,28 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 public final class OutPortState {
 
 	private final Object lock = new Object();
-	private final OutPort the_port;
-	private final Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> possible_sinks;
+	private final OutPort thePort;
+	private final Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> possibleSinks;
 	
 	public OutPortState(OutPort out_port, Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> _instances) {
-		the_port = out_port;
-		possible_sinks = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(_instances);
+		thePort = out_port;
+		possibleSinks = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(_instances);
 	}
 
-	public String getPortName() { return the_port.getName(); }
+	public String getPortName() { return thePort.getName(); }
 	
 	@Override
 	public String toString() {
-		return the_port + " => " + possible_sinks;
+		return thePort + " => " + possibleSinks;
 	}
 
-	public boolean matchesPort(OutPort that_port) {
-		return the_port.namesMatch(that_port);
+	public boolean matchesPort(OutPort thatPort) {
+		return thePort.namesMatch(thatPort);
 	}
 
 	public PortDiff<DownstreamAddress> updateWithDiff(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> new_sinks) {
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> old_sinks = getCurrentSinkSet();
-		PortDiff<DownstreamAddress> diff = new PortDiff<DownstreamAddress>(new_sinks, old_sinks, the_port.getName());
+		PortDiff<DownstreamAddress> diff = new PortDiff<DownstreamAddress>(new_sinks, old_sinks, thePort.getName());
 		
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> comp_old_sinks = installNewSinks(new_sinks);
 		if(!old_sinks.equals(comp_old_sinks)) { System.err.println("old sinks do not match; do we have concurrency problems?"); }
@@ -60,10 +60,10 @@ public final class OutPortState {
 	
 	public boolean requiredAndSet() {
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks = getCurrentSinkSet();
-		return sinks.size() > the_port.getLowerBound();
+		return sinks.size() > thePort.getLowerBound();
 	}
 	
-	OutPort getPort() { return the_port; }
+	OutPort getPort() { return thePort; }
 
 	Map<PortHierarchyLevel, List<DownstreamAddress>> sinksByHierarchyLevel() {
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks = getCurrentSinkSet();
@@ -83,10 +83,10 @@ public final class OutPortState {
 	List<DownstreamAddress> adaptSinkListByBoundaries(List<DownstreamAddress> sinks) {
 		final int a = sinks.size();
 		
-		if(a < the_port.getLowerBound()) return null; // Collections.emptyList();
-		final int b = the_port.getUpperBound();
+		if(a < thePort.getLowerBound()) return null; // Collections.emptyList();
+		final int b = thePort.getUpperBound();
 		final int upper = (b == OutPort.INFINITE_SINKS) ? 
-				a : Math.min(a, the_port.getUpperBound());
+				a : Math.min(a, thePort.getUpperBound());
 		
 		while(sinks.size() > upper) {
 			sinks.remove(sinks.size() - 1);
@@ -107,15 +107,15 @@ public final class OutPortState {
 	private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> installNewSinks(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> new_sinks) {
 		HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> old = null;
 		synchronized(lock) {
-			old = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(possible_sinks);
-			possible_sinks.clear(); 
-			possible_sinks.putAll(new_sinks);
+			old = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(possibleSinks);
+			possibleSinks.clear(); 
+			possibleSinks.putAll(new_sinks);
 		}
 		return old;
 	}
 	
 	private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getCurrentSinkSet() {
-		synchronized(lock) { return possible_sinks; }
+		synchronized(lock) { return possibleSinks; }
 	}
 
 	/*

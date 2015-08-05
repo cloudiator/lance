@@ -50,10 +50,10 @@ final class OutPortHandler {
 	}
 	
 	void initPortStates(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
-		List<OutPort> out_ports = myComponent.getDownstreamPorts();
-		if(out_ports.size() == 0) return;
+		List<OutPort> outPorts = myComponent.getDownstreamPorts();
+		if(outPorts.size() == 0) return;
 		
-		for(OutPort out : out_ports) {
+		for(OutPort out : outPorts) {
 			Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(out, portHierarchy);
 			OutPortState state = new OutPortState(out, instances);
 			portStates.add(state);

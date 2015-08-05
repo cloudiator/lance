@@ -20,11 +20,11 @@ package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
 public final class DownstreamAddress{
 	
-	private final String host_ip; 
+	private final String hostIp; 
 	private final Integer port;
 
 	DownstreamAddress(String ip, Integer i) {
-		host_ip = ip;
+		hostIp = ip;
 		port = i;
 	}
 
@@ -40,21 +40,21 @@ public final class DownstreamAddress{
 
 	@Override
 	public String toString() {
-		return host_ip + ":" + port.toString();
+		return hostIp + ":" + port.toString();
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if(! (o instanceof DownstreamAddress)) return false;
 		DownstreamAddress that = (DownstreamAddress) o;
-		return equalObjects(this.host_ip, that.host_ip) && equalObjects(this.port, that.port);
+		return equalObjects(this.hostIp, that.hostIp) && equalObjects(this.port, that.port);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((host_ip == null) ? 0 : host_ip.hashCode());
+		result = prime * result + ((hostIp == null) ? 0 : hostIp.hashCode());
 		result = prime * result + ((port == null) ? 0 : port.hashCode());
 		return result;
 	}
