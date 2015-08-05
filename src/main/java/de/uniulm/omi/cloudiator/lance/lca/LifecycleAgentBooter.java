@@ -83,8 +83,9 @@ public final class LifecycleAgentBooter {
 	}
 	
 	private static Registry getAndCreateRegistry() throws RemoteException {
-		try { return java.rmi.registry.LocateRegistry.createRegistry(Registry.REGISTRY_PORT); }
-		catch(RemoteException re) {
+		try { 
+			return java.rmi.registry.LocateRegistry.createRegistry(Registry.REGISTRY_PORT); 
+		} catch(RemoteException re) {
 			return java.rmi.registry.LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
 		}
 	}
@@ -106,11 +107,12 @@ public final class LifecycleAgentBooter {
 	}
 
 	public static void unregister(LifecycleAgentImpl lifecycleAgentImpl) {
-		try { UnicastRemoteObject.unexportObject(lifecycleAgentImpl, true); }
-		catch(NoSuchObjectException ex) {
-			ex.printStackTrace();
+		try { 
+			UnicastRemoteObject.unexportObject(lifecycleAgentImpl, true);
+			// TODO: shutdown registry if possible //
+		} catch(NoSuchObjectException ex) {
+			logger.info("LCA has not been registered at this registry.", ex);
 		}
-		//FIXME
 	}
 
 }
