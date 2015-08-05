@@ -30,14 +30,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface PreInstallHandler extends LifecycleHandler {
 
-	public static final PreInstallHandler DEFAULT = new PreInstallHandler() {
-		@Override public void execute(ExecutionContext ec) {
-			System.err.println("DEFAULT PreInstallHandler doing nothing");
-		}
-	};
-	
 	public static final LifecycleHandlerFactory<PreInstallHandler> FACTORY = new LifecycleHandlerFactory<PreInstallHandler>() {
-		@Override public final PreInstallHandler getDefault() { return DEFAULT; }
+		@Override public final PreInstallHandler getDefault() { return DefaultHandlers.DEFAULT_PRE_INSTALL_HANDLER; }
 
 		@Override
 		public PreInstallHandler getDeploymentHandler(Deployment d) {

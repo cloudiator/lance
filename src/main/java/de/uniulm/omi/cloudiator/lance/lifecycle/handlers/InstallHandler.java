@@ -31,14 +31,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface InstallHandler extends LifecycleHandler {
 	
-	public static final InstallHandler DEFAULT = new InstallHandler() {
-		@Override public void execute(ExecutionContext ec) {
-			System.err.println("DEFAULT InstallHandler doing nothing");
-		}
-	};
-	
 	public static final LifecycleHandlerFactory<InstallHandler> FACTORY = new LifecycleHandlerFactory<InstallHandler>() {
-		@Override public final InstallHandler getDefault() { return DEFAULT; } 
+		@Override public final InstallHandler getDefault() { return DefaultHandlers.DEFAULT_INSTALL_HANDLER; } 
 
 		@Override
 		public InstallHandler getDeploymentHandler(Deployment d) {

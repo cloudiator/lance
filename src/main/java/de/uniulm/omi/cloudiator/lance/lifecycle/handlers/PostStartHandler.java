@@ -31,14 +31,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface PostStartHandler extends LifecycleHandler {
 
-	public static final PostStartHandler DEFAULT = new PostStartHandler() {
-		@Override public void execute(ExecutionContext ec) {
-			System.err.println("DEFAULT PostStartHandler doing nothing");
-		}		
-	};
-	
 	public static final LifecycleHandlerFactory<PostStartHandler> FACTORY = new LifecycleHandlerFactory<PostStartHandler>() {
-		@Override public final PostStartHandler getDefault() { return DEFAULT; }
+		@Override public final PostStartHandler getDefault() { return DefaultHandlers.DEFAULT_POST_START_HANDLER; }
 
 		@Override
 		public PostStartHandler getDeploymentHandler(Deployment d) {

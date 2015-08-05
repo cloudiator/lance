@@ -31,15 +31,9 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface PreStartHandler extends LifecycleHandler {
-
-	public static final PreStartHandler DEFAULT = new PreStartHandler() {
-		@Override public void execute(ExecutionContext ec) {
-			System.err.println("DEFAULT PreStartHandler doing nothing");
-		}
-	};
 	
 	public static final LifecycleHandlerFactory<PreStartHandler> FACTORY = new LifecycleHandlerFactory<PreStartHandler>() {
-		@Override public final PreStartHandler getDefault() { return DEFAULT; }
+		@Override public final PreStartHandler getDefault() { return DefaultHandlers.DEFAULT_PRE_START_HANDLER; }
 
 		@Override
 		public PreStartHandler getDeploymentHandler(Deployment d) {
