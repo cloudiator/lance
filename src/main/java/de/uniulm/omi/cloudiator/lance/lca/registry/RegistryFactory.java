@@ -18,6 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.registry.etcd.EtcdRegistryContainer;
 import de.uniulm.omi.cloudiator.lance.lca.registry.rmi.RmiRegistryContainer;
@@ -36,6 +39,8 @@ public enum RegistryFactory {
 	};
 	
 	abstract RegistryContainer create() throws RegistrationException;
+
+	private static final Logger logger = LoggerFactory.getLogger(LcaRegistry.class);
 	
 	public static final String LCA_REGISTRY_CONFIG_KEY = "lca.client.config.registry";
 	public static final String LCA_REGISTRY_CONFIG_RMI_VALUE = "rmiregistry";
@@ -56,15 +61,15 @@ public enum RegistryFactory {
 		RegistryContainer retVal = null;
 		
 		if(LCA_REGISTRY_CONFIG_ETCD_VALUE.equals(value)) {
-			System.err.println("checking for etcd registry configuration.");
+			logger.debug("checking for etcd registry configuration.");
 			retVal = ETCD_REGISTRY.create();
 		} else if (LCA_REGISTRY_CONFIG_RMI_VALUE.equals(value)) {
-			System.err.println("checking for rmi-based registry configuration.");
+			logger.debug("checking for rmi-based registry configuration.");
 			retVal = RMI_REGISTRY.create();
 		}
 		
 		if(retVal != null) return retVal;
-		System.err.println("registry creation failed: falling back to RMI.");
+		logger.warn("registry creation failed: falling back to RMI.");
 		return RMI_REGISTRY.create();
 	}
 }

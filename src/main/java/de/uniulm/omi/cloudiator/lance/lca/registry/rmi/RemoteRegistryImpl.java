@@ -25,14 +25,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class RemoteRegistryImpl implements RmiLcaRegistry {
 
+	private static final Logger logger = LoggerFactory.getLogger(LcaRegistry.class);
+	
 	private final Map<ApplicationInstanceId,AppInstanceContainer> apps = new HashMap<ApplicationInstanceId,AppInstanceContainer>();
 	
 	@Override
@@ -158,11 +164,11 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
 			Map<String,Object> props = instances.get(cinstId);
 			if(props == null) throw new IllegalArgumentException("not known: " + cinstId);
 			Object old = props.put(property, value);
-			if(old != null) System.err.println("warning: overriding value!");
+			if(old != null) logger.info("warning: overriding value!");
 			//FIXME: wake up listeners (?)
-			System.err.println("TODO: wake up listeners");
+			logger.error("TODO: wake up listeners");
 			
-			System.err.println("LcaRegistry: added property: " + this + "/" + cinstId + "." + property + "=" + value);
+			logger.error("LcaRegistry: added property: " + this + "/" + cinstId + "." + property + "=" + value);
 		}
 
 		public void addComponentInstance(ComponentInstanceId cinstId) {
@@ -171,7 +177,7 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
 			map.put(LcaRegistryConstants.INSTANCE_NR, counter.incrementAndGet());
 			instances.put(cinstId, map);
 			
-			System.err.println("LcaRegistry: added component instance: " + this + "/" + cinstId);
+			logger.error("LcaRegistry: added component instance: " + this + "/" + cinstId);
 		}
 		
 		@Override

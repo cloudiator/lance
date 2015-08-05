@@ -20,11 +20,16 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ShellFactory;
 
 final class DockerShellFactory implements ShellFactory {
 
+	private static final Logger logger = LoggerFactory.getLogger(DockerShell.class);
+	
 	private final AtomicReference<DockerShellWrapper> reference = new AtomicReference<DockerShellWrapper>();
 	
 	@Override
@@ -38,14 +43,14 @@ final class DockerShellFactory implements ShellFactory {
 		final DockerShellWrapper wrapper = new DockerShellWrapper(dshell);
 		DockerShellWrapper old = reference.getAndSet(wrapper);
 		if(old != null) {
-			System.err.println("ERROR: overriding docker shell with new one. this should never happen.");
+			logger.error("ERROR: overriding docker shell with new one. this should never happen.");
 		}		
 	}
 
 	void closeShell() {
 		DockerShellWrapper old = reference.getAndSet(null);
 		if(old == null) {
-			System.err.println("ERROR: no shell set that can be closed.");
+			logger.error("ERROR: no shell set that can be closed.");
 		} else {
 			old.shell.close();
 		}
