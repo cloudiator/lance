@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
@@ -74,8 +75,9 @@ public final class DeployableComponent implements Serializable {
 	}
 	
 	public void accept(DeploymentContext ctx, PropertyVisitor visitor) {		
-		for(String propertyName : properties.keySet()) {
-			Class<?> type = properties.get(propertyName);
+		for(Entry<String, Class<?>> entry : properties.entrySet()) {
+			String propertyName = entry.getKey();
+			Class<?> type = entry.getValue();
 			if(type == OutPort.class) continue;
 			Object o = ctx.getProperty(propertyName, type);
 			if(o == null) o = defaultValues.get(propertyName);

@@ -27,6 +27,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,8 +118,9 @@ final class ProcessBasedConnector implements DockerConnector {
 	}
 	
 	private void createPortArguments(Map<Integer, Integer> in_ports, List<String> args) {
-		for(Integer i : in_ports.keySet()) {
-			Integer j = in_ports.get(i);
+		for(Entry<Integer, Integer> entry : in_ports.entrySet()) {
+			Integer i = entry.getKey();
+			Integer j = entry.getValue();
 			args.add("-p"); 
 			if(j.intValue() < 0 || j.intValue() > 65536) {args.add(i.toString());}
 			else {args.add(i.toString() + ":" + j.toString());}

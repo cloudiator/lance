@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -67,8 +68,9 @@ public final class OutPortState {
 	Map<PortHierarchyLevel, List<DownstreamAddress>> sinksByHierarchyLevel() {
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks = getCurrentSinkSet();
 		Map<PortHierarchyLevel,List<DownstreamAddress>> elements = new HashMap<PortHierarchyLevel,List<DownstreamAddress>>();
-		for(ComponentInstanceId id : sinks.keySet()) {
-			HierarchyLevelState<DownstreamAddress> state = sinks.get(id);
+		for(Entry<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> entry : sinks.entrySet()) {
+			// ComponentInstanceId id = entry.getKey();
+			HierarchyLevelState<DownstreamAddress> state = entry.getValue();
 			for(PortHierarchyLevel level : state){
 				List<DownstreamAddress> l = getElement(elements, level);
 				DownstreamAddress value = state.valueAtLevel(level);

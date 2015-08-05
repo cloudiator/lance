@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
@@ -83,9 +84,10 @@ final class OutPortHandler {
 	
 	private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> filterInstancesWithUnsetPorts(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances) {
 		Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> retVal = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>();
-		for(ComponentInstanceId id : instances.keySet()) {
+		for(Entry<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> entry : instances.entrySet()) {
 			boolean doSet = true;
-			HierarchyLevelState<DownstreamAddress> state = instances.get(id);
+			ComponentInstanceId id = entry.getKey();
+			HierarchyLevelState<DownstreamAddress> state = entry.getValue();
 			for(PortHierarchyLevel level : state) {
 				DownstreamAddress i = state.valueAtLevel(level);
 				if(! i.hasValidPort()) {doSet = false; break; } 
@@ -106,8 +108,9 @@ final class OutPortHandler {
 	
 	private static Map<PortHierarchyLevel, List<DownstreamAddress>> doCollect(OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> elements) {
 		Map<PortHierarchyLevel, List<DownstreamAddress>> to_visit = new HashMap<PortHierarchyLevel, List<DownstreamAddress>>();		
-		for(PortHierarchyLevel level : elements.keySet()) {
-			List<DownstreamAddress> sinks = elements.get(level);
+		for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : elements.entrySet()) {
+			PortHierarchyLevel level = entry.getKey();
+			List<DownstreamAddress> sinks = entry.getValue();
 			sinks = out.adaptSinkListByBoundaries(sinks);
 			// FIXME: filter out element that are not reachable on a certain hierarchy level
 			// because they are on a different cluster (e.g. different cloud provider)
@@ -122,8 +125,9 @@ final class OutPortHandler {
 	}
 	
 	private static void doVisit(NetworkVisitor visitor, OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> to_visit) {
-		for(PortHierarchyLevel level : to_visit.keySet()) {
-			List<DownstreamAddress> sinks = to_visit.get(level);
+		for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : to_visit.entrySet()) {
+			PortHierarchyLevel level = entry.getKey();
+			List<DownstreamAddress> sinks = entry.getValue();
 			visitor.visitOutPort(out.getPortName(), level, sinks);
 		}
 	}

@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.container.port;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -30,7 +31,7 @@ public final class PortDiff<T> {
 	private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
 	private final Set<ComponentInstanceId> added;
 	private final Set<ComponentInstanceId> removed;
-	private final String portName;
+	@SuppressWarnings("unused") private final String portName;
 	private final Set<ComponentInstanceId> diffSet;
 	
 	PortDiff(Map<ComponentInstanceId, HierarchyLevelState<T>> new_sinks,
@@ -46,10 +47,11 @@ public final class PortDiff<T> {
 
 	private Set<ComponentInstanceId> diffPerElement(Map<ComponentInstanceId, HierarchyLevelState<T>> old) {
 		Set<ComponentInstanceId> _diffSet = new HashSet<ComponentInstanceId>();
-		for(ComponentInstanceId id : current.keySet()) {
+		for(Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
+			ComponentInstanceId id = entry.getKey();
 			if(added.contains(id)) continue;
 			HierarchyLevelState<T> old_elements = old.get(id);
-			HierarchyLevelState<T> new_elements = current.get(id);
+			HierarchyLevelState<T> new_elements = entry.getValue();
 			if(diffCrititcalElements(old_elements, new_elements)) _diffSet.add(id);
 		}
 		return _diffSet;

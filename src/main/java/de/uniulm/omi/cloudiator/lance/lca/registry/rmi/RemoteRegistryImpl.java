@@ -22,6 +22,7 @@ import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -141,8 +142,9 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
 
 		public Map<ComponentInstanceId, Map<String,String>> dumpInstances() {
 			Map<ComponentInstanceId, Map<String,String>> copy = new HashMap<ComponentInstanceId, Map<String,String>>();
-			for(ComponentInstanceId id : instances.keySet()) {
-				Map<String,Object> content = instances.get(id);
+			for(Entry<ComponentInstanceId, Map<String, Object>> entry : instances.entrySet()) {
+				ComponentInstanceId id = entry.getKey();
+				Map<String,Object> content = entry.getValue();
 				Map<String,String> inner_copy = new HashMap<String, String>();
 				for(String inner_key : content.keySet()) {
 					Object value = content.get(inner_key);

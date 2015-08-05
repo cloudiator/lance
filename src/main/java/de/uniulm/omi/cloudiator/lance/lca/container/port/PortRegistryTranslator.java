@@ -22,6 +22,7 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
@@ -120,11 +121,12 @@ public final class PortRegistryTranslator {
 	
 	private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getHierarchicalPorts(PortReference sinkReference, Map<ComponentInstanceId, Map<String, String>> dump, PortHierarchy portHierarchy) throws RegistrationException {
 		Map<ComponentInstanceId,HierarchyLevelState<DownstreamAddress>> addresses = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(); 
-		for(ComponentInstanceId id : dump.keySet()) {
+		for(Entry<ComponentInstanceId, Map<String, String>> entry : dump.entrySet()) {
+			ComponentInstanceId id = entry.getKey();
 			HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<DownstreamAddress>(id.toString(), portHierarchy);
 			addresses.put(id, state);
+			Map<String,String> map = entry.getValue();
 			for(PortHierarchyLevel level : portHierarchy.levels()) {
-				Map<String,String> map = dump.get(id);
 				Integer i = getHierarchicalPort(sinkReference, map, level);
 				String ip = getHierarchicalHostname(level, map);
 				if(i == null || ip == null) continue;

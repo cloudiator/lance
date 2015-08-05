@@ -24,6 +24,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import mousio.etcd4j.EtcdClient;
 import mousio.etcd4j.responses.EtcdException;
@@ -104,10 +105,11 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
 		try {
 			ccc = etcd.getDir(dirName).recursive().sorted().send().get();
 			retVal = dumpFirstLevelKeys(ccc.node);
-			for(ComponentInstanceId id : retVal.keySet()) {
+			for(Entry<ComponentInstanceId, Map<String, String>> entry : retVal.entrySet()) {
+				ComponentInstanceId id = entry.getKey();
 				String secondLevelDir = generateComponentInstanceDirectory(instId, compId, id); 
 				ccc = etcd.getDir(secondLevelDir).recursive().sorted().send().get();
-				dumpSecondLevelKeys(ccc.node, retVal.get(id));
+				dumpSecondLevelKeys(ccc.node, entry.getValue());
 			}
 		} catch(IOException ioe) {
 			throw new RegistrationException(ioe);
