@@ -78,7 +78,8 @@ class DownloadCommandImpl implements DownloadCommand {
 		OperatingSystem os = ec.getOperatingSystem();
 		if(os.isLinuxOs()) {
 			Shell shell = ec.getShell();
-			ExecutionResult exec_result = shell.executeCommand("wget -O " + filename + " " + uri.toString());
+			// ExecutionResult exec_result = 
+			shell.executeCommand("wget -O " + filename + " " + uri.toString());
 			result.setResult(filename);
 		} else {
 			throw new IllegalStateException("Download is not implemented for Windows and Mac operating systems");

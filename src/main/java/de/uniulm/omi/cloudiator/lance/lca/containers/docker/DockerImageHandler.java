@@ -92,8 +92,8 @@ final class DockerImageHandler {
 		if(initSource == ImageCreationType.OPERATING_SYSTEM) {
 			// we probably will not need this return value
 			// let's keep it for debugging purposes, though
-			@SuppressWarnings("unused")
-			String imageSnapshot = client.createImageSnapshot(myId, componentInstallId, os);
+			// @SuppressWarnings("unused") String imageSnapshot = 
+			client.createImageSnapshot(myId, componentInstallId, os);
 		}
 	}
 	

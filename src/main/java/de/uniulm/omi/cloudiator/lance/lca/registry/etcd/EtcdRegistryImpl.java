@@ -194,7 +194,8 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
 	private void createDirectorIfItDoesNotExist(String dirName) throws RegistrationException {
 		if(directoryDoesExist(dirName)) return;
 		try {
-			EtcdKeysResponse ccc = etcd.putDir(dirName).send().get();
+			// EtcdKeysResponse ccc = 
+			etcd.putDir(dirName).send().get();
 		} catch(IOException ioe) {
 			throw new RegistrationException(ioe);
 		} catch (java.util.concurrent.TimeoutException e) {

@@ -36,8 +36,9 @@ public class DockerDeployment {
 		CommandResultReference ref = b.download("https://get.docker.com/");
 
 		b.setPhase(LifecycleHandlerType.INSTALL);
-		CommandResultReference f = b.setFileProperties(SetFilePropertiesCommand.ALL_ACCESS, SetFilePropertiesCommand.FILE_ALL, ref);
-		f = b.executeOnShell(ref);
+		// CommandResultReference f = 
+		b.setFileProperties(SetFilePropertiesCommand.ALL_ACCESS, SetFilePropertiesCommand.FILE_ALL, ref);
+		b.executeOnShell(ref);
 		
 		b.setPhase(LifecycleHandlerType.POST_INSTALL);
 		b.replaceFileContent(DockerConfigFileLocation.INSTANCE, "^#DOCKER_OPTS.*$", "DOCKER_OPTS=\"-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock\"");

@@ -91,8 +91,9 @@ public class DockerContainerLogic implements ContainerLogic {
 		} catch(RegistrationException re) {throw new ContainerException("cannot access registry", re);}
 		
 		Map<Integer,Integer> ports_to_set = portHandler.findPortsToSet(deploymentContext);
-		try { @SuppressWarnings("unused") String dockerId = client.createContainer(target, myId, ports_to_set); }
-		catch(DockerException de) { throw new ContainerException("cannot create container: " + myId); }
+		try { //@SuppressWarnings("unused") String dockerId = 
+			client.createContainer(target, myId, ports_to_set); 
+		} catch(DockerException de) { throw new ContainerException("cannot create container: " + myId); }
 		
 		// add dummy values so that other components are aware of this instance, 
 		// but can see that it is not ready for use yet.
