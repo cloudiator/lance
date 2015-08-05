@@ -146,9 +146,8 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
 				ComponentInstanceId id = entry.getKey();
 				Map<String,Object> content = entry.getValue();
 				Map<String,String> inner_copy = new HashMap<String, String>();
-				for(String inner_key : content.keySet()) {
-					Object value = content.get(inner_key);
-					inner_copy.put(inner_key, value.toString());
+				for(Entry<String, Object> innerEntry : content.entrySet()) {
+					inner_copy.put(innerEntry.getKey(), innerEntry.getValue().toString());
 				}
 				copy.put(id, inner_copy);
 			}

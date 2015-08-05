@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
@@ -187,8 +188,9 @@ public final class NetworkHandler implements PortUpdateCallback {
 			visitor.visitNetworkAddress(level, ip_addresses.valueAtLevel(level));
 		}
 		
-		for(String portName : in_ports.keySet()) {
-			HierarchyLevelState<Integer> state = in_ports.get(portName);
+		for(Entry<String, HierarchyLevelState<Integer>> entry : in_ports.entrySet()) {
+			String portName = entry.getKey();
+			HierarchyLevelState<Integer> state = entry.getValue();
 			for(PortHierarchyLevel level : state) {
 				visitor.visitInPort(portName, level, state.valueAtLevel(level));
 			}	
