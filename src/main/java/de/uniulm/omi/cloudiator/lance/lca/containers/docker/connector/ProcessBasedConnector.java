@@ -89,7 +89,7 @@ final class ProcessBasedConnector implements DockerConnector {
 	}
 	
 	@Override
-	public String findImage(String target) {
+	public String findImage(String target) throws DockerException {
 		String[] split = target.split(":");
 		ExecResult result = ProcessWrapper.singleDockerCommand("images", "--no-trunc=true", split[0]);
 		if(!result.isSuccess()) {return null;}
@@ -171,7 +171,7 @@ final class ProcessBasedConnector implements DockerConnector {
 	}
 
 	@Override
-	public int getPortMapping(ComponentInstanceId myId, Integer portNumber) {
+	public int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException {
 		ExecResult result = ProcessWrapper.singleDockerCommand("port", buildContainerName(myId), portNumber.toString());	
 		if(!result.isSuccess()) {return -1;}
 		String line = result.getOutput();

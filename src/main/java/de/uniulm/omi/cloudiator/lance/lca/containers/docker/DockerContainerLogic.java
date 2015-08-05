@@ -83,21 +83,26 @@ public class DockerContainerLogic implements ContainerLogic {
 		
 	@Override
 	public synchronized void doCreate() throws ContainerException {
-		String target = null;
 		try { 
-			registryAccessor.updateState(myId, LifecycleHandlerType.INIT);
-			target = imageHandler.doPullImages(myId, createComponentInstallId());
-			portHandler.initPorts(DockerContainerManagerFactory.PORT_HIERARCHY_2, "<unknown>"); 
-		} catch(RegistrationException re) {throw new ContainerException("cannot access registry", re);}
-		
-		Map<Integer,Integer> ports_to_set = portHandler.findPortsToSet(deploymentContext);
-		try { //@SuppressWarnings("unused") String dockerId = 
-			client.createContainer(target, myId, ports_to_set); 
-		} catch(DockerException de) { throw new ContainerException("cannot create container: " + myId); }
+			executeCreation(); 
+		} catch(RegistrationException re) {
+			throw new ContainerException("cannot access registry", re);
+		} catch(DockerException de) {
+			throw new ContainerException("docker problems. cannot create container " + myId, de);
+		}
 		
 		// add dummy values so that other components are aware of this instance, 
 		// but can see that it is not ready for use yet.
 		portHandler.publishLocalData(myId);
+	}
+	
+	private void executeCreation() throws RegistrationException, DockerException {
+		registryAccessor.updateState(myId, LifecycleHandlerType.INIT);
+		String target = imageHandler.doPullImages(myId, createComponentInstallId());
+		portHandler.initPorts(DockerContainerManagerFactory.PORT_HIERARCHY_2, "<unknown>");
+		Map<Integer,Integer> ports_to_set = portHandler.findPortsToSet(deploymentContext);
+		//@SuppressWarnings("unused") String dockerId = 
+		client.createContainer(target, myId, ports_to_set);
 	}
 	
 	@Override
@@ -175,8 +180,9 @@ public class DockerContainerLogic implements ContainerLogic {
 		controller.blockingConfigure();
 	}
 
-	/** retrieved the actual port numbers and the way docker maps them */
-	private void registerPortMappings() {
+	/** retrieved the actual port numbers and the way docker maps them 
+	 * @throws DockerException */
+	private void registerPortMappings() throws DockerException {
 		// for all ports, get the port mapping //
 		List<InPort> in_ports = myComponent.getExposedPorts();
 		for(InPort in : in_ports) {

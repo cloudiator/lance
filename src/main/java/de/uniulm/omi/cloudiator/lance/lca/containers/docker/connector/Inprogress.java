@@ -67,8 +67,9 @@ class Inprogress implements DockerShell {
 		try { 
 			while((terminator > 0) || std.ready()) {
 				int i = std.read();
-				if(i == -1) break;
-				if(i == terminator) break;
+				if(i == -1 || i == terminator) {
+					break;
+				}
 				builder.append((char) i);
 			}
 		} catch(IOException ioe){

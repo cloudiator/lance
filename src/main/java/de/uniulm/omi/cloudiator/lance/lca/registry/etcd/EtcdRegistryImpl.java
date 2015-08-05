@@ -208,8 +208,7 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
 	private boolean directoryDoesExist(String dirName) throws RegistrationException {
 		try { 
 			EtcdKeysResponse aaa = etcd.getDir(dirName).send().get(); 
-			if(aaa != null) return true;
-			else return false;
+			return aaa != null;
 		} catch(IOException ioe) {
 			throw new RegistrationException(ioe);
 		} catch (java.util.concurrent.TimeoutException e) {

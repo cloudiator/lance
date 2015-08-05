@@ -44,11 +44,11 @@ public interface DockerConnector {
 
 	String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> ports_to_set) throws DockerException;
 
-	String findImage(String target) ;
+	String findImage(String target) throws DockerException ;
 
 	String getContainerIp(ComponentInstanceId myId) throws DockerException;
 
-	int getPortMapping(ComponentInstanceId myId, Integer portNumber);
+	int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException;
 
 	DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
 }

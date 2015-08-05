@@ -67,7 +67,7 @@ public final class ProcessWrapper {
 		return l;
 	}
 	
-	public static Inprogress progressingDockerCommand(String ... args) {
+	public static Inprogress progressingDockerCommand(String ... args) throws DockerException {
 		ProcessWrapper pw = createProcessWrapper(argsAsDockerList(args));
 		Inprogress prog = new Inprogress(pw.proc, createReader(pw.stdout), createReader(pw.stderr));
 		
@@ -86,15 +86,15 @@ public final class ProcessWrapper {
 		return prog;
 	}
 
-	public static ExecResult singleCommand(String ... args) {
+	public static ExecResult singleCommand(String ... args) throws DockerException {
 		return doExecuteSingleCommand(Arrays.asList(args));
 	}
 	
-	public static ExecResult singleDockerCommand(String ... args) {
+	public static ExecResult singleDockerCommand(String ... args) throws DockerException {
 		return doExecuteSingleCommand(argsAsDockerList(args));
 	}
 	
-	private static ExecResult doExecuteSingleCommand(List<String> args) {
+	private static ExecResult doExecuteSingleCommand(List<String> args) throws DockerException {
 		ProcessWrapper pw = createProcessWrapper(args);
 		ExecResultBuilder result = new ExecResultBuilder();
 		pw.closeStdIn();
@@ -108,11 +108,11 @@ public final class ProcessWrapper {
 		}
 	}
 	
-	private static ProcessWrapper createProcessWrapper(List<String> l) {
+	private static ProcessWrapper createProcessWrapper(List<String> l) throws DockerException {
 		ProcessBuilder pb = new ProcessBuilder(l);
 		ProcessWrapper pw = ProcessWrapper.createWrappper(pb);
 		if(pw == null) {
-			throw new RuntimeException("cannot instantiate process wrapper");
+			throw new DockerException("cannot instantiate process wrapper");
 		}
 		return pw;
 	}
