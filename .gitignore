@@ -1,3 +1,6 @@
 .idea/
 lance.iml
 target/
+.classpath
+.project
+.settings
