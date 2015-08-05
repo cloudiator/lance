@@ -114,8 +114,8 @@ public class DockerContainerLogic implements ContainerLogic {
 			executeStart();
 		} catch(ContainerException ce) {
 			throw ce;
-		} catch(Throwable t) {
-			throw new ContainerException(t);
+		} catch(Exception ex) {
+			throw new ContainerException(ex);
 		} finally {
 			shellFactory.closeShell();
 		}
