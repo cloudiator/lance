@@ -18,16 +18,20 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.registry;
 
-import java.util.HashMap; 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 
 public final class ContainerRegistry {
     
-    private HashMap<ComponentInstanceId, ContainerController> containers = new HashMap<>();
+    private final Map<ComponentInstanceId, ContainerController> containers = new HashMap<>();
     
-    public final ComponentInstanceId addContainer(ContainerController containerParam) {
+    public final synchronized ComponentInstanceId addContainer(ContainerController containerParam) {
         if(containerParam == null) 
             throw new IllegalArgumentException("container is null");
         
@@ -36,7 +40,12 @@ public final class ContainerRegistry {
         return id;
     }
 
-    public ContainerController getContainer(ComponentInstanceId idParam) {
+    public synchronized ContainerController getContainer(ComponentInstanceId idParam) {
         return containers.get(idParam);
     }
+
+	public synchronized List<ComponentInstanceId> listComponentInstances() {
+		List<ComponentInstanceId> arrayList = new ArrayList<>(containers.keySet());
+		return arrayList;
+	}
 }

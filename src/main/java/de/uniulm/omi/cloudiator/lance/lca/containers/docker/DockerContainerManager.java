@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,4 +118,9 @@ public class DockerContainerManager implements ContainerManager {
         LOGGER.error("terminate has not been fully implemented");
         // FIXME: add other parts to shut down //
     }
+
+	@Override
+	public List<ComponentInstanceId> getAllContainers() {
+		return registry.listComponentInstances();
+	}
 }

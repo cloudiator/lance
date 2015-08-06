@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
+import java.util.List;
+
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
@@ -42,4 +44,5 @@ public interface ContainerManager {
     CommandSequence addDeploymentSequence();
     ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os);
     void terminate();
+	List<ComponentInstanceId> getAllContainers();
 }

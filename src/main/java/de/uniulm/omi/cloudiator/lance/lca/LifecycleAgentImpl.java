@@ -61,8 +61,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     @Override
     public List<ComponentInstanceId> listContainers() throws RemoteException {
-        // manager.getAllContainers();
-        return null;
+        return manager.getAllContainers();
     }
 
     @Override
