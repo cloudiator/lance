@@ -41,17 +41,26 @@ final class DockerImageHandler {
 
     private String buildImageTagName(ImageCreationType type, String componentInstallId) {
         final String key;
-        if(type == ImageCreationType.COMPONENT) { 
-            String tmpkey = componentInstallId; 
-            String ostag = os.toString();
-            ostag = ostag.replaceAll(":",  "_");
-            key = tmpkey.toLowerCase() + ":" + ostag.toLowerCase();
-        }
-        else if(type == ImageCreationType.OPERATING_SYSTEM) { key = translator.translate(os); }
-        else if(type == ImageCreationType.COMPONENT_INSTANCE) { throw new UnsupportedOperationException(); }
-        else { throw new IllegalArgumentException(); }
-        
+        switch(type){
+        case COMPONENT: 
+        	key = imageFromComponent(componentInstallId);
+        	break;
+        case OPERATING_SYSTEM:
+        	key = translator.translate(os);
+        	break;
+        case COMPONENT_INSTANCE:
+        	throw new UnsupportedOperationException();
+        default:
+        	throw new IllegalArgumentException();
+        }        
         return key;
+    }
+    
+    private String imageFromComponent(String componentInstallId){
+    	String tmpkey = componentInstallId; 
+        String ostag = os.toString();
+        ostag = ostag.replaceAll(":",  "_");
+        return tmpkey.toLowerCase() + ":" + ostag.toLowerCase();
     }
     
     private String doGetSingleImage(String key) throws DockerException {
