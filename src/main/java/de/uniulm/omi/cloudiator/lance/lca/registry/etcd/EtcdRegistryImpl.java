@@ -135,7 +135,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
     
 
 	@Override
-	public boolean applicationComponentExists(ApplicationInstanceId appInstId) throws RegistrationException {
+	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
 		final String dirName = generateApplicationInstanceDirectory(appInstId);
 		return directoryDoesExist(dirName);
 	}
@@ -165,8 +165,8 @@ final class EtcdRegistryImpl implements LcaRegistry {
     
     private boolean directoryDoesExist(String dirName) throws RegistrationException {
         try { 
-            EtcdKeysResponse aaa = etcd.getDir(dirName).send().get(); 
-            return aaa != null;
+            EtcdKeysResponse response = etcd.getDir(dirName).send().get(); 
+            return response != null;
         } catch(IOException ioe) {
             throw new RegistrationException(ioe);
         } catch (java.util.concurrent.TimeoutException e) {

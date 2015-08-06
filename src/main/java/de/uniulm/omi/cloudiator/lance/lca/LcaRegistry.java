@@ -47,6 +47,6 @@ public interface LcaRegistry extends Serializable {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
     public String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
-	public boolean applicationComponentExists(ApplicationInstanceId appInstId) throws RegistrationException;
+	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
 	boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
 }

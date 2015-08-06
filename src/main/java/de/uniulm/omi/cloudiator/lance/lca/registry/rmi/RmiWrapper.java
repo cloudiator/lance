@@ -99,7 +99,7 @@ public final class RmiWrapper implements LcaRegistry {
     }
 
 	@Override
-	public boolean applicationComponentExists(ApplicationInstanceId appInstId) throws RegistrationException {
+	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
 		try { 
 			return delegate.applicationInstanceExists(appInstId); 
 		} catch(RemoteException re){
