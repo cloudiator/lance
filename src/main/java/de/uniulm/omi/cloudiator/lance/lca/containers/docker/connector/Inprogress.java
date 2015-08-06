@@ -54,7 +54,7 @@ class Inprogress implements DockerShell {
 		}
 	}*/
 	
-	private final char BELL_CHAR = (char) 7;
+	private static final char BELL_CHAR = (char) 7;
 	String readOutUntilBell() {
 		return readAvailable(stdOut, BELL_CHAR);
 	}
