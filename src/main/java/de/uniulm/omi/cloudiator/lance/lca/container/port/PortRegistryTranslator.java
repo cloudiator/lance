@@ -80,7 +80,9 @@ public final class PortRegistryTranslator {
         try {
             String value = accessor.getComponentInstanceProperty(myId, key);
             Integer i = Integer.valueOf(value);
-            if(isValidPortOrUnset(i)) return i;
+            if(isValidPortOrUnset(i)) {
+            	return i;
+            }
         } catch(NumberFormatException nfe) {
             throw new RegistrationException("value was not an expected number", nfe);
         }
@@ -103,8 +105,8 @@ public final class PortRegistryTranslator {
     public Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> findDownstreamInstances(OutPort out, PortHierarchy portHierarchy) throws RegistrationException {
         PortReference sinkReference = null;        
         Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
-        try { sinkReference = (PortReference) o;}
-        catch(ClassCastException cce) {
+        try { sinkReference = (PortReference) o;
+        } catch(ClassCastException cce) {
             throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.", cce);
         }
         
@@ -128,7 +130,9 @@ public final class PortRegistryTranslator {
             for(PortHierarchyLevel level : portHierarchy.levels()) {
                 Integer i = getHierarchicalPort(sinkReference, map, level);
                 String ip = getHierarchicalHostname(level, map);
-                if(i == null || ip == null) continue;
+                if(i == null || ip == null) {
+                	continue;
+                }
                 state.registerValueAtLevel(level, new DownstreamAddress(ip, i));
             }
         }
@@ -140,7 +144,9 @@ public final class PortRegistryTranslator {
         String value = dump.get(key);
         try {
             Integer i = Integer.valueOf(value);
-            if(isValidPortOrUnset(i)) return i;
+            if(isValidPortOrUnset(i)) {
+            	return i;
+            }
             throw new RegistrationException("received an unexpected result");
         } catch(NumberFormatException nfe) {
             throw new RegistrationException("value was not an expected number", nfe);
@@ -150,9 +156,12 @@ public final class PortRegistryTranslator {
     private static String getHierarchicalHostname(PortHierarchyLevel level, Map<String, String> dump) throws RegistrationException {
         String key = buildFullHostName(level);
         String value = dump.get(key);
-        if(value == null) throw new RegistrationException("ip address not found.");
-        try { InetAddress.getByName(value); }
-        catch(UnknownHostException uhe) { throw new RegistrationException("illegal IP address", uhe);}
-        return value;
+        if(value == null) {
+        	throw new RegistrationException("ip address not found.");
+        }
+        try { InetAddress.getByName(value); 
+        } catch(UnknownHostException uhe) { 
+        	throw new RegistrationException("illegal IP address", uhe);
+        } return value;
     }
 }

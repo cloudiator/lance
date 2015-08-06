@@ -90,7 +90,9 @@ public final class OutPortState {
     List<DownstreamAddress> adaptSinkListByBoundaries(List<DownstreamAddress> sinks) {
         final int a = sinks.size();
         
-        if(a < thePort.getLowerBound()) return null; // Collections.emptyList();
+        if(a < thePort.getLowerBound()) {
+        	return null; // Collections.emptyList();
+        }
         final int b = thePort.getUpperBound();
         final int upper = (b == OutPort.INFINITE_SINKS) ? 
                 a : Math.min(a, thePort.getUpperBound());
@@ -122,7 +124,9 @@ public final class OutPortState {
     }
     
     private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getCurrentSinkSet() {
-        synchronized(lock) { return possibleSinks; }
+        synchronized(lock) { 
+        	return possibleSinks; 
+        }
     }
 
     /*

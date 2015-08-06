@@ -31,14 +31,14 @@ public final class PortDiff<T> {
     private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
     private final Set<ComponentInstanceId> added;
     private final Set<ComponentInstanceId> removed;
-    @SuppressWarnings("unused") private final String portName;
+    // @SuppressWarnings("unused") private final String portName;
     private final Set<ComponentInstanceId> diffSet;
     
     PortDiff(Map<ComponentInstanceId, HierarchyLevelState<T>> newSinksParam,
             Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinksParam,
-            String portNameParam) {
+            @SuppressWarnings("unused") String portNameParam) {
         
-        portName = portNameParam;
+        // portName = portNameParam;
         current = newSinksParam;
         added  = inFirstNotInSecond(newSinksParam, oldSinksParam);
         removed = inFirstNotInSecond(oldSinksParam, newSinksParam);

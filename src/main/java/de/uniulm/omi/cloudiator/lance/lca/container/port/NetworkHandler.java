@@ -80,10 +80,12 @@ public final class NetworkHandler implements PortUpdateCallback {
         Map<Integer,Integer> portsToSet = new HashMap<>();
         for(InPort in : exposedPorts) {
             Integer portNumber = (Integer) deploymentContext.getProperty(in.getPortName(), InPort.class);
-            if(portNumber == null) throw new IllegalArgumentException("ports have to have a number");
+            if(portNumber == null) 
+            	throw new IllegalArgumentException("ports have to have a number");
             Integer value = in.isPublic() ? portNumber : PortRegistryTranslator.UNSET_PORT;
             Integer old = portsToSet.put(portNumber, value);
-            if(old != null) throw new IllegalArgumentException("same port number set twice");
+            if(old != null) 
+            	throw new IllegalArgumentException("same port number set twice");
         }
         return portsToSet;
     }
@@ -94,7 +96,9 @@ public final class NetworkHandler implements PortUpdateCallback {
 
     public void registerInPort(PortHierarchyLevel level, String portName, Integer portNumber) {
         HierarchyLevelState<Integer> state = inPorts.get(portName);
-        if(state == null) { throw new IllegalStateException("attempt to register an unknown port '" + portName + "': " + inPorts); }
+        if(state == null) { 
+        	throw new IllegalStateException("attempt to register an unknown port '" + portName + "': " + inPorts); 
+        }
         state.registerValueAtLevel(level, portNumber);
     }
 
@@ -111,13 +115,15 @@ public final class NetworkHandler implements PortUpdateCallback {
         while(true) {
             try { 
                 outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
-                if(outPorts.requiredDownstreamPortsSet()) return;
+                if(outPorts.requiredDownstreamPortsSet()) {
+                	return;
+                }
             } catch (RegistrationException e) {
                 LOGGER.warn("could not access registry for retrieving downstream ports", e);
             }
             LOGGER.info("did not find initial values for all required out ports; sleeping for some time... ");
-            try { Thread.sleep(3000); } 
-            catch(InterruptedException ie) {
+            try { Thread.sleep(3000); 
+            } catch(InterruptedException ie) {
                 LOGGER.info("thread interrupted (by system?)", ie);
             }
         }
@@ -135,7 +141,9 @@ public final class NetworkHandler implements PortUpdateCallback {
             }        
         }
         
-        if(failed.isEmpty()) return;
+        if(failed.isEmpty()) {
+        	return;
+        }
         throw new ContainerException("could register all ports: " + myId + "[" + failed.toString() + "]");
     }
     
@@ -152,7 +160,9 @@ public final class NetworkHandler implements PortUpdateCallback {
                 }        
             }
         }
-        if(failed.isEmpty()) return;
+        if(failed.isEmpty()) {
+        	return;
+        }
         throw new ContainerException("could register all ports: " + myId + "[" + failed.toString() + "]");
     }
 

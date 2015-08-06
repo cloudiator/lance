@@ -56,7 +56,9 @@ final class OutPortHandler {
     
     void initPortStates(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
         List<OutPort> outPorts = myComponent.getDownstreamPorts();
-        if(outPorts.isEmpty()) return;
+        if(outPorts.isEmpty()) {
+        	return;
+        }
         
         for(OutPort out : outPorts) {
             Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(out, portHierarchy);
@@ -71,14 +73,18 @@ final class OutPortHandler {
             Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(out_port.getPort(), portHierarchy);
             instances = filterInstancesWithUnsetPorts(instances);
             PortDiff<DownstreamAddress> diff = out_port.updateWithDiff(instances);
-            if(diff.hasDiffs()) changedPorts.add(diff);
+            if(diff.hasDiffs()) {
+            	changedPorts.add(diff);
+            }
         }
         return changedPorts;
     }
 
     public boolean requiredDownstreamPortsSet() {
         for(OutPortState state : portStates) {
-            if(!state.requiredAndSet()) return false;
+            if(!state.requiredAndSet()) {
+            	return false;
+            }
         }
         return true;
     }
@@ -96,9 +102,14 @@ final class OutPortHandler {
             HierarchyLevelState<DownstreamAddress> state = entry.getValue();
             for(PortHierarchyLevel level : state) {
                 DownstreamAddress i = state.valueAtLevel(level);
-                if(! i.hasValidPort()) {doSet = false; break; } 
+                if(! i.hasValidPort()) {
+                	doSet = false; 
+                	break;
+                } 
             }
-            if(doSet) retVal.put(id, state);
+            if(doSet) {
+            	retVal.put(id, state);
+            }
         }
         return retVal;
     }
@@ -125,7 +136,9 @@ final class OutPortHandler {
             // hierarchy level it is probably best to drop the entire sink 
             // from exporting in order to avoid inconsistencies between 
             // multiple levels
-            if(sinks == null) return Collections.emptyMap();
+            if(sinks == null) {
+            	return Collections.emptyMap();
+            }
         }
         return toVisit;
     }
