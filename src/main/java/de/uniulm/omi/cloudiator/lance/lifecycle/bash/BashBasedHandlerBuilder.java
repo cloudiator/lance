@@ -25,7 +25,6 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
-import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
@@ -85,17 +84,7 @@ class BashPreInstallHandler implements PreInstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) {
-            return;
-        }
-        Shell shell = ec.getShell();
-        for(String[] cmd : commands) {
-            String res = "";
-            for(String s : cmd) { 
-                res = res + " " + s;
-            }
-            shell.executeCommand(res);
-        }
+    	BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
@@ -112,17 +101,7 @@ class BashInstallHandler implements InstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) {
-            return;
-        }
-        Shell shell = ec.getShell();
-        for(String[] cmd : commands) {
-            String res = "";
-            for(String s : cmd) { 
-                res = res + " " + s;
-            }
-            shell.executeCommand(res);
-        }
+    	BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
@@ -139,17 +118,7 @@ class BashPostInstallHandler implements PostInstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) {
-            return;
-        }
-        Shell shell = ec.getShell();
-        for(String[] cmd : commands) {
-            String res = "";
-            for(String s : cmd) { 
-                res = res + " " + s;
-            }
-            shell.executeCommand(res);
-        }
+    	BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
@@ -166,25 +135,7 @@ class BashStartHandler implements StartHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) {
-            return;
-        }
-        Shell shell = ec.getShell();
-        final int commandSize = commands.size();
-        int counter = 0;
-        
-        for(String[] cmd : commands) {
-            String res = "";
-            counter++;
-            for(String s : cmd) { 
-                res = res + " " + s;
-            }
-            if(counter == commandSize) {
-                shell.executeBlockingCommand(res);
-            } else { 
-                shell.executeCommand(res); 
-            }
-        }
+    	BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
 
@@ -202,23 +153,6 @@ class BashPortUpdateHandler implements PortUpdateHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem()))
-            return;
-        Shell shell = ec.getShell();
-        final int commandSize = commands.size();
-        int counter = 0;
-        
-        for(String[] cmd : commands) {
-            String res = "";
-            counter++;
-            for(String s : cmd) { 
-                res = res + " " + s;
-            }
-            if(counter == commandSize) {
-                shell.executeBlockingCommand(res);
-            } else { 
-                shell.executeCommand(res); 
-            }
-        }
+    	BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
