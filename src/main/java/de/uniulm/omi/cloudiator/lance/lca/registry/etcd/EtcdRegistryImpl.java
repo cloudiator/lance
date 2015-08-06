@@ -276,8 +276,10 @@ final class EtcdRegistryImpl implements LcaRegistry {
 	}
 	
 	private final static Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
-	    if(DESCRIPTION.equals(key)) return Collections.emptyMap();
-	    if(NAME.equals(key)) return Collections.emptyMap();
+	    if(DESCRIPTION.equals(key)) 
+	    	return Collections.emptyMap();
+	    if(NAME.equals(key)) 
+	    	return Collections.emptyMap();
 	    ComponentInstanceId inst = ComponentInstanceId.fromString(key);
 	    Map<String, String> map = retVal.get(inst);
 	    if(map == null) {

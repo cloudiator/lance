@@ -68,7 +68,9 @@ public enum RegistryFactory {
             retVal = RMI_REGISTRY.create();
         }
         
-        if(retVal != null) return retVal;
+        if(retVal != null) {
+        	return retVal;
+        }
         LOGGER.warn("registry creation failed: falling back to RMI.");
         return RMI_REGISTRY.create();
     }

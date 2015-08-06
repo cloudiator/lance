@@ -47,7 +47,8 @@ public final class DownstreamAddress{
 
     @Override
     public boolean equals(Object o) {
-        if(! (o instanceof DownstreamAddress)) return false;
+        if(! (o instanceof DownstreamAddress)) 
+        	return false;
         DownstreamAddress that = (DownstreamAddress) o;
         return equalObjects(this.hostIp, that.hostIp) && equalObjects(this.port, that.port);
     }

@@ -107,7 +107,8 @@ public final class PortRegistryTranslator {
     public Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> findDownstreamInstances(OutPort out, PortHierarchy portHierarchy) throws RegistrationException {
         PortReference sinkReference = null;        
         Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
-        try { sinkReference = (PortReference) o;
+        try { 
+        	sinkReference = (PortReference) o;
         } catch(ClassCastException cce) {
             throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.", cce);
         }
@@ -163,7 +164,8 @@ public final class PortRegistryTranslator {
         if(value == null) {
         	throw new RegistrationException("ip address not found.");
         }
-        try { InetAddress.getByName(value); 
+        try { 
+        	InetAddress.getByName(value); 
         } catch(UnknownHostException uhe) { 
         	throw new RegistrationException("illegal IP address", uhe);
         } return value;

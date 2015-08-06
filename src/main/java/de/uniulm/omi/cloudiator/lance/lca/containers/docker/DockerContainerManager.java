@@ -86,7 +86,8 @@ public class DockerContainerManager implements ContainerManager {
 
     @Override
     public ContainerType getContainerType() {
-        if(isRemote) return ContainerType.DOCKER_REMOTE;
+        if(isRemote) 
+        	return ContainerType.DOCKER_REMOTE;
         return ContainerType.DOCKER;
     }
 
@@ -107,8 +108,9 @@ public class DockerContainerManager implements ContainerManager {
 
     @Override
     public void terminate() {
-        try { hostContext.close(); }
-        catch(InterruptedException ie) {
+        try { 
+        	hostContext.close(); 
+        } catch(InterruptedException ie) {
             LOGGER.warn("shutting down interrupted");
         }
         LOGGER.error("terminate has not been fully implemented");

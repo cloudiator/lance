@@ -81,7 +81,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     	LcaRegistry reg = ctx.getRegistry();
     	ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
     	
-    	if(reg.applicationInstanceExists(appInstId)) return;
+    	if(reg.applicationInstanceExists(appInstId)) 
+    		return;
     	
     	throw new LcaException("cannot proceed: application instance is not known.");
     }
@@ -90,7 +91,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     	LcaRegistry reg = ctx.getRegistry();
     	ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
     	
-    	if(reg.applicationComponentExists(appInstId, component.getComponentId())) return;
+    	if(reg.applicationComponentExists(appInstId, component.getComponentId())) 
+    		return;
     	
     	throw new LcaException("cannot proceed: component is not known within application instance.");
     }

@@ -127,7 +127,9 @@ final class DeferredExecuteOnShellCommand extends AbstractExecuteOnShellCommand 
         if(filename == null) {
         	throw new NullPointerException("no result available");
         }
-        if(! filename.startsWith("/")) filename = "./" + filename;
+        if(! filename.startsWith("/")) {
+        	filename = "./" + filename;
+        }
         if(os.getType() == OperatingSystemType.UBUNTU) {
             if(useRoot) {
             	return "sudo " + filename;

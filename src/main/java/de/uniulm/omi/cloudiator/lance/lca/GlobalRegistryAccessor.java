@@ -189,9 +189,12 @@ public final class GlobalRegistryAccessor {
 
     public<T> Object getLocalProperty(String name, Class<T> clazz) throws RegistrationException {
         Object o = null;
-        try { o = ctx.getProperty(name, clazz); }
-        catch(Exception ex){throw new RegistrationException("invalid property", ex);}
-        if(o == null) throw new RegistrationException("unknown property");
+        try { o = ctx.getProperty(name, clazz); 
+        } catch(Exception ex){
+        	throw new RegistrationException("invalid property", ex);
+        }
+        if(o == null) 
+        	throw new RegistrationException("unknown property");
         return o;
     }
 }

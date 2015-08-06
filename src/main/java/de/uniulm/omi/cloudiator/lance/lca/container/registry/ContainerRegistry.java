@@ -28,7 +28,8 @@ public final class ContainerRegistry {
     private HashMap<ComponentInstanceId, ContainerController> containers = new HashMap<>();
     
     public final ComponentInstanceId addContainer(ContainerController containerParam) {
-        if(containerParam == null) throw new IllegalArgumentException("container is null");
+        if(containerParam == null) 
+        	throw new IllegalArgumentException("container is null");
         
         ComponentInstanceId id = containerParam.getId();
         containers.put(id, containerParam);

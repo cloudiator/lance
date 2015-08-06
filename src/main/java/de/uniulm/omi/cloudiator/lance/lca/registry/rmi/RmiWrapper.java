@@ -53,7 +53,8 @@ public final class RmiWrapper implements LcaRegistry {
 
     @Override
     public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException {
-        try { delegate.addComponent(instId, cid, name);
+        try { 
+        	delegate.addComponent(instId, cid, name);
         } catch(RemoteException re){
         	throw new RegistrationException("operation failed.", re);
         }

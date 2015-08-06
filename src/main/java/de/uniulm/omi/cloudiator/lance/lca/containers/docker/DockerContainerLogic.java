@@ -76,7 +76,8 @@ public class DockerContainerLogic implements ContainerLogic {
         registryAccessor = accessor;
         
         portHandler = networkParam;
-        try { registryAccessor.init(myId); 
+        try { 
+        	registryAccessor.init(myId); 
         } catch(RegistrationException re) { 
         	throw new IllegalStateException("cannot start container", re); 
         }

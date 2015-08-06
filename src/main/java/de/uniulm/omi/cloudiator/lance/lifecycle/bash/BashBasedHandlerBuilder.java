@@ -202,7 +202,8 @@ class BashPortUpdateHandler implements PortUpdateHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) return;
+        if(! os.equals(ec.getOperatingSystem()))
+        	return;
         Shell shell = ec.getShell();
         final int commandSize = commands.size();
         int counter = 0;

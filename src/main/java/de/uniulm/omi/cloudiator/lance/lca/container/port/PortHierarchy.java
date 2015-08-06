@@ -34,7 +34,10 @@ public final class PortHierarchy {
         
         public PortHierarchyBuilder() {}
         
-        public PortHierarchyBuilder addLevel(PortHierarchyLevel level) { levels.add(level); return this; }
+        public PortHierarchyBuilder addLevel(PortHierarchyLevel level) { 
+        	levels.add(level); 
+        	return this; 
+        }
         
         public PortHierarchy build() {
             if(levels.size() < 2) 

@@ -84,7 +84,9 @@ public final class EtcdRegistryContainer implements RegistryContainer {
         
     private static URI createUri(String host) {
         final int colon = host.indexOf(":"); 
-        if(colon == 0) return null;
+        if(colon == 0) {
+        	return null;
+        }
         String uri = "http://";
         if(colon == -1) { 
         	uri = uri + host + ":4001";
