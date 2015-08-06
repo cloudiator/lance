@@ -41,7 +41,7 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
 
     public void registerValueAtLevel(PortHierarchyLevel level, T value) {
         if(value == null) {
-        	throw new NullPointerException("cannot register a hierarchy state that has the value null");
+            throw new NullPointerException("cannot register a hierarchy state that has the value null");
         }
         T i = mapping.put(level, value);
         if(i != null) {
@@ -50,14 +50,14 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
     }
     
     @Override
-	public Iterator<PortHierarchyLevel> iterator(){
+    public Iterator<PortHierarchyLevel> iterator(){
         return mapping.keySet().iterator();
     }
 
     T valueAtLevel(PortHierarchyLevel level) {
         T t = mapping.get(level);
         if(t == null) {
-        	throw new NullPointerException("value at level '" + level + "' is not known");
+            throw new NullPointerException("value at level '" + level + "' is not known");
         }
         return t;
     }
@@ -75,12 +75,12 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof HierarchyLevelState<?>)) {
-        	return false;
+            return false;
         }
         final HierarchyLevelState<?> that = (HierarchyLevelState<?>) o;
         for(PortHierarchyLevel level : this) {
             if(! containsEqualElementAtSameLevel(level, that)) {
-            	return false;
+                return false;
             }
         }
         // now we know that it contains all values that we have as well. 
@@ -91,13 +91,13 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
     private boolean containsEqualElementAtSameLevel(PortHierarchyLevel level, HierarchyLevelState<?> state) {
         T myElement = mapping.get(level);
         if(! state.mapping.containsKey(level)) {
-        	return false;
+            return false;
         }
         
         Object that = state.mapping.get(level);
         
         if(myElement == null) {
-        	return that == null;
+            return that == null;
         }
         return myElement.equals(that);
     }

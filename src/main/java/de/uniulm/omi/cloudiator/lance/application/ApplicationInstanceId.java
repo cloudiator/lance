@@ -37,7 +37,7 @@ public final class ApplicationInstanceId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof ApplicationInstanceId))
-        	return false; // captures null
+            return false; // captures null
         ApplicationInstanceId that = (ApplicationInstanceId) o;
         return this.uuid.equals(that.uuid);
     }

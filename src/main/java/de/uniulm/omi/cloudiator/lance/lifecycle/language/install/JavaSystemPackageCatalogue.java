@@ -35,7 +35,7 @@ public final class JavaSystemPackageCatalogue {
     
     private static String getUbuntuInstallCommand(String version, OperatingSystem os) {
         if(OperatingSystemVersion.getUbuntuVersion(14, 4).equals(os.getVersion()) && isJava7(version)) {
-        	return "openjdk-7-jdk";
+            return "openjdk-7-jdk";
         }
         throw new IllegalArgumentException("Java (" + version + ") installation for operating system " + os + " not supported");
     }

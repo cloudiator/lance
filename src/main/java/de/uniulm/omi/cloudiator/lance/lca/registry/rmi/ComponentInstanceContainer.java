@@ -14,8 +14,8 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 final class ComponentInstanceContainer {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
 
     private final AtomicInteger counter = new AtomicInteger(0);
     private final AppInstanceContainer myContainer;
@@ -23,15 +23,15 @@ final class ComponentInstanceContainer {
     private final Map<ComponentInstanceId, Map<String,Object>> instances = new HashMap<>();
     
     public ComponentInstanceContainer(AppInstanceContainer cnt, ComponentId cidParam, 
-    		@SuppressWarnings("unused") String name) { 
-    	myContainer = cnt; 
-    	cid = cidParam; 
+            @SuppressWarnings("unused") String name) { 
+        myContainer = cnt; 
+        cid = cidParam; 
     }
     
     public String getComponentProperty(ComponentInstanceId myId, String name) {
         Map<String,Object> props = instances.get(myId);
         if(props == null) 
-        	throw new IllegalArgumentException("not known: " + myId);
+            throw new IllegalArgumentException("not known: " + myId);
         Object old = props.get(name);
         return old == null ? null : old.toString();
     }
@@ -53,10 +53,10 @@ final class ComponentInstanceContainer {
     public void addComponentProperty(ComponentInstanceId cinstId, String property, Object value) {
         Map<String,Object> props = instances.get(cinstId);
         if(props == null) 
-        	throw new IllegalArgumentException("not known: " + cinstId);
+            throw new IllegalArgumentException("not known: " + cinstId);
         Object old = props.put(property, value);
         if(old != null) { 
-        	LOGGER.warn("warning: overriding value!");
+            LOGGER.warn("warning: overriding value!");
         }
         //FIXME: wake up listeners (?)
         LOGGER.error("TODO: wake up listeners");
@@ -66,7 +66,7 @@ final class ComponentInstanceContainer {
 
     public void addComponentInstance(ComponentInstanceId cinstId) {
         if(instances.containsKey(cinstId)) 
-        	throw new IllegalArgumentException("alread exists: " + cinstId);
+            throw new IllegalArgumentException("alread exists: " + cinstId);
         Map<String,Object> map = new HashMap<>();
         Integer i = Integer.valueOf(counter.incrementAndGet());
         map.put(LcaRegistryConstants.INSTANCE_NR, i);

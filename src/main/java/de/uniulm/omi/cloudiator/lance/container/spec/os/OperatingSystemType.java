@@ -76,7 +76,7 @@ public enum OperatingSystemType {
     public static OperatingSystemType fromString(String name) {
         for(OperatingSystemType t : OperatingSystemType.values()) {
             if(t.toString().equalsIgnoreCase(name)) {
-            	return t;
+                return t;
             }
         }
         return null;

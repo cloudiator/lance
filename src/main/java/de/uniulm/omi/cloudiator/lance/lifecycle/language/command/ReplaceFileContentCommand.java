@@ -99,16 +99,16 @@ class ReplaceFileContentImpl implements ReplaceFileContentCommand {
     private String buildLinuxCommand(OperatingSystem os, ExecutionContext ec) {
         String filename = fileref.getResult(os, ec);
         if(filename == null) { 
-        	throw new NullPointerException("no result available");
+            throw new NullPointerException("no result available");
         }
         if(! filename.startsWith("/")) {
-        	filename = "./" + filename;
+            filename = "./" + filename;
         }
                 
         String command = "sed -i -e 's!" + pattern + "!" + replacement + "!g' " + filename;
         if(os.getType() == OperatingSystemType.UBUNTU) {
             if(USE_ROOT) {
-            	return "sudo " + command;
+                return "sudo " + command;
             }
             return command;
         }

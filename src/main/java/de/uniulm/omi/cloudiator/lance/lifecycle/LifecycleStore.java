@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public class LifecycleStore implements Serializable {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
-	
+    private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
+    
     private static final long serialVersionUID = 1L;
     private final LifecycleHandler[] handlers;
     
@@ -36,7 +36,7 @@ public class LifecycleStore implements Serializable {
         for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
             LifecycleHandler h = getCastHandler(t);
             if(h == null) 
-            	throw new IllegalStateException("not the correct lifecycle handler");
+                throw new IllegalStateException("not the correct lifecycle handler");
         }
     }
     
@@ -52,12 +52,12 @@ public class LifecycleStore implements Serializable {
     private LifecycleHandler getCastHandler(LifecycleHandlerType t) {
         LifecycleHandler h = handlers[t.ordinal()];
         if(h == null) {
-        	return null;
+            return null;
         }
         try {
             return t.getTypeClass().cast(h);
         } catch(ClassCastException cce) {
-        	LOGGER.error("could not retrieve correct handler due to incompatible types", cce);
+            LOGGER.error("could not retrieve correct handler due to incompatible types", cce);
             return null;
         }
     }

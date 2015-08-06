@@ -91,7 +91,7 @@ public final class OutPortState {
         final int a = sinks.size();
         
         if(a < thePort.getLowerBound()) {
-        	return null; // Collections.emptyList();
+            return null; // Collections.emptyList();
         }
         final int b = thePort.getUpperBound();
         final int upper = (b == OutPort.INFINITE_SINKS) ? 
@@ -125,7 +125,7 @@ public final class OutPortState {
     
     private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getCurrentSinkSet() {
         synchronized(lock) { 
-        	return possibleSinks; 
+            return possibleSinks; 
         }
     }
 

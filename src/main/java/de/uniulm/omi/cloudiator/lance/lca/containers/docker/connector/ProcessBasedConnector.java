@@ -72,15 +72,15 @@ final class ProcessBasedConnector implements DockerConnector {
     public String getContainerIp(ComponentInstanceId myId) throws DockerException {
         ExecResult result = ProcessWrapper.singleDockerCommand("inspect", "--format='{{.NetworkSettings.IPAddress}}'", buildContainerName(myId));    
         if(!result.isSuccess()) { 
-        	return null;
+            return null;
         }
         BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
         try {
             String line = reader.readLine();
             if(line == null) 
-            	throw new DockerException("could not find result");
+                throw new DockerException("could not find result");
             if(reader.readLine() != null) 
-            	throw new DockerException("too many lines available");
+                throw new DockerException("too many lines available");
             InetAddress addr = InetAddress.getByName(line.trim());
             return addr.getHostAddress();
         } catch(UnknownHostException he) {
@@ -95,7 +95,7 @@ final class ProcessBasedConnector implements DockerConnector {
         String[] split = target.split(":");
         ExecResult result = ProcessWrapper.singleDockerCommand("images", "--no-trunc=true", split[0]);
         if(!result.isSuccess()) {
-        	return null;
+            return null;
         }
 
         BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
@@ -105,10 +105,10 @@ final class ProcessBasedConnector implements DockerConnector {
                 // skip header // 
                 line = reader.readLine();
                 if(line == null) 
-                	break;
+                    break;
                 String id = findTag(split[1], line);
                 if(id != null) 
-                	return id;
+                    return id;
             }
         } catch(IOException ioe) {
             LOGGER.log(Level.SEVERE, "exception while reading from String", ioe);
@@ -120,7 +120,7 @@ final class ProcessBasedConnector implements DockerConnector {
     public void pullImage(String target) throws DockerException {
         ExecResult result = ProcessWrapper.singleDockerCommand("pull", target);
         if(result.isSuccess()) {
-        	return;
+            return;
         }
         throw new DockerException(result.getError());
     }
@@ -131,9 +131,9 @@ final class ProcessBasedConnector implements DockerConnector {
             Integer j = entry.getValue();
             args.add("-p"); 
             if(j.intValue() < 0 || j.intValue() > 65536) {
-            	args.add(i.toString());
+                args.add(i.toString());
             } else {
-            	args.add(i.toString() + ":" + j.toString());
+                args.add(i.toString() + ":" + j.toString());
             }
         }
     }
@@ -152,7 +152,7 @@ final class ProcessBasedConnector implements DockerConnector {
         
         ExecResult result = ProcessWrapper.singleDockerCommand(args.toArray(new String[args.size()]));
         if(result.isSuccess()) {
-        	return result.getOutput().trim();
+            return result.getOutput().trim();
         }
         throw new DockerException(result.getError());
     }
@@ -162,7 +162,7 @@ final class ProcessBasedConnector implements DockerConnector {
         Inprogress pw = ProcessWrapper.progressingDockerCommand("start", "-i", buildContainerName(myId));
 
         if(pw.processStillRunning()) { 
-        	return pw; 
+            return pw; 
         } 
         ExecResult result = pw.toExecutionResult();
         throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
@@ -177,7 +177,7 @@ final class ProcessBasedConnector implements DockerConnector {
                 buildContainerName(containerId),  key);
 
         if(result.isSuccess()) {
-        	return result.getOutput();
+            return result.getOutput();
         }
         throw new DockerException(result.getError());
         
@@ -187,7 +187,7 @@ final class ProcessBasedConnector implements DockerConnector {
     public DockerShell getSideShell(ComponentInstanceId myId) throws DockerException {
         Inprogress pw = ProcessWrapper.progressingDockerCommand("exec", "-i", buildContainerName(myId), "bash");
         if(pw.processStillRunning()) { 
-        	return pw; 
+            return pw; 
         } 
         ExecResult result = pw.toExecutionResult();
         throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
@@ -197,15 +197,15 @@ final class ProcessBasedConnector implements DockerConnector {
     public int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException {
         ExecResult result = ProcessWrapper.singleDockerCommand("port", buildContainerName(myId), portNumber.toString());    
         if(!result.isSuccess()) {
-        	return -1;
+            return -1;
         }
         String line = result.getOutput();
         if(line == null) {
-        	return -1;
+            return -1;
         }
         int idx = line.indexOf(":");
         if(idx == -1) {
-        	return -1;
+            return -1;
         }
         try {
             return Integer.parseInt(line.substring(idx + 1));

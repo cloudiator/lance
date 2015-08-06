@@ -40,32 +40,32 @@ public final class RmiWrapper implements LcaRegistry {
        
     /**
      * @return true if this application instance has been added successfully. false if it was already contained
-    		 in the registry.
+             in the registry.
      */
     @Override
     public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
         try { 
-        	return delegate.addApplicationInstance(instId, appId, name); 
+            return delegate.addApplicationInstance(instId, appId, name); 
         } catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+            throw new RegistrationException("operation failed.", re);
         }
     }
 
     @Override
     public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException {
         try { 
-        	delegate.addComponent(instId, cid, name);
+            delegate.addComponent(instId, cid, name);
         } catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+            throw new RegistrationException("operation failed.", re);
         }
     }
 
     @Override
     public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException {
         try { 
-        	delegate.addComponentInstance(instId, cid, cinstId); 
+            delegate.addComponentInstance(instId, cid, cinstId); 
         } catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+            throw new RegistrationException("operation failed.", re);
         }
     }
 
@@ -73,9 +73,9 @@ public final class RmiWrapper implements LcaRegistry {
     public void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property,
             Object value) throws RegistrationException {
         try { 
-        	delegate.addComponentProperty(instId, cid, cinstId, property, value); 
+            delegate.addComponentProperty(instId, cid, cinstId, property, value); 
         } catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+            throw new RegistrationException("operation failed.", re);
         }
     }
 
@@ -83,9 +83,9 @@ public final class RmiWrapper implements LcaRegistry {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(
             ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         try { 
-        	return delegate.dumpComponent(instId, compId);  
+            return delegate.dumpComponent(instId, compId);  
         } catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+            throw new RegistrationException("operation failed.", re);
         }
     }
 
@@ -93,27 +93,27 @@ public final class RmiWrapper implements LcaRegistry {
     public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String name)
             throws RegistrationException {
          try { 
-        	 return delegate.getComponentProperty(appInstId, compId, myId, name); 
+             return delegate.getComponentProperty(appInstId, compId, myId, name); 
          } catch(RemoteException re){
-        	 throw new RegistrationException("operation failed.", re);
+             throw new RegistrationException("operation failed.", re);
          }
     }
 
-	@Override
-	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
-		try { 
-			return delegate.applicationInstanceExists(appInstId); 
-		} catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+    @Override
+    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
+        try { 
+            return delegate.applicationInstanceExists(appInstId); 
+        } catch(RemoteException re){
+            throw new RegistrationException("operation failed.", re);
         }
-	}
+    }
 
-	@Override
-	public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException {
-		try { 
-			return delegate.applicationComponentExists(appInstId, compId); 
-		} catch(RemoteException re){
-        	throw new RegistrationException("operation failed.", re);
+    @Override
+    public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException {
+        try { 
+            return delegate.applicationComponentExists(appInstId, compId); 
+        } catch(RemoteException re){
+            throw new RegistrationException("operation failed.", re);
         }
-	}
+    }
 }

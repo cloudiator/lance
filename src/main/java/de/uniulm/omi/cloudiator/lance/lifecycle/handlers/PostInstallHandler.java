@@ -44,7 +44,7 @@ public interface PostInstallHandler extends LifecycleHandler {
 
 final class PostInstallDeploymentHandler implements PostInstallHandler {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private final Deployment d;
     

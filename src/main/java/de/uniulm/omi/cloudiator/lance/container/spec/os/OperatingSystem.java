@@ -36,7 +36,7 @@ public final class OperatingSystem implements Serializable {
     
     public OperatingSystem(OperatingSystemType typeParam, OperatingSystemVersion versionParam) {
         if(! typeParam.checkVersion(versionParam))
-        	throw new IllegalArgumentException("unknown version");
+            throw new IllegalArgumentException("unknown version");
         
         type = typeParam;
         version = versionParam;
@@ -86,7 +86,7 @@ public final class OperatingSystem implements Serializable {
         }
         
         if(version != null) {
-        	return new OperatingSystem(t, version);
+            return new OperatingSystem(t, version);
         }
         
         throw new IllegalArgumentException(osversion + " is not a valid version for OperatingSytemType " + t + " or no "
@@ -105,7 +105,7 @@ public final class OperatingSystem implements Serializable {
     @Override
     public boolean equals(Object o) {
         if(! (o instanceof OperatingSystem)) {
-        	return false;
+            return false;
         }
         OperatingSystem that = (OperatingSystem) o;
         return this.type.equals(that.type) && this.version.equals(that.version);

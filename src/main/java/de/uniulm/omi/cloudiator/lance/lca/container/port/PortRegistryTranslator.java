@@ -57,10 +57,10 @@ public final class PortRegistryTranslator {
     
     public static boolean isValidPort(Integer i) {
         if(i == null) 
-        	return false;
+            return false;
         final int j = i.intValue();
         if(j < 1 || j > 65535) 
-        	return false;
+            return false;
         return true;
     }
     
@@ -83,7 +83,7 @@ public final class PortRegistryTranslator {
             String value = accessor.getComponentInstanceProperty(myId, key);
             Integer i = Integer.valueOf(value);
             if(isValidPortOrUnset(i)) {
-            	return i;
+                return i;
             }
         } catch(NumberFormatException nfe) {
             throw new RegistrationException("value was not an expected number", nfe);
@@ -108,7 +108,7 @@ public final class PortRegistryTranslator {
         PortReference sinkReference = null;        
         Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
         try { 
-        	sinkReference = (PortReference) o;
+            sinkReference = (PortReference) o;
         } catch(ClassCastException cce) {
             throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.", cce);
         }
@@ -119,9 +119,9 @@ public final class PortRegistryTranslator {
     
     private static boolean isValidPortOrUnset(Integer i) {
         if(i == null) 
-        	return false;
+            return false;
         if(isValidPort(i)) 
-        	return true;
+            return true;
         return i.intValue() == UNSET_PORT.intValue();
     }
     
@@ -136,7 +136,7 @@ public final class PortRegistryTranslator {
                 Integer i = getHierarchicalPort(sinkReference, map, level);
                 String ip = getHierarchicalHostname(level, map);
                 if(i == null || ip == null) {
-                	continue;
+                    continue;
                 }
                 state.registerValueAtLevel(level, new DownstreamAddress(ip, i));
             }
@@ -150,7 +150,7 @@ public final class PortRegistryTranslator {
         try {
             Integer i = Integer.valueOf(value);
             if(isValidPortOrUnset(i)) {
-            	return i;
+                return i;
             }
             throw new RegistrationException("received an unexpected result");
         } catch(NumberFormatException nfe) {
@@ -162,12 +162,12 @@ public final class PortRegistryTranslator {
         String key = buildFullHostName(level);
         String value = dump.get(key);
         if(value == null) {
-        	throw new RegistrationException("ip address not found.");
+            throw new RegistrationException("ip address not found.");
         }
         try { 
-        	InetAddress.getByName(value); 
+            InetAddress.getByName(value); 
         } catch(UnknownHostException uhe) { 
-        	throw new RegistrationException("illegal IP address", uhe);
+            throw new RegistrationException("illegal IP address", uhe);
         } return value;
     }
 }

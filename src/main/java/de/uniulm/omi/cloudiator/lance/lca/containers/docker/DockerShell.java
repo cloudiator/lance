@@ -24,7 +24,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 public interface DockerShell extends ShellLikeInterface  {
 
     @Override
-	ExecutionResult executeCommand(String command);
+    ExecutionResult executeCommand(String command);
     ExecutionResult executeBlockingCommand(String command);
     void close();
 }

@@ -71,7 +71,7 @@ public enum ContainerType {
     public static ContainerType fromString(String containername) {
         for(ContainerType t : ContainerType.values()) {
             if(t.myName.equalsIgnoreCase(containername)) {
-            	return t;
+                return t;
             }
         }
         return null;

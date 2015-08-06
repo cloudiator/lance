@@ -74,7 +74,7 @@ final class GitCommandImpl implements GitCommand {
     
     public GitCommandImpl(LifecycleHandlerType inPhase, @SuppressWarnings("unused") GitSubcommand commandParam, @SuppressWarnings("unused") URI uriParam) {
         // command = _command;
-    	// uri = _uri;
+        // uri = _uri;
         type = inPhase;
     }
 

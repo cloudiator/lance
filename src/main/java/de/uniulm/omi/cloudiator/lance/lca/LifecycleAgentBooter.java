@@ -85,7 +85,7 @@ public final class LifecycleAgentBooter {
         try { 
             return java.rmi.registry.LocateRegistry.createRegistry(Registry.REGISTRY_PORT); 
         } catch(RemoteException re) {
-        	LOGGER.info("could not create registry. assuming, it already exists.", re);
+            LOGGER.info("could not create registry. assuming, it already exists.", re);
             return java.rmi.registry.LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
         }
     }
@@ -95,10 +95,10 @@ public final class LifecycleAgentBooter {
         Object o = null;
         
         try { 
-        	o = reg.lookup(AGENT_REGISTRY_KEY);
+            o = reg.lookup(AGENT_REGISTRY_KEY);
         } catch(NotBoundException nbe){
-        	LOGGER.info("could not remove element as it was not registered.", nbe);
-        	return; 
+            LOGGER.info("could not remove element as it was not registered.", nbe);
+            return; 
         }
             
         if(o instanceof LifecycleAgent) {
@@ -107,10 +107,10 @@ public final class LifecycleAgentBooter {
         }
             
         try { 
-        	reg.unbind(AGENT_REGISTRY_KEY); 
+            reg.unbind(AGENT_REGISTRY_KEY); 
         } catch(NotBoundException nbe){
-        	LOGGER.info("could not remove element as it was not registered.", nbe);
-        	return; 
+            LOGGER.info("could not remove element as it was not registered.", nbe);
+            return; 
         }
     }
 

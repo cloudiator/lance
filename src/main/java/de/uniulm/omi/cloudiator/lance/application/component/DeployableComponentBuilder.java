@@ -94,7 +94,7 @@ public final class DeployableComponentBuilder {
     }
 
     @SuppressWarnings("static-method")
-	public void deploySequentially(@SuppressWarnings("unused") boolean b) {
+    public void deploySequentially(@SuppressWarnings("unused") boolean b) {
         // deploySequentially = b;
         throw new UnsupportedOperationException("parallel deployment not supported yet.");
     }

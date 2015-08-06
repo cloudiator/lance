@@ -27,8 +27,8 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConn
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 
 final class DockerImageHandler {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerLogic.class);
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerLogic.class);
     
     private final DockerOperatingSystemTranslator translator;
     private final OperatingSystem os;
@@ -38,7 +38,7 @@ final class DockerImageHandler {
     
     DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, DockerConnector clientParam) {
         if(osParam == null) 
-        	throw new NullPointerException("operating system has to be set.");
+            throw new NullPointerException("operating system has to be set.");
         
         os = osParam;
         translator = translatorParam;
@@ -49,21 +49,21 @@ final class DockerImageHandler {
         final String key;
         switch(type){
         case COMPONENT: 
-        	key = imageFromComponent(componentInstallId);
-        	break;
+            key = imageFromComponent(componentInstallId);
+            break;
         case OPERATING_SYSTEM:
-        	key = translator.translate(os);
-        	break;
+            key = translator.translate(os);
+            break;
         case COMPONENT_INSTANCE:
-        	throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException();
         default:
-        	throw new IllegalArgumentException();
+            throw new IllegalArgumentException();
         }        
         return key;
     }
     
     private String imageFromComponent(String componentInstallId){
-    	String tmpkey = componentInstallId; 
+        String tmpkey = componentInstallId; 
         String ostag = os.toString();
         ostag = ostag.replaceAll(":",  "_");
         return tmpkey.toLowerCase() + ":" + ostag.toLowerCase();
@@ -72,15 +72,15 @@ final class DockerImageHandler {
     private String doGetSingleImage(String key) throws DockerException {
         // TODO: remove this as soon as access to a private registry is set
         if(client.findImage(key) != null) {
-        	return key;
+            return key;
         }
                 
         try { 
-        	client.pullImage(key); 
-        	return key; 
+            client.pullImage(key); 
+            return key; 
         } catch(DockerException de) {
-        	LOGGER.debug("could not pull image.", de);
-        	return null; 
+            LOGGER.debug("could not pull image.", de);
+            return null; 
         }
     }
     

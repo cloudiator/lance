@@ -34,14 +34,14 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class RemoteRegistryImpl implements RmiLcaRegistry {
     
-	private final static Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
     private final Map<ApplicationInstanceId,AppInstanceContainer> apps = new HashMap<>();
     
     @Override
     public synchronized Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
         if(c == null) 
-        	return Collections.emptyMap();
+            return Collections.emptyMap();
         
         return c.dumpAll(compId);
     }
@@ -49,12 +49,12 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     @Override
     /**
      * @return true if this application instance has been added successfully. false if it was already contained
-    		 in the registry.
+             in the registry.
      */
     public synchronized boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RemoteException {
         if(apps.containsKey(instId)) {
-        	LOGGER.info("application instance '" + instId + "' already exists.");
-        	return false;
+            LOGGER.info("application instance '" + instId + "' already exists.");
+            return false;
         }
         apps.put(instId, new AppInstanceContainer(instId, appId, name));
         return true;
@@ -64,7 +64,7 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     public synchronized void addComponent(ApplicationInstanceId instId, ComponentId cid, String name)  throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
         if(c == null) 
-        	throw new IllegalArgumentException("not known: " + instId);
+            throw new IllegalArgumentException("not known: " + instId);
         c.addComponent(cid, name);
     }
 
@@ -73,7 +73,7 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
                 throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
         if(c == null) 
-        	throw new IllegalArgumentException("not known: " + instId);
+            throw new IllegalArgumentException("not known: " + instId);
         c.addComponentInstance(cid, cinstId);
     }
 
@@ -81,7 +81,7 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     public synchronized void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
         if(c == null) 
-        	throw new IllegalArgumentException("not known: " + instId);
+            throw new IllegalArgumentException("not known: " + instId);
         c.addComponentProperty(cid, cinstId, property, value);
     }
     
@@ -91,20 +91,20 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
         
         AppInstanceContainer c = apps.get(appInstId);
         if(c == null) 
-        	throw new IllegalArgumentException("not known: " + appInstId);
+            throw new IllegalArgumentException("not known: " + appInstId);
         return c.getComponentProperty(compId, myId, name);
     }
 
-	@Override
-	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RemoteException {
-		AppInstanceContainer c = apps.get(appInstId);
+    @Override
+    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RemoteException {
+        AppInstanceContainer c = apps.get(appInstId);
         return c != null;
-	}
+    }
 
-	@Override
-	public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RemoteException {
+    @Override
+    public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RemoteException {
         AppInstanceContainer c = apps.get(appInstId);
         return c != null && c.componentExists(compId);
-	}
+    }
 
 }

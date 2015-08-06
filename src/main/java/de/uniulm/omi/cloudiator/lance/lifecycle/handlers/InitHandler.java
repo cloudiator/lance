@@ -44,7 +44,7 @@ public interface InitHandler extends LifecycleHandler {
 
 final class InitDeploymentHandler implements InitHandler {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private final Deployment d;
     

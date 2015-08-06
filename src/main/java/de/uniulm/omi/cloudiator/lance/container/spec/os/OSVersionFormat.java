@@ -28,7 +28,7 @@ public abstract class OSVersionFormat implements Serializable {
 
         @Override public boolean hasCorrectFormat(String format) {
             if(format == null || format.length() != 5) {
-            	return false;
+                return false;
             }
             return format.matches("\\d\\d\\.\\d\\d");
         }
@@ -41,7 +41,7 @@ public abstract class OSVersionFormat implements Serializable {
         @Override public boolean hasCorrectFormat(String format) {
             for(String v : versions) {
                 if(v.equalsIgnoreCase(format)) {
-                	return true;
+                    return true;
                 }
             }
             return false;

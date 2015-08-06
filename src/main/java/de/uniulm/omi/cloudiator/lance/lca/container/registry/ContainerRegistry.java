@@ -29,7 +29,7 @@ public final class ContainerRegistry {
     
     public final ComponentInstanceId addContainer(ContainerController containerParam) {
         if(containerParam == null) 
-        	throw new IllegalArgumentException("container is null");
+            throw new IllegalArgumentException("container is null");
         
         ComponentInstanceId id = containerParam.getId();
         containers.put(id, containerParam);

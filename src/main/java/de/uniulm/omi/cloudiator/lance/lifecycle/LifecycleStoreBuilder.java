@@ -34,7 +34,7 @@ public final class LifecycleStoreBuilder {
             throw new IllegalArgumentException("handler types do not match: " + h.getClass() + " vs. " + t.getTypeClass());
         }
         if(t == LifecycleHandlerType.NEW) {
-        	throw new IllegalArgumentException("cannot set a handler for 'NEW'. " + "This event is a system event");
+            throw new IllegalArgumentException("cannot set a handler for 'NEW'. " + "This event is a system event");
         }
 
         handlers[t.ordinal()] = h;

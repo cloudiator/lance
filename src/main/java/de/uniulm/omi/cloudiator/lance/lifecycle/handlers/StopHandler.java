@@ -43,7 +43,7 @@ public interface StopHandler extends LifecycleHandler {
 
 final class StopDeploymentHandler implements StopHandler {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     private final Deployment d;
     

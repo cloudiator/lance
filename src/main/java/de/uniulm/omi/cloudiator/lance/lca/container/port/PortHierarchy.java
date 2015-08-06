@@ -35,13 +35,13 @@ public final class PortHierarchy {
         public PortHierarchyBuilder() {}
         
         public PortHierarchyBuilder addLevel(PortHierarchyLevel level) { 
-        	levels.add(level); 
-        	return this; 
+            levels.add(level); 
+            return this; 
         }
         
         public PortHierarchy build() {
             if(levels.size() < 2) 
-            	throw new IllegalStateException("at least two levels are required");
+                throw new IllegalStateException("at least two levels are required");
             if(levels.get(0) == null || !levels.get(0).equals(PortRegistryTranslator.PORT_HIERARCHY_0))
                 throw new IllegalStateException("hierarchy level 0 must be " + PortRegistryTranslator.PORT_HIERARCHY_0);
             if(levels.get(1) == null || !levels.get(1).equals(PortRegistryTranslator.PORT_HIERARCHY_1))
@@ -56,6 +56,6 @@ public final class PortHierarchy {
     
     @Override
     public String toString() {
-    	return "PortHierarchy: " + levels.toString();
+        return "PortHierarchy: " + levels.toString();
     }
 }

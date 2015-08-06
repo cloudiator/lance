@@ -90,10 +90,10 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
-                        	checkForCreationParameters(params); 
-                        	logic.doCreate(); 
+                            checkForCreationParameters(params); 
+                            logic.doCreate(); 
                         } catch(ContainerException ce) { 
-                        	getLogger().error("could not create container; FIXME add error state", ce); 
+                            getLogger().error("could not create container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
                     }
@@ -105,9 +105,9 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
-                        	logic.doInit(checkForInitParameters(params)); 
+                            logic.doInit(checkForInitParameters(params)); 
                         } catch(ContainerException ce) { 
-                        	getLogger().error("could not initialise container; FIXME add error state", ce); 
+                            getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
                     }
@@ -119,9 +119,9 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
-                        	logic.doDestroy(); 
+                            logic.doDestroy(); 
                         } catch(ContainerException ce) { 
-                        	getLogger().error("could not shut down container; FIXME add error state", ce); 
+                            getLogger().error("could not shut down container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
                     }

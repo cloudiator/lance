@@ -46,7 +46,7 @@ public final class DeployableComponent implements Serializable {
     private final HashMap<String, ? extends Serializable> defaultValues;
 
     DeployableComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam, 
-    		List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam, 
+            List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam, 
             HashMap<String, ? extends Serializable> propertyValuesParam) {
         name = nameParam;
         myId = idParam;
@@ -85,10 +85,10 @@ public final class DeployableComponent implements Serializable {
             String propertyName = entry.getKey();
             Class<?> type = entry.getValue();
             if(type == OutPort.class) 
-            	continue;
+                continue;
             Object o = ctx.getProperty(propertyName, type);
             if(o == null) {
-            	o = defaultValues.get(propertyName);
+                o = defaultValues.get(propertyName);
             }
             if(o == null) {
                 LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");

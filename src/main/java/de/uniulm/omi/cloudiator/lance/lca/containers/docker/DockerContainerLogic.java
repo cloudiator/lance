@@ -55,7 +55,7 @@ public class DockerContainerLogic implements ContainerLogic {
     private final NetworkHandler portHandler;
     
     DockerContainerLogic(ComponentInstanceId id, DockerConnector client, GlobalRegistryAccessor accessor, 
-    						DeployableComponent comp, DeploymentContext ctx, OperatingSystem os,
+                            DeployableComponent comp, DeploymentContext ctx, OperatingSystem os,
                             NetworkHandler network) {
         this(id, client, os, ctx, accessor, comp, network);
     }
@@ -65,7 +65,7 @@ public class DockerContainerLogic implements ContainerLogic {
                                 NetworkHandler networkParam) {
         
         if(osParam == null) 
-        	throw new NullPointerException("operating system has to be set.");
+            throw new NullPointerException("operating system has to be set.");
         
         myId = id;
         client = clientParam;
@@ -77,9 +77,9 @@ public class DockerContainerLogic implements ContainerLogic {
         
         portHandler = networkParam;
         try { 
-        	registryAccessor.init(myId); 
+            registryAccessor.init(myId); 
         } catch(RegistrationException re) { 
-        	throw new IllegalStateException("cannot start container", re); 
+            throw new IllegalStateException("cannot start container", re); 
         }
     }
     
@@ -139,7 +139,7 @@ public class DockerContainerLogic implements ContainerLogic {
     private DockerShell doStartContainer() throws ContainerException {
         final DockerShell dshell;
         try { 
-        	dshell = client.startContainer(myId); 
+            dshell = client.startContainer(myId); 
         } catch(DockerException de) {
             throw new ContainerException("cannot start container: " + myId, de);
         }

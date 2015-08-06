@@ -24,5 +24,5 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
  * @author Joerg Domaschka
  */
 public interface StartDetector {
-	// empty interface; methods not yet fixed //
+    // empty interface; methods not yet fixed //
 }

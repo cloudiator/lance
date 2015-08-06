@@ -58,7 +58,7 @@ public final class StateMachineBuilder<T extends Enum<?> & State > {
 
     public StateMachineBuilder<T> addAllState(T[] values) {
         for(T v : values) { 
-        	addState(v); 
+            addState(v); 
         }
         return this;
     }

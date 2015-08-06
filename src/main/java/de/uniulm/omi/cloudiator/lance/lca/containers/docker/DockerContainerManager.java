@@ -86,7 +86,7 @@ public class DockerContainerManager implements ContainerManager {
     @Override
     public ContainerType getContainerType() {
         if(isRemote) 
-        	return ContainerType.DOCKER_REMOTE;
+            return ContainerType.DOCKER_REMOTE;
         return ContainerType.DOCKER;
     }
 
@@ -108,7 +108,7 @@ public class DockerContainerManager implements ContainerManager {
     @Override
     public void terminate() {
         try { 
-        	hostContext.close(); 
+            hostContext.close(); 
         } catch(InterruptedException ie) {
             LOGGER.warn("shutting down interrupted");
         }

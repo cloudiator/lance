@@ -47,9 +47,9 @@ public final class DeploymentContext implements Serializable {
     public Object getProperty(String name, Class<?> clazz) {
         Class<?> clazz2 = propertyTypes.get(name);
         if(clazz2 == null) 
-        	throw new IllegalStateException("unknown property: " + name);
+            throw new IllegalStateException("unknown property: " + name);
         if(clazz2 != clazz) 
-        	throw new IllegalArgumentException("types do not match: " + clazz + " vs. " + clazz2);
+            throw new IllegalArgumentException("types do not match: " + clazz + " vs. " + clazz2);
         return properties.get(name);
     }
     

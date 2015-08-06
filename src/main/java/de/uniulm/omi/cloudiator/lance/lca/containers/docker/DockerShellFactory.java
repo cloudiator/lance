@@ -36,7 +36,7 @@ final class DockerShellFactory implements ShellFactory {
     public Shell createShell() {
         DockerShellWrapper wrapper = reference.get();
         if(wrapper == null) 
-        	throw new IllegalStateException("shell not set");
+            throw new IllegalStateException("shell not set");
         return wrapper;
     }
 

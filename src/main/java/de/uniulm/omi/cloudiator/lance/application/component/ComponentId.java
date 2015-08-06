@@ -41,7 +41,7 @@ public final class ComponentId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if(!(o instanceof ComponentId)) 
-        	return false; // captures null
+            return false; // captures null
         ComponentId that = (ComponentId) o;
         boolean c = this.uuid.equals(that.uuid);
         return c;

@@ -50,12 +50,12 @@ public final class PortDiff<T> {
         for(Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
             ComponentInstanceId id = entry.getKey();
             if(added.contains(id)) { 
-            	continue;
+                continue;
             }
             HierarchyLevelState<T> oldElements = old.get(id);
             HierarchyLevelState<T> newElements = entry.getValue();
             if(diffCrititcalElements(oldElements, newElements)) {
-            	diffSetParam.add(id);
+                diffSetParam.add(id);
             }
         }
         return diffSetParam;
@@ -69,7 +69,7 @@ public final class PortDiff<T> {
      */
     private boolean diffCrititcalElements(HierarchyLevelState<T> oldElements, HierarchyLevelState<T> newElements) {
         if(oldElements == null) 
-        	return newElements != null;
+            return newElements != null;
         return !oldElements.equals(newElements);
     }
     
@@ -77,7 +77,7 @@ public final class PortDiff<T> {
         Set<T> elements = new HashSet<>();
         for(T t : first.keySet()) {
             if(second.containsKey(t)) 
-            	continue;
+                continue;
             elements.add(t);
         }
         return elements;

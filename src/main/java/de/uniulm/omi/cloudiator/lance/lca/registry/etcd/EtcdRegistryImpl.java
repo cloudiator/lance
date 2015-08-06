@@ -68,14 +68,14 @@ final class EtcdRegistryImpl implements LcaRegistry {
     @Override
     /**
      * @return true if this application instance has been added successfully. false if it was already contained
-    		 in the registry.
+             in the registry.
      */
     public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
         String dirName = generateApplicationInstanceDirectory(instId);
         boolean b = createDirectorIfItDoesNotExist(dirName);
         if(b) { // only add properties if this is a new directory //
-        	setPropertyInDirectory(dirName, DESCRIPTION, APP_INSTANCE_DESCRIPTION);
-        	setPropertyInDirectory(dirName, NAME, name);
+            setPropertyInDirectory(dirName, DESCRIPTION, APP_INSTANCE_DESCRIPTION);
+            setPropertyInDirectory(dirName, NAME, name);
         }
         return b;
     }
@@ -134,25 +134,25 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
     
 
-	@Override
-	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
-		final String dirName = generateApplicationInstanceDirectory(appInstId);
-		return directoryDoesExist(dirName);
-	}
+    @Override
+    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
+        final String dirName = generateApplicationInstanceDirectory(appInstId);
+        return directoryDoesExist(dirName);
+    }
 
-	@Override
-	public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException {
-		String dirName = generateComponentDirectory(appInstId, compId);
-		return directoryDoesExist(dirName); 
-	}
+    @Override
+    public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException {
+        String dirName = generateComponentDirectory(appInstId, compId);
+        return directoryDoesExist(dirName); 
+    }
     
     /**
      * @return true if this directory has been created successfully. false if it was already 
-     * 			contained in the registry.
+     *             contained in the registry.
      */
     private boolean createDirectorIfItDoesNotExist(String dirName) throws RegistrationException {
         if(directoryDoesExist(dirName)) 
-        	return false;
+            return false;
         
         try {
             // EtcdKeysResponse ccc = 
@@ -169,7 +169,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
     
     /**
      * @return true if this directory exists. false if it was already 
-     * 			contained in the registry.
+     *             contained in the registry.
      */
     private boolean directoryDoesExist(String dirName) throws RegistrationException {
         try { 
@@ -181,7 +181,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
             throw new RegistrationException(e);
         } catch (EtcdException e) {
             if(e.errorCode == 100) 
-            	return false;
+                return false;
             throw new RegistrationException(e);
         }
     }
@@ -229,67 +229,67 @@ final class EtcdRegistryImpl implements LcaRegistry {
         return generateComponentDirectory(instId, cid) + "/" + cinstId.toString();
     }
     
-	private static void fillMapWithValue(String key, String value, Map<String, String> map) {
-	    if(DESCRIPTION.equals(key))
-	    	return;
-	    if(NAME.equals(key)) 
-	    	return;
-	    map.put(key, value);
-	}
-	
-	private static Map<ComponentInstanceId, Map<String, String>> dumpFirstLevelKeys(EtcdNode root) {
-	    final String mainDir = root.key;
-	    Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
-	    final int length = mainDir.length() + 1;
-	    for(EtcdNode node : root.nodes) {
-	        if(! node.dir) 
-	        	continue;
-	        String key = node.key.substring(length);
-	        String[] split = key.split("/");
-	        if(split.length == 1) { // component instance element //
-	            createComponentInstanceIfNotExistantAndFillWithMap(key, retVal);
-	        } else {
-	            throw new IllegalStateException("invalid directory structure for key");
-	            // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
-	            // fillMapWithValue(split[1], map);
-	        }
-	    }
-	    return retVal;
-	}
-	
-	private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
-	    final String mainDir = root.key;
-	    final int length = mainDir.length() + 1;
-	    for(EtcdNode node : root.nodes) {
-	        if(node.dir) 
-	        	throw new IllegalStateException("unexpected to find directories in component instances");
-	        String key = node.key.substring(length);
-	        String[] split = key.split("/");
-	        if(split.length == 1) { // component instance element //
-	            fillMapWithValue(key, node.value, map);
-	        } else {
-	            throw new IllegalStateException("invalid directory structure for key");
-	            // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
-	            // fillMapWithValue(split[1], map);
-	        }
-	    }
-	}
-	
-	private final static Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
-	    if(DESCRIPTION.equals(key)) 
-	    	return Collections.emptyMap();
-	    if(NAME.equals(key)) 
-	    	return Collections.emptyMap();
-	    ComponentInstanceId inst = ComponentInstanceId.fromString(key);
-	    Map<String, String> map = retVal.get(inst);
-	    if(map == null) {
-	        map = new HashMap<>();
-	        retVal.put(inst, map);
-	    } else {
-	        throw new IllegalStateException("unexpected event: map already exists.");
-	    }
-	    return map;
-	}
+    private static void fillMapWithValue(String key, String value, Map<String, String> map) {
+        if(DESCRIPTION.equals(key))
+            return;
+        if(NAME.equals(key)) 
+            return;
+        map.put(key, value);
+    }
+    
+    private static Map<ComponentInstanceId, Map<String, String>> dumpFirstLevelKeys(EtcdNode root) {
+        final String mainDir = root.key;
+        Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
+        final int length = mainDir.length() + 1;
+        for(EtcdNode node : root.nodes) {
+            if(! node.dir) 
+                continue;
+            String key = node.key.substring(length);
+            String[] split = key.split("/");
+            if(split.length == 1) { // component instance element //
+                createComponentInstanceIfNotExistantAndFillWithMap(key, retVal);
+            } else {
+                throw new IllegalStateException("invalid directory structure for key");
+                // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
+                // fillMapWithValue(split[1], map);
+            }
+        }
+        return retVal;
+    }
+    
+    private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
+        final String mainDir = root.key;
+        final int length = mainDir.length() + 1;
+        for(EtcdNode node : root.nodes) {
+            if(node.dir) 
+                throw new IllegalStateException("unexpected to find directories in component instances");
+            String key = node.key.substring(length);
+            String[] split = key.split("/");
+            if(split.length == 1) { // component instance element //
+                fillMapWithValue(key, node.value, map);
+            } else {
+                throw new IllegalStateException("invalid directory structure for key");
+                // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
+                // fillMapWithValue(split[1], map);
+            }
+        }
+    }
+    
+    private final static Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
+        if(DESCRIPTION.equals(key)) 
+            return Collections.emptyMap();
+        if(NAME.equals(key)) 
+            return Collections.emptyMap();
+        ComponentInstanceId inst = ComponentInstanceId.fromString(key);
+        Map<String, String> map = retVal.get(inst);
+        if(map == null) {
+            map = new HashMap<>();
+            retVal.put(inst, map);
+        } else {
+            throw new IllegalStateException("unexpected event: map already exists.");
+        }
+        return map;
+    }
     /*
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
         

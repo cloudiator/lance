@@ -24,13 +24,13 @@ public final class PortHierarchyLevel {
     
     private PortHierarchyLevel(String name) {
         if(name == null) 
-        	throw new NullPointerException("level name needs to be set.");
+            throw new NullPointerException("level name needs to be set.");
         if(name.indexOf(" ") > -1) 
-        	throw new IllegalStateException("hierarchy level must not contain spaces");
+            throw new IllegalStateException("hierarchy level must not contain spaces");
         if(name.isEmpty()) 
-        	throw new IllegalStateException("hierarchy level must not be empty");
+            throw new IllegalStateException("hierarchy level must not be empty");
         if(name.indexOf(":") > -1) 
-        	throw new IllegalStateException("hierarchy level must not contain colons");
+            throw new IllegalStateException("hierarchy level must not contain colons");
         levelName = name;
     }
     
@@ -42,7 +42,7 @@ public final class PortHierarchyLevel {
     @Override
     public boolean equals(Object o) {
         if(! (o instanceof PortHierarchyLevel)) {
-        	return false;
+            return false;
         }
         PortHierarchyLevel that = (PortHierarchyLevel) o;
         return this.levelName.equals(that.levelName);
@@ -57,7 +57,7 @@ public final class PortHierarchyLevel {
     }
     
     @Override
-	public String toString() {
+    public String toString() {
         return "HierachyLevel: " + levelName;
     }
 }

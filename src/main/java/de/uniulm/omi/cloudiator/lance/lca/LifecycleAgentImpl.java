@@ -67,9 +67,9 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     @Override
     public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws LcaException, RegistrationException {
-    	applicationRegistered(ctx);
-    	componentPartOfApplication(ctx, component);
-    	
+        applicationRegistered(ctx);
+        componentPartOfApplication(ctx, component);
+        
         ContainerController cc = manager.createNewContainer(ctx, component, os);
         cc.awaitCreation();
         cc.init(component.getLifecycleStore());
@@ -78,22 +78,22 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
     
     private static void applicationRegistered(DeploymentContext ctx) throws LcaException, RegistrationException {
-    	LcaRegistry reg = ctx.getRegistry();
-    	ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
-    	
-    	if(reg.applicationInstanceExists(appInstId)) 
-    		return;
-    	
-    	throw new LcaException("cannot proceed: application instance is not known.");
+        LcaRegistry reg = ctx.getRegistry();
+        ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
+        
+        if(reg.applicationInstanceExists(appInstId)) 
+            return;
+        
+        throw new LcaException("cannot proceed: application instance is not known.");
     }
     
     private static void componentPartOfApplication(DeploymentContext ctx, DeployableComponent component) throws RegistrationException, LcaException {
-    	LcaRegistry reg = ctx.getRegistry();
-    	ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
-    	
-    	if(reg.applicationComponentExists(appInstId, component.getComponentId())) 
-    		return;
-    	
-    	throw new LcaException("cannot proceed: component is not known within application instance.");
+        LcaRegistry reg = ctx.getRegistry();
+        ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
+        
+        if(reg.applicationComponentExists(appInstId, component.getComponentId())) 
+            return;
+        
+        throw new LcaException("cannot proceed: component is not known within application instance.");
     }
 }

@@ -46,7 +46,7 @@ final class EnvContext implements HostContext {
     }
     
     private void registerRmiAddress() {
-    	System.err.println("setting RMI server hostname to: " + getPublicIp());
+        System.err.println("setting RMI server hostname to: " + getPublicIp());
         System.setProperty("java.rmi.server.hostname", getPublicIp());
     }
 
@@ -93,7 +93,7 @@ final class EnvContext implements HostContext {
         while(true) {
             executor.awaitTermination(10, TimeUnit.SECONDS);
             if(executor.isTerminated()) {
-            	return;
+                return;
             }
         }
     }

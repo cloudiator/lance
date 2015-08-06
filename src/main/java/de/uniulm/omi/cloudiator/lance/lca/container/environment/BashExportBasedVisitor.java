@@ -57,7 +57,7 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
         String value = "";
         for(DownstreamAddress element : sinks) {
             if(!value.isEmpty()) {
-            	value = value + ","; 
+                value = value + ","; 
             }
             value = value + element.toString();
         }

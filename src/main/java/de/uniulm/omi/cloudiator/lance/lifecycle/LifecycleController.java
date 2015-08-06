@@ -38,7 +38,7 @@ public final class LifecycleController {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
 
-	static Logger getLogger() { return LOGGER; }
+    static Logger getLogger() { return LOGGER; }
     
     final LifecycleStore store;
     final ExecutionContext ec;

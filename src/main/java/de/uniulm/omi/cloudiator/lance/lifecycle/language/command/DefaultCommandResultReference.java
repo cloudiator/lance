@@ -32,7 +32,7 @@ public final class DefaultCommandResultReference implements CommandResultReferen
 
     void setResult(String s) {
         if(latch.getCount() != 1L) {
-        	throw new IllegalStateException();
+            throw new IllegalStateException();
         }
         result.set(s);
         latch.countDown();
@@ -41,7 +41,7 @@ public final class DefaultCommandResultReference implements CommandResultReferen
     @Override
     public String getResult(OperatingSystem os, ExecutionContext ec) {
         if(latch.getCount() != 0L) {
-        	throw new IllegalStateException();
+            throw new IllegalStateException();
         }
         return result.get();
     }

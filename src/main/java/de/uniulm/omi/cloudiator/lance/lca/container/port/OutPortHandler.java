@@ -57,7 +57,7 @@ final class OutPortHandler {
     void initPortStates(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
         List<OutPort> outPorts = myComponent.getDownstreamPorts();
         if(outPorts.isEmpty()) {
-        	return;
+            return;
         }
         
         for(OutPort out : outPorts) {
@@ -74,7 +74,7 @@ final class OutPortHandler {
             instances = filterInstancesWithUnsetPorts(instances);
             PortDiff<DownstreamAddress> diff = out_port.updateWithDiff(instances);
             if(diff.hasDiffs()) {
-            	changedPorts.add(diff);
+                changedPorts.add(diff);
             }
         }
         return changedPorts;
@@ -83,14 +83,14 @@ final class OutPortHandler {
     public boolean requiredDownstreamPortsSet() {
         for(OutPortState state : portStates) {
             if(!state.requiredAndSet()) {
-            	return false;
+                return false;
             }
         }
         return true;
     }
 
     @SuppressWarnings("static-method")
-	public void startPortUpdaters() {
+    public void startPortUpdaters() {
         LOGGER.error("Port updaters are currently not run.");
     }
     
@@ -103,12 +103,12 @@ final class OutPortHandler {
             for(PortHierarchyLevel level : state) {
                 DownstreamAddress i = state.valueAtLevel(level);
                 if(! i.hasValidPort()) {
-                	doSet = false; 
-                	break;
+                    doSet = false; 
+                    break;
                 } 
             }
             if(doSet) {
-            	retVal.put(id, state);
+                retVal.put(id, state);
             }
         }
         return retVal;
@@ -137,7 +137,7 @@ final class OutPortHandler {
             // from exporting in order to avoid inconsistencies between 
             // multiple levels
             if(sinks == null) {
-            	return Collections.emptyMap();
+                return Collections.emptyMap();
             }
         }
         return toVisit;

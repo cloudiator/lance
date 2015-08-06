@@ -32,14 +32,14 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
  * the actual implementation */
 public interface LcaRegistry extends Serializable {
 
-	/**
-	 * @param instId
-	 * @param appId
-	 * @param name
-	 * @return @return true if this application instance has been added successfully. false if it was already contained
-	 * in the registry.
-	 * @throws RegistrationException
-	 */
+    /**
+     * @param instId
+     * @param appId
+     * @param name
+     * @return @return true if this application instance has been added successfully. false if it was already contained
+     * in the registry.
+     * @throws RegistrationException
+     */
     public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
     public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
     public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
@@ -47,6 +47,6 @@ public interface LcaRegistry extends Serializable {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
     public String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
-	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
-	boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
+    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
+    boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
 }

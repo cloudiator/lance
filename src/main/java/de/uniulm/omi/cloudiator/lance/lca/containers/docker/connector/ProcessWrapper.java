@@ -103,7 +103,7 @@ public final class ProcessWrapper {
         pw.drainStdErr(result.error);
         while(true) {
             try { 
-            	return result.build(pw.proc.waitFor()); 
+                return result.build(pw.proc.waitFor()); 
             } catch(InterruptedException ioe) {
                 LOGGER.info("IOException when waiting for external process to terminate", ioe);
             }
@@ -134,7 +134,7 @@ public final class ProcessWrapper {
             builder.append(line).append(suffix);
 
             try { 
-            	line = reader.readLine(); 
+                line = reader.readLine(); 
             } catch(IOException ioe) {
                 LOGGER.info("could not fully drain process stream", ioe);
                 line = null;

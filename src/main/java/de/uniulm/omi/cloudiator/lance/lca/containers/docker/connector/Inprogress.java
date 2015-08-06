@@ -85,17 +85,17 @@ class Inprogress implements DockerShell {
 
     public boolean processStillRunning() {
         try { 
-        	proc.exitValue(); 
-        	return false; 
+            proc.exitValue(); 
+            return false; 
         } catch(IllegalThreadStateException ex) {
-        	LOGGER.debug("process not terminated", ex);
+            LOGGER.debug("process not terminated", ex);
             return true;
         }
     }
 
     public ExecResult toExecutionResult() {
         if(processStillRunning()) 
-        	throw new IllegalStateException("process still running; cannot be drained.");
+            throw new IllegalStateException("process still running; cannot be drained.");
         
         ExecResultBuilder result = new ExecResultBuilder();
         ProcessWrapper.drainStream(result.output, stdOut);
@@ -107,13 +107,13 @@ class Inprogress implements DockerShell {
     @Override
     public ExecutionResult executeBlockingCommand(String command) {
         if(! processStillRunning() ) 
-        	throw new IllegalStateException();
+            throw new IllegalStateException();
         try {
             doExecuteCommand("exec " + command);
             String tmpOut = readOutAvailable();
             String tmpErr = readErrAvailable();
             if(processStillRunning()) { 
-            	return ExecutionResult.success(tmpOut, tmpErr); 
+                return ExecutionResult.success(tmpOut, tmpErr); 
             }
             return ExecutionResult.systemFailure(tmpErr);
         } catch(IOException ioe) {
@@ -136,7 +136,7 @@ class Inprogress implements DockerShell {
         int index = tmpOut.lastIndexOf("\n");
         // at least one element is required for number //
         if(index >= tmpOut.length() -1) {
-        	return -1;
+            return -1;
         }
         // it may well be < 0 when the command did not 
         // print anything 
@@ -150,7 +150,7 @@ class Inprogress implements DockerShell {
     @Override
     public ExecutionResult executeCommand(String command) {
         if(! processStillRunning() ) {
-        	throw new IllegalStateException();
+            throw new IllegalStateException();
         }
         try {
             doExecuteCommand(command + "; " + EXIT_CODE + " ; " + BELL_COMMAND);
