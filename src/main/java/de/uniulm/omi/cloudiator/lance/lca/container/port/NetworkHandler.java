@@ -71,7 +71,9 @@ public final class NetworkHandler implements PortUpdateCallback {
             final String name = in.getPortName();
             HierarchyLevelState<Integer> state = new HierarchyLevelState<>(name, portHierarchy);
             inPorts.put(name, state);
-            for(PortHierarchyLevel level : state) { state.registerValueAtLevel(level, PortRegistryTranslator.UNSET_PORT); }
+            for(PortHierarchyLevel level : state) { 
+            	state.registerValueAtLevel(level, PortRegistryTranslator.UNSET_PORT); 
+            }
         }
     }
 
@@ -122,7 +124,8 @@ public final class NetworkHandler implements PortUpdateCallback {
                 LOGGER.warn("could not access registry for retrieving downstream ports", e);
             }
             LOGGER.info("did not find initial values for all required out ports; sleeping for some time... ");
-            try { Thread.sleep(3000); 
+            try { 
+            	Thread.sleep(3000); 
             } catch(InterruptedException ie) {
                 LOGGER.info("thread interrupted (by system?)", ie);
             }
@@ -134,8 +137,9 @@ public final class NetworkHandler implements PortUpdateCallback {
         List<String> failed = new LinkedList<>();
         
         for(PortHierarchyLevel level : ipAddresses) {
-            try { registryAccessor.registerLocalAddressAtLevel(level, ipAddresses.valueAtLevel(level)); } 
-            catch(RegistrationException de) {
+            try { 
+            	registryAccessor.registerLocalAddressAtLevel(level, ipAddresses.valueAtLevel(level)); 
+            } catch(RegistrationException de) {
                 LOGGER.info("problem when accessing registry", de); 
                 failed.add(de.getLocalizedMessage());
             }        
@@ -153,8 +157,9 @@ public final class NetworkHandler implements PortUpdateCallback {
         for(Map.Entry<String, HierarchyLevelState<Integer>> entry : inPorts.entrySet()) {
             HierarchyLevelState<Integer> state = entry.getValue();
             for(PortHierarchyLevel level : state) {
-                try { registryAccessor.registerLocalPortAtLevel(entry.getKey(), level, state.valueAtLevel(level)); } 
-                catch(RegistrationException de) {
+                try { 
+                	registryAccessor.registerLocalPortAtLevel(entry.getKey(), level, state.valueAtLevel(level)); 
+                } catch(RegistrationException de) {
                     LOGGER.info("problem when accessing registry", de); 
                     failed.add(de.getLocalizedMessage());
                 }        

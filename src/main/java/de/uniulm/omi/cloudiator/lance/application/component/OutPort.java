@@ -46,7 +46,8 @@ public final class OutPort implements Serializable {
      * @throws NullPointerException if name is null
      */
     OutPort(String nameParam, PortUpdateHandler handlerParam, int cardinalityParam, int minSinksParam, int maxSinksParam) {
-        if(nameParam == null) throw new NullPointerException("name has to be set");
+        if(nameParam == null) 
+        	throw new NullPointerException("name has to be set");
         name = nameParam;
         cardinality = cardinalityParam;
         min = minSinksParam;
@@ -90,15 +91,21 @@ public final class OutPort implements Serializable {
     
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof OutPort)) return false;
+        if(!(o instanceof OutPort)) {
+        	return false;
+        }
         OutPort that = (OutPort) o;
         return name.equals(that.name) && this.max == that.max 
                 && this.min == that.min && this.cardinality == that.cardinality;
     }
 
     public boolean namesMatch(OutPort that) {
-        if(this == that) return true;
-        if(that == null || that.name == null) return false;
+        if(this == that) {
+        	return true;
+        }
+        if(that == null || that.name == null) {
+        	return false;
+        }
         return this.name.equals(that.name);
     }
 }

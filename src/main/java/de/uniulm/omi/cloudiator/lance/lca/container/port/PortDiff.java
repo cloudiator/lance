@@ -49,10 +49,14 @@ public final class PortDiff<T> {
         Set<ComponentInstanceId> diffSetParam = new HashSet<>();
         for(Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
             ComponentInstanceId id = entry.getKey();
-            if(added.contains(id)) continue;
+            if(added.contains(id)) { 
+            	continue;
+            }
             HierarchyLevelState<T> oldElements = old.get(id);
             HierarchyLevelState<T> newElements = entry.getValue();
-            if(diffCrititcalElements(oldElements, newElements)) diffSetParam.add(id);
+            if(diffCrititcalElements(oldElements, newElements)) {
+            	diffSetParam.add(id);
+            }
         }
         return diffSetParam;
     }
@@ -64,14 +68,16 @@ public final class PortDiff<T> {
      * @return true if the both elements do differ (are not equal to each other).
      */
     private boolean diffCrititcalElements(HierarchyLevelState<T> oldElements, HierarchyLevelState<T> newElements) {
-        if(oldElements == null) return newElements != null;
+        if(oldElements == null) 
+        	return newElements != null;
         return !oldElements.equals(newElements);
     }
     
     private static<T> Set<T> inFirstNotInSecond(Map<T,?> first, Map<T,?> second) {
         Set<T> elements = new HashSet<>();
         for(T t : first.keySet()) {
-            if(second.containsKey(t)) continue;
+            if(second.containsKey(t)) 
+            	continue;
             elements.add(t);
         }
         return elements;

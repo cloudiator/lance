@@ -40,7 +40,9 @@ public final class OperatingSystemVersion implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if(! (o instanceof OperatingSystemVersion)) return false;
+        if(! (o instanceof OperatingSystemVersion)) {
+        	return false;
+        }
         OperatingSystemVersion that = (OperatingSystemVersion) o;
         return this.version.equals(that.version);
     }
@@ -55,9 +57,13 @@ public final class OperatingSystemVersion implements Serializable {
                 (month == 4 || month == 10)) {
             
             String tmpyear = year + "";
-            if(year < 10) tmpyear = "0" + tmpyear;
+            if(year < 10) {
+            	tmpyear = "0" + tmpyear;
+            }
             String tmpmonth = month + "";
-            if(month < 10) tmpmonth = "0" + tmpmonth;
+            if(month < 10) {
+            	tmpmonth = "0" + tmpmonth;
+            }
             
             return new OperatingSystemVersion(tmpyear + "." + tmpmonth);
         }

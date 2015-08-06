@@ -27,7 +27,9 @@ public abstract class OSVersionFormat implements Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override public boolean hasCorrectFormat(String format) {
-            if(format == null || format.length() != 5) return false;
+            if(format == null || format.length() != 5) {
+            	return false;
+            }
             return format.matches("\\d\\d\\.\\d\\d");
         }
     };
@@ -38,7 +40,9 @@ public abstract class OSVersionFormat implements Serializable {
         
         @Override public boolean hasCorrectFormat(String format) {
             for(String v : versions) {
-                if(v.equalsIgnoreCase(format)) return true;
+                if(v.equalsIgnoreCase(format)) {
+                	return true;
+                }
             }
             return false;
         }
