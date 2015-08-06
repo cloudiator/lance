@@ -48,7 +48,7 @@ public class DockerContainerManager implements ContainerManager {
     private final HostContext hostContext;
     private final String hostname;
     private final DockerConnector client;
-    private final DockerOperatingSystemTranslator translator;
+    // private final DockerOperatingSystemTranslator translator;
     private final ContainerRegistry registry = new ContainerRegistry();
     
     public DockerContainerManager(HostContext vmId) {
@@ -64,12 +64,8 @@ public class DockerContainerManager implements ContainerManager {
         hostContext = vmId;
         hostname = host;
         client = ConnectorFactory.INSTANCE.createConnector(hostname);
-        translator = createAndInitTranslator();
+        // translator = createAndInitTranslator();
         isRemote = remote;
-    }
-    
-    private static DockerOperatingSystemTranslator createAndInitTranslator(){
-        return new DockerOperatingSystemTranslator();
     }
     
     @Override
@@ -102,7 +98,7 @@ public class DockerContainerManager implements ContainerManager {
         NetworkHandler handler = new NetworkHandler(portAccessor, DockerContainerManagerFactory.DOCKER_PORT_HIERARCHY, comp);
         
         
-        DockerContainerLogic l = new DockerContainerLogic(id, client, translator, accessor, comp, ctx, os, handler);
+        DockerContainerLogic l = new DockerContainerLogic(id, client, accessor, comp, ctx, os, handler);
         ContainerController dc = new StandardContainer<>(id, l);
         registry.addContainer(dc);
         dc.create();

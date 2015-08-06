@@ -42,8 +42,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 final class ProcessBasedConnector implements DockerConnector {
 
     private static final Logger LOGGER = Logger.getLogger(ProcessBasedConnector.class.getName());
-    // never access this field directly except through
-    // the connect method
+    // never access this field directly except through the connect method
     // private ProcessWrapper dockerClient;
     
     ProcessBasedConnector(@SuppressWarnings("unused") String hostname) {
@@ -116,8 +115,8 @@ final class ProcessBasedConnector implements DockerConnector {
         throw new DockerException(result.getError());
     }
     
-    private static void createPortArguments(Map<Integer, Integer> in_ports, List<String> args) {
-        for(Entry<Integer, Integer> entry : in_ports.entrySet()) {
+    private static void createPortArguments(Map<Integer, Integer> inPortsParam, List<String> args) {
+        for(Entry<Integer, Integer> entry : inPortsParam.entrySet()) {
             Integer i = entry.getKey();
             Integer j = entry.getValue();
             args.add("-p"); 
@@ -127,15 +126,17 @@ final class ProcessBasedConnector implements DockerConnector {
     }
         
     @Override
-    public String createContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> in_ports) throws DockerException {
+    public String createContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> inPortsParam) throws DockerException {
         List<String> args = new ArrayList<>();
         args.add("create"); args.add("--name=" + buildContainerName(myId));
-        createPortArguments(in_ports, args);
+        createPortArguments(inPortsParam, args);
         args.add("--restart=no"); args.add("-i");  /*args.add("--tty=true");*/
         args.add(image); args.add("bash"); args.add("--noediting");
         
         ExecResult result = ProcessWrapper.singleDockerCommand(args.toArray(new String[args.size()]));
-        if(result.isSuccess()) {return result.getOutput().trim();}
+        if(result.isSuccess()) {
+        	return result.getOutput().trim();
+        }
         throw new DockerException(result.getError());
     }
     
@@ -164,7 +165,9 @@ final class ProcessBasedConnector implements DockerConnector {
     @Override
     public DockerShell getSideShell(ComponentInstanceId myId) throws DockerException {
         Inprogress pw = ProcessWrapper.progressingDockerCommand("exec", "-i", buildContainerName(myId), "bash");
-        if(pw.processStillRunning()) { return pw; } 
+        if(pw.processStillRunning()) { 
+        	return pw; 
+        } 
         ExecResult result = pw.toExecutionResult();
         throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
     }

@@ -58,8 +58,8 @@ public final class CommandSequenceBuilder {
         return c.getResult();
     }
     
-    public CommandSequenceBuilder setPhase(LifecycleHandlerType _phase) {
-        phase = _phase;
+    public CommandSequenceBuilder setPhase(LifecycleHandlerType phaseParam) {
+        phase = phaseParam;
         return this;
     }
     
@@ -83,8 +83,8 @@ public final class CommandSequenceBuilder {
         return addCommandAndReturnResult(e);
     }
 
-    public CommandResultReference replaceFileContent(CommandResultReference _ref, String pattern, String replacement) {
-        ReplaceFileContentCommand c = ReplaceFileContentCommandFactory.create(phase, _ref, pattern, replacement);
+    public CommandResultReference replaceFileContent(CommandResultReference ref, String pattern, String replacement) {
+        ReplaceFileContentCommand c = ReplaceFileContentCommandFactory.create(phase, ref, pattern, replacement);
         return addCommandAndReturnResult(c);
     }
 
@@ -97,8 +97,8 @@ public final class CommandSequenceBuilder {
         return new CommandSequence(myName, new ArrayList<>(commands));
     }
 
-    public CommandResultReference installSystemPackage(SystemApplication _app) {
-        InstallSystemPackageCommand c = InstallSystemPackageCommandFactory.create(phase, _app);
+    public CommandResultReference installSystemPackage(SystemApplication app) {
+        InstallSystemPackageCommand c = InstallSystemPackageCommandFactory.create(phase, app);
         return addCommandAndReturnResult(c);
     }
 

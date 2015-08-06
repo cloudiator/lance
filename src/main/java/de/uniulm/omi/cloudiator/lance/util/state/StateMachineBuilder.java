@@ -30,13 +30,13 @@ public final class StateMachineBuilder<T extends Enum<?> & State > {
     private final Set<T> states = new HashSet<>();
     private final List<StateTransition<T>> transitions = new ArrayList<>();
     
-    public StateMachineBuilder(T _initState) {
-        init = _initState;
-        states.add(_initState);
+    public StateMachineBuilder(T initState) {
+        init = initState;
+        states.add(initState);
     }
     
-    public StateMachineBuilder<T> addState(T _s) {
-        states.add(_s);
+    public StateMachineBuilder<T> addState(T state) {
+        states.add(state);
         return this;
     }
 

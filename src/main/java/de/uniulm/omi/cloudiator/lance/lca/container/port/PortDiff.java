@@ -46,26 +46,26 @@ public final class PortDiff<T> {
     }
 
     private Set<ComponentInstanceId> diffPerElement(Map<ComponentInstanceId, HierarchyLevelState<T>> old) {
-        Set<ComponentInstanceId> _diffSet = new HashSet<>();
+        Set<ComponentInstanceId> diffSetParam = new HashSet<>();
         for(Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
             ComponentInstanceId id = entry.getKey();
             if(added.contains(id)) continue;
-            HierarchyLevelState<T> old_elements = old.get(id);
-            HierarchyLevelState<T> new_elements = entry.getValue();
-            if(diffCrititcalElements(old_elements, new_elements)) _diffSet.add(id);
+            HierarchyLevelState<T> oldElements = old.get(id);
+            HierarchyLevelState<T> newElements = entry.getValue();
+            if(diffCrititcalElements(oldElements, newElements)) diffSetParam.add(id);
         }
-        return _diffSet;
+        return diffSetParam;
     }
     
     /**
      * 
-     * @param old_elements
-     * @param new_elements
+     * @param oldElements
+     * @param newElements
      * @return true if the both elements do differ (are not equal to each other).
      */
-    private boolean diffCrititcalElements(HierarchyLevelState<T> old_elements, HierarchyLevelState<T> new_elements) {
-        if(old_elements == null) return new_elements != null;
-        return !old_elements.equals(new_elements);
+    private boolean diffCrititcalElements(HierarchyLevelState<T> oldElements, HierarchyLevelState<T> newElements) {
+        if(oldElements == null) return newElements != null;
+        return !oldElements.equals(newElements);
     }
     
     private static<T> Set<T> inFirstNotInSecond(Map<T,?> first, Map<T,?> second) {

@@ -41,11 +41,11 @@ public final class ProcessWrapper {
     private final InputStream stderr; 
     private final OutputStream stdin; 
     
-    private ProcessWrapper(Process _proc, OutputStream _stdin, InputStream _stdout, InputStream _stderr) {
-        proc = _proc;
-        stdin = new BufferedOutputStream(_stdin);
-        stdout = new BufferedInputStream(_stdout);
-        stderr = new BufferedInputStream(_stderr);
+    private ProcessWrapper(Process procParam, OutputStream stdinParam, InputStream stdoutParam, InputStream stderrParam) {
+        proc = procParam;
+        stdin = new BufferedOutputStream(stdinParam);
+        stdout = new BufferedInputStream(stdoutParam);
+        stderr = new BufferedInputStream(stderrParam);
     }
     
     private static ProcessWrapper createWrappper(ProcessBuilder pb) {

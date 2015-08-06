@@ -42,9 +42,9 @@ public final class LifecycleController {
     final ExecutionContext ec;
     private final StateMachine<LifecycleHandlerType> machine;
     
-    public LifecycleController(LifecycleStore _store, OperatingSystem _os, ShellFactory _shellFactory) {
-        store = _store;
-        ec = new ExecutionContext(_os, _shellFactory);
+    public LifecycleController(LifecycleStore storeParam, OperatingSystem osParam, ShellFactory shellFactoryParam) {
+        store = storeParam;
+        ec = new ExecutionContext(osParam, shellFactoryParam);
         machine = buildStateMachine();
     }
 

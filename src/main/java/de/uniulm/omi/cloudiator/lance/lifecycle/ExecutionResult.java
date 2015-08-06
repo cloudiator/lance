@@ -25,11 +25,11 @@ public final class ExecutionResult {
     private final String stdout;
     private final String stderr;
     
-    public ExecutionResult(Status _status, int _exitCode, String _stdout, String _stderr) {
-        status = _status;
-        exitCode = _exitCode;
-        stdout = _stdout;
-        stderr = _stderr;
+    public ExecutionResult(Status statusParam, int exitCodeParam, String stdoutParam, String stderrParam) {
+        status = statusParam;
+        exitCode = exitCodeParam;
+        stdout = stdoutParam;
+        stderr = stderrParam;
     }
     
     public static ExecutionResult success(String stdout, String stderr) {

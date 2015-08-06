@@ -94,10 +94,10 @@ public enum LifecycleHandlerType implements State {
     private final Class<? extends LifecycleHandler> handlerType;
     private final LifecycleHandlerFactory<? extends LifecycleHandler> factory;
     
-    LifecycleHandlerType(Class<? extends LifecycleHandler> _handlerType,
-                            LifecycleHandlerFactory<? extends LifecycleHandler> _factory) {
-        handlerType = _handlerType;
-        factory = _factory;
+    LifecycleHandlerType(Class<? extends LifecycleHandler> handlerTypeParam,
+                            LifecycleHandlerFactory<? extends LifecycleHandler> factoryParam) {
+        handlerType = handlerTypeParam;
+        factory = factoryParam;
     }
 
     public Class<? extends LifecycleHandler> getTypeClass() {

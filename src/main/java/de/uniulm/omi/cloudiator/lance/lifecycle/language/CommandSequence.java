@@ -39,8 +39,8 @@ public final class CommandSequence {
     private final List<Command> commands;
     // private final String myName;
     
-    CommandSequence(@SuppressWarnings("unused") String _myName, List<Command> _commands) {
-        commands = _commands;
+    CommandSequence(@SuppressWarnings("unused") String myNameParam, List<Command> commandsParam) {
+        commands = commandsParam;
      //     myName = _myName;
     }
 

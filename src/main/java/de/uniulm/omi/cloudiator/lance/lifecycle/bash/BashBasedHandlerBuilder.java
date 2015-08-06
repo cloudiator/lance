@@ -62,8 +62,8 @@ public final class BashBasedHandlerBuilder {
          }
     }
 
-    public BashBasedHandlerBuilder setOperatingSystem(OperatingSystem _os) {
-        os = _os;
+    public BashBasedHandlerBuilder setOperatingSystem(OperatingSystem osParam) {
+        os = osParam;
         return this;
     }
 
@@ -78,9 +78,9 @@ class BashPreInstallHandler implements PreInstallHandler {
     private final OperatingSystem os;
     private final List<String[]> commands;
     
-    BashPreInstallHandler(OperatingSystem _os, List<String[]> _commands) {
-        os = _os;
-        commands = _commands;
+    BashPreInstallHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
     }
     
     @Override
@@ -101,9 +101,9 @@ class BashInstallHandler implements InstallHandler {
     private final OperatingSystem os;
     private final List<String[]> commands;
     
-    BashInstallHandler(OperatingSystem _os, List<String[]> _commands) {
-        os = _os;
-        commands = _commands;
+    BashInstallHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
     }
     
     @Override
@@ -124,9 +124,9 @@ class BashPostInstallHandler implements PostInstallHandler {
     private final OperatingSystem os;
     private final List<String[]> commands;
     
-    BashPostInstallHandler(OperatingSystem _os, List<String[]> _commands) {
-        os = _os;
-        commands = _commands;
+    BashPostInstallHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
     }
     
     @Override
@@ -147,23 +147,23 @@ class BashStartHandler implements StartHandler {
     private final OperatingSystem os;
     private final List<String[]> commands;
     
-    BashStartHandler(OperatingSystem _os, List<String[]> _commands) {
-        os = _os;
-        commands = _commands;
+    BashStartHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
     }
     
     @Override
     public void execute(ExecutionContext ec) {
         if(! os.equals(ec.getOperatingSystem())) return;
         Shell shell = ec.getShell();
-        final int command_size = commands.size();
+        final int commandSize = commands.size();
         int counter = 0;
         
         for(String[] cmd : commands) {
             String res = "";
             counter++;
             for(String s : cmd) { res = res + " " + s;}
-            if(counter == command_size) {
+            if(counter == commandSize) {
                 shell.executeBlockingCommand(res);
             } else { shell.executeCommand(res); }
         }
@@ -177,25 +177,27 @@ class BashPortUpdateHandler implements PortUpdateHandler {
     private final OperatingSystem os;
     private final List<String[]> commands;
     
-    BashPortUpdateHandler(OperatingSystem _os, List<String[]> _commands) {
-        os = _os;
-        commands = _commands;
+    BashPortUpdateHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
     }
     
     @Override
     public void execute(ExecutionContext ec) {
         if(! os.equals(ec.getOperatingSystem())) return;
         Shell shell = ec.getShell();
-        final int command_size = commands.size();
+        final int commandSize = commands.size();
         int counter = 0;
         
         for(String[] cmd : commands) {
             String res = "";
             counter++;
             for(String s : cmd) { res = res + " " + s;}
-            if(counter == command_size) {
+            if(counter == commandSize) {
                 shell.executeBlockingCommand(res);
-            } else { shell.executeCommand(res); }
+            } else { 
+            	shell.executeCommand(res); 
+            }
         }
     }
 }

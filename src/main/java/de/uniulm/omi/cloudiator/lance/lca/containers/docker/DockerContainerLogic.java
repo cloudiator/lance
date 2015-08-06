@@ -54,27 +54,27 @@ public class DockerContainerLogic implements ContainerLogic {
     private final DockerImageHandler imageHandler;
     private final NetworkHandler portHandler;
     
-    DockerContainerLogic(ComponentInstanceId id, DockerConnector _client, DockerOperatingSystemTranslator translator, 
-                            GlobalRegistryAccessor accessor, DeployableComponent comp, DeploymentContext ctx, OperatingSystem _os,
+    DockerContainerLogic(ComponentInstanceId id, DockerConnector client, GlobalRegistryAccessor accessor, 
+    						DeployableComponent comp, DeploymentContext ctx, OperatingSystem os,
                             NetworkHandler network) {
-        this(id, _client, _os, translator, ctx, accessor, comp, network);
+        this(id, client, os, ctx, accessor, comp, network);
     }
     
-    private  DockerContainerLogic(ComponentInstanceId id, DockerConnector _client, OperatingSystem _os,
-                                DockerOperatingSystemTranslator _translator, DeploymentContext ctx,
-                                GlobalRegistryAccessor accessor, DeployableComponent _component, NetworkHandler _network) {
+    private  DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam, OperatingSystem osParam,
+                                DeploymentContext ctx, GlobalRegistryAccessor accessor, DeployableComponent componentParam, 
+                                NetworkHandler networkParam) {
         
-        if(_os == null) throw new NullPointerException("operating system has to be set.");
+        if(osParam == null) throw new NullPointerException("operating system has to be set.");
         
         myId = id;
-        client = _client;
-        imageHandler = new DockerImageHandler(_os, _translator, _client);
+        client = clientParam;
+        imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(), clientParam);
         deploymentContext = ctx;
-        myComponent = _component;
+        myComponent = componentParam;
         controller = new LifecycleController(myComponent.getLifecycleStore(), imageHandler.getOperatingSystem(), shellFactory);
         registryAccessor = accessor;
         
-        portHandler = _network;
+        portHandler = networkParam;
         try { registryAccessor.init(myId); }
         catch(RegistrationException re) { throw new IllegalStateException("cannot start container", re); }
     }
@@ -100,22 +100,22 @@ public class DockerContainerLogic implements ContainerLogic {
         registryAccessor.updateState(myId, LifecycleHandlerType.INIT);
         String target = imageHandler.doPullImages(myId, createComponentInstallId());
         portHandler.initPorts(DockerContainerManagerFactory.PORT_HIERARCHY_2, "<unknown>");
-        Map<Integer,Integer> ports_to_set = portHandler.findPortsToSet(deploymentContext);
+        Map<Integer,Integer> portsToSet = portHandler.findPortsToSet(deploymentContext);
         //@SuppressWarnings("unused") String dockerId = 
-        client.createContainer(target, myId, ports_to_set);
+        client.createContainer(target, myId, portsToSet);
     }
     
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
         try {
             registryAccessor.updateState(myId, LifecycleHandlerType.PRE_INSTALL);
-            final DockerShell _dshell = doStartContainer();
+            final DockerShell dshellTmp = doStartContainer();
             
             registryAccessor.updateState(myId, LifecycleHandlerType.INSTALL);
             executeInstallation();
             registryAccessor.updateState(myId, LifecycleHandlerType.POST_INSTALL);
             registryAccessor.updateState(myId, LifecycleHandlerType.PRE_START);
-            executeConfiguration(_dshell);
+            executeConfiguration(dshellTmp);
             
             executeStart();
         } catch(ContainerException ce) {
@@ -133,18 +133,18 @@ public class DockerContainerLogic implements ContainerLogic {
     }
     
     private DockerShell doStartContainer() throws ContainerException {
-        final DockerShell _dshell;
-        try { _dshell = client.startContainer(myId); }
+        final DockerShell dshell;
+        try { dshell = client.startContainer(myId); }
         catch(DockerException de) {
             throw new ContainerException("cannot start container: " + myId, de);
         }
         //FIXME: make sure that start detector has been run successfully 
         //FIXME: make sure that stop detectors run periodically //
-        shellFactory.installDockerShell(_dshell);
-        return _dshell;
+        shellFactory.installDockerShell(dshell);
+        return dshell;
     }
     
-    private void executeStart() throws DockerException, ContainerException, RegistrationException {
+    private void executeStart() throws ContainerException, RegistrationException {
         registryAccessor.updateState(myId, LifecycleHandlerType.PRE_START);
         registryAccessor.updateState(myId, LifecycleHandlerType.START);
         controller.blockingStart();
@@ -170,12 +170,12 @@ public class DockerContainerLogic implements ContainerLogic {
         registerPortMappings();
     }
     
-    private void executeConfiguration(DockerShell _dshell) throws DockerException {
+    private void executeConfiguration(DockerShell dshellParam) throws DockerException {
         String containerIp = client.getContainerIp(myId);
         portHandler.updateAddress(DockerContainerManagerFactory.PORT_HIERARCHY_2, containerIp);
         portHandler.pollForNeededConnections();
         
-        prepareEnvironment(_dshell);
+        prepareEnvironment(dshellParam);
         // TODO: do we to have make a snapshot after this? // 
         controller.blockingConfigure();
     }
@@ -184,20 +184,21 @@ public class DockerContainerLogic implements ContainerLogic {
      * @throws DockerException */
     private void registerPortMappings() throws DockerException {
         // for all ports, get the port mapping //
-        List<InPort> in_ports = myComponent.getExposedPorts();
-        for(InPort in : in_ports) {
+        List<InPort> inPortsTmp = myComponent.getExposedPorts();
+        for(InPort in : inPortsTmp) {
             String name = in.getPortName();
             Integer portNumber = (Integer) deploymentContext.getProperty(name, InPort.class);
             int mapped = client.getPortMapping(myId, portNumber);
             
-            portHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_0, name, mapped);
-            portHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_1, name, mapped);
+            Integer i = Integer.valueOf(mapped);
+            portHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_0, name, i);
+            portHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_1, name, i);
             portHandler.registerInPort(DockerContainerManagerFactory.PORT_HIERARCHY_2, name, portNumber);
         }
     }
     
-    private void prepareEnvironment(DockerShell _dshell) {
-        BashExportBasedVisitor visitor = new BashExportBasedVisitor(_dshell);
+    private void prepareEnvironment(DockerShell dshell) {
+        BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
         visitor.addEnvironmentVariable("TERM", "dumb");
         portHandler.accept(visitor);
         myComponent.accept(deploymentContext, visitor);

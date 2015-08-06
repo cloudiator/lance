@@ -38,10 +38,10 @@ class Inprogress implements DockerShell {
     private final BufferedReader stdErr;
     private final BufferedWriter stdIn;
     
-    Inprogress(Process _proc, BufferedReader _stdOut, BufferedReader _stdErr) {
-        proc = _proc;
-        stdOut = _stdOut;
-        stdErr = _stdErr;
+    Inprogress(Process procParam, BufferedReader stdOutParam, BufferedReader stdErrParam) {
+        proc = procParam;
+        stdOut = stdOutParam;
+        stdErr = stdErrParam;
         stdIn = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
     }
     
