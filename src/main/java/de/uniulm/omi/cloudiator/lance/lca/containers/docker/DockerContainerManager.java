@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
@@ -51,8 +52,8 @@ public class DockerContainerManager implements ContainerManager {
     private final ContainerRegistry registry = new ContainerRegistry();
     
     public DockerContainerManager(HostContext vmId) {
-        this(vmId, "127.0.0.1", false);
-        LOGGER.debug("using local host (127.0.0.1) as host name");
+        this(vmId, LcaConstants.LOCALHOST_IP, false);
+        LOGGER.debug("using local host " + LcaConstants.LOCALHOST_IP + " as host name");
     }
 
     DockerContainerManager(HostContext vmId, String host) {

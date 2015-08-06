@@ -18,7 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.rmi.AccessException; 
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -90,7 +89,7 @@ public final class LifecycleAgentBooter {
         }
     }
     
-    private static void removeExisting(Registry reg) throws AccessException, RemoteException {
+    private static void removeExisting(Registry reg) throws RemoteException {
         LifecycleAgent agent = null;
         Object o = null;
         

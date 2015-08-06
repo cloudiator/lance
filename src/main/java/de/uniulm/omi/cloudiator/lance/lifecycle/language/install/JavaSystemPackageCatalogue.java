@@ -27,6 +27,7 @@ public final class JavaSystemPackageCatalogue {
         switch(os.getType()){
         case UBUNTU:
             return getUbuntuInstallCommand(version, os);
+        case WINDOWS:
         default:
             return null;
             // new IllegalArgumentException("Java installation for operating system " + os + " not supported");

@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultFactories;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
@@ -39,56 +40,56 @@ import de.uniulm.omi.cloudiator.lance.util.state.State;
  */
 public enum LifecycleHandlerType implements State {
 
-    NEW(VoidHandler.class, VoidHandler.FACTORY),
+    NEW(VoidHandler.class, DefaultFactories.VOID_FACTORY),
     /**
      * invoked when the Lifecycle controller starts; 
      * may be used for validating system environment;
      */ 
-    INIT(InitHandler.class, InitHandler.FACTORY),
+    INIT(InitHandler.class, DefaultFactories.INIT_FACTORY),
     
     /** 
      * may be used to get service binaries, e.g. 
      * by downloading 
      */
-    PRE_INSTALL(PreInstallHandler.class, PreInstallHandler.FACTORY),
+    PRE_INSTALL(PreInstallHandler.class, DefaultFactories.PRE_INSTALL_FACTORY),
     /**
      * may be used to unzip and install service binaries
      * 
      */
-    INSTALL(InstallHandler.class, InstallHandler.FACTORY),
+    INSTALL(InstallHandler.class, DefaultFactories.INSTALL_FACTORY),
     /**
      * may be used to adapt configuration files
      * according to environment
      */
-    POST_INSTALL(PostInstallHandler.class, PostInstallHandler.FACTORY),
+    POST_INSTALL(PostInstallHandler.class, DefaultFactories.POST_INSTALL_FACTORY),
     
     /**
      * may be used for checking that required operating system
      * files are available, like files, disk space, and port 
      */
-    PRE_START(PreStartHandler.class, PreStartHandler.FACTORY),
+    PRE_START(PreStartHandler.class, DefaultFactories.PRE_START_FACTORY),
     /**
      * may be used for checking that required operating system
      * files are available, like files, disk space, and port 
      */
-    START(StartHandler.class, StartHandler.FACTORY),
+    START(StartHandler.class, DefaultFactories.START_FACTORY),
     /**
      * may be used to register service instances with a load balancer
      */
-    POST_START(PostStartHandler.class, PostStartHandler.FACTORY),
+    POST_START(PostStartHandler.class, DefaultFactories.POST_START_FACTORY),
     
     /**
      * may be used to unregister service instance at the load balancer
      */
-    PRE_STOP(PreStopHandler.class, PreStopHandler.FACTORY),
+    PRE_STOP(PreStopHandler.class, DefaultFactories.PRE_STOP_FACTORY),
     /**
      * may be used to add manual stop logic
      */
-    STOP(StopHandler.class, StopHandler.FACTORY),
+    STOP(StopHandler.class, DefaultFactories.STOP_FACTORY),
     /**
      * may be used to release external resources
      */
-    POST_STOP(PostStopHandler.class, PostStopHandler.FACTORY),
+    POST_STOP(PostStopHandler.class, DefaultFactories.POST_STOP_FACTORY),
     ;
     
     private final Class<? extends LifecycleHandler> handlerType;
