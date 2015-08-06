@@ -132,11 +132,11 @@ public class DockerContainerLogic implements ContainerLogic {
 		throw new UnsupportedOperationException();
 	}
 	
-	private DockerShell doStartContainer() {
+	private DockerShell doStartContainer() throws ContainerException {
 		final DockerShell _dshell;
 		try { _dshell = client.startContainer(myId); }
 		catch(DockerException de) {
-			throw new RuntimeException(new ContainerException("cannot start container: " + myId, de));
+			throw new ContainerException("cannot start container: " + myId, de);
 		}
 		//FIXME: make sure that start detector has been run successfully 
 		//FIXME: make sure that stop detectors run periodically //
