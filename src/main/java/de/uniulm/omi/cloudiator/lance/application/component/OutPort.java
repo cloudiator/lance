@@ -37,21 +37,21 @@ public final class OutPort implements Serializable {
     
     /**
      * 
-     * @param _name
-     * @param _handler
-     * @param _cardinality
-     * @param minSinks
-     * @param maxSinks
+     * @param nameParam
+     * @param handlerParam
+     * @param cardinalityParam
+     * @param minSinksParam
+     * @param maxSinksParam
      * 
      * @throws NullPointerException if name is null
      */
-    OutPort(String _name, PortUpdateHandler _handler, int _cardinality, int minSinks, int maxSinks) {
-        if(_name == null) throw new NullPointerException("name has to be set");
-        name = _name;
-        cardinality = _cardinality;
-        min = minSinks;
-        max = maxSinks;
-        handler = _handler;
+    OutPort(String nameParam, PortUpdateHandler handlerParam, int cardinalityParam, int minSinksParam, int maxSinksParam) {
+        if(nameParam == null) throw new NullPointerException("name has to be set");
+        name = nameParam;
+        cardinality = cardinalityParam;
+        min = minSinksParam;
+        max = maxSinksParam;
+        handler = handlerParam;
     }
     
     public boolean canHandleInfiniteSinks() {

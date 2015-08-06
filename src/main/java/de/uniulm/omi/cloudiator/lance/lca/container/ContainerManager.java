@@ -37,8 +37,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 public interface ContainerManager {
 
     ContainerType getContainerType();
-    ContainerController getContainer(ComponentInstanceId _id);
-    void runApplication(ComponentInstanceId _id, LifecycleStore store);
+    ContainerController getContainer(ComponentInstanceId id);
+    void runApplication(ComponentInstanceId id, LifecycleStore store);
     CommandSequence addDeploymentSequence();
     ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os);
     void terminate();

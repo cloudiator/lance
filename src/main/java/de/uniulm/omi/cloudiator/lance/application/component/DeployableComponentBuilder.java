@@ -39,9 +39,9 @@ public final class DeployableComponentBuilder {
     private final HashMap<String, Class<?>> properties = new HashMap<>();
     private final HashMap<String, Serializable> propertyValues = new HashMap<>();
     
-    private DeployableComponentBuilder(String _name, ComponentId _id) {
-        name = _name;
-        componentId = _id;
+    private DeployableComponentBuilder(String nameParam, ComponentId idParam) {
+        name = nameParam;
+        componentId = idParam;
     }
     
     public final void addInport(String portname, PortType type, int cardinality) {

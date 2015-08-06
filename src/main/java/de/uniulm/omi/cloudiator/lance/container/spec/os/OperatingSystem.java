@@ -34,11 +34,11 @@ public final class OperatingSystem implements Serializable {
     private final OperatingSystemType type;
     private final OperatingSystemVersion version;
     
-    public OperatingSystem(OperatingSystemType _type, OperatingSystemVersion _version) {
-        if(! _type.checkVersion(_version)) throw new IllegalArgumentException("unknown version");
+    public OperatingSystem(OperatingSystemType typeParam, OperatingSystemVersion versionParam) {
+        if(! typeParam.checkVersion(versionParam)) throw new IllegalArgumentException("unknown version");
         
-        type = _type;
-        version = _version;
+        type = typeParam;
+        version = versionParam;
     }
     
     public OperatingSystemFamily getFamily() {

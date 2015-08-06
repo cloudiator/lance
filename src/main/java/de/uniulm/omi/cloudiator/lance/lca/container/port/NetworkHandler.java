@@ -49,20 +49,20 @@ public final class NetworkHandler implements PortUpdateCallback {
     
     private final OutPortHandler outPorts;
     
-    public NetworkHandler(PortRegistryTranslator _portAccessor, PortHierarchy _portHierarchy,  DeployableComponent _myComponent) {
-        portHierarchy = _portHierarchy;
-        myComponent = _myComponent;
-        portAccessor = _portAccessor;
+    public NetworkHandler(PortRegistryTranslator portAccessorParam, PortHierarchy portHierarchyParam,  DeployableComponent myComponentParam) {
+        portHierarchy = portHierarchyParam;
+        myComponent = myComponentParam;
+        portAccessor = portAccessorParam;
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
     }
 
-    public void initPorts(PortHierarchyLevel hierarchy_level_2, String value) throws RegistrationException {
+    public void initPorts(PortHierarchyLevel level2Param, String valueParam) throws RegistrationException {
         portAccessor.shareHostAddresses(this);
-        registerAddress(hierarchy_level_2, value);
+        registerAddress(level2Param, valueParam);
         initInPorts();
         outPorts.initPortStates(portAccessor, portHierarchy);
-        portAccessor.registerLocalAddressAtLevel(hierarchy_level_2, value);
+        portAccessor.registerLocalAddressAtLevel(level2Param, valueParam);
     }
 
     private void initInPorts() {

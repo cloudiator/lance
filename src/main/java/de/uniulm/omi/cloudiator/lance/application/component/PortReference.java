@@ -30,9 +30,9 @@ public final class PortReference implements Serializable {
     private final String propertyName;
     // private final PortLinkage linkage;
     
-    public PortReference(ComponentId _compId, String _propertyName, @SuppressWarnings("unused") PortLinkage _linkage) {
-        compId = _compId;
-        propertyName = _propertyName;
+    public PortReference(ComponentId compIdParam, String propertyNameParam, @SuppressWarnings("unused") PortLinkage linkageParam) {
+        compId = compIdParam;
+        propertyName = propertyNameParam;
        // linkage = _linkage;
     }
 

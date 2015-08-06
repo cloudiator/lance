@@ -24,10 +24,10 @@ class ExecResult {
     private final String output;
     private final String error;
     
-    public ExecResult(int _retval, String _output, String _error) {
-        retval = _retval;
-        output = _output;
-        error = _error;
+    public ExecResult(int retvalParam, String outputParam, String errorParam) {
+        retval = retvalParam;
+        output = outputParam;
+        error = errorParam;
     }
 
     public boolean isSuccess() { return retval == 0; }

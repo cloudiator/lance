@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
-import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,8 +65,8 @@ public final class PortRegistryTranslator {
     private final HostContext hostContext;
     private final GlobalRegistryAccessor accessor;
     
-    public PortRegistryTranslator(GlobalRegistryAccessor _accessor, HostContext context) {
-        accessor = _accessor;
+    public PortRegistryTranslator(GlobalRegistryAccessor accessorParam, HostContext context) {
+        accessor = accessorParam;
         hostContext = context;
     }
 
@@ -79,7 +79,7 @@ public final class PortRegistryTranslator {
         String key = buildFullPortName(portName, level);
         try {
             String value = accessor.getComponentInstanceProperty(myId, key);
-            Integer i = Integer.parseInt(value);
+            Integer i = Integer.valueOf(value);
             if(isValidPortOrUnset(i)) return i;
         } catch(NumberFormatException nfe) {
             throw new RegistrationException("value was not an expected number", nfe);
@@ -115,15 +115,14 @@ public final class PortRegistryTranslator {
     private static boolean isValidPortOrUnset(Integer i) {
         if(i == null) return false;
         if(isValidPort(i)) return true;
-        if(i.intValue() == UNSET_PORT) return true;
-        return false;
+        return i.intValue() == UNSET_PORT.intValue();
     }
     
     private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getHierarchicalPorts(PortReference sinkReference, Map<ComponentInstanceId, Map<String, String>> dump, PortHierarchy portHierarchy) throws RegistrationException {
-        Map<ComponentInstanceId,HierarchyLevelState<DownstreamAddress>> addresses = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(); 
+        Map<ComponentInstanceId,HierarchyLevelState<DownstreamAddress>> addresses = new HashMap<>(); 
         for(Entry<ComponentInstanceId, Map<String, String>> entry : dump.entrySet()) {
             ComponentInstanceId id = entry.getKey();
-            HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<DownstreamAddress>(id.toString(), portHierarchy);
+            HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<>(id.toString(), portHierarchy);
             addresses.put(id, state);
             Map<String,String> map = entry.getValue();
             for(PortHierarchyLevel level : portHierarchy.levels()) {
@@ -140,7 +139,7 @@ public final class PortRegistryTranslator {
         String key = buildFullPortName(sinkReference.getPortName(), level);
         String value = dump.get(key);
         try {
-            Integer i = Integer.parseInt(value);
+            Integer i = Integer.valueOf(value);
             if(isValidPortOrUnset(i)) return i;
             throw new RegistrationException("received an unexpected result");
         } catch(NumberFormatException nfe) {
@@ -152,7 +151,7 @@ public final class PortRegistryTranslator {
         String key = buildFullHostName(level);
         String value = dump.get(key);
         if(value == null) throw new RegistrationException("ip address not found.");
-        try { Inet4Address.getByName(value); }
+        try { InetAddress.getByName(value); }
         catch(UnknownHostException uhe) { throw new RegistrationException("illegal IP address", uhe);}
         return value;
     }

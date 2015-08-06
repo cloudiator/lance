@@ -38,10 +38,14 @@ public enum DockerContainerManagerFactory implements SpecificContainerManagerFac
     REMOTE {
         @Override
         public ContainerManager createContainerManager(HostContext vmId) {
-            if(! remote_enabled) throw new IllegalArgumentException("remote docker not supported"); 
+            if(! isRemoteAccessenabled()) throw new IllegalArgumentException("remote docker not supported"); 
             return new DockerContainerManager(vmId, "134.60.64.55");
         }
     };
+    
+    static boolean isRemoteAccessenabled() {
+        return remote_enabled;
+    }
     
     public static void enableRemoteAccess() {
         remote_enabled = true;

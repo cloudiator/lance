@@ -32,8 +32,8 @@ public enum WindowsVersion {
 
     private final String number;
     
-    WindowsVersion(String _number) {
-        number = _number;
+    WindowsVersion(String numberParam) {
+        number = numberParam;
     }
     
     @Override

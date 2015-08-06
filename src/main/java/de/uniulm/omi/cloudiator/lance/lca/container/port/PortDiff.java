@@ -34,19 +34,19 @@ public final class PortDiff<T> {
     @SuppressWarnings("unused") private final String portName;
     private final Set<ComponentInstanceId> diffSet;
     
-    PortDiff(Map<ComponentInstanceId, HierarchyLevelState<T>> new_sinks,
-            Map<ComponentInstanceId, HierarchyLevelState<T>> old_sinks,
-            String _portName) {
+    PortDiff(Map<ComponentInstanceId, HierarchyLevelState<T>> newSinksParam,
+            Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinksParam,
+            String portNameParam) {
         
-        portName = _portName;
-        current = new_sinks;
-        added  = inFirstNotInSecond(new_sinks, old_sinks);
-        removed = inFirstNotInSecond(old_sinks, new_sinks);
-        diffSet = diffPerElement(old_sinks);
+        portName = portNameParam;
+        current = newSinksParam;
+        added  = inFirstNotInSecond(newSinksParam, oldSinksParam);
+        removed = inFirstNotInSecond(oldSinksParam, newSinksParam);
+        diffSet = diffPerElement(oldSinksParam);
     }
 
     private Set<ComponentInstanceId> diffPerElement(Map<ComponentInstanceId, HierarchyLevelState<T>> old) {
-        Set<ComponentInstanceId> _diffSet = new HashSet<ComponentInstanceId>();
+        Set<ComponentInstanceId> _diffSet = new HashSet<>();
         for(Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
             ComponentInstanceId id = entry.getKey();
             if(added.contains(id)) continue;
@@ -69,7 +69,7 @@ public final class PortDiff<T> {
     }
     
     private static<T> Set<T> inFirstNotInSecond(Map<T,?> first, Map<T,?> second) {
-        Set<T> elements = new HashSet<T>();
+        Set<T> elements = new HashSet<>();
         for(T t : first.keySet()) {
             if(second.containsKey(t)) continue;
             elements.add(t);
@@ -78,7 +78,7 @@ public final class PortDiff<T> {
     }
 
     public Map<ComponentInstanceId, HierarchyLevelState<T>> getCurrentSinkSet() {
-        return new HashMap<ComponentInstanceId, HierarchyLevelState<T>>(current);
+        return new HashMap<>(current);
     }
 
     public boolean hasDiffs() {

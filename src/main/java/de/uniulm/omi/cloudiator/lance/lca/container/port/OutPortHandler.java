@@ -41,17 +41,17 @@ final class OutPortHandler {
     private static final Map<PortHierarchyLevel, List<DownstreamAddress>> EMPTY_VISIT_MAP;
     
     static {
-        Map<PortHierarchyLevel, List<DownstreamAddress>> map = new HashMap<PortHierarchyLevel, List<DownstreamAddress>>();
+        Map<PortHierarchyLevel, List<DownstreamAddress>> map = new HashMap<>();
         map.put(PortRegistryTranslator.PORT_HIERARCHY_0, Collections.<DownstreamAddress>emptyList());
         map.put(PortRegistryTranslator.PORT_HIERARCHY_1, Collections.<DownstreamAddress>emptyList());
         EMPTY_VISIT_MAP = Collections.unmodifiableMap(map);
     }
     
-    private final List<OutPortState> portStates = new ArrayList<OutPortState>();
+    private final List<OutPortState> portStates = new ArrayList<>();
     private final DeployableComponent myComponent;
     
-    public OutPortHandler(DeployableComponent _myComponent) {
-        myComponent = _myComponent;
+    public OutPortHandler(DeployableComponent myComponentParam) {
+        myComponent = myComponentParam;
     }
     
     void initPortStates(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
@@ -66,7 +66,7 @@ final class OutPortHandler {
     }
     
     List<PortDiff<DownstreamAddress>> updateDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
-        List<PortDiff<DownstreamAddress>> changedPorts = new LinkedList<PortDiff<DownstreamAddress>>();
+        List<PortDiff<DownstreamAddress>> changedPorts = new LinkedList<>();
         for(OutPortState out_port : portStates) {
             Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(out_port.getPort(), portHierarchy);
             instances = filterInstancesWithUnsetPorts(instances);
@@ -83,12 +83,13 @@ final class OutPortHandler {
         return true;
     }
 
-    public void startPortUpdaters() {
+    @SuppressWarnings("static-method")
+	public void startPortUpdaters() {
         logger.error("Port updaters are currently not run.");
     }
     
-    private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> filterInstancesWithUnsetPorts(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances) {
-        Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> retVal = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>();
+    private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> filterInstancesWithUnsetPorts(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances) {
+        Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> retVal = new HashMap<>();
         for(Entry<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> entry : instances.entrySet()) {
             boolean doSet = true;
             ComponentInstanceId id = entry.getKey();
@@ -105,32 +106,32 @@ final class OutPortHandler {
     void accept(NetworkVisitor visitor) {
         for(OutPortState out : portStates) {
             Map<PortHierarchyLevel, List<DownstreamAddress>> elements = out.sinksByHierarchyLevel();
-            Map<PortHierarchyLevel, List<DownstreamAddress>> to_visit = elements.isEmpty() ? 
+            Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit = elements.isEmpty() ? 
                     doCollect(out, EMPTY_VISIT_MAP) : doCollect(out, elements);        
-            doVisit(visitor, out, to_visit);
+            doVisit(visitor, out, toVisit);
         }
     }
     
     private static Map<PortHierarchyLevel, List<DownstreamAddress>> doCollect(OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> elements) {
-        Map<PortHierarchyLevel, List<DownstreamAddress>> to_visit = new HashMap<PortHierarchyLevel, List<DownstreamAddress>>();        
+        Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit = new HashMap<>();        
         for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : elements.entrySet()) {
             PortHierarchyLevel level = entry.getKey();
             List<DownstreamAddress> sinks = entry.getValue();
             sinks = out.adaptSinkListByBoundaries(sinks);
             // FIXME: filter out element that are not reachable on a certain hierarchy level
             // because they are on a different cluster (e.g. different cloud provider)
-            to_visit.put(level, sinks);
+            toVisit.put(level, sinks);
             // sinks are required, but no sinks known for this port at this 
             // hierarchy level it is probably best to drop the entire sink 
             // from exporting in order to avoid inconsistencies between 
             // multiple levels
             if(sinks == null) return Collections.emptyMap();
         }
-        return to_visit;
+        return toVisit;
     }
     
-    private static void doVisit(NetworkVisitor visitor, OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> to_visit) {
-        for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : to_visit.entrySet()) {
+    private static void doVisit(NetworkVisitor visitor, OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit) {
+        for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : toVisit.entrySet()) {
             PortHierarchyLevel level = entry.getKey();
             List<DownstreamAddress> sinks = entry.getValue();
             visitor.visitOutPort(out.getPortName(), level, sinks);

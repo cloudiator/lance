@@ -41,14 +41,14 @@ public final class GlobalRegistryAccessor {
     // private final DeployableComponent comp;
     private final ComponentInstanceId localId;
     
-    public GlobalRegistryAccessor(DeploymentContext _ctx, DeployableComponent _comp, ComponentInstanceId _localId) {
-        reg = _ctx.getRegistry();
+    public GlobalRegistryAccessor(DeploymentContext ctxParam, DeployableComponent compParam, ComponentInstanceId localIdParam) {
+        reg = ctxParam.getRegistry();
         // appId = _ctx.getApplicationId();
-        appInstId = _ctx.getApplicationInstanceId();
-        compId = _comp.getComponentId();
-        ctx = _ctx;
+        appInstId = ctxParam.getApplicationInstanceId();
+        compId = compParam.getComponentId();
+        ctx = ctxParam;
         // comp = _comp;
-        localId = _localId;
+        localId = localIdParam;
     }
     
     public final void init(ComponentInstanceId myId) throws RegistrationException {

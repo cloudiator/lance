@@ -30,9 +30,9 @@ public final class InPort implements Serializable {
     private final PortType type;
     // private final int cardinality;
     
-    InPort(String _name, PortType _type, @SuppressWarnings("unused") int _cardinality) {
-        name = _name;
-        type = _type;
+    InPort(String nameParam, PortType typeParam, @SuppressWarnings("unused") int cardinalityParam) {
+        name = nameParam;
+        type = typeParam;
         // cardinality = _cardinality;
     }
     

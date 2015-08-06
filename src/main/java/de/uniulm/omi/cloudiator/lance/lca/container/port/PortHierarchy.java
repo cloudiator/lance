@@ -26,11 +26,11 @@ public final class PortHierarchy {
 
     private final List<PortHierarchyLevel> levels;
     
-    private PortHierarchy(List<PortHierarchyLevel> _levels) { levels = _levels; }
+    PortHierarchy(List<PortHierarchyLevel> levelsParam) { levels = levelsParam; }
     
     public static class PortHierarchyBuilder {
 
-        private final List<PortHierarchyLevel> levels = new LinkedList<PortHierarchyLevel>(); 
+        private final List<PortHierarchyLevel> levels = new LinkedList<>(); 
         
         public PortHierarchyBuilder() {}
         
@@ -48,5 +48,10 @@ public final class PortHierarchy {
 
     public List<PortHierarchyLevel> levels() {
         return Collections.unmodifiableList(levels);
+    }
+    
+    @Override
+    public String toString() {
+    	return "PortHierarchy: " + levels.toString();
     }
 }

@@ -41,8 +41,8 @@ final class EnvContext implements HostContext {
     //private final ScheduledExecutorService periodicExecutor = Executors.newScheduledThreadPool(4);
     private final ExecutorService executor = Executors.newScheduledThreadPool(4);
     
-    EnvContext(Map<String,String> _ctx) {
-        hostContext = _ctx;
+    EnvContext(Map<String,String> ctxParam) {
+        hostContext = ctxParam;
         registerRmiAddress();
     }
     

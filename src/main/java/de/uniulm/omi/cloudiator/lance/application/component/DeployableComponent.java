@@ -34,7 +34,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public final class DeployableComponent implements Serializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeployableComponent.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeployableComponent.class);
     private static final long serialVersionUID = 5544457717632275252L;
     
     private final String name;
@@ -45,16 +45,16 @@ public final class DeployableComponent implements Serializable {
     private final HashMap<String, Class<?>> properties;
     private final HashMap<String, ? extends Serializable> defaultValues;
 
-    DeployableComponent(String _name, ComponentId _id, LifecycleStore _lifecycleStore, List<InPort> _in_ports,
-            List<OutPort> _out_ports, Map<String, Class<?>> _ingoing_properties, 
-            HashMap<String, ? extends Serializable> _propertyValues) {
-        name = _name;
-        myId = _id;
-        lifecycle = _lifecycleStore;
-        in_ports = new ArrayList<>(_in_ports);
-        out_ports = new ArrayList<>(_out_ports);
-        properties = new HashMap<>(_ingoing_properties);
-        defaultValues = _propertyValues;
+    DeployableComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam, 
+    		List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam, 
+            HashMap<String, ? extends Serializable> propertyValuesParam) {
+        name = nameParam;
+        myId = idParam;
+        lifecycle = lifecycleStoreParam;
+        in_ports = new ArrayList<>(inPortsParam);
+        out_ports = new ArrayList<>(outPortsParam);
+        properties = new HashMap<>(propertiesParam);
+        defaultValues = propertyValuesParam;
     }
 
     public LifecycleStore getLifecycleStore() {
@@ -88,7 +88,7 @@ public final class DeployableComponent implements Serializable {
             Object o = ctx.getProperty(propertyName, type);
             if(o == null) o = defaultValues.get(propertyName);
             if(o == null) {
-                logger.warn("propery '" + propertyName + "' has not been defined for the application");
+                LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
                 continue;
             }
             visitor.visit(propertyName, o.toString());

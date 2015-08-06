@@ -58,8 +58,8 @@ public enum ContainerType {
     
     private final String myName;
     
-    private ContainerType(String _myName) {
-        myName = _myName;
+    private ContainerType(String myNameParam) {
+        myName = myNameParam;
     }
     
     public abstract SpecificContainerManagerFactory getContainerFactory();

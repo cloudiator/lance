@@ -49,13 +49,13 @@ public enum OperatingSystemType {
     private final OperatingSystemFamily f;
     private final OSVersionFormat format;
     
-    private OperatingSystemType(OperatingSystemFamily _f, OSVersionFormat _format) {
-        f = _f;
-        format = _format;
+    private OperatingSystemType(OperatingSystemFamily familyParam, OSVersionFormat formatParam) {
+        f = familyParam;
+        format = formatParam;
     }
     
-    public boolean checkVersionString(String _version) {
-        return checkVersion(new OperatingSystemVersion(_version));
+    public boolean checkVersionString(String versionParam) {
+        return checkVersion(new OperatingSystemVersion(versionParam));
     }
     
     public boolean checkVersion(OperatingSystemVersion v) {

@@ -54,12 +54,12 @@ public final class OperatingSystemVersion implements Serializable {
         if(year > 6 && year <= (Calendar.getInstance().get(Calendar.YEAR) % 100) &&
                 (month == 4 || month == 10)) {
             
-            String t_year = year + "";
-            if(year < 10) t_year = "0" + t_year;
-            String t_month = month + "";
-            if(month < 10) t_month = "0" + t_month;
+            String tmpyear = year + "";
+            if(year < 10) tmpyear = "0" + tmpyear;
+            String tmpmonth = month + "";
+            if(month < 10) tmpmonth = "0" + tmpmonth;
             
-            return new OperatingSystemVersion(t_year + "." + t_month);
+            return new OperatingSystemVersion(tmpyear + "." + tmpmonth);
         }
         throw new IllegalArgumentException("not a valid ubuntu release combination: " + year + "." + month);
     }

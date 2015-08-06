@@ -49,7 +49,7 @@ public class DockerContainerManager implements ContainerManager {
     private final String hostname;
     private final DockerConnector client;
     private final DockerOperatingSystemTranslator translator;
-    private final ContainerRegistry<DockerContainerLogic> registry = new ContainerRegistry<>();
+    private final ContainerRegistry registry = new ContainerRegistry();
     
     public DockerContainerManager(HostContext vmId) {
         this(vmId, "127.0.0.1", false);
@@ -73,13 +73,13 @@ public class DockerContainerManager implements ContainerManager {
     }
     
     @Override
-    public ContainerController getContainer(ComponentInstanceId _id) {
-        return registry.getContainer(_id);
+    public ContainerController getContainer(ComponentInstanceId idParam) {
+        return registry.getContainer(idParam);
     }
     
     @Override
-    public void runApplication(ComponentInstanceId _id, LifecycleStore store) {
-        ContainerController c = getContainer(_id);
+    public void runApplication(ComponentInstanceId idParam, LifecycleStore store) {
+        ContainerController c = getContainer(idParam);
         c.init(store);
     }
 

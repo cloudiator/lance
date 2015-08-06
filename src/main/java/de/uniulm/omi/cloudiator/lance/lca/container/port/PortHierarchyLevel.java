@@ -50,7 +50,8 @@ public final class PortHierarchyLevel {
         return levelName;
     }
     
-    public String toString() {
+    @Override
+	public String toString() {
         return "HierachyLevel: " + levelName;
     }
 }

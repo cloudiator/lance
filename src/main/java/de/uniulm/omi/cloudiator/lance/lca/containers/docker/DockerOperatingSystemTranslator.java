@@ -49,7 +49,7 @@ final class DockerOperatingSystemTranslator {
         }
     }
     
-    private static String translateOther(OperatingSystem os) {
+    private static String translateOther(@SuppressWarnings("unused") OperatingSystem os) {
         throw new IllegalArgumentException("os not supported: ");
     }
     

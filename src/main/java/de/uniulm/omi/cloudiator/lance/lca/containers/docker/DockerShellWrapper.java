@@ -29,7 +29,7 @@ class DockerShellWrapper implements Shell {
     private static final Logger logger = LoggerFactory.getLogger(Shell.class);
     
     final DockerShell shell; 
-    DockerShellWrapper(DockerShell _shell) { shell = _shell; }
+    DockerShellWrapper(DockerShell shellParam) { shell = shellParam; }
     
     @Override
     public ExecutionResult executeCommand(String command) {

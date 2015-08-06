@@ -46,9 +46,9 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     final T logic;
     private final ComponentInstanceId containerId;
     
-    public StandardContainer(ComponentInstanceId id, T _logic) {
+    public StandardContainer(ComponentInstanceId id, T logicParam) {
         containerId = id;
-        logic = _logic;
+        logic = logicParam;
         stateMachine = addDestroyTransition(
         addInitTransition(
         addCreateTransition(new StateMachineBuilder<>(ContainerStatus.NEW).

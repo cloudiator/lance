@@ -31,21 +31,21 @@ final class DockerImageHandler {
     
     private volatile ImageCreationType initSource;
     
-    DockerImageHandler(OperatingSystem _os, DockerOperatingSystemTranslator _translator, DockerConnector _client) {
-        if(_os == null) throw new NullPointerException("operating system has to be set.");
+    DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, DockerConnector clientParam) {
+        if(osParam == null) throw new NullPointerException("operating system has to be set.");
         
-        os = _os;
-        translator = _translator;
-        client = _client;
+        os = osParam;
+        translator = translatorParam;
+        client = clientParam;
     }
 
     private String buildImageTagName(ImageCreationType type, String componentInstallId) {
         final String key;
         if(type == ImageCreationType.COMPONENT) { 
-            String _key = componentInstallId; 
+            String tmpkey = componentInstallId; 
             String ostag = os.toString();
             ostag = ostag.replaceAll(":",  "_");
-            key = _key.toLowerCase() + ":" + ostag.toLowerCase();
+            key = tmpkey.toLowerCase() + ":" + ostag.toLowerCase();
         }
         else if(type == ImageCreationType.OPERATING_SYSTEM) { key = translator.translate(os); }
         else if(type == ImageCreationType.COMPONENT_INSTANCE) { throw new UnsupportedOperationException(); }
