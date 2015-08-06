@@ -105,7 +105,7 @@ public final class PortRegistryTranslator {
         Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
         try { sinkReference = (PortReference) o;}
         catch(ClassCastException cce) {
-            throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.");
+            throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.", cce);
         }
         
         Map<ComponentInstanceId, Map<String, String>> dump = accessor.retrieveComponentDump(sinkReference);

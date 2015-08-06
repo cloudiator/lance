@@ -42,7 +42,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public class DockerContainerManager implements ContainerManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContainerManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerManager.class);
     
     private final boolean isRemote;
     private final HostContext hostContext;
@@ -53,7 +53,7 @@ public class DockerContainerManager implements ContainerManager {
     
     public DockerContainerManager(HostContext vmId) {
         this(vmId, "127.0.0.1", false);
-        logger.debug("using local host (127.0.0.1) as host name");
+        LOGGER.debug("using local host (127.0.0.1) as host name");
     }
 
     DockerContainerManager(HostContext vmId, String host) {
@@ -109,9 +109,9 @@ public class DockerContainerManager implements ContainerManager {
     public void terminate() {
         try { hostContext.close(); }
         catch(InterruptedException ie) {
-            logger.warn("shutting down interrupted");
+            LOGGER.warn("shutting down interrupted");
         }
-        logger.error("terminate has not been fully implemented");
+        LOGGER.error("terminate has not been fully implemented");
         // FIXME: add other parts to shut down //
     }
 }

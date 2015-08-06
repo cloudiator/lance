@@ -25,8 +25,13 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class StateMachine<T extends Enum<?> & State > {
 
+	static Logger LOGGER = LoggerFactory.getLogger(StateMachine.class);
+	
     private final Object[] DEFAULT_PARAMS = new Object[0];
     private T status;
     private StateTransition<T> ongoingTransition = null;
@@ -69,11 +74,17 @@ public final class StateMachine<T extends Enum<?> & State > {
             if(status == null) throw new IllegalStateException();
             if(status == endState) return;
             
-            if(ongoingTransition == null) throw new IllegalStateException("no ongoing transition to be finished");
-            if(!ongoingTransition.hasEndState(endState)) throw new IllegalStateException("ongoing transition has wrong end state");
-            if(!ongoingTransition.hasIntermediateState(status)) throw new IllegalStateException("ongoing transition has wrong intermediate state");
+            if(ongoingTransition == null) 
+            	throw new IllegalStateException("no ongoing transition to be finished");
             
-            if(endOfTransition == null) throw new IllegalStateException("no synchronisation entity");
+            if(!ongoingTransition.hasEndState(endState)) 
+            	throw new IllegalStateException("ongoing transition has wrong end state");
+            
+            if(!ongoingTransition.hasIntermediateState(status)) 
+            	throw new IllegalStateException("ongoing transition has wrong intermediate state");
+            
+            if(endOfTransition == null) 
+            	throw new IllegalStateException("no synchronisation entity");
             
             f = endOfTransition;
         }
@@ -88,11 +99,12 @@ public final class StateMachine<T extends Enum<?> & State > {
             catch(InterruptedException ie){
                 // we were interrupted; ignore and re-try
                  // FIXME: implement in a correct way
+            	LOGGER.error("interrupted", ie);
             } catch(CancellationException ce) {
                 // task cancelled => state not reached
                 // FIXME: set back status or set to error state
                 // FIXME: revert changes
-                throw new IllegalStateException();
+                throw new IllegalStateException(ce);
              } catch(ExecutionException ee){
                  // an exception occurred during execution => state not reached
                 // FIXME: set back status or set to error state

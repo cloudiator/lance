@@ -18,12 +18,17 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 
 final class DockerImageHandler {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerLogic.class);
     
     private final DockerOperatingSystemTranslator translator;
     private final OperatingSystem os;
@@ -65,12 +70,18 @@ final class DockerImageHandler {
     
     private String doGetSingleImage(String key) throws DockerException {
         // TODO: remove this as soon as access to a private registry is set
-        if(client.findImage(key) != null) return key;
+        if(client.findImage(key) != null) {
+        	return key;
+        }
                 
-        try { client.pullImage(key); return key; }
-        catch(DockerException de) { return null; }
+        try { 
+        	client.pullImage(key); 
+        	return key; 
+        } catch(DockerException de) {
+        	LOGGER.debug("could not pull image.", de);
+        	return null; 
+        }
     }
-
     
     String doPullImages(ComponentInstanceId myId, String componentInstallId) throws DockerException {
         // first step: try to find matching image for configured component

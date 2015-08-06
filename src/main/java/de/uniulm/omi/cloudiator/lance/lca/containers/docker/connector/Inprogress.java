@@ -86,6 +86,7 @@ class Inprogress implements DockerShell {
     public boolean processStillRunning() {
         try { proc.exitValue(); return false; }
         catch(IllegalThreadStateException ex) {
+        	LOGGER.debug("process not terminated", ex);
             return true;
         }
     }

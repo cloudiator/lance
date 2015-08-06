@@ -20,8 +20,13 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class LifecycleStore implements Serializable {
 
+	private static Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
+	
     private static final long serialVersionUID = 1L;
     private final LifecycleHandler[] handlers;
     
@@ -49,6 +54,7 @@ public class LifecycleStore implements Serializable {
         try {
             return t.getTypeClass().cast(h);
         } catch(ClassCastException cce) {
+        	LOGGER.error("could not retrieve correct handler due to incompatible types", cce);
             return null;
         }
     }
