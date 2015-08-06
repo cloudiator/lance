@@ -43,10 +43,10 @@ final class EnvContext implements HostContext {
     
     EnvContext(Map<String,String> ctxParam) {
         hostContext = ctxParam;
-        registerRmiAddress();
     }
     
     private void registerRmiAddress() {
+    	System.err.println("setting RMI server hostname to: " + getPublicIp());
         System.setProperty("java.rmi.server.hostname", getPublicIp());
     }
 
@@ -60,7 +60,9 @@ final class EnvContext implements HostContext {
             }
             values.put(key, s);
         }
-        return new EnvContext(values);
+        EnvContext ctx = new EnvContext(values);
+        ctx.registerRmiAddress();
+        return ctx;
     }
 
     @Override

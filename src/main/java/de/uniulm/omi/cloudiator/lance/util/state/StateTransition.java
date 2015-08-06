@@ -49,12 +49,14 @@ public final class StateTransition<T extends Enum<?> & State > {
     State getSource() { return from; }
 
     boolean isIntermediateOrEndState(T status) {
-        if(status == null) throw new NullPointerException();
+        if(status == null) 
+        	throw new NullPointerException();
         return status == to || status == intermediate;
     }
 
     boolean isStartState(T status) {
-        if(status == null) throw new NullPointerException();
+        if(status == null) 
+        	throw new NullPointerException();
         return status == from;
     }
 

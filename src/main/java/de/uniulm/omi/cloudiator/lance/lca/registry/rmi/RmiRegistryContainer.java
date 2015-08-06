@@ -49,8 +49,9 @@ public final class RmiRegistryContainer implements RegistryContainer {
     }
     
     public static RegistryContainer create() throws RegistrationException {
-        try { return new RmiRegistryContainer(); }
-        catch(RemoteException re) {
+        try { 
+        	return new RmiRegistryContainer(); 
+        } catch(RemoteException re) {
             throw new RegistrationException("cannot create registry", re);
         }
     }

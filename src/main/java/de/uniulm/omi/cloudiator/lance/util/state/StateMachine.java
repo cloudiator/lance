@@ -62,7 +62,9 @@ public final class StateMachine<T extends Enum<?> & State > {
         status = init;
         for(StateTransition<T> t : st) {
             StateTransition<T> old = transitions.put(t.getSource(), t);
-            if(old != null) throw new IllegalArgumentException("cannot use the same start transaction twice.");
+            if(old != null) {
+            	throw new IllegalArgumentException("cannot use the same start transaction twice.");
+            }
         }
         
         assert ! transitions.isEmpty() : "there should be at least one transition" ; 
@@ -71,8 +73,12 @@ public final class StateMachine<T extends Enum<?> & State > {
     public void waitForTransitionEnd(T endState) {
         final Future<?> f;
         synchronized(this) {
-            if(status == null) throw new IllegalStateException();
-            if(status == endState) return;
+            if(status == null) {
+            	throw new IllegalStateException();
+            }
+            if(status == endState) {
+            	return;
+            }
             
             if(ongoingTransition == null) 
             	throw new IllegalStateException("no ongoing transition to be finished");
@@ -93,10 +99,14 @@ public final class StateMachine<T extends Enum<?> & State > {
     
     private static void waitLoop(Future<?> f) {
         while(true) {
-            if(f.isDone()) return;
+            if(f.isDone()) {
+            	return;
+            }
             
-            try { f.get(); return; }
-            catch(InterruptedException ie){
+            try { 
+            	f.get(); 
+            	return; 
+            } catch(InterruptedException ie){
                 // we were interrupted; ignore and re-try
                  // FIXME: implement in a correct way
             	LOGGER.error("interrupted", ie);
@@ -122,9 +132,12 @@ public final class StateMachine<T extends Enum<?> & State > {
      */
     public synchronized void transit(T startState, Object[] params) {
         StateTransition<T> transition = findTransition(startState);
-        if(transition.isIntermediateOrEndState(status)) return ; // we are already done //
-        if(!transition.isStartState(status)) throw new IllegalStateException("we are in the wrong state: " + status);
-        if(endOfTransition != null) throw new IllegalStateException("we are in the wrong state: endOfTransition is set");
+        if(transition.isIntermediateOrEndState(status)) 
+        	return ; // we are already done //
+        if(!transition.isStartState(status)) 
+        	throw new IllegalStateException("we are in the wrong state: " + status);
+        if(endOfTransition != null) 
+        	throw new IllegalStateException("we are in the wrong state: endOfTransition is set");
         
         // everything is fine. let's invoke the transition //
         ongoingTransition = transition;
@@ -133,7 +146,9 @@ public final class StateMachine<T extends Enum<?> & State > {
 
     private StateTransition<T> findTransition(T startState) {
         StateTransition<T> transition = transitions.get(startState);
-        if(transition == null) throw new IllegalStateException("no transition found for startState: " + startState);
+        if(transition == null) {
+        	throw new IllegalStateException("no transition found for startState: " + startState);
+        }
         return transition;
     }
 

@@ -124,10 +124,14 @@ final class DeferredExecuteOnShellCommand extends AbstractExecuteOnShellCommand 
     @Override
 	protected String buildLinuxCommand(OperatingSystem os) {
         String filename = input.getResult(null, null);
-        if(filename == null) throw new NullPointerException("no result available");
+        if(filename == null) {
+        	throw new NullPointerException("no result available");
+        }
         if(! filename.startsWith("/")) filename = "./" + filename;
         if(os.getType() == OperatingSystemType.UBUNTU) {
-            if(useRoot) return "sudo " + filename;
+            if(useRoot) {
+            	return "sudo " + filename;
+            }
             return filename;
         }
         return filename;

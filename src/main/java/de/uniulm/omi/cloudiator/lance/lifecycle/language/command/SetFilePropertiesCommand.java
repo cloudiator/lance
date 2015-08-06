@@ -58,8 +58,10 @@ public interface SetFilePropertiesCommand extends Command {
         public static SetFilePropertiesCommand setAccessRights(LifecycleHandlerType inPhase, int access, int users, CommandResultReference reference) {
             
             if(supportedLifecycles.contains(inPhase)) {
-                if(access > SetFilePropertiesCommandConstants.ALL_ACCESS || access < 0) throw new IllegalArgumentException("" + access);
-                if(users > SetFilePropertiesCommandConstants.FILE_ALL || users < 0) throw new IllegalArgumentException("" + access);
+                if(access > SetFilePropertiesCommandConstants.ALL_ACCESS || access < 0)
+                	throw new IllegalArgumentException("" + access);
+                if(users > SetFilePropertiesCommandConstants.FILE_ALL || users < 0) 
+                	throw new IllegalArgumentException("" + access);
                 return new SetFilePropertiesCommandImpl (inPhase, access, users, reference);
             }
             throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
@@ -92,13 +94,27 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
     private static String getUserString(int users, String string) {
         String retVal = "000";
         switch(users) {
-        case 7: retVal = string + string + string; break;
-        case 6: retVal = "0" + string + string; break;
-        case 5: retVal = string + "0" + string; break;
-        case 4: retVal = "00" + string; break;
-        case 3: retVal = string + string + "0"; break;
-        case 2: retVal = "0" + string + "0"; break;
-        case 1: retVal = string + "00"; break;
+        case 7: 
+        	retVal = string + string + string; 
+        	break;
+        case 6: 
+        	retVal = "0" + string + string; 
+        	break;
+        case 5: 
+        	retVal = string + "0" + string; 
+        	break;
+        case 4: 
+        	retVal = "00" + string; 
+        	break;
+        case 3: 
+        	retVal = string + string + "0"; 
+        	break;
+        case 2: 
+        	retVal = "0" + string + "0"; 
+        	break;
+        case 1: 
+        	retVal = string + "00"; 
+        	break;
         default:
         }
         return retVal;
@@ -134,7 +150,9 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
         
         String command = "chmod " + string + " " + filename;
         if(os.getType() == OperatingSystemType.UBUNTU) {
-            if(USE_ROOT) return "sudo " + command;
+            if(USE_ROOT) {
+            	return "sudo " + command;
+            }
             return command;
         }
         return command;

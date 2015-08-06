@@ -44,7 +44,9 @@ public final class Deployment implements Serializable {
 
     public boolean hasLifecycleOperations(LifecycleHandlerType handler) {
         for(CommandSequence cs : sequences) {
-            if(cs.hasLifecycleOperations(handler)) return true;
+            if(cs.hasLifecycleOperations(handler)){
+            	return true;
+            }
         }
         return false;
     }

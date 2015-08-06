@@ -46,7 +46,8 @@ public final class CommandSequence {
 
     public boolean hasLifecycleOperations(LifecycleHandlerType type) {
         for(Command c : commands) {
-            if(c.runsInLifecycle(type)) return true;
+            if(c.runsInLifecycle(type)) 
+            	return true;
         }
         return false;
     }

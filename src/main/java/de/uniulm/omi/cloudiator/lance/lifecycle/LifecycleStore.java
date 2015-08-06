@@ -51,7 +51,9 @@ public class LifecycleStore implements Serializable {
     
     private LifecycleHandler getCastHandler(LifecycleHandlerType t) {
         LifecycleHandler h = handlers[t.ordinal()];
-        if(h == null) return null;
+        if(h == null) {
+        	return null;
+        }
         try {
             return t.getTypeClass().cast(h);
         } catch(ClassCastException cce) {

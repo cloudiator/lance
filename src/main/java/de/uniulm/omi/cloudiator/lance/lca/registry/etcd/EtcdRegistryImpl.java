@@ -172,7 +172,8 @@ final class EtcdRegistryImpl implements LcaRegistry {
         } catch (java.util.concurrent.TimeoutException e) {
             throw new RegistrationException(e);
         } catch (EtcdException e) {
-            if(e.errorCode == 100) return false;
+            if(e.errorCode == 100) 
+            	return false;
             throw new RegistrationException(e);
         }
     }

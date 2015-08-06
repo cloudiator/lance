@@ -103,7 +103,9 @@ class ReplaceFileContentImpl implements ReplaceFileContentCommand {
                 
         String command = "sed -i -e 's!" + pattern + "!" + replacement + "!g' " + filename;
         if(os.getType() == OperatingSystemType.UBUNTU) {
-            if(USE_ROOT) return "sudo " + command;
+            if(USE_ROOT) {
+            	return "sudo " + command;
+            }
             return command;
         }
         return command;

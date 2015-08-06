@@ -28,7 +28,7 @@ public final class DeploymentBuilder {
     private final List<CommandSequence> seqs = new ArrayList<>();
     
     public DeploymentBuilder () {
-        
+        // an empty constructor
     }
     
     public DeploymentBuilder addSequence(CommandSequence seq) {
