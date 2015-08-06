@@ -42,7 +42,9 @@ public interface PostStopHandler extends LifecycleHandler {
 }
 
 final class PostStopDeploymentHandler implements PostStopHandler {
-    
+
+	private static final long serialVersionUID = 1L;
+
     private final Deployment d;
     
     PostStopDeploymentHandler(Deployment _d) {

@@ -27,8 +27,8 @@ import java.util.Set;
 public final class StateMachineBuilder<T extends Enum<?> & State > {
 
     private final T init;
-    private final Set<T> states = new HashSet<T>();
-    private final List<StateTransition<T>> transitions = new ArrayList<StateTransition<T>>();
+    private final Set<T> states = new HashSet<>();
+    private final List<StateTransition<T>> transitions = new ArrayList<>();
     
     public StateMachineBuilder(T _initState) {
         init = _initState;
@@ -53,7 +53,7 @@ public final class StateMachineBuilder<T extends Enum<?> & State > {
     }
     
     public StateMachine<T> build() {
-        return new StateMachine<T>(init, new ArrayList<T>(states), transitions);
+        return new StateMachine<>(init, new ArrayList<>(states), transitions);
     }
 
     public StateMachineBuilder<T> addAllState(T[] values) {

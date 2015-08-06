@@ -37,11 +37,11 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 public final class CommandSequence {
 
     private final List<Command> commands;
-    private final String myName;
+    // private final String myName;
     
-    CommandSequence(String _myName, List<Command> _commands) {
+    CommandSequence(@SuppressWarnings("unused") String _myName, List<Command> _commands) {
         commands = _commands;
-        myName = _myName;
+     //     myName = _myName;
     }
 
     public boolean hasLifecycleOperations(LifecycleHandlerType type) {

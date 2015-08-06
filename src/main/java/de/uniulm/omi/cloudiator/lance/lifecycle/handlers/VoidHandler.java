@@ -30,7 +30,9 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
  * @author Joerg Domaschka
  */
 public final class VoidHandler implements LifecycleHandler {
-    
+
+	private static final long serialVersionUID = 1L;
+
     public static final LifecycleHandlerFactory<VoidHandler> FACTORY = new LifecycleHandlerFactory<VoidHandler>() {
         @Override public final VoidHandler getDefault() { return DefaultHandlers.DEFAULT_VOID_HANDLER; }
 

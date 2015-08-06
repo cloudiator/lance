@@ -19,7 +19,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.registry.etcd;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,7 +36,7 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
-final class EtcdRegistryImpl implements LcaRegistry, Serializable {
+final class EtcdRegistryImpl implements LcaRegistry {
 
     private static final long serialVersionUID = 1L;
     
@@ -121,15 +120,15 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
         return retVal;
     }
         
-    private void fillMapWithValue(String key, String value, Map<String, String> map) {
+    private static void fillMapWithValue(String key, String value, Map<String, String> map) {
         if(DESCRIPTION.equals(key)) return;
         if(NAME.equals(key)) return;
         map.put(key, value);
     }
     
-    private Map<ComponentInstanceId, Map<String, String>> dumpFirstLevelKeys(EtcdNode root) {
+    private static Map<ComponentInstanceId, Map<String, String>> dumpFirstLevelKeys(EtcdNode root) {
         final String mainDir = root.key;
-        Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<ComponentInstanceId, Map<String, String>>();
+        Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
         final int length = mainDir.length() + 1;
         for(EtcdNode node : root.nodes) {
             if(! node.dir) continue;
@@ -146,7 +145,7 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
         return retVal;
     }
     
-    private void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
+    private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
         final String mainDir = root.key;
         final int length = mainDir.length() + 1;
         for(EtcdNode node : root.nodes) {
@@ -163,13 +162,13 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
         }
     }
 
-    private final Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
+    private final static Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
         if(DESCRIPTION.equals(key)) return Collections.emptyMap();
         if(NAME.equals(key)) return Collections.emptyMap();
         ComponentInstanceId inst = ComponentInstanceId.fromString(key);
         Map<String, String> map = retVal.get(inst);
         if(map == null) {
-            map = new HashMap<String, String>();
+            map = new HashMap<>();
             retVal.put(inst, map);
         } else {
             throw new IllegalStateException("unexpected event: map already exists.");
@@ -177,11 +176,11 @@ final class EtcdRegistryImpl implements LcaRegistry, Serializable {
         return map;
     }
     
-    private final String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid) {
+    private final static String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid) {
         return "/lca/" + instId.toString() + "/" + cid.toString();
     }
     
-    private final String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) {
+    private final static String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) {
         return "/lca/" + instId.toString() + "/" + cid.toString() + "/" + cinstId.toString();
     }
     

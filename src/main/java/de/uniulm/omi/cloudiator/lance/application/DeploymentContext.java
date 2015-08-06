@@ -30,8 +30,8 @@ public final class DeploymentContext implements Serializable {
     private final ApplicationInstanceId myInstanceId;
     private final LcaRegistry registry;
     
-    private final HashMap<String,Object> properties = new HashMap<String,Object>();
-    private final HashMap<String,Class<?>> propertyTypes = new HashMap<String,Class<?>>();
+    private final HashMap<String,Object> properties = new HashMap<>();
+    private final HashMap<String,Class<?>> propertyTypes = new HashMap<>();
         
     public DeploymentContext(ApplicationId appId, ApplicationInstanceId instanceId, LcaRegistry re) {
         myAppId = appId;

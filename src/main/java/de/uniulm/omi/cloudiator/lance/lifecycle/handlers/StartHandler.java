@@ -42,7 +42,9 @@ public interface StartHandler extends LifecycleHandler {
 }
 
 final class StartDeploymentHandler implements StartHandler {
-    
+
+	private static final long serialVersionUID = 1L;
+
     private final Deployment d;
     
     StartDeploymentHandler(Deployment _d) {

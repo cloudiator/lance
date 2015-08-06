@@ -42,7 +42,9 @@ public interface PostStartHandler extends LifecycleHandler {
 }
 
 final class PostStartDeploymentHandler implements PostStartHandler {
-    
+
+	private static final long serialVersionUID = 1L;
+
     private final Deployment d;
     
     PostStartDeploymentHandler(Deployment _d) {

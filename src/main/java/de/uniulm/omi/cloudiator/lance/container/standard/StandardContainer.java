@@ -40,10 +40,10 @@ import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContaine
 // FIXME: introduce error states to life cycle handling 
 public final class StandardContainer<T extends ContainerLogic> implements ContainerController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
     
     private final StateMachine<ContainerStatus> stateMachine;
-    private final T logic;
+    final T logic;
     private final ComponentInstanceId containerId;
     
     public StandardContainer(ComponentInstanceId id, T _logic) {
@@ -51,7 +51,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         logic = _logic;
         stateMachine = addDestroyTransition(
         addInitTransition(
-        addCreateTransition(new StateMachineBuilder<ContainerStatus>(ContainerStatus.NEW).
+        addCreateTransition(new StateMachineBuilder<>(ContainerStatus.NEW).
                 addAllState(ContainerStatus.values()))
                 )).build();
     }

@@ -31,13 +31,13 @@ public final class DeployableComponentBuilder {
 
     private final String name;
     private final ComponentId componentId;
-    private final List<InPort> inports = new ArrayList<InPort>();
-    private final List<OutPort> outports = new ArrayList<OutPort>();
+    private final List<InPort> inports = new ArrayList<>();
+    private final List<OutPort> outports = new ArrayList<>();
     private volatile LifecycleStore store;
     // private volatile boolean deploySequentially = false;
     
-    private final HashMap<String, Class<?>> properties = new HashMap<String, Class<?>>();
-    private final HashMap<String, Serializable> propertyValues = new HashMap<String, Serializable>();
+    private final HashMap<String, Class<?>> properties = new HashMap<>();
+    private final HashMap<String, Serializable> propertyValues = new HashMap<>();
     
     private DeployableComponentBuilder(String _name, ComponentId _id) {
         name = _name;
@@ -51,7 +51,7 @@ public final class DeployableComponentBuilder {
     
     public final void addInport(String portname, PortType type, int cardinality, int defaultPortNr) {
         inports.add(new InPort(portname, type, cardinality));
-        addProperty(portname, InPort.class, defaultPortNr);
+        addProperty(portname, InPort.class, Integer.valueOf(defaultPortNr));
     }
     
     public final void addOutport(String portname, PortUpdateHandler handler, int cardinality) {
@@ -93,7 +93,8 @@ public final class DeployableComponentBuilder {
         return new DeployableComponent(name, componentId, store, inports, outports, properties, propertyValues);
     }
 
-    public void deploySequentially(boolean b) {
+    @SuppressWarnings("static-method")
+	public void deploySequentially(@SuppressWarnings("unused") boolean b) {
         // deploySequentially = b;
         throw new UnsupportedOperationException("parallel deployment not supported yet.");
     }

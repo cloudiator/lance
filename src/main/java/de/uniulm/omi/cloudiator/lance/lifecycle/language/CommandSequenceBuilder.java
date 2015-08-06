@@ -40,7 +40,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.install.SystemApplicati
 
 public final class CommandSequenceBuilder {
 
-    private final List<Command> commands = new ArrayList<Command>();
+    private final List<Command> commands = new ArrayList<>();
     private final String myName;
     private LifecycleHandlerType phase = LifecycleHandlerType.NEW;
     
@@ -94,7 +94,7 @@ public final class CommandSequenceBuilder {
     }
 
     public CommandSequence build() {
-        return new CommandSequence(myName, new ArrayList<Command>(commands));
+        return new CommandSequence(myName, new ArrayList<>(commands));
     }
 
     public CommandResultReference installSystemPackage(SystemApplication _app) {

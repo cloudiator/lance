@@ -33,7 +33,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManag
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
-    private final ContainerManager<?> manager;
+    private final ContainerManager manager;
     
     LifecycleAgentImpl(HostContext contex) {
         DockerContainerManagerFactory.enableRemoteAccess();

@@ -67,7 +67,7 @@ class Inprogress implements DockerShell {
         return readAvailable(stdErr, -1);
     }
     
-    private String readAvailable(BufferedReader std, int terminator) {
+    private static String readAvailable(BufferedReader std, int terminator) {
         StringBuilder builder = new StringBuilder();
         try { 
             while((terminator > 0) || std.ready()) {
@@ -105,10 +105,10 @@ class Inprogress implements DockerShell {
         if(! processStillRunning() ) throw new IllegalStateException();
         try {
             doExecuteCommand("exec " + command);
-            String stdOut = readOutAvailable();
-            String stdErr = readErrAvailable();
-            if(processStillRunning()) { return ExecutionResult.success(stdOut, stdErr); }
-            else {                        return ExecutionResult.systemFailure(stdErr);     }
+            String tmpOut = readOutAvailable();
+            String tmpErr = readErrAvailable();
+            if(processStillRunning()) { return ExecutionResult.success(tmpOut, tmpErr); }
+            return ExecutionResult.systemFailure(tmpErr);
         } catch(IOException ioe) {
             LOGGER.warn("problem when reading from external process", ioe);
             return ExecutionResult.systemFailure(ioe.getMessage());
@@ -124,14 +124,14 @@ class Inprogress implements DockerShell {
         stdIn.flush();
     }
     
-    private int drainAfterExitStatus(String in) {
-        String stdOut = in.trim();
-        int index = stdOut.lastIndexOf("\n");
+    private static int drainAfterExitStatus(String in) {
+        String tmpOut = in.trim();
+        int index = tmpOut.lastIndexOf("\n");
         // at least one element is required for number //
-        if(index >= stdOut.length() -1) return -1;
+        if(index >= tmpOut.length() -1) return -1;
         // it may well be < 0 when the command did not 
         // print anything 
-        String toparse = stdOut.substring(index + 1);
+        String toparse = tmpOut.substring(index + 1);
         return Integer.parseInt(toparse);
     }
 
@@ -143,10 +143,10 @@ class Inprogress implements DockerShell {
         if(! processStillRunning() ) throw new IllegalStateException();
         try {
             doExecuteCommand(command + "; " + EXIT_CODE + " ; " + BELL_COMMAND);
-            String stdOut = readOutUntilBell();
-            String stdErr = readErrAvailable();
-            int exit = drainAfterExitStatus(stdOut);
-            return exit == 0 ? ExecutionResult.success(stdOut, stdErr) : ExecutionResult.commandFailure(exit, stdOut, stdErr);
+            String tmpOut = readOutUntilBell();
+            String tmpErr = readErrAvailable();
+            int exit = drainAfterExitStatus(tmpOut);
+            return exit == 0 ? ExecutionResult.success(tmpOut, tmpErr) : ExecutionResult.commandFailure(exit, tmpOut, tmpErr);
         } catch(IOException ioe) {
             LOGGER.warn("problem when reading from external process", ioe);
             return ExecutionResult.systemFailure(ioe.getMessage());

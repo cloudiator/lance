@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -47,11 +46,11 @@ final class ProcessBasedConnector implements DockerConnector {
     // the connect method
     // private ProcessWrapper dockerClient;
     
-    ProcessBasedConnector(String hostname) {
-        
+    ProcessBasedConnector(@SuppressWarnings("unused") String hostname) {
+        // no values to set //
     }
     
-    private String buildContainerName(ComponentInstanceId id) {
+    private static String buildContainerName(ComponentInstanceId id) {
         return "dockering__"+ id.toString();
     }
     
@@ -62,7 +61,7 @@ final class ProcessBasedConnector implements DockerConnector {
         return dockerClient;
     }*/
     
-    private final String findTag(String tag, String line) {
+    private final static String findTag(String tag, String line) {
         String[] content = line.split("[\\s]++");
         if(tag.equalsIgnoreCase(content[1])) {
             return content[2].trim();
@@ -79,7 +78,7 @@ final class ProcessBasedConnector implements DockerConnector {
             String line = reader.readLine();
             if(line == null) throw new DockerException("could not find result");
             if(reader.readLine() != null) throw new DockerException("too many lines available");
-            InetAddress addr = Inet4Address.getByName(line.trim());
+            InetAddress addr = InetAddress.getByName(line.trim());
             return addr.getHostAddress();
         } catch(UnknownHostException he) {
             throw new DockerException("UnknownHostException when creating IP address", he);
@@ -117,7 +116,7 @@ final class ProcessBasedConnector implements DockerConnector {
         throw new DockerException(result.getError());
     }
     
-    private void createPortArguments(Map<Integer, Integer> in_ports, List<String> args) {
+    private static void createPortArguments(Map<Integer, Integer> in_ports, List<String> args) {
         for(Entry<Integer, Integer> entry : in_ports.entrySet()) {
             Integer i = entry.getKey();
             Integer j = entry.getValue();
@@ -129,7 +128,7 @@ final class ProcessBasedConnector implements DockerConnector {
         
     @Override
     public String createContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> in_ports) throws DockerException {
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
         args.add("create"); args.add("--name=" + buildContainerName(myId));
         createPortArguments(in_ports, args);
         args.add("--restart=no"); args.add("-i");  /*args.add("--tty=true");*/

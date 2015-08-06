@@ -85,11 +85,11 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
         props = new int[]{access, users};
     }
 
-    private final String getAccessString(int access) {
+    private final static String getAccessString(int access) {
         return Integer.toString(access);
     }
     
-    private String getUserString(int users, String string) {
+    private static String getUserString(int users, String string) {
         String retVal = "000";
         switch(users) {
         case 7: retVal = string + string + string; break;

@@ -18,7 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Map;
 
@@ -29,7 +28,7 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
-public final class RmiWrapper implements LcaRegistry, Serializable {
+public final class RmiWrapper implements LcaRegistry {
     
     private static final long serialVersionUID = 1L;
     

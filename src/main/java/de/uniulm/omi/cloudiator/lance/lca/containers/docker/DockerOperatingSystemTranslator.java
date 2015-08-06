@@ -39,7 +39,7 @@ final class DockerOperatingSystemTranslator {
             
     }
     
-    private String translateLinux(OperatingSystem os) {
+    private static String translateLinux(OperatingSystem os) {
         switch(os.getType()){
         case UBUNTU:
             return translateUbuntu(os);
@@ -49,15 +49,15 @@ final class DockerOperatingSystemTranslator {
         }
     }
     
-    private String translateOther(OperatingSystem os) {
+    private static String translateOther(OperatingSystem os) {
         throw new IllegalArgumentException("os not supported: ");
     }
     
-    private String translateWindows(OperatingSystem os) {
+    private static String translateWindows(OperatingSystem os) {
         return translateOther(os);
     }
     
-    private String translateUbuntu(OperatingSystem os) {
+    private static String translateUbuntu(OperatingSystem os) {
         return "ubuntu:" + os.getVersion();
     }
     

@@ -35,7 +35,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
 public final class BashBasedHandlerBuilder {
 
     private volatile OperatingSystem os;
-    private final List<String[]> commands = new ArrayList<String[]>();
+    private final List<String[]> commands = new ArrayList<>();
     
     public BashBasedHandlerBuilder() {
         // 

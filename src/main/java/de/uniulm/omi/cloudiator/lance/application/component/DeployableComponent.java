@@ -51,9 +51,9 @@ public final class DeployableComponent implements Serializable {
         name = _name;
         myId = _id;
         lifecycle = _lifecycleStore;
-        in_ports = new ArrayList<InPort>(_in_ports);
-        out_ports = new ArrayList<OutPort>(_out_ports);
-        properties = new HashMap<String, Class<?>>(_ingoing_properties);
+        in_ports = new ArrayList<>(_in_ports);
+        out_ports = new ArrayList<>(_out_ports);
+        properties = new HashMap<>(_ingoing_properties);
         defaultValues = _propertyValues;
     }
 
@@ -64,7 +64,7 @@ public final class DeployableComponent implements Serializable {
     public ComponentId getComponentId() { return myId; }
 
     public List<InPort> getExposedPorts() {
-        List<InPort> ports = new ArrayList<InPort>(in_ports.size());
+        List<InPort> ports = new ArrayList<>(in_ports.size());
         for(InPort i : in_ports) {
             ports.add(i);
         }
@@ -77,7 +77,7 @@ public final class DeployableComponent implements Serializable {
     }
 
     public List<OutPort> getDownstreamPorts() {
-        return new ArrayList<OutPort>(out_ports); 
+        return new ArrayList<>(out_ports); 
     }
     
     public void accept(DeploymentContext ctx, PropertyVisitor visitor) {        

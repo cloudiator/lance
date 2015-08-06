@@ -22,7 +22,8 @@ public enum ConnectorFactory {
 
     INSTANCE;
     
-    public DockerConnector createConnector(String hostname) {
+    @SuppressWarnings("static-method")
+	public DockerConnector createConnector(String hostname) {
         return new ProcessBasedConnector(hostname);
     }
 }

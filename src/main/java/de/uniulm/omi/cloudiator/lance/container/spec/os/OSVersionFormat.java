@@ -53,7 +53,7 @@ public abstract class OSVersionFormat implements Serializable {
     
     public abstract boolean hasCorrectFormat(String format);
     
-    private OSVersionFormat() {
+    OSVersionFormat() {
         
     }
 }

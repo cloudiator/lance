@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 final class EnvContext implements HostContext {
@@ -39,7 +38,7 @@ final class EnvContext implements HostContext {
     };
     
     private final Map<String,String> hostContext;
-    private final ScheduledExecutorService periodicExecutor = Executors.newScheduledThreadPool(4);
+    //private final ScheduledExecutorService periodicExecutor = Executors.newScheduledThreadPool(4);
     private final ExecutorService executor = Executors.newScheduledThreadPool(4);
     
     EnvContext(Map<String,String> _ctx) {
@@ -52,7 +51,7 @@ final class EnvContext implements HostContext {
     }
 
     static HostContext fromEnvironment() {
-        Map<String,String> values = new HashMap<String,String>();
+        Map<String,String> values = new HashMap<>();
         for(String key : VALUES) {
             String s = System.getProperty(key);
             if(s == null || s.isEmpty()) {

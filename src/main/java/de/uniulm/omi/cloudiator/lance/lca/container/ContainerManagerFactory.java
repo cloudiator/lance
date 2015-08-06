@@ -28,7 +28,7 @@ public final class ContainerManagerFactory {
     
     static {
         // FIXME: add initialisation code
-        mapper = new EnumMap<ContainerType, SpecificContainerManagerFactory>(ContainerType.class);
+        mapper = new EnumMap<>(ContainerType.class);
         for(ContainerType t : ContainerType.values()) {
             mapper.put(t, t.getContainerFactory());    
         }

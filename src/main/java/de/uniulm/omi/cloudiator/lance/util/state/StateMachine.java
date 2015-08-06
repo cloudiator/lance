@@ -31,7 +31,7 @@ public final class StateMachine<T extends Enum<?> & State > {
     private T status;
     private StateTransition<T> ongoingTransition = null;
     private Future<?> endOfTransition = null;
-    private final Map<State, StateTransition<T>> transitions = new HashMap<State,StateTransition<T>>();
+    private final Map<State, StateTransition<T>> transitions = new HashMap<>();
     
     private final StateSetter<T> setter = new StateSetter<T>() {
 
@@ -80,7 +80,7 @@ public final class StateMachine<T extends Enum<?> & State > {
         waitLoop(f);
     }
     
-    private void waitLoop(Future<?> f) {
+    private static void waitLoop(Future<?> f) {
         while(true) {
             if(f.isDone()) return;
             

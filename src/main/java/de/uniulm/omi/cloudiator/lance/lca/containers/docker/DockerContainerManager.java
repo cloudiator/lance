@@ -40,7 +40,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConn
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
-public class DockerContainerManager implements ContainerManager<DockerContainerLogic> {
+public class DockerContainerManager implements ContainerManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ContainerManager.class);
     
@@ -49,7 +49,7 @@ public class DockerContainerManager implements ContainerManager<DockerContainerL
     private final String hostname;
     private final DockerConnector client;
     private final DockerOperatingSystemTranslator translator;
-    private final ContainerRegistry<DockerContainerLogic> registry = new ContainerRegistry<DockerContainerLogic>();
+    private final ContainerRegistry<DockerContainerLogic> registry = new ContainerRegistry<>();
     
     public DockerContainerManager(HostContext vmId) {
         this(vmId, "127.0.0.1", false);
@@ -68,7 +68,7 @@ public class DockerContainerManager implements ContainerManager<DockerContainerL
         isRemote = remote;
     }
     
-    private DockerOperatingSystemTranslator createAndInitTranslator(){
+    private static DockerOperatingSystemTranslator createAndInitTranslator(){
         return new DockerOperatingSystemTranslator();
     }
     
@@ -103,7 +103,7 @@ public class DockerContainerManager implements ContainerManager<DockerContainerL
         
         
         DockerContainerLogic l = new DockerContainerLogic(id, client, translator, accessor, comp, ctx, os, handler);
-        ContainerController dc = new StandardContainer<DockerContainerLogic>(id, l);
+        ContainerController dc = new StandardContainer<>(id, l);
         registry.addContainer(dc);
         dc.create();
         return dc;

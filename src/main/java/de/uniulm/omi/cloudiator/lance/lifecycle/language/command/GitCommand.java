@@ -67,14 +67,14 @@ final class GitCommandResult implements CommandResultReference {
 final class GitCommandImpl implements GitCommand {
 
     private final LifecycleHandlerType type;
-    private final GitSubcommand command;
-    private final URI uri;
+    // private final GitSubcommand command;
+    // private final URI uri;
     private final CommandResultReference output = new GitCommandResult();
     
     
-    public GitCommandImpl(LifecycleHandlerType inPhase, GitSubcommand _command, URI _uri) {
-        command = _command;
-        uri = _uri;
+    public GitCommandImpl(LifecycleHandlerType inPhase, @SuppressWarnings("unused") GitSubcommand _command, @SuppressWarnings("unused") URI _uri) {
+        // command = _command;
+    	// uri = _uri;
         type = inPhase;
     }
 

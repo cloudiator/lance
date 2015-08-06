@@ -30,7 +30,7 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
     private static final Logger logger = LoggerFactory.getLogger(PortHierarchyLevel.class);
 
     private final String name;
-    private final Map<PortHierarchyLevel, T> mapping = new HashMap<PortHierarchyLevel, T>(); 
+    private final Map<PortHierarchyLevel, T> mapping = new HashMap<>(); 
     
     public HierarchyLevelState(String levelName, PortHierarchy portHierarchy) {
         name = levelName;
@@ -47,7 +47,8 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
         }
     }
     
-    public Iterator<PortHierarchyLevel> iterator(){
+    @Override
+	public Iterator<PortHierarchyLevel> iterator(){
         return mapping.keySet().iterator();
     }
 

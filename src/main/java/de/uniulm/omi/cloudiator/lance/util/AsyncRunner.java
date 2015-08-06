@@ -33,7 +33,7 @@ public class AsyncRunner implements Runnable {
     
     public static<T> Thread createWrappedStateRunner(Setter s, AsyncCallback<T> callback) {
         AsyncRunner r = new AsyncRunner(s);
-        FutureTask<T> ft = new FutureTask<T>(r, null);
+        FutureTask<T> ft = new FutureTask<>(r, null);
         Thread t = new Thread(ft);
         callback.call(ft);
         return t;

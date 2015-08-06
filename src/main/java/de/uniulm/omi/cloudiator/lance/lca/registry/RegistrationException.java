@@ -20,7 +20,9 @@ package de.uniulm.omi.cloudiator.lance.lca.registry;
 
 public class RegistrationException extends Exception {
 
-    public RegistrationException() {
+	private static final long serialVersionUID = 1L;
+
+	public RegistrationException() {
         super();
     }
 

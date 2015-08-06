@@ -32,11 +32,11 @@ public final class StateTransition<T extends Enum<?> & State > {
     private final TransitionAction action;
     
     static<T extends Enum<?> & State> StateTransition<T> synchronousTransition(T _from, T _to, TransitionAction _action) {
-        return new StateTransition<T>(_from, null, _to, _action);
+        return new StateTransition<>(_from, null, _to, _action);
     }
     
     static <T extends Enum<?> & State> StateTransition<T> asynchronousTransition(T _from, T _intermediate, T _to, TransitionAction _action) {
-        return new StateTransition<T>(_from, _intermediate, _to, _action);
+        return new StateTransition<>(_from, _intermediate, _to, _action);
     }
     
     private StateTransition(T _from, T _intermediate, T _to, TransitionAction _action) {

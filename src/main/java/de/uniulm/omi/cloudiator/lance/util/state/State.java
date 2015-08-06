@@ -19,5 +19,5 @@
 package de.uniulm.omi.cloudiator.lance.util.state;
 
 public interface State {
-
+	// a simple marker interface //
 }

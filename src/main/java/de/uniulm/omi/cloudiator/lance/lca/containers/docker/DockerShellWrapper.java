@@ -45,7 +45,7 @@ class DockerShellWrapper implements Shell {
         return result;
     }
     
-    private void checkResult(String command, ExecutionResult result) {
+    private static void checkResult(String command, ExecutionResult result) {
         if(result.isSuccess()) return;
         logger.warn("unsuccessull command '" + command + "': " + result.toString());
     }

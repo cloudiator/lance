@@ -121,7 +121,8 @@ final class DeferredExecuteOnShellCommand extends AbstractExecuteOnShellCommand 
         return type == handlerType;
     }
     
-    protected String buildLinuxCommand(OperatingSystem os) {
+    @Override
+	protected String buildLinuxCommand(OperatingSystem os) {
         String filename = input.getResult(null, null);
         if(filename == null) throw new NullPointerException("no result available");
         if(! filename.startsWith("/")) filename = "./" + filename;

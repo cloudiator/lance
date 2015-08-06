@@ -59,7 +59,7 @@ public final class ProcessWrapper {
     }
     
     private static List<String> argsAsDockerList(String ...args) {
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         l.add("sudo");
         l.add("docker");
         for(String s : args) {

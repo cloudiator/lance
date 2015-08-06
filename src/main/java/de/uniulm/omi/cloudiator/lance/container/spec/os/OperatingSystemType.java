@@ -26,6 +26,16 @@ public enum OperatingSystemType {
         public String getNonBlockingPackageInstallerCommandForVersion(OperatingSystemVersion version) {
             return "sudo apt-get install -y";
         }
+        
+        @Override
+        public OperatingSystemVersion getDefaultVersion() {
+            return OperatingSystemVersion.getUbuntuVersion(14, 4);
+        }
+        
+        @Override
+        public boolean hasDefaultVersion() {
+            return true;
+        }
     },
     ARCH(OperatingSystemFamily.LINUX, OSVersionFormat.UNKNOWN_VERSION_FORMAT),
     
@@ -84,7 +94,7 @@ public enum OperatingSystemType {
         return null;
     }
 
-    public String getNonBlockingPackageInstallerCommandForVersion(OperatingSystemVersion version) {
+    public String getNonBlockingPackageInstallerCommandForVersion(@SuppressWarnings("unused") OperatingSystemVersion version) {
         throw new UnsupportedOperationException();
     }
 }

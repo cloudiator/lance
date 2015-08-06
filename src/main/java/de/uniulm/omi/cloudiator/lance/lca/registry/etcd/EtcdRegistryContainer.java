@@ -68,7 +68,7 @@ public final class EtcdRegistryContainer implements RegistryContainer {
     }
     
     private static List<URI> createUris(String[] split) {
-        List<URI> uris = new ArrayList<URI>(split.length);
+        List<URI> uris = new ArrayList<>(split.length);
         
         for(String s : split) {
             URI uri = createUri(s);

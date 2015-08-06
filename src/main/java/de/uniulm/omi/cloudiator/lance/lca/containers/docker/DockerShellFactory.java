@@ -30,7 +30,7 @@ final class DockerShellFactory implements ShellFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DockerShell.class);
     
-    private final AtomicReference<DockerShellWrapper> reference = new AtomicReference<DockerShellWrapper>();
+    private final AtomicReference<DockerShellWrapper> reference = new AtomicReference<>();
     
     @Override
     public Shell createShell() {

@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lca.container;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
@@ -35,7 +34,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
  * @author Joerg Domaschka
  *
  */
-public interface ContainerManager<T extends ContainerLogic> {
+public interface ContainerManager {
 
     ContainerType getContainerType();
     ContainerController getContainer(ComponentInstanceId _id);
