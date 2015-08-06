@@ -26,14 +26,14 @@ import java.util.concurrent.TimeUnit;
 
 final class EnvContext implements HostContext {
 
-    public static String PUBLIC_IP_KEY = "host.ip.public";
-    public static String PRIVATE_IP_KEY = "host.ip.private";
-    // public static String HOST_OS_KEY = "host.os";
-    public static String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
-    public static String VM_ID_KEY = "host.vm.id";
-    public static String CLOUD_ID_KEY = "host.vm.cloud.id";
+    public static final String PUBLIC_IP_KEY = "host.ip.public";
+    public static final String PRIVATE_IP_KEY = "host.ip.private";
+    // public static final String HOST_OS_KEY = "host.os";
+    public static final String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
+    public static final String VM_ID_KEY = "host.vm.id";
+    public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
     
-    private static String[] VALUES = new String[] {
+    private static final String[] VALUES = new String[] {
         PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY, 
     };
     

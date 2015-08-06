@@ -54,8 +54,8 @@ public enum DockerContainerManagerFactory implements SpecificContainerManagerFac
     private static volatile boolean remote_enabled = false;     
 
 
-    private static String PORT_HIERARCHY_2_NAME = "CONTAINER";
-    static PortHierarchyLevel PORT_HIERARCHY_2 = PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
-    public static PortHierarchy DOCKER_PORT_HIERARCHY = new PortHierarchyBuilder().addLevel(PortRegistryTranslator.PORT_HIERARCHY_0).
+    private static final String PORT_HIERARCHY_2_NAME = "CONTAINER";
+    static final PortHierarchyLevel PORT_HIERARCHY_2 = PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
+    public static final PortHierarchy DOCKER_PORT_HIERARCHY = new PortHierarchyBuilder().addLevel(PortRegistryTranslator.PORT_HIERARCHY_0).
                                                             addLevel(PortRegistryTranslator.PORT_HIERARCHY_1).addLevel(PORT_HIERARCHY_2).build();
 }
