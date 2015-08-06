@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /** 
@@ -29,15 +28,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * by downloading 
  */
 public interface PreInstallHandler extends LifecycleHandler {
-
-    public static final LifecycleHandlerFactory<PreInstallHandler> FACTORY = new LifecycleHandlerFactory<PreInstallHandler>() {
-        @Override public final PreInstallHandler getDefault() { return DefaultHandlers.DEFAULT_PRE_INSTALL_HANDLER; }
-
-        @Override
-        public PreInstallHandler getDeploymentHandler(Deployment d) {
-            return new PreInstallDeploymentHandler(d);
-        } 
-    };
+	// marker interface // 
 }
 
 final class PreInstallDeploymentHandler implements PreInstallHandler {

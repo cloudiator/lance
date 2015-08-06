@@ -18,10 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 
 /**
  * invoked when the Lifecycle controller starts; 
@@ -32,15 +30,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 public final class VoidHandler implements LifecycleHandler {
 
     private static final long serialVersionUID = 1L;
-
-    public static final LifecycleHandlerFactory<VoidHandler> FACTORY = new LifecycleHandlerFactory<VoidHandler>() {
-        @Override public final VoidHandler getDefault() { return DefaultHandlers.DEFAULT_VOID_HANDLER; }
-
-        @Override
-        public VoidHandler getDeploymentHandler(Deployment d) {
-            throw new UnsupportedOperationException("void handler cannot be used for own handler logic");
-        } 
-    };
 
     @Override 
     public void execute(ExecutionContext ec) {

@@ -18,10 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
+import de.uniulm.omi.cloudiator.lance.deployment.Deployment; 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
@@ -30,15 +29,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface PreStopHandler extends LifecycleHandler {
-    
-    public static final LifecycleHandlerFactory<PreStopHandler> FACTORY = new LifecycleHandlerFactory<PreStopHandler>() {
-        @Override public final PreStopHandler getDefault() { return DefaultHandlers.DEFAULT_PRE_STOP_HANDLER; }
 
-        @Override
-        public PreStopHandler getDeploymentHandler(Deployment d) {
-            return new PreStopDeploymentHandler(d);
-        } 
-    };
+	// marker interface
 }
 
 final class PreStopDeploymentHandler implements PreStopHandler {

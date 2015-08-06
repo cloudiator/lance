@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
@@ -30,15 +29,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface InstallHandler extends LifecycleHandler {
-    
-    public static final LifecycleHandlerFactory<InstallHandler> FACTORY = new LifecycleHandlerFactory<InstallHandler>() {
-        @Override public final InstallHandler getDefault() { return DefaultHandlers.DEFAULT_INSTALL_HANDLER; } 
-
-        @Override
-        public InstallHandler getDeploymentHandler(Deployment d) {
-            return new InstallDeploymentHandler(d);
-        } 
-    };
+    // marker interface //
 }
 
 final class InstallDeploymentHandler implements InstallHandler {

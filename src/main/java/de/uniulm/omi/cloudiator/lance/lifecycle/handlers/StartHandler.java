@@ -18,10 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
+import de.uniulm.omi.cloudiator.lance.deployment.Deployment; 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
@@ -31,14 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface StartHandler extends LifecycleHandler {
 
-    public static final LifecycleHandlerFactory<StartHandler> FACTORY = new LifecycleHandlerFactory<StartHandler>() {
-        @Override public final StartHandler getDefault() { return DefaultHandlers.DEFAULT_START_HANDLER; }
-        
-        @Override
-        public StartHandler getDeploymentHandler(Deployment d) {
-            return new StartDeploymentHandler(d);
-        } 
-    };
+	// marker interface //
 }
 
 final class StartDeploymentHandler implements StartHandler {

@@ -31,14 +31,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface PostStopHandler extends LifecycleHandler {
     
-    public static final LifecycleHandlerFactory<PostStopHandler> FACTORY = new LifecycleHandlerFactory<PostStopHandler>() {
-        @Override public final PostStopHandler getDefault() { return DefaultHandlers.DEFAULT_POST_STOP_HANDLER; }
-
-        @Override
-        public PostStopHandler getDeploymentHandler(Deployment d) {
-            return new PostStopDeploymentHandler(d);
-        } 
-    };
+	// marker interface //
 }
 
 final class PostStopDeploymentHandler implements PostStopHandler {

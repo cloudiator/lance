@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
@@ -31,15 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface InitHandler extends LifecycleHandler {
-    
-    public static final LifecycleHandlerFactory<InitHandler> FACTORY = new LifecycleHandlerFactory<InitHandler>() {
-        @Override public final InitHandler getDefault() { return DefaultHandlers.DEFAULT_INIT_HANDLER; }
-
-        @Override
-        public InitHandler getDeploymentHandler(Deployment d) {
-            return new InitDeploymentHandler(d);
-        } 
-    };
+	// marker interface //
 }
 
 final class InitDeploymentHandler implements InitHandler {

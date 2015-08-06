@@ -30,15 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface PostStartHandler extends LifecycleHandler {
-
-    public static final LifecycleHandlerFactory<PostStartHandler> FACTORY = new LifecycleHandlerFactory<PostStartHandler>() {
-        @Override public final PostStartHandler getDefault() { return DefaultHandlers.DEFAULT_POST_START_HANDLER; }
-
-        @Override
-        public PostStartHandler getDeploymentHandler(Deployment d) {
-            return new PostStartDeploymentHandler(d);
-        } 
-    };
+	// marker interface
 }
 
 final class PostStartDeploymentHandler implements PostStartHandler {

@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
@@ -31,14 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface StopHandler extends LifecycleHandler {
 
-    public static final LifecycleHandlerFactory<StopHandler> FACTORY = new LifecycleHandlerFactory<StopHandler>() {
-        @Override public final StopHandler getDefault() { return DefaultHandlers.DEFAULT_STOP_HANDLER; }
-
-        @Override
-        public StopHandler getDeploymentHandler(Deployment d) {
-            return new StopDeploymentHandler(d);
-        } 
-    };
+    // marker interface
 }
 
 final class StopDeploymentHandler implements StopHandler {
