@@ -52,14 +52,14 @@ public interface SystemServiceCommand extends Command {
 class SystemServiceCommandImpl implements SystemServiceCommand {
     
     private final LifecycleHandlerType type;
-    private final String serviceName;
-    private final String command;
+    // private final String serviceName;
+    // private final String command;
     private final CommandResultReference result = new DefaultCommandResultReference();
 
-    SystemServiceCommandImpl(LifecycleHandlerType _type, String _serviceName, String _command) {
-        serviceName = _serviceName;
-        command = _command;
-        type = _type;
+    SystemServiceCommandImpl(LifecycleHandlerType typeParam, @SuppressWarnings("unused") String serviceNameParam, @SuppressWarnings("unused") String commandParam) {
+       //  serviceName = serviceNameParam;
+       // command = commandParam;
+        type = typeParam;
     }
     
     @Override
@@ -68,8 +68,8 @@ class SystemServiceCommandImpl implements SystemServiceCommand {
     }
     
     @Override
-    public boolean runsInLifecycle(LifecycleHandlerType _type) {
-        return type == _type;
+    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+        return type == typeParam;
     }
 
     @Override

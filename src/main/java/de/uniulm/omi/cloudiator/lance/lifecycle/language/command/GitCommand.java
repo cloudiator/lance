@@ -72,7 +72,7 @@ final class GitCommandImpl implements GitCommand {
     private final CommandResultReference output = new GitCommandResult();
     
     
-    public GitCommandImpl(LifecycleHandlerType inPhase, @SuppressWarnings("unused") GitSubcommand _command, @SuppressWarnings("unused") URI _uri) {
+    public GitCommandImpl(LifecycleHandlerType inPhase, @SuppressWarnings("unused") GitSubcommand commandParam, @SuppressWarnings("unused") URI uriParam) {
         // command = _command;
     	// uri = _uri;
         type = inPhase;
@@ -84,8 +84,8 @@ final class GitCommandImpl implements GitCommand {
     }
 
     @Override
-    public boolean runsInLifecycle(LifecycleHandlerType _type) {
-        return type == _type;
+    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+        return type == typeParam;
     }
 
     @Override

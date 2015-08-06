@@ -40,14 +40,14 @@ public final class StateMachineBuilder<T extends Enum<?> & State > {
         return this;
     }
 
-    public StateMachineBuilder<T> addSynchronousTransition(T _from, T _to, TransitionAction _a){
-        StateTransition<T> st = StateTransition.synchronousTransition(_from, _to, _a);
+    public StateMachineBuilder<T> addSynchronousTransition(T fromParam, T toParam, TransitionAction aParam){
+        StateTransition<T> st = StateTransition.synchronousTransition(fromParam, toParam, aParam);
         transitions.add(st);
         return this;
     }
     
-    public StateMachineBuilder<T> addAsynchronousTransition(T _from, T _intermediate, T _to, TransitionAction _a){
-        StateTransition<T> st = StateTransition.asynchronousTransition(_from, _intermediate, _to, _a);
+    public StateMachineBuilder<T> addAsynchronousTransition(T fromParam, T intermediateParam, T toParam, TransitionAction aParam){
+        StateTransition<T> st = StateTransition.asynchronousTransition(fromParam, intermediateParam, toParam, aParam);
         transitions.add(st);
         return this;
     }
@@ -57,7 +57,9 @@ public final class StateMachineBuilder<T extends Enum<?> & State > {
     }
 
     public StateMachineBuilder<T> addAllState(T[] values) {
-        for(T v : values) { addState(v); }
+        for(T v : values) { 
+        	addState(v); 
+        }
         return this;
     }
 

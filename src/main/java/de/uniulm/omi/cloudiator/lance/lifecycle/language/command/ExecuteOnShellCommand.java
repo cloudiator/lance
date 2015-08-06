@@ -81,8 +81,8 @@ abstract class AbstractExecuteOnShellCommand implements ExecuteOnShellCommand {
     protected final boolean useRoot;
     private final CommandResultReference output = new OnShellCommandResult();
     
-    AbstractExecuteOnShellCommand(boolean _useRoot) {
-        useRoot = _useRoot;
+    AbstractExecuteOnShellCommand(boolean useRootParam) {
+        useRoot = useRootParam;
     }
     
     @Override
@@ -110,10 +110,10 @@ final class DeferredExecuteOnShellCommand extends AbstractExecuteOnShellCommand 
     private final LifecycleHandlerType type;
     private final CommandResultReference input;
     
-    DeferredExecuteOnShellCommand(LifecycleHandlerType _type, CommandResultReference file, boolean _useRoot) {
-        super(_useRoot);
+    DeferredExecuteOnShellCommand(LifecycleHandlerType typeParam, CommandResultReference file, boolean useRootParam) {
+        super(useRootParam);
         input = file;
-        type = _type;
+        type = typeParam;
     }
 
     @Override

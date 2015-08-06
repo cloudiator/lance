@@ -67,11 +67,11 @@ class ReplaceFileContentImpl implements ReplaceFileContentCommand {
     private final String replacement;
     private final CommandResultReference result = new DefaultCommandResultReference();
 
-    ReplaceFileContentImpl(LifecycleHandlerType _type, CommandResultReference _ref, String _pattern, String _replacement) {
-        fileref = _ref;
-        pattern  = _pattern;
-        replacement = _replacement;
-        type = _type;
+    ReplaceFileContentImpl(LifecycleHandlerType typeParam, CommandResultReference refParam, String patternParam, String replacementParam) {
+        fileref = refParam;
+        pattern  = patternParam;
+        replacement = replacementParam;
+        type = typeParam;
     }
     
     @Override

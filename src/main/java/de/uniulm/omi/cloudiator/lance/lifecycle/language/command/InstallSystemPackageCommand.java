@@ -38,9 +38,9 @@ public interface InstallSystemPackageCommand extends Command {
             supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
         }
         
-        public static InstallSystemPackageCommand create(LifecycleHandlerType inPhase, SystemApplication _app) {
+        public static InstallSystemPackageCommand create(LifecycleHandlerType inPhase, SystemApplication appParam) {
             if(supportedLifecycles.contains(inPhase)) {
-                return new InstallSystemPackageCommandImpl(inPhase, _app);
+                return new InstallSystemPackageCommandImpl(inPhase, appParam);
             }
             throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
         }
@@ -58,9 +58,9 @@ class InstallSystemPackageCommandImpl implements InstallSystemPackageCommand {
     private final SystemApplication application;
     private final CommandResultReference result = new DefaultCommandResultReference();
 
-    InstallSystemPackageCommandImpl(LifecycleHandlerType _type, SystemApplication _app) {
-        application = _app;
-        type = _type;
+    InstallSystemPackageCommandImpl(LifecycleHandlerType typeParam, SystemApplication appParam) {
+        application = appParam;
+        type = typeParam;
     }
     
     @Override
@@ -69,8 +69,8 @@ class InstallSystemPackageCommandImpl implements InstallSystemPackageCommand {
     }
 
     @Override
-    public boolean runsInLifecycle(LifecycleHandlerType _type) {
-        return type == _type;
+    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+        return type == typeParam;
     }
 
     @Override

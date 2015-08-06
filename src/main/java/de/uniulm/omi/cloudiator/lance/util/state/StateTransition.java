@@ -31,19 +31,19 @@ public final class StateTransition<T extends Enum<?> & State > {
     private final T to;
     private final TransitionAction action;
     
-    static<T extends Enum<?> & State> StateTransition<T> synchronousTransition(T _from, T _to, TransitionAction _action) {
-        return new StateTransition<>(_from, null, _to, _action);
+    static<T extends Enum<?> & State> StateTransition<T> synchronousTransition(T fromParam, T toParam, TransitionAction actionParam) {
+        return new StateTransition<>(fromParam, null, toParam, actionParam);
     }
     
-    static <T extends Enum<?> & State> StateTransition<T> asynchronousTransition(T _from, T _intermediate, T _to, TransitionAction _action) {
-        return new StateTransition<>(_from, _intermediate, _to, _action);
+    static <T extends Enum<?> & State> StateTransition<T> asynchronousTransition(T fromParam, T intermediateParam, T toParam, TransitionAction actionParam) {
+        return new StateTransition<>(fromParam, intermediateParam, toParam, actionParam);
     }
     
-    private StateTransition(T _from, T _intermediate, T _to, TransitionAction _action) {
-        to = _to;
-        from = _from;
-        action = _action;
-        intermediate = _intermediate;
+    private StateTransition(T fromParam, T intermediateParam, T toParam, TransitionAction actionParam) {
+        to = toParam;
+        from = fromParam;
+        action = actionParam;
+        intermediate = intermediateParam;
     }
 
     State getSource() { return from; }

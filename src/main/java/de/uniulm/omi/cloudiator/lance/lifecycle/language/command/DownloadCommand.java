@@ -40,10 +40,10 @@ public interface DownloadCommand extends Command {
             supportedLifecycles = EnumSet.of(LifecycleHandlerType.PRE_INSTALL);
         }
         
-        public static DownloadCommand create(LifecycleHandlerType inPhase, URI _uri) {
+        public static DownloadCommand create(LifecycleHandlerType inPhase, URI uriParam) {
             
             if(supportedLifecycles.contains(inPhase)) {
-                return new DownloadCommandImpl(inPhase, _uri);
+                return new DownloadCommandImpl(inPhase, uriParam);
             }
             throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
         }
@@ -61,9 +61,9 @@ class DownloadCommandImpl implements DownloadCommand {
     private final DefaultCommandResultReference result = new DefaultCommandResultReference();
     private final String filename;
 
-    DownloadCommandImpl(LifecycleHandlerType _type, URI _uri) {
-        uri = _uri;
-        type = _type;
+    DownloadCommandImpl(LifecycleHandlerType typeParam, URI uriParam) {
+        uri = uriParam;
+        type = typeParam;
         filename = UUID.randomUUID().toString();
     }
     
@@ -73,8 +73,8 @@ class DownloadCommandImpl implements DownloadCommand {
     }
 
     @Override
-    public boolean runsInLifecycle(LifecycleHandlerType _type) {
-        return type == _type;
+    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+        return type == typeParam;
     }
 
     @Override
