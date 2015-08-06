@@ -26,7 +26,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 
 public interface DockerConnector {
 
-    public final String LIFECYCLE_DIRECTORY = "/lifecycle";
+    // public final String LIFECYCLE_DIRECTORY = "/lifecycle";
     
     DockerShell startContainer(ComponentInstanceId myId) throws DockerException;
 

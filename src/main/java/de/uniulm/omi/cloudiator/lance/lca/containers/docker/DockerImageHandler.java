@@ -37,7 +37,8 @@ final class DockerImageHandler {
     private volatile ImageCreationType initSource;
     
     DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, DockerConnector clientParam) {
-        if(osParam == null) throw new NullPointerException("operating system has to be set.");
+        if(osParam == null) 
+        	throw new NullPointerException("operating system has to be set.");
         
         os = osParam;
         translator = translatorParam;
