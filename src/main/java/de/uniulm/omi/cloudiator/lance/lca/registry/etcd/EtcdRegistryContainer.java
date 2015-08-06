@@ -37,8 +37,8 @@ public final class EtcdRegistryContainer implements RegistryContainer {
     
     private final EtcdRegistryImpl impl;
     
-    private EtcdRegistryContainer(EtcdRegistryImpl _impl) {
-        impl = _impl;
+    private EtcdRegistryContainer(EtcdRegistryImpl implParam) {
+        impl = implParam;
     }
     
     @Override public LcaRegistry getRegistry() { return impl; }

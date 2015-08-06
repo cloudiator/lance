@@ -42,7 +42,7 @@ public interface DockerConnector {
      */
     String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException;
 
-    String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> ports_to_set) throws DockerException;
+    String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> portsToSet) throws DockerException;
 
     String findImage(String target) throws DockerException ;
 

@@ -47,8 +47,8 @@ final class StopDeploymentHandler implements StopHandler {
 
     private final Deployment d;
     
-    StopDeploymentHandler(Deployment _d) {
-        d = _d;
+    StopDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

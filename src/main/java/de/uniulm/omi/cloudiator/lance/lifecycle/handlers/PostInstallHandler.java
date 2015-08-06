@@ -48,8 +48,8 @@ final class PostInstallDeploymentHandler implements PostInstallHandler {
 
     private final Deployment d;
     
-    PostInstallDeploymentHandler(Deployment _d) {
-        d = _d;
+    PostInstallDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

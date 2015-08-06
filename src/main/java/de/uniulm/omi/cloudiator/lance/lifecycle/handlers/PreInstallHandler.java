@@ -46,8 +46,8 @@ final class PreInstallDeploymentHandler implements PreInstallHandler {
 
     private final Deployment d;
     
-    PreInstallDeploymentHandler(Deployment _d) {
-        d = _d;
+    PreInstallDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

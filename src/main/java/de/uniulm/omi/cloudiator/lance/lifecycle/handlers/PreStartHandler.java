@@ -48,8 +48,8 @@ final class PreStartDeploymentHandler implements PreStartHandler {
 
     private final Deployment d;
     
-    PreStartDeploymentHandler(Deployment _d) {
-        d = _d;
+    PreStartDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

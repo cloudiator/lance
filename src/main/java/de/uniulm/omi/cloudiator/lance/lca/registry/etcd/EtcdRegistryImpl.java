@@ -52,8 +52,8 @@ final class EtcdRegistryImpl implements LcaRegistry {
     private final URI[] uris;
     private transient EtcdClient etcd;
     
-    public EtcdRegistryImpl(URI[] _uris) throws RegistrationException {
-        uris = _uris;
+    public EtcdRegistryImpl(URI[] urisParam) throws RegistrationException {
+        uris = urisParam;
         etcd = new EtcdClient(uris);
         init();
     }

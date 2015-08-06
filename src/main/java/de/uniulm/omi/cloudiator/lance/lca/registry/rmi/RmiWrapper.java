@@ -34,8 +34,8 @@ public final class RmiWrapper implements LcaRegistry {
     
     private final RmiLcaRegistry delegate;
     
-    RmiWrapper(RmiLcaRegistry _delegate) {
-        delegate = _delegate;
+    RmiWrapper(RmiLcaRegistry delegateParam) {
+        delegate = delegateParam;
     }
     
     @Override

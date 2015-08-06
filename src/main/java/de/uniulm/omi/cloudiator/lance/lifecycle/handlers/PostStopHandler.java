@@ -47,8 +47,8 @@ final class PostStopDeploymentHandler implements PostStopHandler {
 
     private final Deployment d;
     
-    PostStopDeploymentHandler(Deployment _d) {
-        d = _d;
+    PostStopDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

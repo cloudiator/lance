@@ -203,7 +203,7 @@ public final class NetworkHandler implements PortUpdateCallback {
         outPorts.accept(visitor);
     }
 
-    public void updateAddress(PortHierarchyLevel hierarchy_level_2, String containerIp) {
-        registerAddress(hierarchy_level_2, containerIp);
+    public void updateAddress(PortHierarchyLevel level2Param, String containerIp) {
+        registerAddress(level2Param, containerIp);
     }
 }

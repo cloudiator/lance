@@ -111,12 +111,12 @@ public final class OutPortState {
         return l;
     }
     
-    private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> installNewSinks(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> new_sinks) {
+    private Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> installNewSinks(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> newSinksParam) {
         HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> old = null;
         synchronized(lock) {
             old = new HashMap<>(possibleSinks);
             possibleSinks.clear(); 
-            possibleSinks.putAll(new_sinks);
+            possibleSinks.putAll(newSinksParam);
         }
         return old;
     }

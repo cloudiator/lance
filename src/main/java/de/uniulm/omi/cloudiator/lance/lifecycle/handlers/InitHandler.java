@@ -48,8 +48,8 @@ final class InitDeploymentHandler implements InitHandler {
 
     private final Deployment d;
     
-    InitDeploymentHandler(Deployment _d) {
-        d = _d;
+    InitDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

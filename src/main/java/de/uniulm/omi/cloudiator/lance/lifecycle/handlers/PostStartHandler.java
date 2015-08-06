@@ -47,8 +47,8 @@ final class PostStartDeploymentHandler implements PostStartHandler {
 
     private final Deployment d;
     
-    PostStartDeploymentHandler(Deployment _d) {
-        d = _d;
+    PostStartDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

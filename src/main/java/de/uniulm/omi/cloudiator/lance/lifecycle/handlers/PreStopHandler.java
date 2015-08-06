@@ -47,8 +47,8 @@ final class PreStopDeploymentHandler implements PreStopHandler {
 
     private final Deployment d;
     
-    PreStopDeploymentHandler(Deployment _d) {
-        d = _d;
+    PreStopDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override

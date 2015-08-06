@@ -15,7 +15,7 @@ final class AppInstanceContainer {
     private final ApplicationInstanceId appInstId;
     private final Map<ComponentId,ComponentInstanceContainer> comps = new HashMap<>();
     
-    public AppInstanceContainer(ApplicationInstanceId instId, @SuppressWarnings("unused") ApplicationId _appId, 
+    public AppInstanceContainer(ApplicationInstanceId instId, @SuppressWarnings("unused") ApplicationId appIdParam, 
     		@SuppressWarnings("unused") String name) { 
     	//appId = _appId; 
     	appInstId = instId; 

@@ -47,8 +47,8 @@ final class InstallDeploymentHandler implements InstallHandler {
 
     private final Deployment d;
     
-    InstallDeploymentHandler(Deployment _d) {
-        d = _d;
+    InstallDeploymentHandler(Deployment deploymentParam) {
+        d = deploymentParam;
     }
 
     @Override
