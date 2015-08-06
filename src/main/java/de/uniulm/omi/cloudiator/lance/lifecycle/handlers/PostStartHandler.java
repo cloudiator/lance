@@ -21,7 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
