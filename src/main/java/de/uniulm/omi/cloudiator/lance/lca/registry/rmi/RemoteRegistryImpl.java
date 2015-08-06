@@ -23,13 +23,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class RemoteRegistryImpl implements RmiLcaRegistry {
     
+	private final static Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
     private final Map<ApplicationInstanceId,AppInstanceContainer> apps = new HashMap<>();
     
     @Override
@@ -41,9 +46,17 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     }
     
     @Override
-    public synchronized void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RemoteException {
-        if(apps.containsKey(instId)) throw new IllegalArgumentException("alread exists: " + instId);
+    /**
+     * @return true if this application instance has been added successfully. false if it was already contained
+    		 in the registry.
+     */
+    public synchronized boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RemoteException {
+        if(apps.containsKey(instId)) {
+        	LOGGER.info("application instance '" + instId + "' already exists.");
+        	return false;
+        }
         apps.put(instId, new AppInstanceContainer(instId, appId, name));
+        return true;
     }
     
     @Override

@@ -37,11 +37,18 @@ public final class RmiWrapper implements LcaRegistry {
     RmiWrapper(RmiLcaRegistry delegateParam) {
         delegate = delegateParam;
     }
-    
+       
+    /**
+     * @return true if this application instance has been added successfully. false if it was already contained
+    		 in the registry.
+     */
     @Override
-    public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
-        try { delegate.addApplicationInstance(instId, appId, name); }
-        catch(RemoteException re){throw new RegistrationException("operation failed.", re);}
+    public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
+        try { 
+        	return delegate.addApplicationInstance(instId, appId, name); 
+        } catch(RemoteException re){
+        	throw new RegistrationException("operation failed.", re);
+        }
     }
 
     @Override

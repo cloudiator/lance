@@ -66,11 +66,18 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
     
     @Override
-    public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
+    /**
+     * @return true if this application instance has been added successfully. false if it was already contained
+    		 in the registry.
+     */
+    public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
         String dirName = "/lca/" + instId.toString();
-        createDirectorIfItDoesNotExist(dirName);
-        setPropertyInDirectory(dirName, DESCRIPTION, APP_INSTANCE_DESCRIPTION);
-        setPropertyInDirectory(dirName, NAME, name);
+        boolean b = createDirectorIfItDoesNotExist(dirName);
+        if(b) { // only add properties if this is a new directory //
+        	setPropertyInDirectory(dirName, DESCRIPTION, APP_INSTANCE_DESCRIPTION);
+        	setPropertyInDirectory(dirName, NAME, name);
+        }
+        return b;
     }
 
     @Override
@@ -190,8 +197,10 @@ final class EtcdRegistryImpl implements LcaRegistry {
         return readPropertyFromDirectory(dirName, property);
     }
     
-    private void createDirectorIfItDoesNotExist(String dirName) throws RegistrationException {
-        if(directoryDoesExist(dirName)) return;
+    private boolean createDirectorIfItDoesNotExist(String dirName) throws RegistrationException {
+        if(directoryDoesExist(dirName)) 
+        	return false;
+        
         try {
             // EtcdKeysResponse ccc = 
             etcd.putDir(dirName).send().get();
@@ -202,6 +211,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
         } catch (EtcdException e) {
             throw new RegistrationException(e);
         }
+        return true;
     }
     
     private boolean directoryDoesExist(String dirName) throws RegistrationException {
