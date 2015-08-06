@@ -29,9 +29,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public interface LifecycleAgent extends Remote {
-    
-    public final static String AGENT_REGISTRY_KEY = "LifecycleAgent";
-    public final static int AGENT_RMI_PORT = 33033;
 
     void stop() throws RemoteException;
 

@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.rmi.NoSuchObjectException;
+import java.rmi.NoSuchObjectException; 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -28,8 +28,7 @@ import java.rmi.server.UnicastRemoteObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent.AGENT_REGISTRY_KEY;
-import static de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent.AGENT_RMI_PORT;
+import de.uniulm.omi.cloudiator.lance.LcaConstants;
 
 public final class LifecycleAgentBooter {
 
@@ -61,7 +60,7 @@ public final class LifecycleAgentBooter {
     
     private static LifecycleAgent exportAgent(LifecycleAgentImpl agent) {
         try {
-            return (LifecycleAgent) UnicastRemoteObject.exportObject(agent, AGENT_RMI_PORT);
+            return (LifecycleAgent) UnicastRemoteObject.exportObject(agent, LcaConstants.AGENT_RMI_PORT);
         } catch(RemoteException re) {
             LOGGER.error("got exception at export; quitting the platform", re);
         }
@@ -72,7 +71,7 @@ public final class LifecycleAgentBooter {
         try {
             Registry reg = getAndCreateRegistry();
             removeExisting(reg);
-            reg.rebind(AGENT_REGISTRY_KEY, lca);
+            reg.rebind(LcaConstants.AGENT_REGISTRY_KEY, lca);
             return true;
         } catch(RemoteException e) { // includes AccessException //
             LOGGER.error("got exception at startup: could not add lca to registry. aborting.", e);
@@ -94,7 +93,7 @@ public final class LifecycleAgentBooter {
         Object o = null;
         
         try { 
-            o = reg.lookup(AGENT_REGISTRY_KEY);
+            o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
         } catch(NotBoundException nbe){
             LOGGER.info("could not remove element as it was not registered.", nbe);
             return; 
@@ -106,7 +105,7 @@ public final class LifecycleAgentBooter {
         }
             
         try { 
-            reg.unbind(AGENT_REGISTRY_KEY); 
+            reg.unbind(LcaConstants.AGENT_REGISTRY_KEY); 
         } catch(NotBoundException nbe){
             LOGGER.info("could not remove element as it was not registered.", nbe);
             return; 
