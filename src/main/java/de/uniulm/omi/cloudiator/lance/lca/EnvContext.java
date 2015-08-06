@@ -92,7 +92,9 @@ final class EnvContext implements HostContext {
         executor.shutdownNow();
         while(true) {
             executor.awaitTermination(10, TimeUnit.SECONDS);
-            if(executor.isTerminated()) return;
+            if(executor.isTerminated()) {
+            	return;
+            }
         }
     }
 

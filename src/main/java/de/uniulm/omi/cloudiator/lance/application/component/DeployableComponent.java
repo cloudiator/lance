@@ -40,8 +40,8 @@ public final class DeployableComponent implements Serializable {
     private final String name;
     private final ComponentId myId;
     private final LifecycleStore lifecycle;
-    private final List<InPort> in_ports;
-    private final List<OutPort> out_ports;
+    private final List<InPort> inPorts;
+    private final List<OutPort> outPorts;
     private final HashMap<String, Class<?>> properties;
     private final HashMap<String, ? extends Serializable> defaultValues;
 
@@ -51,8 +51,8 @@ public final class DeployableComponent implements Serializable {
         name = nameParam;
         myId = idParam;
         lifecycle = lifecycleStoreParam;
-        in_ports = new ArrayList<>(inPortsParam);
-        out_ports = new ArrayList<>(outPortsParam);
+        inPorts = new ArrayList<>(inPortsParam);
+        outPorts = new ArrayList<>(outPortsParam);
         properties = new HashMap<>(propertiesParam);
         defaultValues = propertyValuesParam;
     }
@@ -64,8 +64,8 @@ public final class DeployableComponent implements Serializable {
     public ComponentId getComponentId() { return myId; }
 
     public List<InPort> getExposedPorts() {
-        List<InPort> ports = new ArrayList<>(in_ports.size());
-        for(InPort i : in_ports) {
+        List<InPort> ports = new ArrayList<>(inPorts.size());
+        for(InPort i : inPorts) {
             ports.add(i);
         }
         return ports;
@@ -73,11 +73,11 @@ public final class DeployableComponent implements Serializable {
     
     @Override
     public String toString() {
-        return name + ": -> " + in_ports + "@" + myId; 
+        return name + ": -> " + inPorts + "@" + myId; 
     }
 
     public List<OutPort> getDownstreamPorts() {
-        return new ArrayList<>(out_ports); 
+        return new ArrayList<>(outPorts); 
     }
     
     public void accept(DeploymentContext ctx, PropertyVisitor visitor) {        
@@ -87,7 +87,9 @@ public final class DeployableComponent implements Serializable {
             if(type == OutPort.class) 
             	continue;
             Object o = ctx.getProperty(propertyName, type);
-            if(o == null) o = defaultValues.get(propertyName);
+            if(o == null) {
+            	o = defaultValues.get(propertyName);
+            }
             if(o == null) {
                 LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
                 continue;

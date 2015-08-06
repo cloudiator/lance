@@ -138,8 +138,9 @@ public class DockerContainerLogic implements ContainerLogic {
     
     private DockerShell doStartContainer() throws ContainerException {
         final DockerShell dshell;
-        try { dshell = client.startContainer(myId); }
-        catch(DockerException de) {
+        try { 
+        	dshell = client.startContainer(myId); 
+        } catch(DockerException de) {
             throw new ContainerException("cannot start container: " + myId, de);
         }
         //FIXME: make sure that start detector has been run successfully 

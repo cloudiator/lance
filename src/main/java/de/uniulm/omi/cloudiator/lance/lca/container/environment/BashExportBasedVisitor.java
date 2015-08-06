@@ -56,7 +56,9 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
     public void visitOutPort(String portName, PortHierarchyLevel level, List<DownstreamAddress> sinks) {
         String value = "";
         for(DownstreamAddress element : sinks) {
-            if(!value.isEmpty()) value = value + ","; 
+            if(!value.isEmpty()) {
+            	value = value + ","; 
+            }
             value = value + element.toString();
         }
         addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName, value);

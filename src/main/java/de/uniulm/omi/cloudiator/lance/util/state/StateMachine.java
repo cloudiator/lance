@@ -32,7 +32,7 @@ public final class StateMachine<T extends Enum<?> & State > {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(StateMachine.class);
 	
-    private final Object[] DEFAULT_PARAMS = new Object[0];
+    private static final Object[] DEFAULT_PARAMS = new Object[0];
     private T status;
     private StateTransition<T> ongoingTransition = null;
     private Future<?> endOfTransition = null;

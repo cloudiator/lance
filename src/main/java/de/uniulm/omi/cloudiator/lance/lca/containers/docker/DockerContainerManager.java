@@ -43,7 +43,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 public class DockerContainerManager implements ContainerManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerManager.class);
-    
     private final boolean isRemote;
     private final HostContext hostContext;
     private final String hostname;

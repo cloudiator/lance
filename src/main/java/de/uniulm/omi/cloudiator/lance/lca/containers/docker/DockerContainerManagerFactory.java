@@ -40,7 +40,7 @@ public enum DockerContainerManagerFactory implements SpecificContainerManagerFac
         public ContainerManager createContainerManager(HostContext vmId) {
             if(! isRemoteAccessenabled()) 
             	throw new IllegalArgumentException("remote docker not supported"); 
-            return new DockerContainerManager(vmId, "134.60.64.55");
+            throw new UnsupportedOperationException("remote IP address needs to be defined.");
         }
     };
     
