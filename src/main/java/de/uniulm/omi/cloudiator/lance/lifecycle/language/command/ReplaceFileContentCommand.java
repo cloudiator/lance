@@ -60,7 +60,7 @@ public interface ReplaceFileContentCommand extends Command {
 class ReplaceFileContentImpl implements ReplaceFileContentCommand {
 
     // so far, we only support commands as root //
-    private final static boolean useRoot = true;
+    private final static boolean USE_ROOT = true;
     private final LifecycleHandlerType type;
     private final CommandResultReference fileref;
     private final String pattern;
@@ -103,7 +103,7 @@ class ReplaceFileContentImpl implements ReplaceFileContentCommand {
                 
         String command = "sed -i -e 's!" + pattern + "!" + replacement + "!g' " + filename;
         if(os.getType() == OperatingSystemType.UBUNTU) {
-            if(useRoot) return "sudo " + command;
+            if(USE_ROOT) return "sudo " + command;
             return command;
         }
         return command;

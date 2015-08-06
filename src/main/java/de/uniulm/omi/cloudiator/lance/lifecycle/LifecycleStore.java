@@ -25,17 +25,18 @@ import org.slf4j.LoggerFactory;
 
 public class LifecycleStore implements Serializable {
 
-	private static Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
 	
     private static final long serialVersionUID = 1L;
     private final LifecycleHandler[] handlers;
     
-    LifecycleStore(LifecycleHandler[] _handlers) {
-        handlers = _handlers;
+    LifecycleStore(LifecycleHandler[] handlersParam) {
+        handlers = handlersParam;
         assert handlers.length == LifecycleHandlerType.values().length : "array too small";
         for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
             LifecycleHandler h = getCastHandler(t);
-            if(h == null) throw new IllegalStateException("not the correct lifecycle handler");
+            if(h == null) 
+            	throw new IllegalStateException("not the correct lifecycle handler");
         }
     }
     

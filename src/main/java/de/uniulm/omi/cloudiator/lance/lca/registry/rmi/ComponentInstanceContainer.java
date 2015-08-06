@@ -22,10 +22,10 @@ final class ComponentInstanceContainer {
     private final ComponentId cid;
     private final Map<ComponentInstanceId, Map<String,Object>> instances = new HashMap<>();
     
-    public ComponentInstanceContainer(AppInstanceContainer cnt, ComponentId _cid, 
+    public ComponentInstanceContainer(AppInstanceContainer cnt, ComponentId cidParam, 
     		@SuppressWarnings("unused") String name) { 
     	myContainer = cnt; 
-    	cid = _cid; 
+    	cid = cidParam; 
     }
     
     public String getComponentProperty(ComponentInstanceId myId, String name) {
@@ -40,11 +40,11 @@ final class ComponentInstanceContainer {
         for(Entry<ComponentInstanceId, Map<String, Object>> entry : instances.entrySet()) {
             ComponentInstanceId id = entry.getKey();
             Map<String,Object> content = entry.getValue();
-            Map<String,String> inner_copy = new HashMap<>();
+            Map<String,String> innerCopy = new HashMap<>();
             for(Entry<String, Object> innerEntry : content.entrySet()) {
-                inner_copy.put(innerEntry.getKey(), innerEntry.getValue().toString());
+                innerCopy.put(innerEntry.getKey(), innerEntry.getValue().toString());
             }
-            copy.put(id, inner_copy);
+            copy.put(id, innerCopy);
         }
         return copy;
     }

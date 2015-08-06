@@ -29,10 +29,8 @@ enum DockerConfigFileLocation implements CommandResultReference {
     
     @Override
     public String getResult(OperatingSystem os, ExecutionContext ec) {
-        if(os.isLinuxOs()) {
-            if(os.getType() == OperatingSystemType.UBUNTU) {
+        if(os.isLinuxOs() && os.getType() == OperatingSystemType.UBUNTU) {
                 return "/etc/default/docker";
-            }
         }
         throw new IllegalStateException("location of config file unknown for " + os);
     }

@@ -74,7 +74,7 @@ public interface SetFilePropertiesCommand extends Command {
 final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
     
     private final LifecycleHandlerType type;
-    protected static final boolean useRoot = true;
+    protected static final boolean USE_ROOT = true;
     private final CommandResultReference result = new DefaultCommandResultReference();
     private final CommandResultReference input;
     private final int[] props;
@@ -134,7 +134,7 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
         
         String command = "chmod " + string + " " + filename;
         if(os.getType() == OperatingSystemType.UBUNTU) {
-            if(useRoot) return "sudo " + command;
+            if(USE_ROOT) return "sudo " + command;
             return command;
         }
         return command;

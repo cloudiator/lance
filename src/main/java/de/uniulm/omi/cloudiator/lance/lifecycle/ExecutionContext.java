@@ -25,9 +25,9 @@ public final class ExecutionContext {
     private final OperatingSystem os;
     private final ShellFactory shellFactory;
     
-    public ExecutionContext(OperatingSystem _os, ShellFactory _shellFactory) {
-        os = _os;
-        shellFactory = _shellFactory;
+    public ExecutionContext(OperatingSystem osParam, ShellFactory shellFactoryParam) {
+        os = osParam;
+        shellFactory = shellFactoryParam;
     }
     
     public OperatingSystem getOperatingSystem() {

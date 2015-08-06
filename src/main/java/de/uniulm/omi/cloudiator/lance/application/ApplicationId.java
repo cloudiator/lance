@@ -36,7 +36,8 @@ public final class ApplicationId implements Serializable {
     
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof ApplicationId)) return false; // captures null
+        if(!(o instanceof ApplicationId)) 
+        	return false; // captures null
         ApplicationId that = (ApplicationId) o;
         return this.uuid.equals(that.uuid);
     }

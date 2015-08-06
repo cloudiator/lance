@@ -84,7 +84,8 @@ public final class DeployableComponent implements Serializable {
         for(Entry<String, Class<?>> entry : properties.entrySet()) {
             String propertyName = entry.getKey();
             Class<?> type = entry.getValue();
-            if(type == OutPort.class) continue;
+            if(type == OutPort.class) 
+            	continue;
             Object o = ctx.getProperty(propertyName, type);
             if(o == null) o = defaultValues.get(propertyName);
             if(o == null) {
