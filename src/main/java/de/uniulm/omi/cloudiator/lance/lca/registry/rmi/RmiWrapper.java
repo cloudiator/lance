@@ -83,4 +83,16 @@ public final class RmiWrapper implements LcaRegistry {
          try { return delegate.getComponentProperty(appInstId, compId, myId, name); }
          catch(RemoteException re){throw new RegistrationException("operation failed.", re);}
     }
+
+	@Override
+	public boolean applicationComponentExists(ApplicationInstanceId appInstId) throws RegistrationException {
+		try { return delegate.applicationInstanceExists(appInstId); }
+        catch(RemoteException re){throw new RegistrationException("operation failed.", re);}
+	}
+
+	@Override
+	public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException {
+		try { return delegate.applicationComponentExists(appInstId, compId); }
+        catch(RemoteException re){throw new RegistrationException("operation failed.", re);}
+	}
 }

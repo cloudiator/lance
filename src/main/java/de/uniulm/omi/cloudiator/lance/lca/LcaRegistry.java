@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.io.Serializable;
+import java.io.Serializable; 
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -33,7 +33,6 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 public interface LcaRegistry extends Serializable {
 
 	/**
-	 * 
 	 * @param instId
 	 * @param appId
 	 * @param name
@@ -48,4 +47,6 @@ public interface LcaRegistry extends Serializable {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
     public String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
+	public boolean applicationComponentExists(ApplicationInstanceId appInstId) throws RegistrationException;
+	boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
 }

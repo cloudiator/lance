@@ -35,4 +35,6 @@ public interface RmiLcaRegistry extends Remote {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RemoteException;
     public String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RemoteException;
+	public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RemoteException;
+	public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RemoteException;
 }

@@ -15,40 +15,44 @@ final class AppInstanceContainer {
     private final ApplicationInstanceId appInstId;
     private final Map<ComponentId,ComponentInstanceContainer> comps = new HashMap<>();
     
-    public AppInstanceContainer(ApplicationInstanceId instId, @SuppressWarnings("unused") ApplicationId appIdParam, 
+    AppInstanceContainer(ApplicationInstanceId instId, @SuppressWarnings("unused") ApplicationId appIdParam, 
     		@SuppressWarnings("unused") String name) { 
     	//appId = _appId; 
     	appInstId = instId; 
     }
 
-    public String getComponentProperty(ComponentId compId, ComponentInstanceId myId, String name) {
+    String getComponentProperty(ComponentId compId, ComponentInstanceId myId, String name) {
         ComponentInstanceContainer c = comps.get(compId);
         if(c == null) throw new IllegalArgumentException("not known: " + compId);
         return c.getComponentProperty(myId, name);
     }
 
-    public Map<ComponentInstanceId, Map<String, String>> dumpAll(ComponentId compId) {
+    Map<ComponentInstanceId, Map<String, String>> dumpAll(ComponentId compId) {
         ComponentInstanceContainer c = comps.get(compId);
         if(c == null) return Collections.emptyMap();
         
         return c.dumpInstances();
     }
 
-    public void addComponentProperty(ComponentId cid, ComponentInstanceId cinstId, String property, Object value) {
+    void addComponentProperty(ComponentId cid, ComponentInstanceId cinstId, String property, Object value) {
         ComponentInstanceContainer c = comps.get(cid);
         if(c == null) throw new IllegalArgumentException("not known: " + cid);
         c.addComponentProperty(cinstId, property, value);
     }
 
-    public void addComponent(ComponentId cid, String name) {
+    void addComponent(ComponentId cid, String name) {
         if(comps.containsKey(cid)) throw new IllegalArgumentException("alread exists: " + cid);
         comps.put(cid, new ComponentInstanceContainer(this, cid, name));
     }
 
-    public void addComponentInstance(ComponentId cid, ComponentInstanceId cinstId) {
+    void addComponentInstance(ComponentId cid, ComponentInstanceId cinstId) {
         ComponentInstanceContainer c = comps.get(cid);
         if(c == null) throw new IllegalArgumentException("not known: " + cid);
         c.addComponentInstance(cinstId);
+    }
+    
+    boolean componentExists(ComponentId cid) {
+        return comps.containsKey(cid);
     }
     
     @Override

@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
@@ -30,6 +31,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManagerFactory;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
+import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
@@ -64,11 +66,32 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
 
     @Override
-    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) {
+    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws LcaException, RegistrationException {
+    	applicationRegistered(ctx);
+    	componentPartOfApplication(ctx, component);
+    	
         ContainerController cc = manager.createNewContainer(ctx, component, os);
         cc.awaitCreation();
         cc.init(component.getLifecycleStore());
         cc.awaitInitialisation();
         return cc.getId();
+    }
+    
+    private static void applicationRegistered(DeploymentContext ctx) throws LcaException, RegistrationException {
+    	LcaRegistry reg = ctx.getRegistry();
+    	ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
+    	
+    	if(reg.applicationComponentExists(appInstId)) return;
+    	
+    	throw new LcaException("cannot proceed: application instance is not known.");
+    }
+    
+    private static void componentPartOfApplication(DeploymentContext ctx, DeployableComponent component) throws RegistrationException, LcaException {
+    	LcaRegistry reg = ctx.getRegistry();
+    	ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
+    	
+    	if(reg.applicationComponentExists(appInstId, component.getComponentId())) return;
+    	
+    	throw new LcaException("cannot proceed: component is not known within application instance.");
     }
 }

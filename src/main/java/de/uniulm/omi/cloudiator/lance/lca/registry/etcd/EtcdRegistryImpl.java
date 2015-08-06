@@ -71,7 +71,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
     		 in the registry.
      */
     public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
-        String dirName = "/lca/" + instId.toString();
+        String dirName = generateApplicationInstanceDirectory(instId);
         boolean b = createDirectorIfItDoesNotExist(dirName);
         if(b) { // only add properties if this is a new directory //
         	setPropertyInDirectory(dirName, DESCRIPTION, APP_INSTANCE_DESCRIPTION);
@@ -126,76 +126,25 @@ final class EtcdRegistryImpl implements LcaRegistry {
         }
         return retVal;
     }
-        
-    private static void fillMapWithValue(String key, String value, Map<String, String> map) {
-        if(DESCRIPTION.equals(key)) return;
-        if(NAME.equals(key)) return;
-        map.put(key, value);
-    }
-    
-    private static Map<ComponentInstanceId, Map<String, String>> dumpFirstLevelKeys(EtcdNode root) {
-        final String mainDir = root.key;
-        Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
-        final int length = mainDir.length() + 1;
-        for(EtcdNode node : root.nodes) {
-            if(! node.dir) continue;
-            String key = node.key.substring(length);
-            String[] split = key.split("/");
-            if(split.length == 1) { // component instance element //
-                createComponentInstanceIfNotExistantAndFillWithMap(key, retVal);
-            } else {
-                throw new IllegalStateException("invalid directory structure for key");
-                // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
-                // fillMapWithValue(split[1], map);
-            }
-        }
-        return retVal;
-    }
-    
-    private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
-        final String mainDir = root.key;
-        final int length = mainDir.length() + 1;
-        for(EtcdNode node : root.nodes) {
-            if(node.dir) throw new IllegalStateException("unexpected to find directories in component instances");
-            String key = node.key.substring(length);
-            String[] split = key.split("/");
-            if(split.length == 1) { // component instance element //
-                fillMapWithValue(key, node.value, map);
-            } else {
-                throw new IllegalStateException("invalid directory structure for key");
-                // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
-                // fillMapWithValue(split[1], map);
-            }
-        }
-    }
-
-    private final static Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
-        if(DESCRIPTION.equals(key)) return Collections.emptyMap();
-        if(NAME.equals(key)) return Collections.emptyMap();
-        ComponentInstanceId inst = ComponentInstanceId.fromString(key);
-        Map<String, String> map = retVal.get(inst);
-        if(map == null) {
-            map = new HashMap<>();
-            retVal.put(inst, map);
-        } else {
-            throw new IllegalStateException("unexpected event: map already exists.");
-        }
-        return map;
-    }
-    
-    private final static String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid) {
-        return "/lca/" + instId.toString() + "/" + cid.toString();
-    }
-    
-    private final static String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) {
-        return "/lca/" + instId.toString() + "/" + cid.toString() + "/" + cinstId.toString();
-    }
     
     @Override
     public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String property) throws RegistrationException {
         String dirName = generateComponentInstanceDirectory(appInstId, compId, myId);
         return readPropertyFromDirectory(dirName, property);
     }
+    
+
+	@Override
+	public boolean applicationComponentExists(ApplicationInstanceId appInstId) throws RegistrationException {
+		final String dirName = generateApplicationInstanceDirectory(appInstId);
+		return directoryDoesExist(dirName);
+	}
+
+	@Override
+	public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException {
+		String dirName = generateComponentDirectory(appInstId, compId);
+		return directoryDoesExist(dirName); 
+	}
     
     private boolean createDirectorIfItDoesNotExist(String dirName) throws RegistrationException {
         if(directoryDoesExist(dirName)) 
@@ -258,7 +207,74 @@ final class EtcdRegistryImpl implements LcaRegistry {
             throw new RegistrationException(e);
         }
     }
+
+    private final static String generateApplicationInstanceDirectory(ApplicationInstanceId instId) {
+        return "/lca/" + instId.toString();
+    }
     
+    private final static String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid) {
+        return generateApplicationInstanceDirectory(instId) + "/" + cid.toString();
+    }
+    
+    private final static String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) {
+        return generateComponentDirectory(instId, cid) + "/" + cinstId.toString();
+    }
+    
+	private static void fillMapWithValue(String key, String value, Map<String, String> map) {
+	    if(DESCRIPTION.equals(key)) return;
+	    if(NAME.equals(key)) return;
+	    map.put(key, value);
+	}
+	
+	private static Map<ComponentInstanceId, Map<String, String>> dumpFirstLevelKeys(EtcdNode root) {
+	    final String mainDir = root.key;
+	    Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
+	    final int length = mainDir.length() + 1;
+	    for(EtcdNode node : root.nodes) {
+	        if(! node.dir) continue;
+	        String key = node.key.substring(length);
+	        String[] split = key.split("/");
+	        if(split.length == 1) { // component instance element //
+	            createComponentInstanceIfNotExistantAndFillWithMap(key, retVal);
+	        } else {
+	            throw new IllegalStateException("invalid directory structure for key");
+	            // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
+	            // fillMapWithValue(split[1], map);
+	        }
+	    }
+	    return retVal;
+	}
+	
+	private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
+	    final String mainDir = root.key;
+	    final int length = mainDir.length() + 1;
+	    for(EtcdNode node : root.nodes) {
+	        if(node.dir) throw new IllegalStateException("unexpected to find directories in component instances");
+	        String key = node.key.substring(length);
+	        String[] split = key.split("/");
+	        if(split.length == 1) { // component instance element //
+	            fillMapWithValue(key, node.value, map);
+	        } else {
+	            throw new IllegalStateException("invalid directory structure for key");
+	            // Map<String,String> map = createComponentInstanceIfNotExistantAndFillWithMap(split[0], retVal);
+	            // fillMapWithValue(split[1], map);
+	        }
+	    }
+	}
+	
+	private final static Map<String, String> createComponentInstanceIfNotExistantAndFillWithMap(String key, Map<ComponentInstanceId, Map<String, String>> retVal) {
+	    if(DESCRIPTION.equals(key)) return Collections.emptyMap();
+	    if(NAME.equals(key)) return Collections.emptyMap();
+	    ComponentInstanceId inst = ComponentInstanceId.fromString(key);
+	    Map<String, String> map = retVal.get(inst);
+	    if(map == null) {
+	        map = new HashMap<>();
+	        retVal.put(inst, map);
+	    } else {
+	        throw new IllegalStateException("unexpected event: map already exists.");
+	    }
+	    return map;
+	}
     /*
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
         
