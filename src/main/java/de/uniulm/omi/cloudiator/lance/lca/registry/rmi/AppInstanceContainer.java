@@ -23,13 +23,15 @@ final class AppInstanceContainer {
 
     String getComponentProperty(ComponentId compId, ComponentInstanceId myId, String name) {
         ComponentInstanceContainer c = comps.get(compId);
-        if(c == null) throw new IllegalArgumentException("not known: " + compId);
+        if(c == null) 
+        	throw new IllegalArgumentException("not known: " + compId);
         return c.getComponentProperty(myId, name);
     }
 
     Map<ComponentInstanceId, Map<String, String>> dumpAll(ComponentId compId) {
         ComponentInstanceContainer c = comps.get(compId);
-        if(c == null) return Collections.emptyMap();
+        if(c == null) 
+        	return Collections.emptyMap();
         
         return c.dumpInstances();
     }
@@ -41,13 +43,15 @@ final class AppInstanceContainer {
     }
 
     void addComponent(ComponentId cid, String name) {
-        if(comps.containsKey(cid)) throw new IllegalArgumentException("alread exists: " + cid);
+        if(comps.containsKey(cid)) 
+        	throw new IllegalArgumentException("alread exists: " + cid);
         comps.put(cid, new ComponentInstanceContainer(this, cid, name));
     }
 
     void addComponentInstance(ComponentId cid, ComponentInstanceId cinstId) {
         ComponentInstanceContainer c = comps.get(cid);
-        if(c == null) throw new IllegalArgumentException("not known: " + cid);
+        if(c == null) 
+        	throw new IllegalArgumentException("not known: " + cid);
         c.addComponentInstance(cinstId);
     }
     

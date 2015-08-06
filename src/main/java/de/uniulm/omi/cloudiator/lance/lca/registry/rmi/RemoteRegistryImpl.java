@@ -40,7 +40,8 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     @Override
     public synchronized Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
-        if(c == null) return Collections.emptyMap();
+        if(c == null) 
+        	return Collections.emptyMap();
         
         return c.dumpAll(compId);
     }
@@ -62,7 +63,8 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     @Override
     public synchronized void addComponent(ApplicationInstanceId instId, ComponentId cid, String name)  throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
-        if(c == null) throw new IllegalArgumentException("not known: " + instId);
+        if(c == null) 
+        	throw new IllegalArgumentException("not known: " + instId);
         c.addComponent(cid, name);
     }
 
@@ -70,14 +72,16 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     public synchronized void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) 
                 throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
-        if(c == null) throw new IllegalArgumentException("not known: " + instId);
+        if(c == null) 
+        	throw new IllegalArgumentException("not known: " + instId);
         c.addComponentInstance(cid, cinstId);
     }
 
     @Override
     public synchronized void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RemoteException {
         AppInstanceContainer c = apps.get(instId);
-        if(c == null) throw new IllegalArgumentException("not known: " + instId);
+        if(c == null) 
+        	throw new IllegalArgumentException("not known: " + instId);
         c.addComponentProperty(cid, cinstId, property, value);
     }
     
@@ -86,7 +90,8 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
             ComponentId compId, ComponentInstanceId myId, String name) {
         
         AppInstanceContainer c = apps.get(appInstId);
-        if(c == null) throw new IllegalArgumentException("not known: " + appInstId);
+        if(c == null) 
+        	throw new IllegalArgumentException("not known: " + appInstId);
         return c.getComponentProperty(compId, myId, name);
     }
 

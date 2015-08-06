@@ -74,7 +74,8 @@ public final class EtcdRegistryContainer implements RegistryContainer {
         
         for(String s : split) {
             URI uri = createUri(s);
-            if(uri == null) continue;
+            if(uri == null) 
+            	continue;
             uris.add(uri);
         }
 
@@ -85,11 +86,16 @@ public final class EtcdRegistryContainer implements RegistryContainer {
         final int colon = host.indexOf(":"); 
         if(colon == 0) return null;
         String uri = "http://";
-        if(colon == -1) uri = uri + host + ":4001";
-        else if(colon == host.length() - 1) uri = uri + host + "4001";
-        else uri = uri + host;
-        try { return URI.create(uri); }
-        catch(IllegalArgumentException ia) {
+        if(colon == -1) { 
+        	uri = uri + host + ":4001";
+        } else if(colon == host.length() - 1) {
+        	uri = uri + host + "4001";
+        } else {
+        	uri = uri + host;
+        }
+        try { 
+        	return URI.create(uri); 
+        } catch(IllegalArgumentException ia) {
             LOGGER.warn("problems creating an URI from etcd parameters, ignoring: " + host, ia); 
         }
         return null;

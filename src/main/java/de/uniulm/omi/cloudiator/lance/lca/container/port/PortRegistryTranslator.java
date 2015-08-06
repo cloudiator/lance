@@ -56,9 +56,11 @@ public final class PortRegistryTranslator {
     }
     
     public static boolean isValidPort(Integer i) {
-        if(i == null) return false;
+        if(i == null) 
+        	return false;
         final int j = i.intValue();
-        if(j < 1 || j > 65535) return false;
+        if(j < 1 || j > 65535) 
+        	return false;
         return true;
     }
     
@@ -115,8 +117,10 @@ public final class PortRegistryTranslator {
     }
     
     private static boolean isValidPortOrUnset(Integer i) {
-        if(i == null) return false;
-        if(isValidPort(i)) return true;
+        if(i == null) 
+        	return false;
+        if(isValidPort(i)) 
+        	return true;
         return i.intValue() == UNSET_PORT.intValue();
     }
     
