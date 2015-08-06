@@ -29,67 +29,67 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.Command;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 public interface GitCommand extends Command {
-	
-	enum GitSubcommand {
-		CLONE,
-		;
-	}
+    
+    enum GitSubcommand {
+        CLONE,
+        ;
+    }
 
-	public static class GitCommandFactory {
-			
-		private final static Set<LifecycleHandlerType> supportedLifecycles;
-		
-		static {
-			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
-		}
-		
-		public static GitCommand create(LifecycleHandlerType inPhase, GitSubcommand command, URI uri) {
-			if(supportedLifecycles.contains(inPhase)) {
-				return new GitCommandImpl(inPhase, command, uri);
-			}
-			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		}
-		
-		private GitCommandFactory() {
-			// no instances so far //
-		}
-	}
+    public static class GitCommandFactory {
+            
+        private final static Set<LifecycleHandlerType> supportedLifecycles;
+        
+        static {
+            supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
+        }
+        
+        public static GitCommand create(LifecycleHandlerType inPhase, GitSubcommand command, URI uri) {
+            if(supportedLifecycles.contains(inPhase)) {
+                return new GitCommandImpl(inPhase, command, uri);
+            }
+            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+        }
+        
+        private GitCommandFactory() {
+            // no instances so far //
+        }
+    }
 }
 
 final class GitCommandResult implements CommandResultReference {
 
-	@Override
-	public String getResult(OperatingSystem os, ExecutionContext ec) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public String getResult(OperatingSystem os, ExecutionContext ec) {
+        throw new UnsupportedOperationException();
+    }
 }
 
 final class GitCommandImpl implements GitCommand {
 
-	private final LifecycleHandlerType type;
-	private final GitSubcommand command;
-	private final URI uri;
-	private final CommandResultReference output = new GitCommandResult();
-	
-	
-	public GitCommandImpl(LifecycleHandlerType inPhase, GitSubcommand _command, URI _uri) {
-		command = _command;
-		uri = _uri;
-		type = inPhase;
-	}
+    private final LifecycleHandlerType type;
+    private final GitSubcommand command;
+    private final URI uri;
+    private final CommandResultReference output = new GitCommandResult();
+    
+    
+    public GitCommandImpl(LifecycleHandlerType inPhase, GitSubcommand _command, URI _uri) {
+        command = _command;
+        uri = _uri;
+        type = inPhase;
+    }
 
-	@Override
-	public CommandResultReference getResult() {
-		return output;
-	}
+    @Override
+    public CommandResultReference getResult() {
+        return output;
+    }
 
-	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
-	}
+    @Override
+    public boolean runsInLifecycle(LifecycleHandlerType _type) {
+        return type == _type;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        throw new UnsupportedOperationException();
+    }
 }

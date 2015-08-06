@@ -22,34 +22,34 @@ import java.io.Serializable;
 
 public class LifecycleStore implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private final LifecycleHandler[] handlers;
-	
-	LifecycleStore(LifecycleHandler[] _handlers) {
-		handlers = _handlers;
-		assert handlers.length == LifecycleHandlerType.values().length : "array too small";
-		for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
-			LifecycleHandler h = getCastHandler(t);
-			if(h == null) throw new IllegalStateException("not the correct lifecycle handler");
-		}
-	}
-	
-	public <T extends LifecycleHandler> T getHandler(LifecycleHandlerType t, Class<T> type) {
-		assert t.getTypeClass() == type : "types do not match";
-		
-		LifecycleHandler h = getCastHandler(t);
-		@SuppressWarnings("unchecked")
-		T tt = (T) h;
-		return tt;
-	}
-	
-	private LifecycleHandler getCastHandler(LifecycleHandlerType t) {
-		LifecycleHandler h = handlers[t.ordinal()];
-		if(h == null) return null;
-		try {
-			return t.getTypeClass().cast(h);
-		} catch(ClassCastException cce) {
-			return null;
-		}
-	}
+    private static final long serialVersionUID = 1L;
+    private final LifecycleHandler[] handlers;
+    
+    LifecycleStore(LifecycleHandler[] _handlers) {
+        handlers = _handlers;
+        assert handlers.length == LifecycleHandlerType.values().length : "array too small";
+        for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
+            LifecycleHandler h = getCastHandler(t);
+            if(h == null) throw new IllegalStateException("not the correct lifecycle handler");
+        }
+    }
+    
+    public <T extends LifecycleHandler> T getHandler(LifecycleHandlerType t, Class<T> type) {
+        assert t.getTypeClass() == type : "types do not match";
+        
+        LifecycleHandler h = getCastHandler(t);
+        @SuppressWarnings("unchecked")
+        T tt = (T) h;
+        return tt;
+    }
+    
+    private LifecycleHandler getCastHandler(LifecycleHandlerType t) {
+        LifecycleHandler h = handlers[t.ordinal()];
+        if(h == null) return null;
+        try {
+            return t.getTypeClass().cast(h);
+        } catch(ClassCastException cce) {
+            return null;
+        }
+    }
 }

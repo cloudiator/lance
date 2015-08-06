@@ -20,46 +20,46 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 public final class ExecutionResult {
 
-	private final Status status;
-	private final int exitCode;
-	private final String stdout;
-	private final String stderr;
-	
-	public ExecutionResult(Status _status, int _exitCode, String _stdout, String _stderr) {
-		status = _status;
-		exitCode = _exitCode;
-		stdout = _stdout;
-		stderr = _stderr;
-	}
-	
-	public static ExecutionResult success(String stdout, String stderr) {
-		return new ExecutionResult(Status.SUCCESS, 0, stdout, stderr);
-	}
-	
-	public static ExecutionResult commandFailure(int exitCode, String stdOut, String error) {
-		return new ExecutionResult(Status.COMMAND_FAILURE, exitCode, stdOut, error);
-	}
-	
-	public static ExecutionResult systemFailure(String error) {
-		return new ExecutionResult(Status.SYSTEM_FAILURE, -1, "", error);
-	}
-	
-	enum Status {
-		SUCCESS,
-		COMMAND_FAILURE,
-		SYSTEM_FAILURE,
-	}
+    private final Status status;
+    private final int exitCode;
+    private final String stdout;
+    private final String stderr;
+    
+    public ExecutionResult(Status _status, int _exitCode, String _stdout, String _stderr) {
+        status = _status;
+        exitCode = _exitCode;
+        stdout = _stdout;
+        stderr = _stderr;
+    }
+    
+    public static ExecutionResult success(String stdout, String stderr) {
+        return new ExecutionResult(Status.SUCCESS, 0, stdout, stderr);
+    }
+    
+    public static ExecutionResult commandFailure(int exitCode, String stdOut, String error) {
+        return new ExecutionResult(Status.COMMAND_FAILURE, exitCode, stdOut, error);
+    }
+    
+    public static ExecutionResult systemFailure(String error) {
+        return new ExecutionResult(Status.SYSTEM_FAILURE, -1, "", error);
+    }
+    
+    enum Status {
+        SUCCESS,
+        COMMAND_FAILURE,
+        SYSTEM_FAILURE,
+    }
 
-	public boolean isSuccess() {
-		return status == Status.SUCCESS;
-	}
+    public boolean isSuccess() {
+        return status == Status.SUCCESS;
+    }
 
-	public String getOutput() {
-		return stdout;
-	}
-	
-	@Override
-	public String toString() {
-		return "[" + exitCode + "-> {" + stdout + "},{" + stderr + "}]";
-	}
+    public String getOutput() {
+        return stdout;
+    }
+    
+    @Override
+    public String toString() {
+        return "[" + exitCode + "-> {" + stdout + "},{" + stderr + "}]";
+    }
 }

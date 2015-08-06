@@ -28,30 +28,30 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 
 public enum DockerContainerManagerFactory implements SpecificContainerManagerFactory {
 
-	INSTANCE {
-		@Override
-		public ContainerManager createContainerManager(HostContext vmId) {
-			return new DockerContainerManager(vmId);
-		}
-	},
-	
-	REMOTE {
-		@Override
-		public ContainerManager createContainerManager(HostContext vmId) {
-			if(! remote_enabled) throw new IllegalArgumentException("remote docker not supported"); 
-			return new DockerContainerManager(vmId, "134.60.64.55");
-		}
-	};
-	
-	public static void enableRemoteAccess() {
-		remote_enabled = true;
-	}
+    INSTANCE {
+        @Override
+        public ContainerManager createContainerManager(HostContext vmId) {
+            return new DockerContainerManager(vmId);
+        }
+    },
+    
+    REMOTE {
+        @Override
+        public ContainerManager createContainerManager(HostContext vmId) {
+            if(! remote_enabled) throw new IllegalArgumentException("remote docker not supported"); 
+            return new DockerContainerManager(vmId, "134.60.64.55");
+        }
+    };
+    
+    public static void enableRemoteAccess() {
+        remote_enabled = true;
+    }
 
-	private static volatile boolean remote_enabled = false; 	
+    private static volatile boolean remote_enabled = false;     
 
 
-	private static String PORT_HIERARCHY_2_NAME = "CONTAINER";
-	static PortHierarchyLevel PORT_HIERARCHY_2 = PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
-	public static PortHierarchy DOCKER_PORT_HIERARCHY = new PortHierarchyBuilder().addLevel(PortRegistryTranslator.PORT_HIERARCHY_0).
-															addLevel(PortRegistryTranslator.PORT_HIERARCHY_1).addLevel(PORT_HIERARCHY_2).build();
+    private static String PORT_HIERARCHY_2_NAME = "CONTAINER";
+    static PortHierarchyLevel PORT_HIERARCHY_2 = PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
+    public static PortHierarchy DOCKER_PORT_HIERARCHY = new PortHierarchyBuilder().addLevel(PortRegistryTranslator.PORT_HIERARCHY_0).
+                                                            addLevel(PortRegistryTranslator.PORT_HIERARCHY_1).addLevel(PORT_HIERARCHY_2).build();
 }

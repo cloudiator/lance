@@ -20,20 +20,20 @@ package de.uniulm.omi.cloudiator.lance.lca.registry;
 
 public class RegistrationException extends Exception {
 
-	public RegistrationException() {
-		super();
-	}
+    public RegistrationException() {
+        super();
+    }
 
-	public RegistrationException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
+    public RegistrationException(String arg0, Throwable arg1) {
+        super(arg0, arg1);
+    }
 
-	public RegistrationException(String arg0) {
-		super(arg0);
-	}
+    public RegistrationException(String arg0) {
+        super(arg0);
+    }
 
-	public RegistrationException(Throwable arg0) {
-		super(arg0);
-	}
+    public RegistrationException(Throwable arg0) {
+        super(arg0);
+    }
 
 }

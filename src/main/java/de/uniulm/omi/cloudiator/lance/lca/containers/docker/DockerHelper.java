@@ -20,40 +20,40 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 final class DockerHelper {
 
-	/*
-	private String buildPattern(String key, String searcher) {
-		Pattern p = Pattern.compile("^" + key + "[\\s]*");
-		Matcher m = p.matcher(searcher);
-		if(m.find()) { return m.group(); }
-		throw new IllegalArgumentException("KEy not found in docker output");
-	}
-	
-	private static final String[] COLUMNS = {
-		"REPOSITORY", "TAG", "IMAGE ID", "CREATED", "VIRTUAL SIZE" 
-	}; 
-	
-	private int[] readColumns(String source){
-		String cut = source;
-		
-		int[] lengths = new int[COLUMNS.length];
-		for(int i = 0; i < COLUMNS.length; i++) {
-			String c = COLUMNS[i];
-			String s = buildPattern(c, cut);
-			lengths[i] = s.length();
-			cut = cut.substring(s.length());
-		}
-		return lengths;
-	}*/
-	
-	
-	/* private File createLifecycleDirectory() {
-		File f = new File("./lifecycle-" + myId.toString());
-		//if(f.mkdir()) return f;
-		//return null;
-		return f;
-	}*/
-	
-	private DockerHelper() {
-		// 
-	}
+    /*
+    private String buildPattern(String key, String searcher) {
+        Pattern p = Pattern.compile("^" + key + "[\\s]*");
+        Matcher m = p.matcher(searcher);
+        if(m.find()) { return m.group(); }
+        throw new IllegalArgumentException("KEy not found in docker output");
+    }
+    
+    private static final String[] COLUMNS = {
+        "REPOSITORY", "TAG", "IMAGE ID", "CREATED", "VIRTUAL SIZE" 
+    }; 
+    
+    private int[] readColumns(String source){
+        String cut = source;
+        
+        int[] lengths = new int[COLUMNS.length];
+        for(int i = 0; i < COLUMNS.length; i++) {
+            String c = COLUMNS[i];
+            String s = buildPattern(c, cut);
+            lengths[i] = s.length();
+            cut = cut.substring(s.length());
+        }
+        return lengths;
+    }*/
+    
+    
+    /* private File createLifecycleDirectory() {
+        File f = new File("./lifecycle-" + myId.toString());
+        //if(f.mkdir()) return f;
+        //return null;
+        return f;
+    }*/
+    
+    private DockerHelper() {
+        // 
+    }
 }

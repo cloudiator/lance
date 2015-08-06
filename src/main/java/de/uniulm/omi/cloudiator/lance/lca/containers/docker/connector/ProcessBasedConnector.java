@@ -42,146 +42,146 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
  */
 final class ProcessBasedConnector implements DockerConnector {
 
-	private static final Logger LOGGER = Logger.getLogger(ProcessBasedConnector.class.getName());
-	// never access this field directly except through
-	// the connect method
-	// private ProcessWrapper dockerClient;
-	
-	ProcessBasedConnector(String hostname) {
-		
-	}
-	
-	private String buildContainerName(ComponentInstanceId id) {
-		return "dockering__"+ id.toString();
-	}
-	
-	/*
-	synchronized ProcessWrapper connect() {
-		if(dockerClient != null) return dockerClient;
-		dockerClient = new ProcessWrapper();
-		return dockerClient;
-	}*/
-	
-	private final String findTag(String tag, String line) {
-		String[] content = line.split("[\\s]++");
-		if(tag.equalsIgnoreCase(content[1])) {
-			return content[2].trim();
-		}
-		return null;
-	}
-	
-	@Override
-	public String getContainerIp(ComponentInstanceId myId) throws DockerException {
-		ExecResult result = ProcessWrapper.singleDockerCommand("inspect", "--format='{{.NetworkSettings.IPAddress}}'", buildContainerName(myId));	
-		if(!result.isSuccess()) {return null;}
-		BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
-		try {
-			String line = reader.readLine();
-			if(line == null) throw new DockerException("could not find result");
-			if(reader.readLine() != null) throw new DockerException("too many lines available");
-			InetAddress addr = Inet4Address.getByName(line.trim());
-			return addr.getHostAddress();
-		} catch(UnknownHostException he) {
-			throw new DockerException("UnknownHostException when creating IP address", he);
-		} catch(IOException ioe) {
-			throw new DockerException("IOException while reading from string", ioe);
-		}
-	}
-	
-	@Override
-	public String findImage(String target) throws DockerException {
-		String[] split = target.split(":");
-		ExecResult result = ProcessWrapper.singleDockerCommand("images", "--no-trunc=true", split[0]);
-		if(!result.isSuccess()) {return null;}
+    private static final Logger LOGGER = Logger.getLogger(ProcessBasedConnector.class.getName());
+    // never access this field directly except through
+    // the connect method
+    // private ProcessWrapper dockerClient;
+    
+    ProcessBasedConnector(String hostname) {
+        
+    }
+    
+    private String buildContainerName(ComponentInstanceId id) {
+        return "dockering__"+ id.toString();
+    }
+    
+    /*
+    synchronized ProcessWrapper connect() {
+        if(dockerClient != null) return dockerClient;
+        dockerClient = new ProcessWrapper();
+        return dockerClient;
+    }*/
+    
+    private final String findTag(String tag, String line) {
+        String[] content = line.split("[\\s]++");
+        if(tag.equalsIgnoreCase(content[1])) {
+            return content[2].trim();
+        }
+        return null;
+    }
+    
+    @Override
+    public String getContainerIp(ComponentInstanceId myId) throws DockerException {
+        ExecResult result = ProcessWrapper.singleDockerCommand("inspect", "--format='{{.NetworkSettings.IPAddress}}'", buildContainerName(myId));    
+        if(!result.isSuccess()) {return null;}
+        BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
+        try {
+            String line = reader.readLine();
+            if(line == null) throw new DockerException("could not find result");
+            if(reader.readLine() != null) throw new DockerException("too many lines available");
+            InetAddress addr = Inet4Address.getByName(line.trim());
+            return addr.getHostAddress();
+        } catch(UnknownHostException he) {
+            throw new DockerException("UnknownHostException when creating IP address", he);
+        } catch(IOException ioe) {
+            throw new DockerException("IOException while reading from string", ioe);
+        }
+    }
+    
+    @Override
+    public String findImage(String target) throws DockerException {
+        String[] split = target.split(":");
+        ExecResult result = ProcessWrapper.singleDockerCommand("images", "--no-trunc=true", split[0]);
+        if(!result.isSuccess()) {return null;}
 
-		BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
-		try {
-			String line = reader.readLine();
-			while(line != null) {
-				// skip header // 
-				line = reader.readLine();
-				if(line == null) break;
-				String id = findTag(split[1], line);
-				if(id != null) return id;
-			}
-		} catch(IOException ioe) {
-			LOGGER.log(Level.SEVERE, "exception while reading from String", ioe);
-		}
-		return null;
-	}
+        BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
+        try {
+            String line = reader.readLine();
+            while(line != null) {
+                // skip header // 
+                line = reader.readLine();
+                if(line == null) break;
+                String id = findTag(split[1], line);
+                if(id != null) return id;
+            }
+        } catch(IOException ioe) {
+            LOGGER.log(Level.SEVERE, "exception while reading from String", ioe);
+        }
+        return null;
+    }
 
-	@Override
-	public void pullImage(String target) throws DockerException {
-		ExecResult result = ProcessWrapper.singleDockerCommand("pull", target);
-		if(result.isSuccess()) {return;}
-		throw new DockerException(result.getError());
-	}
-	
-	private void createPortArguments(Map<Integer, Integer> in_ports, List<String> args) {
-		for(Entry<Integer, Integer> entry : in_ports.entrySet()) {
-			Integer i = entry.getKey();
-			Integer j = entry.getValue();
-			args.add("-p"); 
-			if(j.intValue() < 0 || j.intValue() > 65536) {args.add(i.toString());}
-			else {args.add(i.toString() + ":" + j.toString());}
-		}
-	}
-		
-	@Override
-	public String createContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> in_ports) throws DockerException {
-		List<String> args = new ArrayList<String>();
-		args.add("create"); args.add("--name=" + buildContainerName(myId));
-		createPortArguments(in_ports, args);
-		args.add("--restart=no"); args.add("-i");  /*args.add("--tty=true");*/
-		args.add(image); args.add("bash"); args.add("--noediting");
-		
-		ExecResult result = ProcessWrapper.singleDockerCommand(args.toArray(new String[args.size()]));
-		if(result.isSuccess()) {return result.getOutput().trim();}
-		throw new DockerException(result.getError());
-	}
-	
-	@Override
-	public DockerShell startContainer(ComponentInstanceId myId) throws DockerException {
-		Inprogress pw = ProcessWrapper.progressingDockerCommand("start", "-i", buildContainerName(myId));
+    @Override
+    public void pullImage(String target) throws DockerException {
+        ExecResult result = ProcessWrapper.singleDockerCommand("pull", target);
+        if(result.isSuccess()) {return;}
+        throw new DockerException(result.getError());
+    }
+    
+    private void createPortArguments(Map<Integer, Integer> in_ports, List<String> args) {
+        for(Entry<Integer, Integer> entry : in_ports.entrySet()) {
+            Integer i = entry.getKey();
+            Integer j = entry.getValue();
+            args.add("-p"); 
+            if(j.intValue() < 0 || j.intValue() > 65536) {args.add(i.toString());}
+            else {args.add(i.toString() + ":" + j.toString());}
+        }
+    }
+        
+    @Override
+    public String createContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> in_ports) throws DockerException {
+        List<String> args = new ArrayList<String>();
+        args.add("create"); args.add("--name=" + buildContainerName(myId));
+        createPortArguments(in_ports, args);
+        args.add("--restart=no"); args.add("-i");  /*args.add("--tty=true");*/
+        args.add(image); args.add("bash"); args.add("--noediting");
+        
+        ExecResult result = ProcessWrapper.singleDockerCommand(args.toArray(new String[args.size()]));
+        if(result.isSuccess()) {return result.getOutput().trim();}
+        throw new DockerException(result.getError());
+    }
+    
+    @Override
+    public DockerShell startContainer(ComponentInstanceId myId) throws DockerException {
+        Inprogress pw = ProcessWrapper.progressingDockerCommand("start", "-i", buildContainerName(myId));
 
-		if(pw.processStillRunning()) { return pw; } 
-		ExecResult result = pw.toExecutionResult();
-		throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
-	}
+        if(pw.processStillRunning()) { return pw; } 
+        ExecResult result = pw.toExecutionResult();
+        throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
+    }
 
-	@Override
-	public String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException {
-		final String author = "--author=" + "\"Cloudiator LifecylceAgent\"";
-		final String message = "--message=" + "\"automatic snapshot after initialisation\"";
-		
-		ExecResult result = ProcessWrapper.singleDockerCommand("commit", author, message, 
-				buildContainerName(containerId),  key);
+    @Override
+    public String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException {
+        final String author = "--author=" + "\"Cloudiator LifecylceAgent\"";
+        final String message = "--message=" + "\"automatic snapshot after initialisation\"";
+        
+        ExecResult result = ProcessWrapper.singleDockerCommand("commit", author, message, 
+                buildContainerName(containerId),  key);
 
-		if(result.isSuccess()) {return result.getOutput();}
-		throw new DockerException(result.getError());
-		
-	}
+        if(result.isSuccess()) {return result.getOutput();}
+        throw new DockerException(result.getError());
+        
+    }
 
-	@Override
-	public DockerShell getSideShell(ComponentInstanceId myId) throws DockerException {
-		Inprogress pw = ProcessWrapper.progressingDockerCommand("exec", "-i", buildContainerName(myId), "bash");
-		if(pw.processStillRunning()) { return pw; } 
-		ExecResult result = pw.toExecutionResult();
-		throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
-	}
+    @Override
+    public DockerShell getSideShell(ComponentInstanceId myId) throws DockerException {
+        Inprogress pw = ProcessWrapper.progressingDockerCommand("exec", "-i", buildContainerName(myId), "bash");
+        if(pw.processStillRunning()) { return pw; } 
+        ExecResult result = pw.toExecutionResult();
+        throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
+    }
 
-	@Override
-	public int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException {
-		ExecResult result = ProcessWrapper.singleDockerCommand("port", buildContainerName(myId), portNumber.toString());	
-		if(!result.isSuccess()) {return -1;}
-		String line = result.getOutput();
-		if(line == null) return -1;
-		int idx = line.indexOf(":");
-		if(idx == -1) return -1;
-		try {
-			return Integer.parseInt(line.substring(idx + 1));
-		} catch(NumberFormatException nfe) {
-			return -1;
-		}
-	}
+    @Override
+    public int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException {
+        ExecResult result = ProcessWrapper.singleDockerCommand("port", buildContainerName(myId), portNumber.toString());    
+        if(!result.isSuccess()) {return -1;}
+        String line = result.getOutput();
+        if(line == null) return -1;
+        int idx = line.indexOf(":");
+        if(idx == -1) return -1;
+        try {
+            return Integer.parseInt(line.substring(idx + 1));
+        } catch(NumberFormatException nfe) {
+            return -1;
+        }
+    }
 }

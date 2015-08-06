@@ -23,6 +23,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 
 public interface CommandResultReference {
 
-	String getResult(OperatingSystem os, ExecutionContext ec);
+    String getResult(OperatingSystem os, ExecutionContext ec);
 
 }

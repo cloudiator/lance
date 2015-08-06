@@ -33,127 +33,127 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public final class PortRegistryTranslator {
 
-	private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
-	private static final String PORT_HIERARCHY_1_NAME = "CLOUD";
-	
-	public static final PortHierarchyLevel PORT_HIERARCHY_0 = PortHierarchyLevel.create(PORT_HIERARCHY_0_NAME);
-	public static final PortHierarchyLevel PORT_HIERARCHY_1 = PortHierarchyLevel.create(PORT_HIERARCHY_1_NAME);
-	
-	public static final Integer UNSET_PORT = Integer.valueOf(-1);
-	public static final String PORT_PREFIX = "ACCESS_";
-	public static final String HOST_PREFIX = "HOST_";
-	
-	private static final String buildFullPortName(String portName){
-		return PORT_PREFIX + portName;
-	}
-	
-	public static final String buildFullPortName(String portName, PortHierarchyLevel level){
-		return buildFullPortName(level.getName().toUpperCase() + "_" + portName);
-	}
-	
-	public static final String buildFullHostName(PortHierarchyLevel level){
-		return HOST_PREFIX + level.getName().toUpperCase() + "_IP";
-	}
-	
-	public static boolean isValidPort(Integer i) {
-		if(i == null) return false;
-		final int j = i.intValue();
-		if(j < 1 || j > 65535) return false;
-		return true;
-	}
-	
-	private final HostContext hostContext;
-	private final GlobalRegistryAccessor accessor;
-	
-	public PortRegistryTranslator(GlobalRegistryAccessor _accessor, HostContext context) {
-		accessor = _accessor;
-		hostContext = context;
-	}
+    private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
+    private static final String PORT_HIERARCHY_1_NAME = "CLOUD";
+    
+    public static final PortHierarchyLevel PORT_HIERARCHY_0 = PortHierarchyLevel.create(PORT_HIERARCHY_0_NAME);
+    public static final PortHierarchyLevel PORT_HIERARCHY_1 = PortHierarchyLevel.create(PORT_HIERARCHY_1_NAME);
+    
+    public static final Integer UNSET_PORT = Integer.valueOf(-1);
+    public static final String PORT_PREFIX = "ACCESS_";
+    public static final String HOST_PREFIX = "HOST_";
+    
+    private static final String buildFullPortName(String portName){
+        return PORT_PREFIX + portName;
+    }
+    
+    public static final String buildFullPortName(String portName, PortHierarchyLevel level){
+        return buildFullPortName(level.getName().toUpperCase() + "_" + portName);
+    }
+    
+    public static final String buildFullHostName(PortHierarchyLevel level){
+        return HOST_PREFIX + level.getName().toUpperCase() + "_IP";
+    }
+    
+    public static boolean isValidPort(Integer i) {
+        if(i == null) return false;
+        final int j = i.intValue();
+        if(j < 1 || j > 65535) return false;
+        return true;
+    }
+    
+    private final HostContext hostContext;
+    private final GlobalRegistryAccessor accessor;
+    
+    public PortRegistryTranslator(GlobalRegistryAccessor _accessor, HostContext context) {
+        accessor = _accessor;
+        hostContext = context;
+    }
 
-	public void registerLocalPortAtLevel(String portName, PortHierarchyLevel level, Integer value) throws RegistrationException {
-		String key = buildFullPortName(portName, level);
-		accessor.addLocalProperty(key, value.toString());
-	}
-	
-	public Integer findPortAtLevel(ComponentInstanceId myId, String portName, PortHierarchyLevel level) throws RegistrationException {
-		String key = buildFullPortName(portName, level);
-		try {
-			String value = accessor.getComponentInstanceProperty(myId, key);
-			Integer i = Integer.parseInt(value);
-			if(isValidPortOrUnset(i)) return i;
-		} catch(NumberFormatException nfe) {
-			throw new RegistrationException("value was not an expected number", nfe);
-		}
-		return UNSET_PORT;
-	}
+    public void registerLocalPortAtLevel(String portName, PortHierarchyLevel level, Integer value) throws RegistrationException {
+        String key = buildFullPortName(portName, level);
+        accessor.addLocalProperty(key, value.toString());
+    }
+    
+    public Integer findPortAtLevel(ComponentInstanceId myId, String portName, PortHierarchyLevel level) throws RegistrationException {
+        String key = buildFullPortName(portName, level);
+        try {
+            String value = accessor.getComponentInstanceProperty(myId, key);
+            Integer i = Integer.parseInt(value);
+            if(isValidPortOrUnset(i)) return i;
+        } catch(NumberFormatException nfe) {
+            throw new RegistrationException("value was not an expected number", nfe);
+        }
+        return UNSET_PORT;
+    }
 
-	public void shareHostAddresses(NetworkHandler portHandler) {
-		portHandler.registerAddress(PORT_HIERARCHY_0, hostContext.getPublicIp());
-		portHandler.registerAddress(PORT_HIERARCHY_1, hostContext.getInternalIp());
-	}
+    public void shareHostAddresses(NetworkHandler portHandler) {
+        portHandler.registerAddress(PORT_HIERARCHY_0, hostContext.getPublicIp());
+        portHandler.registerAddress(PORT_HIERARCHY_1, hostContext.getInternalIp());
+    }
 
-	public void registerLocalAddressAtLevel(PortHierarchyLevel level, String value) throws RegistrationException {
-		String key = buildFullHostName(level);
-		accessor.addLocalProperty(key, value);
-	}
-	
-	/* FIXME: this is bullshit: we cannot use the portHierarchy of the searching host, but have to use the one of the target 
-	 * probably this information has to be added to the registry for retrieval;
-	 * alternatively, define 3 levels of hierarchy throughout the applicatin */
-	public Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> findDownstreamInstances(OutPort out, PortHierarchy portHierarchy) throws RegistrationException {
-		PortReference sinkReference = null;		
-		Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
-		try { sinkReference = (PortReference) o;}
-		catch(ClassCastException cce) {
-			throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.");
-		}
-		
-		Map<ComponentInstanceId, Map<String, String>> dump = accessor.retrieveComponentDump(sinkReference);
-		return getHierarchicalPorts(sinkReference, dump, portHierarchy);
-	}
-	
-	private static boolean isValidPortOrUnset(Integer i) {
-		if(i == null) return false;
-		if(isValidPort(i)) return true;
-		if(i.intValue() == UNSET_PORT) return true;
-		return false;
-	}
-	
-	private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getHierarchicalPorts(PortReference sinkReference, Map<ComponentInstanceId, Map<String, String>> dump, PortHierarchy portHierarchy) throws RegistrationException {
-		Map<ComponentInstanceId,HierarchyLevelState<DownstreamAddress>> addresses = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(); 
-		for(Entry<ComponentInstanceId, Map<String, String>> entry : dump.entrySet()) {
-			ComponentInstanceId id = entry.getKey();
-			HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<DownstreamAddress>(id.toString(), portHierarchy);
-			addresses.put(id, state);
-			Map<String,String> map = entry.getValue();
-			for(PortHierarchyLevel level : portHierarchy.levels()) {
-				Integer i = getHierarchicalPort(sinkReference, map, level);
-				String ip = getHierarchicalHostname(level, map);
-				if(i == null || ip == null) continue;
-				state.registerValueAtLevel(level, new DownstreamAddress(ip, i));
-			}
-		}
-		return addresses;
-	}
-	
-	private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
-		String key = buildFullPortName(sinkReference.getPortName(), level);
-		String value = dump.get(key);
-		try {
-			Integer i = Integer.parseInt(value);
-			if(isValidPortOrUnset(i)) return i;
-			throw new RegistrationException("received an unexpected result");
-		} catch(NumberFormatException nfe) {
-			throw new RegistrationException("value was not an expected number", nfe);
-		}
-	}
-	
-	private static String getHierarchicalHostname(PortHierarchyLevel level, Map<String, String> dump) throws RegistrationException {
-		String key = buildFullHostName(level);
-		String value = dump.get(key);
-		if(value == null) throw new RegistrationException("ip address not found.");
-		try { Inet4Address.getByName(value); }
-		catch(UnknownHostException uhe) { throw new RegistrationException("illegal IP address", uhe);}
-		return value;
-	}
+    public void registerLocalAddressAtLevel(PortHierarchyLevel level, String value) throws RegistrationException {
+        String key = buildFullHostName(level);
+        accessor.addLocalProperty(key, value);
+    }
+    
+    /* FIXME: this is bullshit: we cannot use the portHierarchy of the searching host, but have to use the one of the target 
+     * probably this information has to be added to the registry for retrieval;
+     * alternatively, define 3 levels of hierarchy throughout the applicatin */
+    public Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> findDownstreamInstances(OutPort out, PortHierarchy portHierarchy) throws RegistrationException {
+        PortReference sinkReference = null;        
+        Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
+        try { sinkReference = (PortReference) o;}
+        catch(ClassCastException cce) {
+            throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.");
+        }
+        
+        Map<ComponentInstanceId, Map<String, String>> dump = accessor.retrieveComponentDump(sinkReference);
+        return getHierarchicalPorts(sinkReference, dump, portHierarchy);
+    }
+    
+    private static boolean isValidPortOrUnset(Integer i) {
+        if(i == null) return false;
+        if(isValidPort(i)) return true;
+        if(i.intValue() == UNSET_PORT) return true;
+        return false;
+    }
+    
+    private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> getHierarchicalPorts(PortReference sinkReference, Map<ComponentInstanceId, Map<String, String>> dump, PortHierarchy portHierarchy) throws RegistrationException {
+        Map<ComponentInstanceId,HierarchyLevelState<DownstreamAddress>> addresses = new HashMap<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>>(); 
+        for(Entry<ComponentInstanceId, Map<String, String>> entry : dump.entrySet()) {
+            ComponentInstanceId id = entry.getKey();
+            HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<DownstreamAddress>(id.toString(), portHierarchy);
+            addresses.put(id, state);
+            Map<String,String> map = entry.getValue();
+            for(PortHierarchyLevel level : portHierarchy.levels()) {
+                Integer i = getHierarchicalPort(sinkReference, map, level);
+                String ip = getHierarchicalHostname(level, map);
+                if(i == null || ip == null) continue;
+                state.registerValueAtLevel(level, new DownstreamAddress(ip, i));
+            }
+        }
+        return addresses;
+    }
+    
+    private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
+        String key = buildFullPortName(sinkReference.getPortName(), level);
+        String value = dump.get(key);
+        try {
+            Integer i = Integer.parseInt(value);
+            if(isValidPortOrUnset(i)) return i;
+            throw new RegistrationException("received an unexpected result");
+        } catch(NumberFormatException nfe) {
+            throw new RegistrationException("value was not an expected number", nfe);
+        }
+    }
+    
+    private static String getHierarchicalHostname(PortHierarchyLevel level, Map<String, String> dump) throws RegistrationException {
+        String key = buildFullHostName(level);
+        String value = dump.get(key);
+        if(value == null) throw new RegistrationException("ip address not found.");
+        try { Inet4Address.getByName(value); }
+        catch(UnknownHostException uhe) { throw new RegistrationException("illegal IP address", uhe);}
+        return value;
+    }
 }

@@ -20,27 +20,27 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 class ExecResult {
 
-	private final int retval;
-	private final String output;
-	private final String error;
-	
-	public ExecResult(int _retval, String _output, String _error) {
-		retval = _retval;
-		output = _output;
-		error = _error;
-	}
+    private final int retval;
+    private final String output;
+    private final String error;
+    
+    public ExecResult(int _retval, String _output, String _error) {
+        retval = _retval;
+        output = _output;
+        error = _error;
+    }
 
-	public boolean isSuccess() { return retval == 0; }
+    public boolean isSuccess() { return retval == 0; }
 
-	public String getError() {
-		return error;
-	}
+    public String getError() {
+        return error;
+    }
 
-	public String getOutput() {
-		return output;
-	}
+    public String getOutput() {
+        return output;
+    }
 
-	public int exitCode() {
-		return retval;
-	}
+    public int exitCode() {
+        return retval;
+    }
 }

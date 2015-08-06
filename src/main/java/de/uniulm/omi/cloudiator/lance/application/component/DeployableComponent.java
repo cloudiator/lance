@@ -34,64 +34,64 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public final class DeployableComponent implements Serializable {
 
-	private static final Logger logger = LoggerFactory.getLogger(DeployableComponent.class);
-	private static final long serialVersionUID = 5544457717632275252L;
-	
-	private final String name;
-	private final ComponentId myId;
-	private final LifecycleStore lifecycle;
-	private final List<InPort> in_ports;
-	private final List<OutPort> out_ports;
-	private final HashMap<String, Class<?>> properties;
-	private final HashMap<String, ? extends Serializable> defaultValues;
+    private static final Logger logger = LoggerFactory.getLogger(DeployableComponent.class);
+    private static final long serialVersionUID = 5544457717632275252L;
+    
+    private final String name;
+    private final ComponentId myId;
+    private final LifecycleStore lifecycle;
+    private final List<InPort> in_ports;
+    private final List<OutPort> out_ports;
+    private final HashMap<String, Class<?>> properties;
+    private final HashMap<String, ? extends Serializable> defaultValues;
 
-	DeployableComponent(String _name, ComponentId _id, LifecycleStore _lifecycleStore, List<InPort> _in_ports,
-			List<OutPort> _out_ports, Map<String, Class<?>> _ingoing_properties, 
-			HashMap<String, ? extends Serializable> _propertyValues) {
-		name = _name;
-		myId = _id;
-		lifecycle = _lifecycleStore;
-		in_ports = new ArrayList<InPort>(_in_ports);
-		out_ports = new ArrayList<OutPort>(_out_ports);
-		properties = new HashMap<String, Class<?>>(_ingoing_properties);
-		defaultValues = _propertyValues;
-	}
+    DeployableComponent(String _name, ComponentId _id, LifecycleStore _lifecycleStore, List<InPort> _in_ports,
+            List<OutPort> _out_ports, Map<String, Class<?>> _ingoing_properties, 
+            HashMap<String, ? extends Serializable> _propertyValues) {
+        name = _name;
+        myId = _id;
+        lifecycle = _lifecycleStore;
+        in_ports = new ArrayList<InPort>(_in_ports);
+        out_ports = new ArrayList<OutPort>(_out_ports);
+        properties = new HashMap<String, Class<?>>(_ingoing_properties);
+        defaultValues = _propertyValues;
+    }
 
-	public LifecycleStore getLifecycleStore() {
-		return lifecycle;
-	}
+    public LifecycleStore getLifecycleStore() {
+        return lifecycle;
+    }
 
-	public ComponentId getComponentId() { return myId; }
+    public ComponentId getComponentId() { return myId; }
 
-	public List<InPort> getExposedPorts() {
-		List<InPort> ports = new ArrayList<InPort>(in_ports.size());
-		for(InPort i : in_ports) {
-			ports.add(i);
-		}
-		return ports;
-	}
-	
-	@Override
-	public String toString() {
-		return name + ": -> " + in_ports + "@" + myId; 
-	}
+    public List<InPort> getExposedPorts() {
+        List<InPort> ports = new ArrayList<InPort>(in_ports.size());
+        for(InPort i : in_ports) {
+            ports.add(i);
+        }
+        return ports;
+    }
+    
+    @Override
+    public String toString() {
+        return name + ": -> " + in_ports + "@" + myId; 
+    }
 
-	public List<OutPort> getDownstreamPorts() {
-		return new ArrayList<OutPort>(out_ports); 
-	}
-	
-	public void accept(DeploymentContext ctx, PropertyVisitor visitor) {		
-		for(Entry<String, Class<?>> entry : properties.entrySet()) {
-			String propertyName = entry.getKey();
-			Class<?> type = entry.getValue();
-			if(type == OutPort.class) continue;
-			Object o = ctx.getProperty(propertyName, type);
-			if(o == null) o = defaultValues.get(propertyName);
-			if(o == null) {
-				logger.warn("propery '" + propertyName + "' has not been defined for the application");
-				continue;
-			}
-			visitor.visit(propertyName, o.toString());
-		}
-	}
+    public List<OutPort> getDownstreamPorts() {
+        return new ArrayList<OutPort>(out_ports); 
+    }
+    
+    public void accept(DeploymentContext ctx, PropertyVisitor visitor) {        
+        for(Entry<String, Class<?>> entry : properties.entrySet()) {
+            String propertyName = entry.getKey();
+            Class<?> type = entry.getValue();
+            if(type == OutPort.class) continue;
+            Object o = ctx.getProperty(propertyName, type);
+            if(o == null) o = defaultValues.get(propertyName);
+            if(o == null) {
+                logger.warn("propery '" + propertyName + "' has not been defined for the application");
+                continue;
+            }
+            visitor.visit(propertyName, o.toString());
+        }
+    }
 }

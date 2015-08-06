@@ -22,6 +22,6 @@ import java.util.concurrent.Future;
 
 public interface StateSetter<T extends Enum<?> & State >{
 
-	public void setIntermediateState(T state, Future<?> future);
-	public void setFinalState(T state);
+    public void setIntermediateState(T state, Future<?> future);
+    public void setFinalState(T state);
 }

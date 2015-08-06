@@ -28,32 +28,32 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ShellFactory;
 
 final class DockerShellFactory implements ShellFactory {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DockerShell.class);
-	
-	private final AtomicReference<DockerShellWrapper> reference = new AtomicReference<DockerShellWrapper>();
-	
-	@Override
-	public Shell createShell() {
-		DockerShellWrapper wrapper = reference.get();
-		if(wrapper == null) throw new IllegalStateException("shell not set");
-		return wrapper;
-	}
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerShell.class);
+    
+    private final AtomicReference<DockerShellWrapper> reference = new AtomicReference<DockerShellWrapper>();
+    
+    @Override
+    public Shell createShell() {
+        DockerShellWrapper wrapper = reference.get();
+        if(wrapper == null) throw new IllegalStateException("shell not set");
+        return wrapper;
+    }
 
-	void installDockerShell(DockerShell dshell) {
-		final DockerShellWrapper wrapper = new DockerShellWrapper(dshell);
-		DockerShellWrapper old = reference.getAndSet(wrapper);
-		if(old != null) {
-			LOGGER.error("ERROR: overriding docker shell with new one. this should never happen.");
-		}		
-	}
+    void installDockerShell(DockerShell dshell) {
+        final DockerShellWrapper wrapper = new DockerShellWrapper(dshell);
+        DockerShellWrapper old = reference.getAndSet(wrapper);
+        if(old != null) {
+            LOGGER.error("ERROR: overriding docker shell with new one. this should never happen.");
+        }        
+    }
 
-	void closeShell() {
-		DockerShellWrapper old = reference.getAndSet(null);
-		if(old == null) {
-			LOGGER.error("ERROR: no shell set that can be closed.");
-		} else {
-			old.shell.close();
-		}
-	}
+    void closeShell() {
+        DockerShellWrapper old = reference.getAndSet(null);
+        if(old == null) {
+            LOGGER.error("ERROR: no shell set that can be closed.");
+        } else {
+            old.shell.close();
+        }
+    }
 
 }

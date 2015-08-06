@@ -31,27 +31,27 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface PreStartHandler extends LifecycleHandler {
-	
-	public static final LifecycleHandlerFactory<PreStartHandler> FACTORY = new LifecycleHandlerFactory<PreStartHandler>() {
-		@Override public final PreStartHandler getDefault() { return DefaultHandlers.DEFAULT_PRE_START_HANDLER; }
+    
+    public static final LifecycleHandlerFactory<PreStartHandler> FACTORY = new LifecycleHandlerFactory<PreStartHandler>() {
+        @Override public final PreStartHandler getDefault() { return DefaultHandlers.DEFAULT_PRE_START_HANDLER; }
 
-		@Override
-		public PreStartHandler getDeploymentHandler(Deployment d) {
-			return new PreStartDeploymentHandler(d);
-		} 
-	};
+        @Override
+        public PreStartHandler getDeploymentHandler(Deployment d) {
+            return new PreStartDeploymentHandler(d);
+        } 
+    };
 }
 
 final class PreStartDeploymentHandler implements PreStartHandler {
-	
-	private final Deployment d;
-	
-	PreStartDeploymentHandler(Deployment _d) {
-		d = _d;
-	}
+    
+    private final Deployment d;
+    
+    PreStartDeploymentHandler(Deployment _d) {
+        d = _d;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		d.execute(LifecycleHandlerType.PRE_START, ec);
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        d.execute(LifecycleHandlerType.PRE_START, ec);
+    }
 }

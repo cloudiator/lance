@@ -33,42 +33,42 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManag
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
-	private final ContainerManager<?> manager;
-	
-	LifecycleAgentImpl(HostContext contex) {
-		DockerContainerManagerFactory.enableRemoteAccess();
-		manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER_REMOTE);
-	}
-	
-	synchronized void init() {
-		//FIXME: anything to do here? //
-	}
-	
-	@Override
-	public synchronized void terminate() {
-		//FIXME: terminate all instances //
-		LifecycleAgentBooter.unregister(this);
-		manager.terminate();
-	}
+    private final ContainerManager<?> manager;
+    
+    LifecycleAgentImpl(HostContext contex) {
+        DockerContainerManagerFactory.enableRemoteAccess();
+        manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER_REMOTE);
+    }
+    
+    synchronized void init() {
+        //FIXME: anything to do here? //
+    }
+    
+    @Override
+    public synchronized void terminate() {
+        //FIXME: terminate all instances //
+        LifecycleAgentBooter.unregister(this);
+        manager.terminate();
+    }
 
-	
-	@Override
-	public synchronized void stop() {
-		LifecycleAgentBooter.unregister(this);
-	}
+    
+    @Override
+    public synchronized void stop() {
+        LifecycleAgentBooter.unregister(this);
+    }
 
-	@Override
-	public List<ComponentInstanceId> listContainers() throws RemoteException {
-		// manager.getAllContainers();
-		return null;
-	}
+    @Override
+    public List<ComponentInstanceId> listContainers() throws RemoteException {
+        // manager.getAllContainers();
+        return null;
+    }
 
-	@Override
-	public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) {
-		ContainerController cc = manager.createNewContainer(ctx, component, os);
-		cc.awaitCreation();
-		cc.init(component.getLifecycleStore());
-		cc.awaitInitialisation();
-		return cc.getId();
-	}
+    @Override
+    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) {
+        ContainerController cc = manager.createNewContainer(ctx, component, os);
+        cc.awaitCreation();
+        cc.init(component.getLifecycleStore());
+        cc.awaitInitialisation();
+        return cc.getId();
+    }
 }

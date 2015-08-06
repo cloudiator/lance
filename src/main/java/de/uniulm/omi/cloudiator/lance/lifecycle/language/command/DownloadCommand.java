@@ -32,61 +32,61 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 public interface DownloadCommand extends Command {
 
-	public static class DownloadCommandFactory {
-	
-		private final static Set<LifecycleHandlerType> supportedLifecycles;
-		
-		static {
-			supportedLifecycles = EnumSet.of(LifecycleHandlerType.PRE_INSTALL);
-		}
-		
-		public static DownloadCommand create(LifecycleHandlerType inPhase, URI _uri) {
-			
-			if(supportedLifecycles.contains(inPhase)) {
-				return new DownloadCommandImpl(inPhase, _uri);
-			}
-			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		}
-		
-		private DownloadCommandFactory() {
-			// no instances so far //
-		}
-	}
+    public static class DownloadCommandFactory {
+    
+        private final static Set<LifecycleHandlerType> supportedLifecycles;
+        
+        static {
+            supportedLifecycles = EnumSet.of(LifecycleHandlerType.PRE_INSTALL);
+        }
+        
+        public static DownloadCommand create(LifecycleHandlerType inPhase, URI _uri) {
+            
+            if(supportedLifecycles.contains(inPhase)) {
+                return new DownloadCommandImpl(inPhase, _uri);
+            }
+            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+        }
+        
+        private DownloadCommandFactory() {
+            // no instances so far //
+        }
+    }
 }
 
 class DownloadCommandImpl implements DownloadCommand {
-	
-	private final LifecycleHandlerType type;
-	private final URI uri;
-	private final DefaultCommandResultReference result = new DefaultCommandResultReference();
-	private final String filename;
+    
+    private final LifecycleHandlerType type;
+    private final URI uri;
+    private final DefaultCommandResultReference result = new DefaultCommandResultReference();
+    private final String filename;
 
-	DownloadCommandImpl(LifecycleHandlerType _type, URI _uri) {
-		uri = _uri;
-		type = _type;
-		filename = UUID.randomUUID().toString();
-	}
-	
-	@Override
-	public CommandResultReference getResult() {
-		return result;
-	}
+    DownloadCommandImpl(LifecycleHandlerType _type, URI _uri) {
+        uri = _uri;
+        type = _type;
+        filename = UUID.randomUUID().toString();
+    }
+    
+    @Override
+    public CommandResultReference getResult() {
+        return result;
+    }
 
-	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
-	}
+    @Override
+    public boolean runsInLifecycle(LifecycleHandlerType _type) {
+        return type == _type;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		OperatingSystem os = ec.getOperatingSystem();
-		if(os.isLinuxOs()) {
-			Shell shell = ec.getShell();
-			// ExecutionResult exec_result = 
-			shell.executeCommand("wget -O " + filename + " " + uri.toString());
-			result.setResult(filename);
-		} else {
-			throw new IllegalStateException("Download is not implemented for Windows and Mac operating systems");
-		}
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        OperatingSystem os = ec.getOperatingSystem();
+        if(os.isLinuxOs()) {
+            Shell shell = ec.getShell();
+            // ExecutionResult exec_result = 
+            shell.executeCommand("wget -O " + filename + " " + uri.toString());
+            result.setResult(filename);
+        } else {
+            throw new IllegalStateException("Download is not implemented for Windows and Mac operating systems");
+        }
+    }
 }

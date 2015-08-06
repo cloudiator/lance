@@ -20,33 +20,33 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 public final class LifecycleStoreBuilder {
 
-	private final LifecycleHandler[] handlers = new LifecycleHandler[LifecycleHandlerType.values().length];
-	
-	public LifecycleStoreBuilder() {
-		// empty!
-	}
-	
-	public LifecycleStoreBuilder setHandler(LifecycleHandler h, LifecycleHandlerType t) {
-		if(h == null) throw new NullPointerException();
-		Class<?> superClass = t.getTypeClass();
-		Class<?> inheritCla = h.getClass();
-		if(! superClass.isAssignableFrom(inheritCla)) {
-			throw new IllegalArgumentException("handler types do not match: " + h.getClass() + " vs. " + t.getTypeClass());
-		}
-		if(t == LifecycleHandlerType.NEW) throw new IllegalArgumentException("cannot set a handler for 'NEW'. "
-				+ "This event is a system event");
-		
-		handlers[t.ordinal()] = h;
-		return this;
-	}
-	
-	public LifecycleStore build() {
-		for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
-			if(handlers[t.ordinal()] == null) {
-				handlers[t.ordinal()] = t.getDefaultImplementation();
-			}
-		}
-		return new LifecycleStore(handlers);
-	}
-	
+    private final LifecycleHandler[] handlers = new LifecycleHandler[LifecycleHandlerType.values().length];
+    
+    public LifecycleStoreBuilder() {
+        // empty!
+    }
+    
+    public LifecycleStoreBuilder setHandler(LifecycleHandler h, LifecycleHandlerType t) {
+        if(h == null) throw new NullPointerException();
+        Class<?> superClass = t.getTypeClass();
+        Class<?> inheritCla = h.getClass();
+        if(! superClass.isAssignableFrom(inheritCla)) {
+            throw new IllegalArgumentException("handler types do not match: " + h.getClass() + " vs. " + t.getTypeClass());
+        }
+        if(t == LifecycleHandlerType.NEW) throw new IllegalArgumentException("cannot set a handler for 'NEW'. "
+                + "This event is a system event");
+        
+        handlers[t.ordinal()] = h;
+        return this;
+    }
+    
+    public LifecycleStore build() {
+        for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
+            if(handlers[t.ordinal()] == null) {
+                handlers[t.ordinal()] = t.getDefaultImplementation();
+            }
+        }
+        return new LifecycleStore(handlers);
+    }
+    
 }

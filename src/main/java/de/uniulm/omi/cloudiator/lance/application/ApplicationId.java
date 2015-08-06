@@ -23,35 +23,35 @@ import java.util.UUID;
 
 public final class ApplicationId implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private final UUID uuid;
-	
-	public ApplicationId(){
-		uuid = UUID.randomUUID();
-	}
-	
-	private ApplicationId(String s){
-		uuid = UUID.fromString(s);
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if(!(o instanceof ApplicationId)) return false; // captures null
-		ApplicationId that = (ApplicationId) o;
-		return this.uuid.equals(that.uuid);
-	}
-	
-	@Override 
-	public int hashCode() {
-		return uuid.hashCode();
-	}
-	
-	@Override
-	public String toString(){
-		return uuid.toString();
-	}
-	
-	public static ApplicationId fromString(String s){
-		return new ApplicationId(s);
-	}
+    private static final long serialVersionUID = 1L;
+    private final UUID uuid;
+    
+    public ApplicationId(){
+        uuid = UUID.randomUUID();
+    }
+    
+    private ApplicationId(String s){
+        uuid = UUID.fromString(s);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof ApplicationId)) return false; // captures null
+        ApplicationId that = (ApplicationId) o;
+        return this.uuid.equals(that.uuid);
+    }
+    
+    @Override 
+    public int hashCode() {
+        return uuid.hashCode();
+    }
+    
+    @Override
+    public String toString(){
+        return uuid.toString();
+    }
+    
+    public static ApplicationId fromString(String s){
+        return new ApplicationId(s);
+    }
 }

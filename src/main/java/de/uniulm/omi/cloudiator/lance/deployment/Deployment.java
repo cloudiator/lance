@@ -28,25 +28,25 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public final class Deployment implements Serializable {
 
-	private static final long serialVersionUID = 4353942659952970587L;
-	
-	private final List<CommandSequence> sequences;
-	
-	Deployment(ArrayList<CommandSequence> seqs) {
-		sequences = seqs;
-	}
+    private static final long serialVersionUID = 4353942659952970587L;
+    
+    private final List<CommandSequence> sequences;
+    
+    Deployment(ArrayList<CommandSequence> seqs) {
+        sequences = seqs;
+    }
 
-	public void execute(LifecycleHandlerType handler, ExecutionContext ec) {
-		for(CommandSequence cs : sequences) {
-			cs.executeCommandsForLifecycle(handler, ec);
-		}
-	}
+    public void execute(LifecycleHandlerType handler, ExecutionContext ec) {
+        for(CommandSequence cs : sequences) {
+            cs.executeCommandsForLifecycle(handler, ec);
+        }
+    }
 
-	public boolean hasLifecycleOperations(LifecycleHandlerType handler) {
-		for(CommandSequence cs : sequences) {
-			if(cs.hasLifecycleOperations(handler)) return true;
-		}
-		return false;
-	}
+    public boolean hasLifecycleOperations(LifecycleHandlerType handler) {
+        for(CommandSequence cs : sequences) {
+            if(cs.hasLifecycleOperations(handler)) return true;
+        }
+        return false;
+    }
 
 }

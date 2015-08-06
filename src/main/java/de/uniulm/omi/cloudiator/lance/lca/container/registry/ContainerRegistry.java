@@ -25,18 +25,18 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 
 public final class ContainerRegistry<T extends ContainerLogic> {
-	
-	private HashMap<ComponentInstanceId, ContainerController> containers = new HashMap<ComponentInstanceId, ContainerController>();
-	
-	public final ComponentInstanceId addContainer(ContainerController _container) {
-		if(_container == null) throw new IllegalArgumentException("container is null");
-		
-		ComponentInstanceId id = _container.getId();
-		containers.put(id, _container);
-		return id;
-	}
+    
+    private HashMap<ComponentInstanceId, ContainerController> containers = new HashMap<ComponentInstanceId, ContainerController>();
+    
+    public final ComponentInstanceId addContainer(ContainerController _container) {
+        if(_container == null) throw new IllegalArgumentException("container is null");
+        
+        ComponentInstanceId id = _container.getId();
+        containers.put(id, _container);
+        return id;
+    }
 
-	public ContainerController getContainer(ComponentInstanceId _id) {
-		return containers.get(_id);
-	}
+    public ContainerController getContainer(ComponentInstanceId _id) {
+        return containers.get(_id);
+    }
 }

@@ -20,9 +20,9 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 public enum ConnectorFactory {
 
-	INSTANCE;
-	
-	public DockerConnector createConnector(String hostname) {
-		return new ProcessBasedConnector(hostname);
-	}
+    INSTANCE;
+    
+    public DockerConnector createConnector(String hostname) {
+        return new ProcessBasedConnector(hostname);
+    }
 }

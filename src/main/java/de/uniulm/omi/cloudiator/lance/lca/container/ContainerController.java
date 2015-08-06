@@ -22,20 +22,20 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public interface ContainerController {
 
-	ComponentInstanceId getId();
+    ComponentInstanceId getId();
 
-	ContainerStatus getState();
+    ContainerStatus getState();
 
-	void create();
+    void create();
 
-	void init(LifecycleStore store);
+    void init(LifecycleStore store);
 
-	void tearDown();
+    void tearDown();
 
-	void awaitInitialisation();
+    void awaitInitialisation();
 
-	void awaitCreation();
+    void awaitCreation();
 
-	void awaitDestruction();
+    void awaitDestruction();
 
 }

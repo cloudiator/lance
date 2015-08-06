@@ -30,55 +30,55 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.install.SystemApplicati
 
 public interface InstallSystemPackageCommand extends Command {
 
-	public static class InstallSystemPackageCommandFactory {
-		
-		private final static Set<LifecycleHandlerType> supportedLifecycles;
-		
-		static {
-			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
-		}
-		
-		public static InstallSystemPackageCommand create(LifecycleHandlerType inPhase, SystemApplication _app) {
-			if(supportedLifecycles.contains(inPhase)) {
-				return new InstallSystemPackageCommandImpl(inPhase, _app);
-			}
-			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		}
-		
-		private InstallSystemPackageCommandFactory() {
-			// no instances so far //
-		}
-	}
+    public static class InstallSystemPackageCommandFactory {
+        
+        private final static Set<LifecycleHandlerType> supportedLifecycles;
+        
+        static {
+            supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
+        }
+        
+        public static InstallSystemPackageCommand create(LifecycleHandlerType inPhase, SystemApplication _app) {
+            if(supportedLifecycles.contains(inPhase)) {
+                return new InstallSystemPackageCommandImpl(inPhase, _app);
+            }
+            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+        }
+        
+        private InstallSystemPackageCommandFactory() {
+            // no instances so far //
+        }
+    }
 }
 
 class InstallSystemPackageCommandImpl implements InstallSystemPackageCommand {
 
-	private final LifecycleHandlerType type;
-	// private final String packageName;
-	private final SystemApplication application;
-	private final CommandResultReference result = new DefaultCommandResultReference();
+    private final LifecycleHandlerType type;
+    // private final String packageName;
+    private final SystemApplication application;
+    private final CommandResultReference result = new DefaultCommandResultReference();
 
-	InstallSystemPackageCommandImpl(LifecycleHandlerType _type, SystemApplication _app) {
-		application = _app;
-		type = _type;
-	}
-	
-	@Override
-	public CommandResultReference getResult() {
-		return result;
-	}
+    InstallSystemPackageCommandImpl(LifecycleHandlerType _type, SystemApplication _app) {
+        application = _app;
+        type = _type;
+    }
+    
+    @Override
+    public CommandResultReference getResult() {
+        return result;
+    }
 
-	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
-	}
+    @Override
+    public boolean runsInLifecycle(LifecycleHandlerType _type) {
+        return type == _type;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		OperatingSystem os = ec.getOperatingSystem();
-		String command = application.getPackageName(os);
-		command = os.getNonBlockingPackageInstallerCommand() + " " + command;
-		
-		ec.getShell().executeCommand(command);
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        OperatingSystem os = ec.getOperatingSystem();
+        String command = application.getPackageName(os);
+        command = os.getNonBlockingPackageInstallerCommand() + " " + command;
+        
+        ec.getShell().executeCommand(command);
+    }
 }

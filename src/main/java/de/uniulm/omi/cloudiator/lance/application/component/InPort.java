@@ -23,22 +23,22 @@ import java.io.Serializable;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
 
 public final class InPort implements Serializable {
-	
-	private static final long serialVersionUID = -6375556080278116537L;
-	
-	private final String name;
-	private final PortType type;
-	// private final int cardinality;
-	
-	InPort(String _name, PortType _type, int _cardinality) {
-		name = _name;
-		type = _type;
-		// cardinality = _cardinality;
-	}
-	
-	public boolean isPublic() {
-		return type == PortType.PUBLIC_PORT;
-	}
+    
+    private static final long serialVersionUID = -6375556080278116537L;
+    
+    private final String name;
+    private final PortType type;
+    // private final int cardinality;
+    
+    InPort(String _name, PortType _type, int _cardinality) {
+        name = _name;
+        type = _type;
+        // cardinality = _cardinality;
+    }
+    
+    public boolean isPublic() {
+        return type == PortType.PUBLIC_PORT;
+    }
 
-	public String getPortName() { return name; }
+    public String getPortName() { return name; }
 }

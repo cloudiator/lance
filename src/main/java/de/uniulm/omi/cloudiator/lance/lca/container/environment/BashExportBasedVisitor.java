@@ -27,43 +27,43 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
 public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVisitor {
 
-	private final ShellLikeInterface interfce;
-	
-	public BashExportBasedVisitor(ShellLikeInterface ifc) {
-		interfce = ifc;
-	}
-	
-	public void addEnvironmentVariable(String name, String value) {
-		ExecutionResult result = interfce.executeCommand("export " + name + "=" + value);
-		if(result.isSuccess()) {
-			interfce.executeCommand("echo export " + name + "=" + value);
-			return;
-		}
-		throw new IllegalStateException("could not set environment variables: " + name + "=" + value);
-	}
+    private final ShellLikeInterface interfce;
+    
+    public BashExportBasedVisitor(ShellLikeInterface ifc) {
+        interfce = ifc;
+    }
+    
+    public void addEnvironmentVariable(String name, String value) {
+        ExecutionResult result = interfce.executeCommand("export " + name + "=" + value);
+        if(result.isSuccess()) {
+            interfce.executeCommand("echo export " + name + "=" + value);
+            return;
+        }
+        throw new IllegalStateException("could not set environment variables: " + name + "=" + value);
+    }
 
-	@Override
-	public void visitNetworkAddress(PortHierarchyLevel level, String address) {
-		addEnvironmentVariable(level.getName().toUpperCase() + "_IP", address);
-	}
+    @Override
+    public void visitNetworkAddress(PortHierarchyLevel level, String address) {
+        addEnvironmentVariable(level.getName().toUpperCase() + "_IP", address);
+    }
 
-	@Override
-	public void visitInPort(String portName, PortHierarchyLevel level, Integer portNr) {
-		addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName.toUpperCase(), portNr.toString());
-	}
+    @Override
+    public void visitInPort(String portName, PortHierarchyLevel level, Integer portNr) {
+        addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName.toUpperCase(), portNr.toString());
+    }
 
-	@Override
-	public void visitOutPort(String portName, PortHierarchyLevel level, List<DownstreamAddress> sinks) {
-		String value = "";
-		for(DownstreamAddress element : sinks) {
-			if(!value.isEmpty()) value = value + ","; 
-			value = value + element.toString();
-		}
-		addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName, value);
-	}
+    @Override
+    public void visitOutPort(String portName, PortHierarchyLevel level, List<DownstreamAddress> sinks) {
+        String value = "";
+        for(DownstreamAddress element : sinks) {
+            if(!value.isEmpty()) value = value + ","; 
+            value = value + element.toString();
+        }
+        addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName, value);
+    }
 
-	@Override
-	public void visit(String propertyName, String propertyValue) {
-		addEnvironmentVariable(propertyName, propertyValue);
-	}
+    @Override
+    public void visit(String propertyName, String propertyValue) {
+        addEnvironmentVariable(propertyName, propertyValue);
+    }
 }

@@ -33,122 +33,122 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class ProcessWrapper {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ProcessWrapper.class);
-	
-	private final Process proc;
-	private final InputStream stdout;
-	private final InputStream stderr; 
-	private final OutputStream stdin; 
-	
-	private ProcessWrapper(Process _proc, OutputStream _stdin, InputStream _stdout, InputStream _stderr) {
-		proc = _proc;
-		stdin = new BufferedOutputStream(_stdin);
-		stdout = new BufferedInputStream(_stdout);
-		stderr = new BufferedInputStream(_stderr);
-	}
-	
-	private static ProcessWrapper createWrappper(ProcessBuilder pb) {
-		try {
-			Process proc = pb.start();
-			return new ProcessWrapper(proc, proc.getOutputStream(), proc.getInputStream(), proc.getErrorStream());
-		} catch(IOException ioe){
-			LOGGER.info("could not start external process", ioe); 
-			return null;
-		}
-	}
-	
-	private static List<String> argsAsDockerList(String ...args) {
-		List<String> l = new ArrayList<String>();
-		l.add("sudo");
-		l.add("docker");
-		for(String s : args) {
-			l.add(s);
-		}
-		return l;
-	}
-	
-	public static Inprogress progressingDockerCommand(String ... args) throws DockerException {
-		ProcessWrapper pw = createProcessWrapper(argsAsDockerList(args));
-		Inprogress prog = new Inprogress(pw.proc, createReader(pw.stdout), createReader(pw.stderr));
-		
-		try {
-			prog.doExecuteCommand(Inprogress.BELL_COMMAND);
-			if(prog.processStillRunning()) {
-				String drowned = prog.readOutUntilBell();
-				drowned = drowned + "///" + prog.readErrAvailable();
-				LOGGER.info("created log running command: '" + drowned + "'");
-			}
-		} catch (IOException ioe) {
-			LOGGER.warn("cannot start progressing command.", ioe);
-			prog.close();
-		}
-		
-		return prog;
-	}
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessWrapper.class);
+    
+    private final Process proc;
+    private final InputStream stdout;
+    private final InputStream stderr; 
+    private final OutputStream stdin; 
+    
+    private ProcessWrapper(Process _proc, OutputStream _stdin, InputStream _stdout, InputStream _stderr) {
+        proc = _proc;
+        stdin = new BufferedOutputStream(_stdin);
+        stdout = new BufferedInputStream(_stdout);
+        stderr = new BufferedInputStream(_stderr);
+    }
+    
+    private static ProcessWrapper createWrappper(ProcessBuilder pb) {
+        try {
+            Process proc = pb.start();
+            return new ProcessWrapper(proc, proc.getOutputStream(), proc.getInputStream(), proc.getErrorStream());
+        } catch(IOException ioe){
+            LOGGER.info("could not start external process", ioe); 
+            return null;
+        }
+    }
+    
+    private static List<String> argsAsDockerList(String ...args) {
+        List<String> l = new ArrayList<String>();
+        l.add("sudo");
+        l.add("docker");
+        for(String s : args) {
+            l.add(s);
+        }
+        return l;
+    }
+    
+    public static Inprogress progressingDockerCommand(String ... args) throws DockerException {
+        ProcessWrapper pw = createProcessWrapper(argsAsDockerList(args));
+        Inprogress prog = new Inprogress(pw.proc, createReader(pw.stdout), createReader(pw.stderr));
+        
+        try {
+            prog.doExecuteCommand(Inprogress.BELL_COMMAND);
+            if(prog.processStillRunning()) {
+                String drowned = prog.readOutUntilBell();
+                drowned = drowned + "///" + prog.readErrAvailable();
+                LOGGER.info("created log running command: '" + drowned + "'");
+            }
+        } catch (IOException ioe) {
+            LOGGER.warn("cannot start progressing command.", ioe);
+            prog.close();
+        }
+        
+        return prog;
+    }
 
-	public static ExecResult singleCommand(String ... args) throws DockerException {
-		return doExecuteSingleCommand(Arrays.asList(args));
-	}
-	
-	public static ExecResult singleDockerCommand(String ... args) throws DockerException {
-		return doExecuteSingleCommand(argsAsDockerList(args));
-	}
-	
-	private static ExecResult doExecuteSingleCommand(List<String> args) throws DockerException {
-		ProcessWrapper pw = createProcessWrapper(args);
-		ExecResultBuilder result = new ExecResultBuilder();
-		pw.closeStdIn();
-		pw.drainStdOut(result.output);
-		pw.drainStdErr(result.error);
-		while(true) {
-			try { return result.build(pw.proc.waitFor()); }
-			catch(InterruptedException ioe) {
-				LOGGER.info("IOException when waiting for external process to terminate", ioe);
-			}
-		}
-	}
-	
-	private static ProcessWrapper createProcessWrapper(List<String> l) throws DockerException {
-		ProcessBuilder pb = new ProcessBuilder(l);
-		ProcessWrapper pw = ProcessWrapper.createWrappper(pb);
-		if(pw == null) {
-			throw new DockerException("cannot instantiate process wrapper");
-		}
-		return pw;
-	}
+    public static ExecResult singleCommand(String ... args) throws DockerException {
+        return doExecuteSingleCommand(Arrays.asList(args));
+    }
+    
+    public static ExecResult singleDockerCommand(String ... args) throws DockerException {
+        return doExecuteSingleCommand(argsAsDockerList(args));
+    }
+    
+    private static ExecResult doExecuteSingleCommand(List<String> args) throws DockerException {
+        ProcessWrapper pw = createProcessWrapper(args);
+        ExecResultBuilder result = new ExecResultBuilder();
+        pw.closeStdIn();
+        pw.drainStdOut(result.output);
+        pw.drainStdErr(result.error);
+        while(true) {
+            try { return result.build(pw.proc.waitFor()); }
+            catch(InterruptedException ioe) {
+                LOGGER.info("IOException when waiting for external process to terminate", ioe);
+            }
+        }
+    }
+    
+    private static ProcessWrapper createProcessWrapper(List<String> l) throws DockerException {
+        ProcessBuilder pb = new ProcessBuilder(l);
+        ProcessWrapper pw = ProcessWrapper.createWrappper(pb);
+        if(pw == null) {
+            throw new DockerException("cannot instantiate process wrapper");
+        }
+        return pw;
+    }
 
-	private void drainStdErr(StringBuilder builder) {
-		drainStream(builder, createReader(stderr));
-	}
-	
-	private void drainStdOut(StringBuilder builder) {
-		drainStream(builder, createReader(stdout));
-	}
-	
-	static void drainStream(StringBuilder builder, BufferedReader reader) {
-		String line = "";
-		while(line != null) {
-			String suffix = builder.length() != 0 ? "\n" : "";
-			builder.append(line).append(suffix);
+    private void drainStdErr(StringBuilder builder) {
+        drainStream(builder, createReader(stderr));
+    }
+    
+    private void drainStdOut(StringBuilder builder) {
+        drainStream(builder, createReader(stdout));
+    }
+    
+    static void drainStream(StringBuilder builder, BufferedReader reader) {
+        String line = "";
+        while(line != null) {
+            String suffix = builder.length() != 0 ? "\n" : "";
+            builder.append(line).append(suffix);
 
-			try { line = reader.readLine(); }
-			catch(IOException ioe) {
-				LOGGER.info("could not fully drain process stream", ioe);
-				line = null;
-			}
-		}
-	}
-	
-	private static BufferedReader createReader(InputStream in) {
-		return new BufferedReader(new InputStreamReader(in));
-	}
-	
-	private void closeStdIn() {
-		try {
-			stdin.close();
-		} catch(IOException ioe) {
-			LOGGER.info("IOException when closing process wrapper input", ioe);
-		}
-	}
+            try { line = reader.readLine(); }
+            catch(IOException ioe) {
+                LOGGER.info("could not fully drain process stream", ioe);
+                line = null;
+            }
+        }
+    }
+    
+    private static BufferedReader createReader(InputStream in) {
+        return new BufferedReader(new InputStreamReader(in));
+    }
+    
+    private void closeStdIn() {
+        try {
+            stdin.close();
+        } catch(IOException ioe) {
+            LOGGER.info("IOException when closing process wrapper input", ioe);
+        }
+    }
 }

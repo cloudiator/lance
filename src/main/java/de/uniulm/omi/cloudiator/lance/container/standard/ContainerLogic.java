@@ -23,13 +23,13 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public interface ContainerLogic {
 
-	//void doCreate(OperatingSystem  o) ;
-	void doCreate() throws ContainerException;
+    //void doCreate(OperatingSystem  o) ;
+    void doCreate() throws ContainerException;
 
-	void doInit(LifecycleStore store) throws ContainerException;
+    void doInit(LifecycleStore store) throws ContainerException;
 
-	void doDestroy() throws ContainerException;
+    void doDestroy() throws ContainerException;
 
-	// ComponentInstanceId getId();
+    // ComponentInstanceId getId();
 
 }

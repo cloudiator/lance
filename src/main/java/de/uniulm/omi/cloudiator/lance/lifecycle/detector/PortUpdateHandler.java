@@ -23,7 +23,7 @@ import java.io.Serializable;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 
 public interface PortUpdateHandler extends Serializable {
-	
-	void execute(ExecutionContext ec);
+    
+    void execute(ExecutionContext ec);
 
 }

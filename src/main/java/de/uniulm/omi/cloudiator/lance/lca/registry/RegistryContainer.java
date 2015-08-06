@@ -22,6 +22,6 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 
 public interface RegistryContainer {
 
-	LcaRegistry getRegistry();
+    LcaRegistry getRegistry();
 
 }

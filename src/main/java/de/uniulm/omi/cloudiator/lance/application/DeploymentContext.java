@@ -25,48 +25,48 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 
 public final class DeploymentContext implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private final ApplicationId myAppId;
-	private final ApplicationInstanceId myInstanceId;
-	private final LcaRegistry registry;
-	
-	private final HashMap<String,Object> properties = new HashMap<String,Object>();
-	private final HashMap<String,Class<?>> propertyTypes = new HashMap<String,Class<?>>();
-		
-	public DeploymentContext(ApplicationId appId, ApplicationInstanceId instanceId, LcaRegistry re) {
-		myAppId = appId;
-		myInstanceId = instanceId;
-		registry = re;
-	}
+    private static final long serialVersionUID = 1L;
+    private final ApplicationId myAppId;
+    private final ApplicationInstanceId myInstanceId;
+    private final LcaRegistry registry;
+    
+    private final HashMap<String,Object> properties = new HashMap<String,Object>();
+    private final HashMap<String,Class<?>> propertyTypes = new HashMap<String,Class<?>>();
+        
+    public DeploymentContext(ApplicationId appId, ApplicationInstanceId instanceId, LcaRegistry re) {
+        myAppId = appId;
+        myInstanceId = instanceId;
+        registry = re;
+    }
 
-	public void setProperty(String name, Object value, Class<?> type) {
-		properties.put(name, value);
-		propertyTypes.put(name, type);
-	}
+    public void setProperty(String name, Object value, Class<?> type) {
+        properties.put(name, value);
+        propertyTypes.put(name, type);
+    }
 
-	public Object getProperty(String name, Class<?> clazz) {
-		Class<?> clazz2 = propertyTypes.get(name);
-		if(clazz2 == null) throw new IllegalStateException("unknown property: " + name);
-		if(clazz2 != clazz) throw new IllegalArgumentException("types do not match: " + clazz + " vs. " + clazz2);
-		return properties.get(name);
-	}
-	
-	public LcaRegistry getRegistry() {
-		return registry;
-	}
+    public Object getProperty(String name, Class<?> clazz) {
+        Class<?> clazz2 = propertyTypes.get(name);
+        if(clazz2 == null) throw new IllegalStateException("unknown property: " + name);
+        if(clazz2 != clazz) throw new IllegalArgumentException("types do not match: " + clazz + " vs. " + clazz2);
+        return properties.get(name);
+    }
+    
+    public LcaRegistry getRegistry() {
+        return registry;
+    }
 
-	public ApplicationInstanceId getApplicationInstanceId() {
-		return myInstanceId;
-	}
+    public ApplicationInstanceId getApplicationInstanceId() {
+        return myInstanceId;
+    }
 
-	public ApplicationId getApplicationId() {
-		return myAppId;
-	}
-	
-	@Override
-	public String toString() {
-		return "Context: " + myAppId + "/" + myInstanceId + ":" + properties;
-	}
-	
-	//public ComponentId getComponentId() { return myComponent; }
+    public ApplicationId getApplicationId() {
+        return myAppId;
+    }
+    
+    @Override
+    public String toString() {
+        return "Context: " + myAppId + "/" + myInstanceId + ":" + properties;
+    }
+    
+    //public ComponentId getComponentId() { return myComponent; }
 }

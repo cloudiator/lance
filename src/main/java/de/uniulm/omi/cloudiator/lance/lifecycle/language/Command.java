@@ -23,10 +23,10 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 public interface Command {
 
-	CommandResultReference getResult();
+    CommandResultReference getResult();
 
-	boolean runsInLifecycle(LifecycleHandlerType type);
+    boolean runsInLifecycle(LifecycleHandlerType type);
 
-	void execute(ExecutionContext ec);
+    void execute(ExecutionContext ec);
 
 }

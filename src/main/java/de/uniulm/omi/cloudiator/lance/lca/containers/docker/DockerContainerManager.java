@@ -42,80 +42,80 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public class DockerContainerManager implements ContainerManager<DockerContainerLogic> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ContainerManager.class);
-	
-	private final boolean isRemote;
-	private final HostContext hostContext;
-	private final String hostname;
-	private final DockerConnector client;
-	private final DockerOperatingSystemTranslator translator;
-	private final ContainerRegistry<DockerContainerLogic> registry = new ContainerRegistry<DockerContainerLogic>();
-	
-	public DockerContainerManager(HostContext vmId) {
-		this(vmId, "127.0.0.1", false);
-		logger.debug("using local host (127.0.0.1) as host name");
-	}
+    private static final Logger logger = LoggerFactory.getLogger(ContainerManager.class);
+    
+    private final boolean isRemote;
+    private final HostContext hostContext;
+    private final String hostname;
+    private final DockerConnector client;
+    private final DockerOperatingSystemTranslator translator;
+    private final ContainerRegistry<DockerContainerLogic> registry = new ContainerRegistry<DockerContainerLogic>();
+    
+    public DockerContainerManager(HostContext vmId) {
+        this(vmId, "127.0.0.1", false);
+        logger.debug("using local host (127.0.0.1) as host name");
+    }
 
-	DockerContainerManager(HostContext vmId, String host) {
-		this(vmId, host, true);
-	}
-	
-	private DockerContainerManager(HostContext vmId, String host, boolean remote) {
-		hostContext = vmId;
-		hostname = host;
-		client = ConnectorFactory.INSTANCE.createConnector(hostname);
-		translator = createAndInitTranslator();
-		isRemote = remote;
-	}
-	
-	private DockerOperatingSystemTranslator createAndInitTranslator(){
-		return new DockerOperatingSystemTranslator();
-	}
-	
-	@Override
-	public ContainerController getContainer(ComponentInstanceId _id) {
-		return registry.getContainer(_id);
-	}
-	
-	@Override
-	public void runApplication(ComponentInstanceId _id, LifecycleStore store) {
-		ContainerController c = getContainer(_id);
-		c.init(store);
-	}
+    DockerContainerManager(HostContext vmId, String host) {
+        this(vmId, host, true);
+    }
+    
+    private DockerContainerManager(HostContext vmId, String host, boolean remote) {
+        hostContext = vmId;
+        hostname = host;
+        client = ConnectorFactory.INSTANCE.createConnector(hostname);
+        translator = createAndInitTranslator();
+        isRemote = remote;
+    }
+    
+    private DockerOperatingSystemTranslator createAndInitTranslator(){
+        return new DockerOperatingSystemTranslator();
+    }
+    
+    @Override
+    public ContainerController getContainer(ComponentInstanceId _id) {
+        return registry.getContainer(_id);
+    }
+    
+    @Override
+    public void runApplication(ComponentInstanceId _id, LifecycleStore store) {
+        ContainerController c = getContainer(_id);
+        c.init(store);
+    }
 
-	@Override
-	public CommandSequence addDeploymentSequence() {
-		return DockerDeployment.create();
-	}
+    @Override
+    public CommandSequence addDeploymentSequence() {
+        return DockerDeployment.create();
+    }
 
-	@Override
-	public ContainerType getContainerType() {
-		if(isRemote) return ContainerType.DOCKER_REMOTE;
-		return ContainerType.DOCKER;
-	}
+    @Override
+    public ContainerType getContainerType() {
+        if(isRemote) return ContainerType.DOCKER_REMOTE;
+        return ContainerType.DOCKER;
+    }
 
-	@Override
-	public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent comp, OperatingSystem os) {
-		ComponentInstanceId id = new ComponentInstanceId();
-		GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
-		PortRegistryTranslator portAccessor = new PortRegistryTranslator(accessor, hostContext);
-		NetworkHandler handler = new NetworkHandler(portAccessor, DockerContainerManagerFactory.DOCKER_PORT_HIERARCHY, comp);
-		
-		
-		DockerContainerLogic l = new DockerContainerLogic(id, client, translator, accessor, comp, ctx, os, handler);
-		ContainerController dc = new StandardContainer<DockerContainerLogic>(id, l);
-		registry.addContainer(dc);
-		dc.create();
-		return dc;
-	}
+    @Override
+    public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent comp, OperatingSystem os) {
+        ComponentInstanceId id = new ComponentInstanceId();
+        GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
+        PortRegistryTranslator portAccessor = new PortRegistryTranslator(accessor, hostContext);
+        NetworkHandler handler = new NetworkHandler(portAccessor, DockerContainerManagerFactory.DOCKER_PORT_HIERARCHY, comp);
+        
+        
+        DockerContainerLogic l = new DockerContainerLogic(id, client, translator, accessor, comp, ctx, os, handler);
+        ContainerController dc = new StandardContainer<DockerContainerLogic>(id, l);
+        registry.addContainer(dc);
+        dc.create();
+        return dc;
+    }
 
-	@Override
-	public void terminate() {
-		try { hostContext.close(); }
-		catch(InterruptedException ie) {
-			logger.warn("shutting down interrupted");
-		}
-		logger.error("terminate has not been fully implemented");
-		// FIXME: add other parts to shut down //
-	}
+    @Override
+    public void terminate() {
+        try { hostContext.close(); }
+        catch(InterruptedException ie) {
+            logger.warn("shutting down interrupted");
+        }
+        logger.error("terminate has not been fully implemented");
+        // FIXME: add other parts to shut down //
+    }
 }

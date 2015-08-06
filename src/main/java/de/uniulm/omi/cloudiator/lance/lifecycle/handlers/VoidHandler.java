@@ -30,18 +30,18 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
  * @author Joerg Domaschka
  */
 public final class VoidHandler implements LifecycleHandler {
-	
-	public static final LifecycleHandlerFactory<VoidHandler> FACTORY = new LifecycleHandlerFactory<VoidHandler>() {
-		@Override public final VoidHandler getDefault() { return DefaultHandlers.DEFAULT_VOID_HANDLER; }
+    
+    public static final LifecycleHandlerFactory<VoidHandler> FACTORY = new LifecycleHandlerFactory<VoidHandler>() {
+        @Override public final VoidHandler getDefault() { return DefaultHandlers.DEFAULT_VOID_HANDLER; }
 
-		@Override
-		public VoidHandler getDeploymentHandler(Deployment d) {
-			throw new UnsupportedOperationException("void handler cannot be used for own handler logic");
-		} 
-	};
+        @Override
+        public VoidHandler getDeploymentHandler(Deployment d) {
+            throw new UnsupportedOperationException("void handler cannot be used for own handler logic");
+        } 
+    };
 
-	@Override 
-	public void execute(ExecutionContext ec) {
-		throw new UnsupportedOperationException("method should never be called");
-	}
+    @Override 
+    public void execute(ExecutionContext ec) {
+        throw new UnsupportedOperationException("method should never be called");
+    }
 }

@@ -28,11 +28,11 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public interface RmiLcaRegistry extends Remote {
-	public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RemoteException;
-	public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RemoteException;
-	public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RemoteException;
-	void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RemoteException;
-	public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RemoteException;
-	public String getComponentProperty(ApplicationInstanceId appInstId,
-			ComponentId compId, ComponentInstanceId myId, String name) throws RemoteException;
+    public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RemoteException;
+    public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RemoteException;
+    public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RemoteException;
+    void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RemoteException;
+    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RemoteException;
+    public String getComponentProperty(ApplicationInstanceId appInstId,
+            ComponentId compId, ComponentInstanceId myId, String name) throws RemoteException;
 }

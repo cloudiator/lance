@@ -23,41 +23,41 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemVersion;
 
 public final class JavaSystemPackageCatalogue {
 
-	public static String getJdkPackageName(String version, OperatingSystem os) {
-		switch(os.getType()){
-		case UBUNTU:
-			return getUbuntuInstallCommand(version, os);
-		default:
-			return null;
-			// new IllegalArgumentException("Java installation for operating system " + os + " not supported");
-		}
-	}
-	
-	private static String getUbuntuInstallCommand(String version, OperatingSystem os) {
-		if(OperatingSystemVersion.getUbuntuVersion(14, 4).equals(os.getVersion())){
-			if(isJava7(version)) return "openjdk-7-jdk";
-		}
-		throw new IllegalArgumentException("Java (" + version + ") installation for operating system " + os + " not supported");
-	}
-	
-	private JavaSystemPackageCatalogue() {
-		// no instances //
-	}
-	
-	private static boolean isJava7(String version) {
-		return "7".equals(version);
-	}
+    public static String getJdkPackageName(String version, OperatingSystem os) {
+        switch(os.getType()){
+        case UBUNTU:
+            return getUbuntuInstallCommand(version, os);
+        default:
+            return null;
+            // new IllegalArgumentException("Java installation for operating system " + os + " not supported");
+        }
+    }
+    
+    private static String getUbuntuInstallCommand(String version, OperatingSystem os) {
+        if(OperatingSystemVersion.getUbuntuVersion(14, 4).equals(os.getVersion())){
+            if(isJava7(version)) return "openjdk-7-jdk";
+        }
+        throw new IllegalArgumentException("Java (" + version + ") installation for operating system " + os + " not supported");
+    }
+    
+    private JavaSystemPackageCatalogue() {
+        // no instances //
+    }
+    
+    private static boolean isJava7(String version) {
+        return "7".equals(version);
+    }
 
-	static SystemApplication getSystemApplication(final String version) {
-		if(isJava7(version)) {
-			return new SystemApplication() {
+    static SystemApplication getSystemApplication(final String version) {
+        if(isJava7(version)) {
+            return new SystemApplication() {
 
-				@Override
-				public String getPackageName(OperatingSystem os) {
-					return getJdkPackageName(version, os);
-				}
-			};
-		}
-		throw new IllegalArgumentException("version " + version + " currently not supported for Java.");
-	}
+                @Override
+                public String getPackageName(OperatingSystem os) {
+                    return getJdkPackageName(version, os);
+                }
+            };
+        }
+        throw new IllegalArgumentException("version " + version + " currently not supported for Java.");
+    }
 }

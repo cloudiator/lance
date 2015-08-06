@@ -19,43 +19,43 @@
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
 public final class DownstreamAddress{
-	
-	private final String hostIp; 
-	private final Integer port;
+    
+    private final String hostIp; 
+    private final Integer port;
 
-	DownstreamAddress(String ip, Integer i) {
-		hostIp = ip;
-		port = i;
-	}
+    DownstreamAddress(String ip, Integer i) {
+        hostIp = ip;
+        port = i;
+    }
 
-	private static boolean equalObjects(Object o1, Object o2) {
-		if(o1 == null && o2 == null) return true;
-		if(o1 == null || o2 == null) return false;
-		return o1.equals(o2);
-	}
-	
-	boolean hasValidPort() {
-		return PortRegistryTranslator.isValidPort(port);
-	}
+    private static boolean equalObjects(Object o1, Object o2) {
+        if(o1 == null && o2 == null) return true;
+        if(o1 == null || o2 == null) return false;
+        return o1.equals(o2);
+    }
+    
+    boolean hasValidPort() {
+        return PortRegistryTranslator.isValidPort(port);
+    }
 
-	@Override
-	public String toString() {
-		return hostIp + ":" + port.toString();
-	}
+    @Override
+    public String toString() {
+        return hostIp + ":" + port.toString();
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if(! (o instanceof DownstreamAddress)) return false;
-		DownstreamAddress that = (DownstreamAddress) o;
-		return equalObjects(this.hostIp, that.hostIp) && equalObjects(this.port, that.port);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if(! (o instanceof DownstreamAddress)) return false;
+        DownstreamAddress that = (DownstreamAddress) o;
+        return equalObjects(this.hostIp, that.hostIp) && equalObjects(this.port, that.port);
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((hostIp == null) ? 0 : hostIp.hashCode());
-		result = prime * result + ((port == null) ? 0 : port.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((hostIp == null) ? 0 : hostIp.hashCode());
+        result = prime * result + ((port == null) ? 0 : port.hashCode());
+        return result;
+    }
 }

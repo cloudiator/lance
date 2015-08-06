@@ -21,12 +21,12 @@ package de.uniulm.omi.cloudiator.lance.lca.container;
 import de.uniulm.omi.cloudiator.lance.util.state.State;
 
 public enum ContainerStatus implements State {
-	NEW,
-	CREATING,
-	CREATED,
-	INITIALISING,
-	READY,
-	SHUTTING_DOWN,
-	DESTROYED,
-	;
+    NEW,
+    CREATING,
+    CREATED,
+    INITIALISING,
+    READY,
+    SHUTTING_DOWN,
+    DESTROYED,
+    ;
 }

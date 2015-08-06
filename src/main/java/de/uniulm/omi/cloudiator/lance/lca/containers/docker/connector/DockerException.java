@@ -20,21 +20,21 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 public final class DockerException extends Exception {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public DockerException() {
-		super();
-	}
+    public DockerException() {
+        super();
+    }
 
-	public DockerException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public DockerException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public DockerException(String message) {
-		super(message);
-	}
+    public DockerException(String message) {
+        super(message);
+    }
 
-	public DockerException(Throwable cause) {
-		super(cause);
-	}
+    public DockerException(Throwable cause) {
+        super(cause);
+    }
 }

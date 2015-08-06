@@ -29,72 +29,72 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 public final class DeployableComponentBuilder {
 
-	private final String name;
-	private final ComponentId componentId;
-	private final List<InPort> inports = new ArrayList<InPort>();
-	private final List<OutPort> outports = new ArrayList<OutPort>();
-	private volatile LifecycleStore store;
-	// private volatile boolean deploySequentially = false;
-	
-	private final HashMap<String, Class<?>> properties = new HashMap<String, Class<?>>();
-	private final HashMap<String, Serializable> propertyValues = new HashMap<String, Serializable>();
-	
-	private DeployableComponentBuilder(String _name, ComponentId _id) {
-		name = _name;
-		componentId = _id;
-	}
-	
-	public final void addInport(String portname, PortType type, int cardinality) {
-		inports.add(new InPort(portname, type, cardinality));
-		addProperty(portname, InPort.class);
-	}
-	
-	public final void addInport(String portname, PortType type, int cardinality, int defaultPortNr) {
-		inports.add(new InPort(portname, type, cardinality));
-		addProperty(portname, InPort.class, defaultPortNr);
-	}
-	
-	public final void addOutport(String portname, PortUpdateHandler handler, int cardinality) {
-		outports.add(new OutPort(portname, handler, cardinality, OutPort.NO_SINKS, OutPort.INFINITE_SINKS));
-		addProperty(portname, OutPort.class);
-	}
-	
-	public final void addOutport(String portname, PortUpdateHandler handler, int cardinality, int minSinks) {
-		outports.add(new OutPort(portname, handler, cardinality, minSinks, OutPort.INFINITE_SINKS));
-		addProperty(portname, OutPort.class);
-	}
-	
-	public final void addOutport(String portname, PortUpdateHandler handler, int cardinality, int minSinks, int maxSinks) {
-		if(minSinks < 0 || maxSinks < 1 || minSinks > maxSinks) {
-			throw new IllegalArgumentException("minSinks and maxSinks have non-fitting values: " + minSinks + ", " + maxSinks);
-		}
-		outports.add(new OutPort(portname, handler, cardinality, minSinks, maxSinks));
-		addProperty(portname, OutPort.class);
-	}
-	
-	public static DeployableComponentBuilder createBuilder(String name, ComponentId componentId) {
-		return new DeployableComponentBuilder(name, componentId);
-	}
+    private final String name;
+    private final ComponentId componentId;
+    private final List<InPort> inports = new ArrayList<InPort>();
+    private final List<OutPort> outports = new ArrayList<OutPort>();
+    private volatile LifecycleStore store;
+    // private volatile boolean deploySequentially = false;
+    
+    private final HashMap<String, Class<?>> properties = new HashMap<String, Class<?>>();
+    private final HashMap<String, Serializable> propertyValues = new HashMap<String, Serializable>();
+    
+    private DeployableComponentBuilder(String _name, ComponentId _id) {
+        name = _name;
+        componentId = _id;
+    }
+    
+    public final void addInport(String portname, PortType type, int cardinality) {
+        inports.add(new InPort(portname, type, cardinality));
+        addProperty(portname, InPort.class);
+    }
+    
+    public final void addInport(String portname, PortType type, int cardinality, int defaultPortNr) {
+        inports.add(new InPort(portname, type, cardinality));
+        addProperty(portname, InPort.class, defaultPortNr);
+    }
+    
+    public final void addOutport(String portname, PortUpdateHandler handler, int cardinality) {
+        outports.add(new OutPort(portname, handler, cardinality, OutPort.NO_SINKS, OutPort.INFINITE_SINKS));
+        addProperty(portname, OutPort.class);
+    }
+    
+    public final void addOutport(String portname, PortUpdateHandler handler, int cardinality, int minSinks) {
+        outports.add(new OutPort(portname, handler, cardinality, minSinks, OutPort.INFINITE_SINKS));
+        addProperty(portname, OutPort.class);
+    }
+    
+    public final void addOutport(String portname, PortUpdateHandler handler, int cardinality, int minSinks, int maxSinks) {
+        if(minSinks < 0 || maxSinks < 1 || minSinks > maxSinks) {
+            throw new IllegalArgumentException("minSinks and maxSinks have non-fitting values: " + minSinks + ", " + maxSinks);
+        }
+        outports.add(new OutPort(portname, handler, cardinality, minSinks, maxSinks));
+        addProperty(portname, OutPort.class);
+    }
+    
+    public static DeployableComponentBuilder createBuilder(String name, ComponentId componentId) {
+        return new DeployableComponentBuilder(name, componentId);
+    }
 
-	public void addLifecycleStore(LifecycleStore lifecycleStore) {
-		store = lifecycleStore;
-	}
+    public void addLifecycleStore(LifecycleStore lifecycleStore) {
+        store = lifecycleStore;
+    }
 
-	public void addProperty(String propertyName, Class<?> propertyType, Serializable defaultValue) {
-		addProperty(propertyName, propertyType);
-		propertyValues.put(propertyName, defaultValue);
-	}
-	
-	public void addProperty(String propertyName, Class<?> propertyType) {
-		properties.put(propertyName, propertyType);
-	}
-	
-	public DeployableComponent build() {
-		return new DeployableComponent(name, componentId, store, inports, outports, properties, propertyValues);
-	}
+    public void addProperty(String propertyName, Class<?> propertyType, Serializable defaultValue) {
+        addProperty(propertyName, propertyType);
+        propertyValues.put(propertyName, defaultValue);
+    }
+    
+    public void addProperty(String propertyName, Class<?> propertyType) {
+        properties.put(propertyName, propertyType);
+    }
+    
+    public DeployableComponent build() {
+        return new DeployableComponent(name, componentId, store, inports, outports, properties, propertyValues);
+    }
 
-	public void deploySequentially(boolean b) {
-		// deploySequentially = b;
-		throw new UnsupportedOperationException("parallel deployment not supported yet.");
-	}
+    public void deploySequentially(boolean b) {
+        // deploySequentially = b;
+        throw new UnsupportedOperationException("parallel deployment not supported yet.");
+    }
 }

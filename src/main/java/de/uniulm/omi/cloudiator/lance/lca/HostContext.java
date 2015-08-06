@@ -20,16 +20,16 @@ package de.uniulm.omi.cloudiator.lance.lca;
 
 public interface HostContext {
 
-	String getPublicIp();
+    String getPublicIp();
 
-	String getInternalIp();
-	
-	String getCloudIdentifier();
+    String getInternalIp();
+    
+    String getCloudIdentifier();
 
-	void close() throws InterruptedException;
+    void close() throws InterruptedException;
 
-	void scheduleAction(Runnable runner);
+    void scheduleAction(Runnable runner);
 
-	void run(Runnable runner);
+    void run(Runnable runner);
 
 }

@@ -22,20 +22,20 @@ import java.util.concurrent.FutureTask;
 
 public class AsyncRunner implements Runnable {
 
-	public interface Setter {
-		void set();
-	}
-	
-	private final Setter setter;
-	
-	private AsyncRunner(Setter s) {setter = s;}
-	@Override public void run() { setter.set(); }
-	
-	public static<T> Thread createWrappedStateRunner(Setter s, AsyncCallback<T> callback) {
-		AsyncRunner r = new AsyncRunner(s);
-		FutureTask<T> ft = new FutureTask<T>(r, null);
-		Thread t = new Thread(ft);
-		callback.call(ft);
-		return t;
-	}
+    public interface Setter {
+        void set();
+    }
+    
+    private final Setter setter;
+    
+    private AsyncRunner(Setter s) {setter = s;}
+    @Override public void run() { setter.set(); }
+    
+    public static<T> Thread createWrappedStateRunner(Setter s, AsyncCallback<T> callback) {
+        AsyncRunner r = new AsyncRunner(s);
+        FutureTask<T> ft = new FutureTask<T>(r, null);
+        Thread t = new Thread(ft);
+        callback.call(ft);
+        return t;
+    }
 }

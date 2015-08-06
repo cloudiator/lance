@@ -20,5 +20,5 @@ package de.uniulm.omi.cloudiator.lance.util.state;
 
 public interface TransitionAction {
 
-	public void transit(Object[] params);
+    public void transit(Object[] params);
 }

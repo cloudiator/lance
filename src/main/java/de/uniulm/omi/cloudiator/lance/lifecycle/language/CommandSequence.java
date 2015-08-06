@@ -36,26 +36,26 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public final class CommandSequence {
 
-	private final List<Command> commands;
-	private final String myName;
-	
-	CommandSequence(String _myName, List<Command> _commands) {
-		commands = _commands;
-		myName = _myName;
-	}
+    private final List<Command> commands;
+    private final String myName;
+    
+    CommandSequence(String _myName, List<Command> _commands) {
+        commands = _commands;
+        myName = _myName;
+    }
 
-	public boolean hasLifecycleOperations(LifecycleHandlerType type) {
-		for(Command c : commands) {
-			if(c.runsInLifecycle(type)) return true;
-		}
-		return false;
-	}
+    public boolean hasLifecycleOperations(LifecycleHandlerType type) {
+        for(Command c : commands) {
+            if(c.runsInLifecycle(type)) return true;
+        }
+        return false;
+    }
 
-	public void executeCommandsForLifecycle(LifecycleHandlerType type, ExecutionContext ec) {
-		for(Command c : commands) {
-			if(c.runsInLifecycle(type)) {
-				c.execute(ec);
-			}
-		}
-	}
+    public void executeCommandsForLifecycle(LifecycleHandlerType type, ExecutionContext ec) {
+        for(Command c : commands) {
+            if(c.runsInLifecycle(type)) {
+                c.execute(ec);
+            }
+        }
+    }
 }

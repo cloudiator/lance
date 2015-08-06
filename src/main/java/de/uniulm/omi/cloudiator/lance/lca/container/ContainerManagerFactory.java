@@ -24,23 +24,23 @@ import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 
 public final class ContainerManagerFactory {
 
-	private static final EnumMap<ContainerType, SpecificContainerManagerFactory> mapper;
-	
-	static {
-		// FIXME: add initialisation code
-		mapper = new EnumMap<ContainerType, SpecificContainerManagerFactory>(ContainerType.class);
-		for(ContainerType t : ContainerType.values()) {
-			mapper.put(t, t.getContainerFactory());	
-		}
-	}
-	
-	public static ContainerManager createContainerManager(HostContext myId, ContainerType type) {
-		SpecificContainerManagerFactory sf = mapper.get(type);
-		if(sf == null) throw new IllegalArgumentException("Type: " + type + " not supported");
-		return sf.createContainerManager(myId);
-	}
-	
-	private ContainerManagerFactory() {
-		// empty constructor //
-	}
+    private static final EnumMap<ContainerType, SpecificContainerManagerFactory> mapper;
+    
+    static {
+        // FIXME: add initialisation code
+        mapper = new EnumMap<ContainerType, SpecificContainerManagerFactory>(ContainerType.class);
+        for(ContainerType t : ContainerType.values()) {
+            mapper.put(t, t.getContainerFactory());    
+        }
+    }
+    
+    public static ContainerManager createContainerManager(HostContext myId, ContainerType type) {
+        SpecificContainerManagerFactory sf = mapper.get(type);
+        if(sf == null) throw new IllegalArgumentException("Type: " + type + " not supported");
+        return sf.createContainerManager(myId);
+    }
+    
+    private ContainerManagerFactory() {
+        // empty constructor //
+    }
 }

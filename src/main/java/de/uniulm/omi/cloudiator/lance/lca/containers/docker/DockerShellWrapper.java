@@ -25,28 +25,28 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 class DockerShellWrapper implements Shell {
-	
-	private static final Logger logger = LoggerFactory.getLogger(Shell.class);
-	
-	final DockerShell shell; 
-	DockerShellWrapper(DockerShell _shell) { shell = _shell; }
-	
-	@Override
-	public ExecutionResult executeCommand(String command) {
-		ExecutionResult result = shell.executeCommand(command);
-		checkResult(command, result);
-		return result;
-	}
+    
+    private static final Logger logger = LoggerFactory.getLogger(Shell.class);
+    
+    final DockerShell shell; 
+    DockerShellWrapper(DockerShell _shell) { shell = _shell; }
+    
+    @Override
+    public ExecutionResult executeCommand(String command) {
+        ExecutionResult result = shell.executeCommand(command);
+        checkResult(command, result);
+        return result;
+    }
 
-	@Override
-	public ExecutionResult executeBlockingCommand(String res) {
-		ExecutionResult result = shell.executeBlockingCommand(res);
-		checkResult(res, result);
-		return result;
-	}
-	
-	private void checkResult(String command, ExecutionResult result) {
-		if(result.isSuccess()) return;
-		logger.warn("unsuccessull command '" + command + "': " + result.toString());
-	}
+    @Override
+    public ExecutionResult executeBlockingCommand(String res) {
+        ExecutionResult result = shell.executeBlockingCommand(res);
+        checkResult(res, result);
+        return result;
+    }
+    
+    private void checkResult(String command, ExecutionResult result) {
+        if(result.isSuccess()) return;
+        logger.warn("unsuccessull command '" + command + "': " + result.toString());
+    }
 }

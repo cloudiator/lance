@@ -23,39 +23,39 @@ import java.util.UUID;
 
 public final class ComponentId implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	// FIXME: set fixed value!
-	public static final ComponentId ERROR_ID = new ComponentId();
-	public static final ComponentId SYSTEM_ID = new ComponentId();
-	
-	private final UUID uuid;
-	
-	public ComponentId(){
-		uuid = UUID.randomUUID();
-	}
-	
-	private ComponentId(String s){
-		uuid = UUID.fromString(s);
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if(!(o instanceof ComponentId)) return false; // captures null
-		ComponentId that = (ComponentId) o;
-		return this.uuid.equals(that.uuid);
-	}
-	
-	@Override 
-	public int hashCode() {
-		return uuid.hashCode();
-	}
-	
-	@Override
-	public String toString(){
-		return uuid.toString();
-	}
-	
-	public static ComponentId fromString(String s){
-		return new ComponentId(s);
-	}
+    private static final long serialVersionUID = 1L;
+    // FIXME: set fixed value!
+    public static final ComponentId ERROR_ID = new ComponentId();
+    public static final ComponentId SYSTEM_ID = new ComponentId();
+    
+    private final UUID uuid;
+    
+    public ComponentId(){
+        uuid = UUID.randomUUID();
+    }
+    
+    private ComponentId(String s){
+        uuid = UUID.fromString(s);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof ComponentId)) return false; // captures null
+        ComponentId that = (ComponentId) o;
+        return this.uuid.equals(that.uuid);
+    }
+    
+    @Override 
+    public int hashCode() {
+        return uuid.hashCode();
+    }
+    
+    @Override
+    public String toString(){
+        return uuid.toString();
+    }
+    
+    public static ComponentId fromString(String s){
+        return new ComponentId(s);
+    }
 }

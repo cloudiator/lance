@@ -22,7 +22,7 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 
 public abstract class SystemApplication {
 
-	public final static SystemApplication JAVA_7 = JavaSystemPackageCatalogue.getSystemApplication("7");
+    public final static SystemApplication JAVA_7 = JavaSystemPackageCatalogue.getSystemApplication("7");
 
-	public abstract String getPackageName(OperatingSystem os);
+    public abstract String getPackageName(OperatingSystem os);
 }

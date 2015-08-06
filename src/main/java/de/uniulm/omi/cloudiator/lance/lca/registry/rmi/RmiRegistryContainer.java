@@ -27,31 +27,31 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryContainer;
 
 public final class RmiRegistryContainer implements RegistryContainer {
 
-	private final RemoteRegistryImpl reg = new RemoteRegistryImpl();
-	private final RmiLcaRegistry exportedRegistry;
-	private final RmiWrapper wrapper;
-	
-	private final static int AGENT_LIFECYCLE_REGISTRY_PORT = 33034;
-	
-	private RmiLcaRegistry initComponentRegistry() throws RemoteException {
-		RmiLcaRegistry re = (RmiLcaRegistry) UnicastRemoteObject.exportObject(reg, AGENT_LIFECYCLE_REGISTRY_PORT);
-		return re;
-	}
-	
-	private RmiRegistryContainer() throws RemoteException {
-		exportedRegistry = initComponentRegistry();
-		wrapper = new RmiWrapper(exportedRegistry);
-	}
-	
-	@Override
-	public LcaRegistry getRegistry() {
-		return wrapper;
-	}
-	
-	public static RegistryContainer create() throws RegistrationException {
-		try { return new RmiRegistryContainer(); }
-		catch(RemoteException re) {
-			throw new RegistrationException("cannot create registry", re);
-		}
-	}
+    private final RemoteRegistryImpl reg = new RemoteRegistryImpl();
+    private final RmiLcaRegistry exportedRegistry;
+    private final RmiWrapper wrapper;
+    
+    private final static int AGENT_LIFECYCLE_REGISTRY_PORT = 33034;
+    
+    private RmiLcaRegistry initComponentRegistry() throws RemoteException {
+        RmiLcaRegistry re = (RmiLcaRegistry) UnicastRemoteObject.exportObject(reg, AGENT_LIFECYCLE_REGISTRY_PORT);
+        return re;
+    }
+    
+    private RmiRegistryContainer() throws RemoteException {
+        exportedRegistry = initComponentRegistry();
+        wrapper = new RmiWrapper(exportedRegistry);
+    }
+    
+    @Override
+    public LcaRegistry getRegistry() {
+        return wrapper;
+    }
+    
+    public static RegistryContainer create() throws RegistrationException {
+        try { return new RmiRegistryContainer(); }
+        catch(RemoteException re) {
+            throw new RegistrationException("cannot create registry", re);
+        }
+    }
 }

@@ -32,26 +32,26 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface PostInstallHandler extends LifecycleHandler {
 
-	public static final LifecycleHandlerFactory<PostInstallHandler> FACTORY = new LifecycleHandlerFactory<PostInstallHandler>() {
-		@Override public final PostInstallHandler getDefault() { return DefaultHandlers.DEFAULT_POST_INSTALL_HANDLER; }
+    public static final LifecycleHandlerFactory<PostInstallHandler> FACTORY = new LifecycleHandlerFactory<PostInstallHandler>() {
+        @Override public final PostInstallHandler getDefault() { return DefaultHandlers.DEFAULT_POST_INSTALL_HANDLER; }
 
-		@Override
-		public PostInstallHandler getDeploymentHandler(Deployment d) {
-			return new PostInstallDeploymentHandler(d);
-		} 
-	};
+        @Override
+        public PostInstallHandler getDeploymentHandler(Deployment d) {
+            return new PostInstallDeploymentHandler(d);
+        } 
+    };
 }
 
 final class PostInstallDeploymentHandler implements PostInstallHandler {
-	
-	private final Deployment d;
-	
-	PostInstallDeploymentHandler(Deployment _d) {
-		d = _d;
-	}
+    
+    private final Deployment d;
+    
+    PostInstallDeploymentHandler(Deployment _d) {
+        d = _d;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		d.execute(LifecycleHandlerType.POST_INSTALL, ec);
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        d.execute(LifecycleHandlerType.POST_INSTALL, ec);
+    }
 }

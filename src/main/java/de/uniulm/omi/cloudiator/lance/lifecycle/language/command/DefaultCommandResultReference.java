@@ -27,18 +27,18 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 public final class DefaultCommandResultReference implements CommandResultReference {
 
-	private final CountDownLatch latch = new CountDownLatch(1);
-	private final AtomicReference<String> result = new AtomicReference<String>();
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private final AtomicReference<String> result = new AtomicReference<String>();
 
-	void setResult(String s) {
-		if(latch.getCount() != 1L) throw new IllegalStateException();
-		result.set(s);
-		latch.countDown();
- 	}
-	
-	@Override
-	public String getResult(OperatingSystem os, ExecutionContext ec) {
-		if(latch.getCount() != 0L) throw new IllegalStateException();
-		return result.get();
-	}
+    void setResult(String s) {
+        if(latch.getCount() != 1L) throw new IllegalStateException();
+        result.set(s);
+        latch.countDown();
+     }
+    
+    @Override
+    public String getResult(OperatingSystem os, ExecutionContext ec) {
+        if(latch.getCount() != 0L) throw new IllegalStateException();
+        return result.get();
+    }
 }

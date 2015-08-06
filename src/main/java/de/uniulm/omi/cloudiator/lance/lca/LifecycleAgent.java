@@ -28,17 +28,17 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public interface LifecycleAgent extends Remote {
-	
-	public final static String AGENT_REGISTRY_KEY = "LifecycleAgent";
-	public final static int AGENT_RMI_PORT = 33033;
+    
+    public final static String AGENT_REGISTRY_KEY = "LifecycleAgent";
+    public final static int AGENT_RMI_PORT = 33033;
 
-	void stop() throws RemoteException;
+    void stop() throws RemoteException;
 
-	void terminate() throws RemoteException;
+    void terminate() throws RemoteException;
 
-	List<ComponentInstanceId> listContainers() throws RemoteException;
+    List<ComponentInstanceId> listContainers() throws RemoteException;
 
-	ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, 
-				OperatingSystem os) throws RemoteException;
-	
+    ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, 
+                OperatingSystem os) throws RemoteException;
+    
 }

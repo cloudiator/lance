@@ -19,12 +19,12 @@
 package de.uniulm.omi.cloudiator.lance.application;
 
 public enum ApplicationInstanceStatus {
-	
-	FAILED,
-	STOPPED,
-	SHUTTING_DOWN,
-	STARTED,
-	INIT,
-	STARTING,
-	;
+    
+    FAILED,
+    STOPPED,
+    SHUTTING_DOWN,
+    STARTED,
+    INIT,
+    STARTING,
+    ;
 }

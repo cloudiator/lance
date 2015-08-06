@@ -40,70 +40,70 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.install.SystemApplicati
 
 public final class CommandSequenceBuilder {
 
-	private final List<Command> commands = new ArrayList<Command>();
-	private final String myName;
-	private LifecycleHandlerType phase = LifecycleHandlerType.NEW;
-	
-	public CommandSequenceBuilder(String sequenceName) {
-		myName = sequenceName;
-	}
-	
-	public CommandSequenceBuilder addCommand(Command c) {
-		commands.add(c);
-		return this;
-	}
-	
-	private CommandResultReference addCommandAndReturnResult(Command c) {
-		addCommand(c);
-		return c.getResult();
-	}
-	
-	public CommandSequenceBuilder setPhase(LifecycleHandlerType _phase) {
-		phase = _phase;
-		return this;
-	}
-	
-	public CommandResultReference download(URI uri) {
-		DownloadCommand d = DownloadCommandFactory.create(phase, uri);
-		return addCommandAndReturnResult(d);
-	}
+    private final List<Command> commands = new ArrayList<Command>();
+    private final String myName;
+    private LifecycleHandlerType phase = LifecycleHandlerType.NEW;
+    
+    public CommandSequenceBuilder(String sequenceName) {
+        myName = sequenceName;
+    }
+    
+    public CommandSequenceBuilder addCommand(Command c) {
+        commands.add(c);
+        return this;
+    }
+    
+    private CommandResultReference addCommandAndReturnResult(Command c) {
+        addCommand(c);
+        return c.getResult();
+    }
+    
+    public CommandSequenceBuilder setPhase(LifecycleHandlerType _phase) {
+        phase = _phase;
+        return this;
+    }
+    
+    public CommandResultReference download(URI uri) {
+        DownloadCommand d = DownloadCommandFactory.create(phase, uri);
+        return addCommandAndReturnResult(d);
+    }
 
-	public CommandResultReference download(String string) {
-		URI uri = null;
-		try {
-			uri = new URI(string);
-			return download(uri);
-		} catch (URISyntaxException e) {
-			throw new CommandException("wrong URL format", e);
-		}
-	}
+    public CommandResultReference download(String string) {
+        URI uri = null;
+        try {
+            uri = new URI(string);
+            return download(uri);
+        } catch (URISyntaxException e) {
+            throw new CommandException("wrong URL format", e);
+        }
+    }
 
-	public CommandResultReference executeOnShell(CommandResultReference f) {
-		ExecuteOnShellCommand e = ExecuteOnShellCommandFactory.createRootCommand(phase, f);
-		return addCommandAndReturnResult(e);
-	}
+    public CommandResultReference executeOnShell(CommandResultReference f) {
+        ExecuteOnShellCommand e = ExecuteOnShellCommandFactory.createRootCommand(phase, f);
+        return addCommandAndReturnResult(e);
+    }
 
-	public CommandResultReference replaceFileContent(CommandResultReference _ref, String pattern, String replacement) {
-		ReplaceFileContentCommand c = ReplaceFileContentCommandFactory.create(phase, _ref, pattern, replacement);
-		return addCommandAndReturnResult(c);
-	}
+    public CommandResultReference replaceFileContent(CommandResultReference _ref, String pattern, String replacement) {
+        ReplaceFileContentCommand c = ReplaceFileContentCommandFactory.create(phase, _ref, pattern, replacement);
+        return addCommandAndReturnResult(c);
+    }
 
-	public CommandResultReference configureSystemService(String serviceName, String command) {
-		SystemServiceCommand c = SystemServiceCommandFactory.create(phase, serviceName, command);
-		return addCommandAndReturnResult(c);
-	}
+    public CommandResultReference configureSystemService(String serviceName, String command) {
+        SystemServiceCommand c = SystemServiceCommandFactory.create(phase, serviceName, command);
+        return addCommandAndReturnResult(c);
+    }
 
-	public CommandSequence build() {
-		return new CommandSequence(myName, new ArrayList<Command>(commands));
-	}
+    public CommandSequence build() {
+        return new CommandSequence(myName, new ArrayList<Command>(commands));
+    }
 
-	public CommandResultReference installSystemPackage(SystemApplication _app) {
-		InstallSystemPackageCommand c = InstallSystemPackageCommandFactory.create(phase, _app);
-		return addCommandAndReturnResult(c);
-	}
+    public CommandResultReference installSystemPackage(SystemApplication _app) {
+        InstallSystemPackageCommand c = InstallSystemPackageCommandFactory.create(phase, _app);
+        return addCommandAndReturnResult(c);
+    }
 
-	public CommandResultReference setFileProperties(int access, int users, CommandResultReference f) {
-		SetFilePropertiesCommand c = SetFilePropertiesCommandFactory.setAccessRights(phase, access, users, f);		
-		return addCommandAndReturnResult(c);
-	}
+    public CommandResultReference setFileProperties(int access, int users, CommandResultReference f) {
+        SetFilePropertiesCommand c = SetFilePropertiesCommandFactory.setAccessRights(phase, access, users, f);        
+        return addCommandAndReturnResult(c);
+    }
 }

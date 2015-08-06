@@ -24,29 +24,29 @@ import java.util.List;
 
 public final class PortHierarchy {
 
-	private final List<PortHierarchyLevel> levels;
-	
-	private PortHierarchy(List<PortHierarchyLevel> _levels) { levels = _levels; }
-	
-	public static class PortHierarchyBuilder {
+    private final List<PortHierarchyLevel> levels;
+    
+    private PortHierarchy(List<PortHierarchyLevel> _levels) { levels = _levels; }
+    
+    public static class PortHierarchyBuilder {
 
-		private final List<PortHierarchyLevel> levels = new LinkedList<PortHierarchyLevel>(); 
-		
-		public PortHierarchyBuilder() {}
-		
-		public PortHierarchyBuilder addLevel(PortHierarchyLevel level) { levels.add(level); return this; }
-		
-		public PortHierarchy build() {
-			if(levels.size() < 2) throw new IllegalStateException("at least two levels are required");
-			if(levels.get(0) == null || !levels.get(0).equals(PortRegistryTranslator.PORT_HIERARCHY_0))
-				throw new IllegalStateException("hierarchy level 0 must be " + PortRegistryTranslator.PORT_HIERARCHY_0);
-			if(levels.get(1) == null || !levels.get(1).equals(PortRegistryTranslator.PORT_HIERARCHY_1))
-				throw new IllegalStateException("hierarchy level 1 must be " + PortRegistryTranslator.PORT_HIERARCHY_1);
-			return new PortHierarchy(levels);
-		}
-	}
+        private final List<PortHierarchyLevel> levels = new LinkedList<PortHierarchyLevel>(); 
+        
+        public PortHierarchyBuilder() {}
+        
+        public PortHierarchyBuilder addLevel(PortHierarchyLevel level) { levels.add(level); return this; }
+        
+        public PortHierarchy build() {
+            if(levels.size() < 2) throw new IllegalStateException("at least two levels are required");
+            if(levels.get(0) == null || !levels.get(0).equals(PortRegistryTranslator.PORT_HIERARCHY_0))
+                throw new IllegalStateException("hierarchy level 0 must be " + PortRegistryTranslator.PORT_HIERARCHY_0);
+            if(levels.get(1) == null || !levels.get(1).equals(PortRegistryTranslator.PORT_HIERARCHY_1))
+                throw new IllegalStateException("hierarchy level 1 must be " + PortRegistryTranslator.PORT_HIERARCHY_1);
+            return new PortHierarchy(levels);
+        }
+    }
 
-	public List<PortHierarchyLevel> levels() {
-		return Collections.unmodifiableList(levels);
-	}
+    public List<PortHierarchyLevel> levels() {
+        return Collections.unmodifiableList(levels);
+    }
 }

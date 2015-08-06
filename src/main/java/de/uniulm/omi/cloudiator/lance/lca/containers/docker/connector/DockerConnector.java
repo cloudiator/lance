@@ -26,29 +26,29 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 
 public interface DockerConnector {
 
-	public final String LIFECYCLE_DIRECTORY = "/lifecycle";
-	
-	DockerShell startContainer(ComponentInstanceId myId) throws DockerException;
+    public final String LIFECYCLE_DIRECTORY = "/lifecycle";
+    
+    DockerShell startContainer(ComponentInstanceId myId) throws DockerException;
 
-	void pullImage(String target) throws DockerException;
+    void pullImage(String target) throws DockerException;
 
-	/**
-	 * 
-	 * @param key should be the id to use; either component id after initialisation
-	 * of the component instance id after configuration 
-	 * @param os will be used as a tag in both cases
-	 * @return 
-	 * @throws DockerException 
-	 */
-	String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException;
+    /**
+     * 
+     * @param key should be the id to use; either component id after initialisation
+     * of the component instance id after configuration 
+     * @param os will be used as a tag in both cases
+     * @return 
+     * @throws DockerException 
+     */
+    String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException;
 
-	String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> ports_to_set) throws DockerException;
+    String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> ports_to_set) throws DockerException;
 
-	String findImage(String target) throws DockerException ;
+    String findImage(String target) throws DockerException ;
 
-	String getContainerIp(ComponentInstanceId myId) throws DockerException;
+    String getContainerIp(ComponentInstanceId myId) throws DockerException;
 
-	int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException;
+    int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException;
 
-	DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
+    DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
 }

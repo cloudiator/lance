@@ -32,11 +32,11 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
  * the actual implementation */
 public interface LcaRegistry extends Serializable {
 
-	public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
-	public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
-	public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
-	void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException;
-	public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
-	public String getComponentProperty(ApplicationInstanceId appInstId,
-			ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
+    public void addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
+    public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
+    public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
+    void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException;
+    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
+    public String getComponentProperty(ApplicationInstanceId appInstId,
+            ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
 }

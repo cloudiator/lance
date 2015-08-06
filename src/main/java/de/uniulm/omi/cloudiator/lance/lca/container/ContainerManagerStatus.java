@@ -20,10 +20,10 @@ package de.uniulm.omi.cloudiator.lance.lca.container;
 
 public enum ContainerManagerStatus {
 
-	NEW,
-	STARTING,
-	READY,
-	SHUTTING_DOWN,
-	DESTROYED,
-	;
+    NEW,
+    STARTING,
+    READY,
+    SHUTTING_DOWN,
+    DESTROYED,
+    ;
 }

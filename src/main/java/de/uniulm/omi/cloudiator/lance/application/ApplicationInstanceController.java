@@ -20,7 +20,7 @@ package de.uniulm.omi.cloudiator.lance.application;
 
 public interface ApplicationInstanceController {
 
-	public ApplicationInstanceId deployApplicationInstance();
-	public void shutdownApplicationInstance(ApplicationInstanceId id);
-	public ApplicationInstanceStatus getApplicationInstanceStatus(ApplicationInstanceId id);
+    public ApplicationInstanceId deployApplicationInstance();
+    public void shutdownApplicationInstance(ApplicationInstanceId id);
+    public ApplicationInstanceStatus getApplicationInstanceStatus(ApplicationInstanceId id);
 }

@@ -31,113 +31,113 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 public interface SetFilePropertiesCommand extends Command {
 
-	static final class SetFilePropertiesCommandConstants {
-		public static final int READ_ACCESS  = 1;
-		public static final int WRITE_ACCESS = 2;
-		public static final int EXECUTE_ACCESS = 4;
-		public static final int ALL_ACCESS = 7;
-		
-		public static final int FILE_OWNER = 1;
-		public static final int FILE_GROUP = 2;
-		public static final int FILE_WORLD = 4;
-		public static final int FILE_ALL = 7;
-		
-		private SetFilePropertiesCommandConstants(){
-			// no instances allowed so far //
-		}
-	}
+    static final class SetFilePropertiesCommandConstants {
+        public static final int READ_ACCESS  = 1;
+        public static final int WRITE_ACCESS = 2;
+        public static final int EXECUTE_ACCESS = 4;
+        public static final int ALL_ACCESS = 7;
+        
+        public static final int FILE_OWNER = 1;
+        public static final int FILE_GROUP = 2;
+        public static final int FILE_WORLD = 4;
+        public static final int FILE_ALL = 7;
+        
+        private SetFilePropertiesCommandConstants(){
+            // no instances allowed so far //
+        }
+    }
 
-	public static class SetFilePropertiesCommandFactory {
-	
-		private final static Set<LifecycleHandlerType> supportedLifecycles;
-		
-		static {
-			supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
-		}
-		
-		public static SetFilePropertiesCommand setAccessRights(LifecycleHandlerType inPhase, int access, int users, CommandResultReference reference) {
-			
-			if(supportedLifecycles.contains(inPhase)) {
-				if(access > SetFilePropertiesCommandConstants.ALL_ACCESS || access < 0) throw new IllegalArgumentException("" + access);
-				if(users > SetFilePropertiesCommandConstants.FILE_ALL || users < 0) throw new IllegalArgumentException("" + access);
-				return new SetFilePropertiesCommandImpl (inPhase, access, users, reference);
-			}
-			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		}
-		
-		private SetFilePropertiesCommandFactory() {
-			// no instances so far //
-		}
-	}
+    public static class SetFilePropertiesCommandFactory {
+    
+        private final static Set<LifecycleHandlerType> supportedLifecycles;
+        
+        static {
+            supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
+        }
+        
+        public static SetFilePropertiesCommand setAccessRights(LifecycleHandlerType inPhase, int access, int users, CommandResultReference reference) {
+            
+            if(supportedLifecycles.contains(inPhase)) {
+                if(access > SetFilePropertiesCommandConstants.ALL_ACCESS || access < 0) throw new IllegalArgumentException("" + access);
+                if(users > SetFilePropertiesCommandConstants.FILE_ALL || users < 0) throw new IllegalArgumentException("" + access);
+                return new SetFilePropertiesCommandImpl (inPhase, access, users, reference);
+            }
+            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+        }
+        
+        private SetFilePropertiesCommandFactory() {
+            // no instances so far //
+        }
+    }
 }
 
 final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
-	
-	private final LifecycleHandlerType type;
-	protected static final boolean useRoot = true;
-	private final CommandResultReference result = new DefaultCommandResultReference();
-	private final CommandResultReference input;
-	private final int[] props;
+    
+    private final LifecycleHandlerType type;
+    protected static final boolean useRoot = true;
+    private final CommandResultReference result = new DefaultCommandResultReference();
+    private final CommandResultReference input;
+    private final int[] props;
 
-	SetFilePropertiesCommandImpl(LifecycleHandlerType inPhase, int access, int users, CommandResultReference reference) {
-		input = reference;
-		type = inPhase;
-		props = new int[]{access, users};
-	}
+    SetFilePropertiesCommandImpl(LifecycleHandlerType inPhase, int access, int users, CommandResultReference reference) {
+        input = reference;
+        type = inPhase;
+        props = new int[]{access, users};
+    }
 
-	private final String getAccessString(int access) {
-		return Integer.toString(access);
-	}
-	
-	private String getUserString(int users, String string) {
-		String retVal = "000";
-		switch(users) {
-		case 7: retVal = string + string + string; break;
-		case 6: retVal = "0" + string + string; break;
-		case 5: retVal = string + "0" + string; break;
-		case 4: retVal = "00" + string; break;
-		case 3: retVal = string + string + "0"; break;
-		case 2: retVal = "0" + string + "0"; break;
-		case 1: retVal = string + "00"; break;
-		default:
-		}
-		return retVal;
-	}
-	
-	@Override
-	public CommandResultReference getResult() {
-		return result;
-	}
+    private final String getAccessString(int access) {
+        return Integer.toString(access);
+    }
+    
+    private String getUserString(int users, String string) {
+        String retVal = "000";
+        switch(users) {
+        case 7: retVal = string + string + string; break;
+        case 6: retVal = "0" + string + string; break;
+        case 5: retVal = string + "0" + string; break;
+        case 4: retVal = "00" + string; break;
+        case 3: retVal = string + string + "0"; break;
+        case 2: retVal = "0" + string + "0"; break;
+        case 1: retVal = string + "00"; break;
+        default:
+        }
+        return retVal;
+    }
+    
+    @Override
+    public CommandResultReference getResult() {
+        return result;
+    }
 
-	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
-		return type == handlerType;
-	}
+    @Override
+    public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
+        return type == handlerType;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		OperatingSystem os = ec.getOperatingSystem();
-		Shell shell = ec.getShell();
-		if(os.isLinuxOs()) {
-			String command = buildLinuxCommand(os);
-			shell.executeCommand(command);
-		} else {
-			throw new IllegalStateException("command line execution not supported for Mac or Windows systems.");
-		}
-	}
-	
-	protected String buildLinuxCommand(OperatingSystem os) {
-		String filename = input.getResult(os, null);
-		if(filename == null) throw new NullPointerException("no result available");
-		if(! filename.startsWith("/")) filename = "./" + filename;
-		String string = getUserString(props[1], getAccessString(props[0]));
-		
-		String command = "chmod " + string + " " + filename;
-		if(os.getType() == OperatingSystemType.UBUNTU) {
-			if(useRoot) return "sudo " + command;
-			return command;
-		}
-		return command;
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        OperatingSystem os = ec.getOperatingSystem();
+        Shell shell = ec.getShell();
+        if(os.isLinuxOs()) {
+            String command = buildLinuxCommand(os);
+            shell.executeCommand(command);
+        } else {
+            throw new IllegalStateException("command line execution not supported for Mac or Windows systems.");
+        }
+    }
+    
+    protected String buildLinuxCommand(OperatingSystem os) {
+        String filename = input.getResult(os, null);
+        if(filename == null) throw new NullPointerException("no result available");
+        if(! filename.startsWith("/")) filename = "./" + filename;
+        String string = getUserString(props[1], getAccessString(props[0]));
+        
+        String command = "chmod " + string + " " + filename;
+        if(os.getType() == OperatingSystemType.UBUNTU) {
+            if(useRoot) return "sudo " + command;
+            return command;
+        }
+        return command;
+    }
 
 }

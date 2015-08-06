@@ -22,6 +22,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
 public interface ShellLikeInterface {
 
-	ExecutionResult executeCommand(String string);
+    ExecutionResult executeCommand(String string);
 
 }

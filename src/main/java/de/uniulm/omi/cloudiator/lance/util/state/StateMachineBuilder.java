@@ -26,39 +26,39 @@ import java.util.Set;
 
 public final class StateMachineBuilder<T extends Enum<?> & State > {
 
-	private final T init;
-	private final Set<T> states = new HashSet<T>();
-	private final List<StateTransition<T>> transitions = new ArrayList<StateTransition<T>>();
-	
-	public StateMachineBuilder(T _initState) {
-		init = _initState;
-		states.add(_initState);
-	}
-	
-	public StateMachineBuilder<T> addState(T _s) {
-		states.add(_s);
-		return this;
-	}
+    private final T init;
+    private final Set<T> states = new HashSet<T>();
+    private final List<StateTransition<T>> transitions = new ArrayList<StateTransition<T>>();
+    
+    public StateMachineBuilder(T _initState) {
+        init = _initState;
+        states.add(_initState);
+    }
+    
+    public StateMachineBuilder<T> addState(T _s) {
+        states.add(_s);
+        return this;
+    }
 
-	public StateMachineBuilder<T> addSynchronousTransition(T _from, T _to, TransitionAction _a){
-		StateTransition<T> st = StateTransition.synchronousTransition(_from, _to, _a);
-		transitions.add(st);
-		return this;
-	}
-	
-	public StateMachineBuilder<T> addAsynchronousTransition(T _from, T _intermediate, T _to, TransitionAction _a){
-		StateTransition<T> st = StateTransition.asynchronousTransition(_from, _intermediate, _to, _a);
-		transitions.add(st);
-		return this;
-	}
-	
-	public StateMachine<T> build() {
-		return new StateMachine<T>(init, new ArrayList<T>(states), transitions);
-	}
+    public StateMachineBuilder<T> addSynchronousTransition(T _from, T _to, TransitionAction _a){
+        StateTransition<T> st = StateTransition.synchronousTransition(_from, _to, _a);
+        transitions.add(st);
+        return this;
+    }
+    
+    public StateMachineBuilder<T> addAsynchronousTransition(T _from, T _intermediate, T _to, TransitionAction _a){
+        StateTransition<T> st = StateTransition.asynchronousTransition(_from, _intermediate, _to, _a);
+        transitions.add(st);
+        return this;
+    }
+    
+    public StateMachine<T> build() {
+        return new StateMachine<T>(init, new ArrayList<T>(states), transitions);
+    }
 
-	public StateMachineBuilder<T> addAllState(T[] values) {
-		for(T v : values) { addState(v); }
-		return this;
-	}
+    public StateMachineBuilder<T> addAllState(T[] values) {
+        for(T v : values) { addState(v); }
+        return this;
+    }
 
 }

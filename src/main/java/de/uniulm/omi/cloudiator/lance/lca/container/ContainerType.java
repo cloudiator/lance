@@ -22,61 +22,61 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManag
 
 
 public enum ContainerType {
-	
-	DOCKER("dockering") {
-		@Override
-		public SpecificContainerManagerFactory getContainerFactory() {
-			return DockerContainerManagerFactory.INSTANCE;
-		}
-	},
-	
-	DOCKER_REMOTE("docker-remote") {
-		@Override
-		public SpecificContainerManagerFactory getContainerFactory() {
-			return DockerContainerManagerFactory.REMOTE;
-		}
-	},
+    
+    DOCKER("dockering") {
+        @Override
+        public SpecificContainerManagerFactory getContainerFactory() {
+            return DockerContainerManagerFactory.INSTANCE;
+        }
+    },
+    
+    DOCKER_REMOTE("docker-remote") {
+        @Override
+        public SpecificContainerManagerFactory getContainerFactory() {
+            return DockerContainerManagerFactory.REMOTE;
+        }
+    },
 
-	/*DUMMY("dummy") {
-		@Override
-		public SpecificContainerManagerFactory getContainerFactory() {
-			return DummyContainerManagerFactory.INSTANCE;
-		}
-	},*/
-	/**
-	 * will install the component in a dedicated directory, but will 
-	 * not use any other approach to ensure isolation between two 
-	 * components.
-	 */
-	PLAIN("plain"){
-		@Override
-		public SpecificContainerManagerFactory getContainerFactory() {
-			return UnsupportedTypeFactory.INSTANCE;
-		}
-	}
-	;
-	
-	private final String myName;
-	
-	private ContainerType(String _myName) {
-		myName = _myName;
-	}
-	
-	public abstract SpecificContainerManagerFactory getContainerFactory();
+    /*DUMMY("dummy") {
+        @Override
+        public SpecificContainerManagerFactory getContainerFactory() {
+            return DummyContainerManagerFactory.INSTANCE;
+        }
+    },*/
+    /**
+     * will install the component in a dedicated directory, but will 
+     * not use any other approach to ensure isolation between two 
+     * components.
+     */
+    PLAIN("plain"){
+        @Override
+        public SpecificContainerManagerFactory getContainerFactory() {
+            return UnsupportedTypeFactory.INSTANCE;
+        }
+    }
+    ;
+    
+    private final String myName;
+    
+    private ContainerType(String _myName) {
+        myName = _myName;
+    }
+    
+    public abstract SpecificContainerManagerFactory getContainerFactory();
 
-	/**
-	 * @param containername
-	 * @return returns the ContainerType matching the parameter. Null otherwise.
-	 */
-	public static ContainerType fromString(String containername) {
-		for(ContainerType t : ContainerType.values()) {
-			if(t.myName.equalsIgnoreCase(containername)) return t;
-		}
-		return null;
-	}
-	
-	@Override
-	public String toString() {
-		return myName;
-	}
+    /**
+     * @param containername
+     * @return returns the ContainerType matching the parameter. Null otherwise.
+     */
+    public static ContainerType fromString(String containername) {
+        for(ContainerType t : ContainerType.values()) {
+            if(t.myName.equalsIgnoreCase(containername)) return t;
+        }
+        return null;
+    }
+    
+    @Override
+    public String toString() {
+        return myName;
+    }
 }

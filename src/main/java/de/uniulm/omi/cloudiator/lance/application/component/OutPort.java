@@ -23,82 +23,82 @@ import java.io.Serializable;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 public final class OutPort implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+    
+    private static final long serialVersionUID = 1L;
 
-	public static final int INFINITE_SINKS = -1;
-	public static final int NO_SINKS = -2;
-	
-	private final PortUpdateHandler handler;
-	private final String name;
-	private final int cardinality;
-	private final int min;
-	private final int max;
-	
-	/**
-	 * 
-	 * @param _name
-	 * @param _handler
-	 * @param _cardinality
-	 * @param minSinks
-	 * @param maxSinks
-	 * 
-	 * @throws NullPointerException if name is null
-	 */
-	OutPort(String _name, PortUpdateHandler _handler, int _cardinality, int minSinks, int maxSinks) {
-		if(_name == null) throw new NullPointerException("name has to be set");
-		name = _name;
-		cardinality = _cardinality;
-		min = minSinks;
-		max = maxSinks;
-		handler = _handler;
-	}
-	
-	public boolean canHandleInfiniteSinks() {
-		return max == INFINITE_SINKS;
-	}
-	
-	public boolean canHandleNoSinks() {
-		return min == NO_SINKS;
-	}
+    public static final int INFINITE_SINKS = -1;
+    public static final int NO_SINKS = -2;
+    
+    private final PortUpdateHandler handler;
+    private final String name;
+    private final int cardinality;
+    private final int min;
+    private final int max;
+    
+    /**
+     * 
+     * @param _name
+     * @param _handler
+     * @param _cardinality
+     * @param minSinks
+     * @param maxSinks
+     * 
+     * @throws NullPointerException if name is null
+     */
+    OutPort(String _name, PortUpdateHandler _handler, int _cardinality, int minSinks, int maxSinks) {
+        if(_name == null) throw new NullPointerException("name has to be set");
+        name = _name;
+        cardinality = _cardinality;
+        min = minSinks;
+        max = maxSinks;
+        handler = _handler;
+    }
+    
+    public boolean canHandleInfiniteSinks() {
+        return max == INFINITE_SINKS;
+    }
+    
+    public boolean canHandleNoSinks() {
+        return min == NO_SINKS;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public int getLowerBound() { return min; }
+    public int getLowerBound() { return min; }
 
-	public int getUpperBound() { return max; }
-	
-	@Override
-	public String toString() {
-		return name + ": [" + min + "," + max + "]";
-	}
+    public int getUpperBound() { return max; }
+    
+    @Override
+    public String toString() {
+        return name + ": [" + min + "," + max + "]";
+    }
 
-	public PortUpdateHandler getUpdateHandler() { return handler; }
+    public PortUpdateHandler getUpdateHandler() { return handler; }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + cardinality;
-		result = prime * result + max;
-		result = prime * result + min;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if(!(o instanceof OutPort)) return false;
-		OutPort that = (OutPort) o;
-		return name.equals(that.name) && this.max == that.max 
-				&& this.min == that.min && this.cardinality == that.cardinality;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + cardinality;
+        result = prime * result + max;
+        result = prime * result + min;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof OutPort)) return false;
+        OutPort that = (OutPort) o;
+        return name.equals(that.name) && this.max == that.max 
+                && this.min == that.min && this.cardinality == that.cardinality;
+    }
 
-	public boolean namesMatch(OutPort that) {
-		if(this == that) return true;
-		if(that == null || that.name == null) return false;
-		return this.name.equals(that.name);
-	}
+    public boolean namesMatch(OutPort that) {
+        if(this == that) return true;
+        if(that == null || that.name == null) return false;
+        return this.name.equals(that.name);
+    }
 }

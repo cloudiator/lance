@@ -23,90 +23,90 @@ import java.util.Arrays;
 
 public final class OperatingSystem implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final OperatingSystem UBUNTU_14_04 = new OperatingSystem(OperatingSystemType.UBUNTU, 
-															OperatingSystemVersion.getUbuntuVersion(14, 4));
-	
-	public static final OperatingSystem WINDOWS_7 = new OperatingSystem(OperatingSystemType.WINDOWS,
-															OperatingSystemVersion.getWindowsVersion(WindowsVersion.WIN_7));
-	
-	private final OperatingSystemType type;
-	private final OperatingSystemVersion version;
-	
-	public OperatingSystem(OperatingSystemType _type, OperatingSystemVersion _version) {
-		if(! _type.checkVersion(_version)) throw new IllegalArgumentException("unknown version");
-		
-		type = _type;
-		version = _version;
-	}
-	
-	public OperatingSystemFamily getFamily() {
-		return type.getFamily();
-	}
+    public static final OperatingSystem UBUNTU_14_04 = new OperatingSystem(OperatingSystemType.UBUNTU, 
+                                                            OperatingSystemVersion.getUbuntuVersion(14, 4));
+    
+    public static final OperatingSystem WINDOWS_7 = new OperatingSystem(OperatingSystemType.WINDOWS,
+                                                            OperatingSystemVersion.getWindowsVersion(WindowsVersion.WIN_7));
+    
+    private final OperatingSystemType type;
+    private final OperatingSystemVersion version;
+    
+    public OperatingSystem(OperatingSystemType _type, OperatingSystemVersion _version) {
+        if(! _type.checkVersion(_version)) throw new IllegalArgumentException("unknown version");
+        
+        type = _type;
+        version = _version;
+    }
+    
+    public OperatingSystemFamily getFamily() {
+        return type.getFamily();
+    }
 
-	public OperatingSystemType getType() {
-		return type;
-	}
+    public OperatingSystemType getType() {
+        return type;
+    }
 
-	public String getVersionAsString() {
-		return version.toString();
-	}
-	
-	public OperatingSystemVersion getVersion() {
-		return version;
-	}
-	
-	@Override
-	public String toString() {
-		return type.toString() + ":" + version.toString();
-	}
-	
-	public boolean isLinuxOs() {
-		return type.getFamily() == OperatingSystemFamily.LINUX;
-	}
-	
-	public static OperatingSystem fromString(String ostype, String osversion) {
-		OperatingSystemType t = OperatingSystemType.fromString(ostype);
-		if(t == null) {
-			String s = Arrays.toString(OperatingSystemType.values());
-			throw new IllegalArgumentException("operating system type " + ostype + " not known. Only the following" + 
-					" types are known: " + s);
-		}
-		final OperatingSystemVersion version;
-		if(osversion == null || osversion.isEmpty()) {
-			// if(t.hasDefaultVersion()) 
-			// returns null of DefaultVersion is not available
-			version = t.getDefaultVersion();
-		} else if(t.checkVersionString(osversion)){
-				version = new OperatingSystemVersion(osversion);
-		} else {
-			version = null;
-		}
-		
-		if(version != null) return new OperatingSystem(t, version);
-		
-		throw new IllegalArgumentException(osversion + " is not a valid version for OperatingSytemType " + t + " or no "
-					+ "default version known for this type.");
-	}
+    public String getVersionAsString() {
+        return version.toString();
+    }
+    
+    public OperatingSystemVersion getVersion() {
+        return version;
+    }
+    
+    @Override
+    public String toString() {
+        return type.toString() + ":" + version.toString();
+    }
+    
+    public boolean isLinuxOs() {
+        return type.getFamily() == OperatingSystemFamily.LINUX;
+    }
+    
+    public static OperatingSystem fromString(String ostype, String osversion) {
+        OperatingSystemType t = OperatingSystemType.fromString(ostype);
+        if(t == null) {
+            String s = Arrays.toString(OperatingSystemType.values());
+            throw new IllegalArgumentException("operating system type " + ostype + " not known. Only the following" + 
+                    " types are known: " + s);
+        }
+        final OperatingSystemVersion version;
+        if(osversion == null || osversion.isEmpty()) {
+            // if(t.hasDefaultVersion()) 
+            // returns null of DefaultVersion is not available
+            version = t.getDefaultVersion();
+        } else if(t.checkVersionString(osversion)){
+                version = new OperatingSystemVersion(osversion);
+        } else {
+            version = null;
+        }
+        
+        if(version != null) return new OperatingSystem(t, version);
+        
+        throw new IllegalArgumentException(osversion + " is not a valid version for OperatingSytemType " + t + " or no "
+                    + "default version known for this type.");
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		result = prime * result + ((version == null) ? 0 : version.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((version == null) ? 0 : version.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if(! (o instanceof OperatingSystem)) return false;
-		OperatingSystem that = (OperatingSystem) o;
-		return this.type.equals(that.type) && this.version.equals(that.version);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if(! (o instanceof OperatingSystem)) return false;
+        OperatingSystem that = (OperatingSystem) o;
+        return this.type.equals(that.type) && this.version.equals(that.version);
+    }
 
-	public String getNonBlockingPackageInstallerCommand() {
-		return type.getNonBlockingPackageInstallerCommandForVersion(version);
-	}
+    public String getNonBlockingPackageInstallerCommand() {
+        return type.getNonBlockingPackageInstallerCommandForVersion(version);
+    }
 }

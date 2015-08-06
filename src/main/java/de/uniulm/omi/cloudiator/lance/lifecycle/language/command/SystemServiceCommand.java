@@ -28,52 +28,52 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 public interface SystemServiceCommand extends Command {
 
-	public static class SystemServiceCommandFactory {
-		
-		private final static Set<LifecycleHandlerType> supportedLifecycles;
-		
-		static {
-			supportedLifecycles = EnumSet.of(LifecycleHandlerType.START);
-		}
-		
-		public static SystemServiceCommand create(LifecycleHandlerType inPhase, String serviceName, String command) {
-			if(supportedLifecycles.contains(inPhase)) {
-				return new SystemServiceCommandImpl(inPhase, serviceName, command);
-			}
-			throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-		}
-		
-		private SystemServiceCommandFactory() {
-			// no instances so far //
-		}
-	}
+    public static class SystemServiceCommandFactory {
+        
+        private final static Set<LifecycleHandlerType> supportedLifecycles;
+        
+        static {
+            supportedLifecycles = EnumSet.of(LifecycleHandlerType.START);
+        }
+        
+        public static SystemServiceCommand create(LifecycleHandlerType inPhase, String serviceName, String command) {
+            if(supportedLifecycles.contains(inPhase)) {
+                return new SystemServiceCommandImpl(inPhase, serviceName, command);
+            }
+            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+        }
+        
+        private SystemServiceCommandFactory() {
+            // no instances so far //
+        }
+    }
 }
 
 class SystemServiceCommandImpl implements SystemServiceCommand {
-	
-	private final LifecycleHandlerType type;
-	private final String serviceName;
-	private final String command;
-	private final CommandResultReference result = new DefaultCommandResultReference();
+    
+    private final LifecycleHandlerType type;
+    private final String serviceName;
+    private final String command;
+    private final CommandResultReference result = new DefaultCommandResultReference();
 
-	SystemServiceCommandImpl(LifecycleHandlerType _type, String _serviceName, String _command) {
-		serviceName = _serviceName;
-		command = _command;
-		type = _type;
-	}
-	
-	@Override
-	public CommandResultReference getResult() {
-		return result;
-	}
-	
-	@Override
-	public boolean runsInLifecycle(LifecycleHandlerType _type) {
-		return type == _type;
-	}
+    SystemServiceCommandImpl(LifecycleHandlerType _type, String _serviceName, String _command) {
+        serviceName = _serviceName;
+        command = _command;
+        type = _type;
+    }
+    
+    @Override
+    public CommandResultReference getResult() {
+        return result;
+    }
+    
+    @Override
+    public boolean runsInLifecycle(LifecycleHandlerType _type) {
+        return type == _type;
+    }
 
-	@Override
-	public void execute(ExecutionContext ec) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void execute(ExecutionContext ec) {
+        throw new UnsupportedOperationException();
+    }
 }
