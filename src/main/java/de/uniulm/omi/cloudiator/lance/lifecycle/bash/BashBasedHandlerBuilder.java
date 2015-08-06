@@ -85,11 +85,15 @@ class BashPreInstallHandler implements PreInstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) return;
+        if(! os.equals(ec.getOperatingSystem())) {
+        	return;
+        }
         Shell shell = ec.getShell();
         for(String[] cmd : commands) {
             String res = "";
-            for(String s : cmd) { res = res + " " + s;}
+            for(String s : cmd) { 
+            	res = res + " " + s;
+            }
             shell.executeCommand(res);
         }
     }
@@ -108,11 +112,15 @@ class BashInstallHandler implements InstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) return;
+        if(! os.equals(ec.getOperatingSystem())) {
+        	return;
+        }
         Shell shell = ec.getShell();
         for(String[] cmd : commands) {
             String res = "";
-            for(String s : cmd) { res = res + " " + s;}
+            for(String s : cmd) { 
+            	res = res + " " + s;
+            }
             shell.executeCommand(res);
         }
     }
@@ -131,11 +139,15 @@ class BashPostInstallHandler implements PostInstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) return;
+        if(! os.equals(ec.getOperatingSystem())) {
+        	return;
+        }
         Shell shell = ec.getShell();
         for(String[] cmd : commands) {
             String res = "";
-            for(String s : cmd) { res = res + " " + s;}
+            for(String s : cmd) { 
+            	res = res + " " + s;
+            }
             shell.executeCommand(res);
         }
     }
@@ -154,7 +166,9 @@ class BashStartHandler implements StartHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        if(! os.equals(ec.getOperatingSystem())) return;
+        if(! os.equals(ec.getOperatingSystem())) {
+        	return;
+        }
         Shell shell = ec.getShell();
         final int commandSize = commands.size();
         int counter = 0;
@@ -162,10 +176,14 @@ class BashStartHandler implements StartHandler {
         for(String[] cmd : commands) {
             String res = "";
             counter++;
-            for(String s : cmd) { res = res + " " + s;}
+            for(String s : cmd) { 
+            	res = res + " " + s;
+            }
             if(counter == commandSize) {
                 shell.executeBlockingCommand(res);
-            } else { shell.executeCommand(res); }
+            } else { 
+            	shell.executeCommand(res); 
+            }
         }
     }
 }
@@ -192,7 +210,9 @@ class BashPortUpdateHandler implements PortUpdateHandler {
         for(String[] cmd : commands) {
             String res = "";
             counter++;
-            for(String s : cmd) { res = res + " " + s;}
+            for(String s : cmd) { 
+            	res = res + " " + s;
+            }
             if(counter == commandSize) {
                 shell.executeBlockingCommand(res);
             } else { 

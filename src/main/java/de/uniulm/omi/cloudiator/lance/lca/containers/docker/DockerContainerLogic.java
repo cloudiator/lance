@@ -64,7 +64,8 @@ public class DockerContainerLogic implements ContainerLogic {
                                 DeploymentContext ctx, GlobalRegistryAccessor accessor, DeployableComponent componentParam, 
                                 NetworkHandler networkParam) {
         
-        if(osParam == null) throw new NullPointerException("operating system has to be set.");
+        if(osParam == null) 
+        	throw new NullPointerException("operating system has to be set.");
         
         myId = id;
         client = clientParam;
@@ -75,8 +76,10 @@ public class DockerContainerLogic implements ContainerLogic {
         registryAccessor = accessor;
         
         portHandler = networkParam;
-        try { registryAccessor.init(myId); }
-        catch(RegistrationException re) { throw new IllegalStateException("cannot start container", re); }
+        try { registryAccessor.init(myId); 
+        } catch(RegistrationException re) { 
+        	throw new IllegalStateException("cannot start container", re); 
+        }
     }
     
     //@Override public ComponentInstanceId getId() { return myId; }

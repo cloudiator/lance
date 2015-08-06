@@ -146,6 +146,10 @@ final class EtcdRegistryImpl implements LcaRegistry {
 		return directoryDoesExist(dirName); 
 	}
     
+    /**
+     * @return true if this directory has been created successfully. false if it was already 
+     * 			contained in the registry.
+     */
     private boolean createDirectorIfItDoesNotExist(String dirName) throws RegistrationException {
         if(directoryDoesExist(dirName)) 
         	return false;
@@ -163,6 +167,10 @@ final class EtcdRegistryImpl implements LcaRegistry {
         return true;
     }
     
+    /**
+     * @return true if this directory exists. false if it was already 
+     * 			contained in the registry.
+     */
     private boolean directoryDoesExist(String dirName) throws RegistrationException {
         try { 
             EtcdKeysResponse response = etcd.getDir(dirName).send().get(); 
@@ -222,8 +230,10 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
     
 	private static void fillMapWithValue(String key, String value, Map<String, String> map) {
-	    if(DESCRIPTION.equals(key)) return;
-	    if(NAME.equals(key)) return;
+	    if(DESCRIPTION.equals(key))
+	    	return;
+	    if(NAME.equals(key)) 
+	    	return;
 	    map.put(key, value);
 	}
 	
@@ -232,7 +242,8 @@ final class EtcdRegistryImpl implements LcaRegistry {
 	    Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
 	    final int length = mainDir.length() + 1;
 	    for(EtcdNode node : root.nodes) {
-	        if(! node.dir) continue;
+	        if(! node.dir) 
+	        	continue;
 	        String key = node.key.substring(length);
 	        String[] split = key.split("/");
 	        if(split.length == 1) { // component instance element //
@@ -250,7 +261,8 @@ final class EtcdRegistryImpl implements LcaRegistry {
 	    final String mainDir = root.key;
 	    final int length = mainDir.length() + 1;
 	    for(EtcdNode node : root.nodes) {
-	        if(node.dir) throw new IllegalStateException("unexpected to find directories in component instances");
+	        if(node.dir) 
+	        	throw new IllegalStateException("unexpected to find directories in component instances");
 	        String key = node.key.substring(length);
 	        String[] split = key.split("/");
 	        if(split.length == 1) { // component instance element //

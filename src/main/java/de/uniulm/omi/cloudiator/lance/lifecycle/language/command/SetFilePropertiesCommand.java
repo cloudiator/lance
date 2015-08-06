@@ -144,8 +144,11 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
     
     protected String buildLinuxCommand(OperatingSystem os) {
         String filename = input.getResult(os, null);
-        if(filename == null) throw new NullPointerException("no result available");
-        if(! filename.startsWith("/")) filename = "./" + filename;
+        if(filename == null) 
+        	throw new NullPointerException("no result available");
+        if(! filename.startsWith("/")) { 
+        	filename = "./" + filename;
+        }
         String string = getUserString(props[1], getAccessString(props[0]));
         
         String command = "chmod " + string + " " + filename;
