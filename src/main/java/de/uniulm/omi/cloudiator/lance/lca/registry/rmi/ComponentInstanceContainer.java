@@ -53,7 +53,9 @@ final class ComponentInstanceContainer {
         Map<String,Object> props = instances.get(cinstId);
         if(props == null) throw new IllegalArgumentException("not known: " + cinstId);
         Object old = props.put(property, value);
-        if(old != null) RemoteRegistryImpl.LOGGER.warn("warning: overriding value!");
+        if(old != null) { 
+        	LOGGER.warn("warning: overriding value!");
+        }
         //FIXME: wake up listeners (?)
         LOGGER.error("TODO: wake up listeners");
         

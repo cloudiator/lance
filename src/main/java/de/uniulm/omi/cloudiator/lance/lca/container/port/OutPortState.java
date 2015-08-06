@@ -32,7 +32,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class OutPortState {
     
-    private static final Logger logger = LoggerFactory.getLogger(OutPort.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutPort.class);
 
     private final Object lock = new Object();
     private final OutPort thePort;
@@ -60,7 +60,7 @@ public final class OutPortState {
         
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> compOldSinks = installNewSinks(newSinks);
         if(!oldSinks.equals(compOldSinks)) {
-            logger.warn("old sinks do not match; do we have concurrency problems?"); 
+            LOGGER.warn("old sinks do not match; do we have concurrency problems?"); 
         }
         return diff;
     }

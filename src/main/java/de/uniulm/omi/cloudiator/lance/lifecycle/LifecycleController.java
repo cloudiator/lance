@@ -36,8 +36,10 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
 
 public final class LifecycleController {
     
-    static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
 
+	static Logger getLogger() { return LOGGER; }
+    
     final LifecycleStore store;
     final ExecutionContext ec;
     private final StateMachine<LifecycleHandlerType> machine;
@@ -136,7 +138,7 @@ public final class LifecycleController {
                             StartHandler h = store.getHandler(LifecycleHandlerType.START, StartHandler.class);
                             h.execute(ec);
                             // FIXME: run start detector and stop detector //
-                            LOGGER.warn("WARNING: run start detector and stop detector");
+                            getLogger().warn("WARNING: run start detector and stop detector");
                         }
                 }). 
                 addSynchronousTransition(LifecycleHandlerType.START, LifecycleHandlerType.POST_START,

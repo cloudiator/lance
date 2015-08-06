@@ -36,7 +36,7 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 final class OutPortHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(OutPort.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutPort.class);
     
     private static final Map<PortHierarchyLevel, List<DownstreamAddress>> EMPTY_VISIT_MAP;
     
@@ -85,7 +85,7 @@ final class OutPortHandler {
 
     @SuppressWarnings("static-method")
 	public void startPortUpdaters() {
-        logger.error("Port updaters are currently not run.");
+        LOGGER.error("Port updaters are currently not run.");
     }
     
     private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> filterInstancesWithUnsetPorts(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances) {

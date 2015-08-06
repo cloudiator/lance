@@ -23,18 +23,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class RemoteRegistryImpl implements RmiLcaRegistry {
-
-    static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
     
     private final Map<ApplicationInstanceId,AppInstanceContainer> apps = new HashMap<>();
     

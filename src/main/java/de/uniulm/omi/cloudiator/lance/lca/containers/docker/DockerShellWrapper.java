@@ -26,7 +26,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 class DockerShellWrapper implements Shell {
     
-    private static final Logger logger = LoggerFactory.getLogger(Shell.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Shell.class);
     
     final DockerShell shell; 
     DockerShellWrapper(DockerShell shellParam) { shell = shellParam; }
@@ -47,6 +47,6 @@ class DockerShellWrapper implements Shell {
     
     private static void checkResult(String command, ExecutionResult result) {
         if(result.isSuccess()) return;
-        logger.warn("unsuccessull command '" + command + "': " + result.toString());
+        LOGGER.warn("unsuccessull command '" + command + "': " + result.toString());
     }
 }

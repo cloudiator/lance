@@ -40,7 +40,9 @@ import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContaine
 // FIXME: introduce error states to life cycle handling 
 public final class StandardContainer<T extends ContainerLogic> implements ContainerController {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
+    
+    static Logger getLogger() { return LOGGER; }
     
     private final StateMachine<ContainerStatus> stateMachine;
     final T logic;
@@ -89,7 +91,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                     @Override public void transit(Object[] params) { 
                         try { checkForCreationParameters(params); logic.doCreate(); }
                         catch(ContainerException ce) { 
-                            LOGGER.error("could not create container; FIXME add error state", ce); 
+                        	getLogger().error("could not create container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
                     }
@@ -102,7 +104,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                     @Override public void transit(Object[] params) { 
                         try { logic.doInit(checkForInitParameters(params)); }
                         catch(ContainerException ce) { 
-                            LOGGER.error("could not initialise container; FIXME add error state", ce); 
+                        	getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
                     }
@@ -115,7 +117,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                     @Override public void transit(Object[] params) { 
                         try { logic.doDestroy(); }
                         catch(ContainerException ce) { 
-                            LOGGER.error("could not shut down container; FIXME add error state", ce); 
+                        	getLogger().error("could not shut down container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
                     }

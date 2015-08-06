@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 public final class StateMachine<T extends Enum<?> & State > {
 
-	static Logger LOGGER = LoggerFactory.getLogger(StateMachine.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(StateMachine.class);
 	
     private final Object[] DEFAULT_PARAMS = new Object[0];
     private T status;
@@ -57,7 +57,7 @@ public final class StateMachine<T extends Enum<?> & State > {
     };
     
     // FIXME: introduce error state (and error action)
-    StateMachine(T init, List<T> states, List<StateTransition<T>> st) {
+    StateMachine(T init, @SuppressWarnings("unused") List<T> states, List<StateTransition<T>> st) {
         assert init != null : "init state cannot be null";
         status = init;
         for(StateTransition<T> t : st) {

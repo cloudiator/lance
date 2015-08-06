@@ -7,7 +7,9 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 
 public final class DefaultHandlers {
     
-    static final Logger LOGGER = LoggerFactory.getLogger(DefaultHandlers.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHandlers.class);
+    
+    static Logger getLogger() { return LOGGER; }
 
     public static final InitHandler DEFAULT_INIT_HANDLER = new InitHandler() {
 
@@ -15,7 +17,7 @@ public final class DefaultHandlers {
 
 		@Override public void execute(ExecutionContext ec) {
             // throw new UnsupportedOperationException();
-            LOGGER.info("DEFAULT InitHandler doing nothing");
+            getLogger().info("DEFAULT InitHandler doing nothing");
         }
     }; 
     
@@ -25,7 +27,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT InstallHandler doing nothing");
+        	getLogger().info("DEFAULT InstallHandler doing nothing");
         }
     };
     
@@ -34,7 +36,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT PostInstallHandler doing nothing");
+        	getLogger().info("DEFAULT PostInstallHandler doing nothing");
         }
     };
     
@@ -44,7 +46,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT PostStartHandler doing nothing");
+        	getLogger().info("DEFAULT PostStartHandler doing nothing");
         }        
     };
     
@@ -53,7 +55,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT PostStopHandler doing nothing");
+        	getLogger().info("DEFAULT PostStopHandler doing nothing");
         }
     };
     
@@ -62,7 +64,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT PreInstallHandler doing nothing");
+        	getLogger().info("DEFAULT PreInstallHandler doing nothing");
         }
     };
     
@@ -71,7 +73,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT PreStartHandler doing nothing");
+        	getLogger().info("DEFAULT PreStartHandler doing nothing");
         }
     };    
 
@@ -80,7 +82,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT PreStopHandler doing nothing");
+        	getLogger().info("DEFAULT PreStopHandler doing nothing");
         }
     };
     
@@ -89,7 +91,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT StartHandler doing nothing");
+        	getLogger().info("DEFAULT StartHandler doing nothing");
         }
     };
     
@@ -98,7 +100,7 @@ public final class DefaultHandlers {
 		private static final long serialVersionUID = 1L;
 
         @Override public void execute(ExecutionContext ec) {
-            LOGGER.info("DEFAULT StopHandler doing nothing");
+        	getLogger().info("DEFAULT StopHandler doing nothing");
         }
     };
     

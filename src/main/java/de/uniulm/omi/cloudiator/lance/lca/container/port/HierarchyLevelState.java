@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel> {
     
-    private static final Logger logger = LoggerFactory.getLogger(PortHierarchyLevel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PortHierarchyLevel.class);
 
     private final String name;
     private final Map<PortHierarchyLevel, T> mapping = new HashMap<>(); 
@@ -43,7 +43,7 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
         if(value == null) throw new NullPointerException("cannot register a hierarchy state that has the value null");
         T i = mapping.put(level, value);
         if(i != null) {
-            logger.info("updating hierarchy state '" + name + "' for level '" + level + "': changin from " + i + " to " + value);
+            LOGGER.info("updating hierarchy state '" + name + "' for level '" + level + "': changin from " + i + " to " + value);
         }
     }
     
