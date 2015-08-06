@@ -30,7 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  * @author Joerg Domaschka
  */
 public interface PostInstallHandler extends LifecycleHandler {
-	// marker interface //
+    // marker interface //
 }
 
 final class PostInstallDeploymentHandler implements PostInstallHandler {

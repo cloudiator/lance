@@ -30,7 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface StartHandler extends LifecycleHandler {
 
-	// marker interface //
+    // marker interface //
 }
 
 final class StartDeploymentHandler implements StartHandler {

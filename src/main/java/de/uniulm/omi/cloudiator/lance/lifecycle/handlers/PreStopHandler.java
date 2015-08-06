@@ -30,7 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface PreStopHandler extends LifecycleHandler {
 
-	// marker interface
+    // marker interface
 }
 
 final class PreStopDeploymentHandler implements PreStopHandler {

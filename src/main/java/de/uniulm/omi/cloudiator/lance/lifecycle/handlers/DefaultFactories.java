@@ -5,7 +5,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
 
 public final class DefaultFactories {
 
-	public static final LifecycleHandlerFactory<StopHandler> STOP_FACTORY = new LifecycleHandlerFactory<StopHandler>() {
+    public static final LifecycleHandlerFactory<StopHandler> STOP_FACTORY = new LifecycleHandlerFactory<StopHandler>() {
         @Override public final StopHandler getDefault() { return DefaultHandlers.DEFAULT_STOP_HANDLER; }
 
         @Override
@@ -103,8 +103,8 @@ public final class DefaultFactories {
             return new InitDeploymentHandler(d);
         } 
     };
-	
-	private DefaultFactories() {
-		// no instances of this class //
-	}
+    
+    private DefaultFactories() {
+        // no instances of this class //
+    }
 }
