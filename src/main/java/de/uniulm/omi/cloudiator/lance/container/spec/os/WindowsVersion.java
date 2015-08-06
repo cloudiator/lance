@@ -24,7 +24,7 @@ public enum WindowsVersion {
     WIN_98("98"),
     WIN_2000("2000"),
     WIN_ME("ME"),
-    WIN_Vista("VISTA"),
+    WIN_VISTA("VISTA"),
     WIN_7("7"),
     WIN_8("8"),
     WIN_8_1("8.1"),
