@@ -24,8 +24,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 final class EnvContext implements HostContext {
 
+	private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
+	
     public static final String PUBLIC_IP_KEY = "host.ip.public";
     public static final String PRIVATE_IP_KEY = "host.ip.private";
     // public static final String HOST_OS_KEY = "host.os";
@@ -46,7 +51,7 @@ final class EnvContext implements HostContext {
     }
     
     private void registerRmiAddress() {
-        System.err.println("setting RMI server hostname to: " + getPublicIp());
+        LOGGER.info("setting RMI server hostname to: " + getPublicIp());
         System.setProperty("java.rmi.server.hostname", getPublicIp());
     }
 

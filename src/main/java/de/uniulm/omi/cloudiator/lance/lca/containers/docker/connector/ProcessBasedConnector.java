@@ -77,10 +77,11 @@ final class ProcessBasedConnector implements DockerConnector {
         BufferedReader reader = new BufferedReader(new StringReader(result.getOutput()));
         try {
             String line = reader.readLine();
+            String next = null;
             if(line == null) 
                 throw new DockerException("could not find result");
-            if(reader.readLine() != null) 
-                throw new DockerException("too many lines available");
+            if((next = reader.readLine()) != null) 
+                throw new DockerException("too many lines available: " + next);
             InetAddress addr = InetAddress.getByName(line.trim());
             return addr.getHostAddress();
         } catch(UnknownHostException he) {
