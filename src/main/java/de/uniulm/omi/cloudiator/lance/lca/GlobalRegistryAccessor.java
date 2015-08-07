@@ -28,6 +28,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
@@ -56,8 +57,12 @@ public final class GlobalRegistryAccessor {
         reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, LifecycleHandlerType.NEW.toString());
     }
     
-    public final void updateState(ComponentInstanceId myId, LifecycleHandlerType type) throws RegistrationException {
+    public final void updateInstanceState(ComponentInstanceId myId, LifecycleHandlerType type) throws RegistrationException {
         reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, type.toString());
+    }
+    
+    public final void updateContainerState(ComponentInstanceId myId, ContainerStatus type) throws RegistrationException {
+        reg.addComponentProperty(appInstId, compId, myId, CONTAINER_STATUS, type.toString());
     }
     
     /* 
