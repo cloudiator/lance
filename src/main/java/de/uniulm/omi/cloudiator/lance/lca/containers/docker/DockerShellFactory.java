@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ShellFactory;
 
 final class DockerShellFactory implements ShellFactory {
@@ -33,7 +32,7 @@ final class DockerShellFactory implements ShellFactory {
     private final AtomicReference<DockerShellWrapper> reference = new AtomicReference<>();
     
     @Override
-    public Shell createShell() {
+    public DockerShellWrapper createShell() {
         DockerShellWrapper wrapper = reference.get();
         if(wrapper == null) 
             throw new IllegalStateException("shell not set");
