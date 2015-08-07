@@ -54,7 +54,7 @@ public final class NetworkHandler {
     private final OutPortHandler outPorts;
     
     public NetworkHandler(GlobalRegistryAccessor accessorParam, DeployableComponent myComponentParam, HostContext hostContextParam) {
-    	
+        
         portHierarchy = PortRegistryTranslator.PORT_HIERARCHY;
         myComponent = myComponentParam;
         hostContext = hostContextParam;
@@ -103,20 +103,20 @@ public final class NetworkHandler {
     }
     
     public void iterateOverInPorts(InportAccessor accessor) throws ContainerException {
-    	 List<InPort> inPortsTmp = myComponent.getExposedPorts();
+         List<InPort> inPortsTmp = myComponent.getExposedPorts();
          for(InPort in : inPortsTmp) {
-        	 String portName = in.getPortName();
-        	 HierarchyLevelState<Integer> clientState = new HierarchyLevelState<>(portName, portHierarchy);
-        	 accessor.accessPort(portName, clientState);
-        	 					
-        	 HierarchyLevelState<Integer> state = inPorts.get(portName);
-        	 if(state == null) 
-        		 throw new IllegalStateException("something went terribly wrong when initialising NetworkHandler");
-        	 for(PortHierarchyLevel level : state) {
-        		 // the way the loop is constructed makes sure that  
-        		 // the client has set all needed levels 
-        		 state.registerValueAtLevel(level, clientState.valueAtLevel(level));
-        	 }
+             String portName = in.getPortName();
+             HierarchyLevelState<Integer> clientState = new HierarchyLevelState<>(portName, portHierarchy);
+             accessor.accessPort(portName, clientState);
+                                 
+             HierarchyLevelState<Integer> state = inPorts.get(portName);
+             if(state == null) 
+                 throw new IllegalStateException("something went terribly wrong when initialising NetworkHandler");
+             for(PortHierarchyLevel level : state) {
+                 // the way the loop is constructed makes sure that  
+                 // the client has set all needed levels 
+                 state.registerValueAtLevel(level, clientState.valueAtLevel(level));
+             }
          }
     }
 
@@ -139,7 +139,7 @@ public final class NetworkHandler {
      * connection is available (e.g. an application server may require 
      * that the database is up and running). */
     public void pollForNeededConnections() {
-    	DownstreamPortUpdater.pollForNeededConnections(outPorts, portAccessor, portHierarchy);
+        DownstreamPortUpdater.pollForNeededConnections(outPorts, portAccessor, portHierarchy);
     }
     
     private void publishLocalAddresses(ComponentInstanceId myId, PortRegistryTranslator registryAccessor) throws ContainerException {
@@ -181,18 +181,18 @@ public final class NetworkHandler {
     }
 
     public void startPortUpdaters(LifecycleController controller) {
-    	DownstreamPortUpdater updater = new DownstreamPortUpdater(outPorts, portAccessor, portHierarchy, controller);
-    	ScheduledFuture<?> sf = hostContext.scheduleAction(updater);
-    	updateFuture = sf;
+        DownstreamPortUpdater updater = new DownstreamPortUpdater(outPorts, portAccessor, portHierarchy, controller);
+        ScheduledFuture<?> sf = hostContext.scheduleAction(updater);
+        updateFuture = sf;
     }
     
     public void stopPortUpdaters() {
-    	ScheduledFuture<?> sf = updateFuture;
-    	if(sf == null) {
-    		LOGGER.warn("updateFuture has not been set.");
-    	} else {
-    		sf.cancel(false);
-    	}
+        ScheduledFuture<?> sf = updateFuture;
+        if(sf == null) {
+            LOGGER.warn("updateFuture has not been set.");
+        } else {
+            sf.cancel(false);
+        }
     }
 
     public void accept(NetworkVisitor visitor) {

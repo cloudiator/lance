@@ -37,7 +37,7 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
-	private volatile AgentStatus status = AgentStatus.NEW;
+    private volatile AgentStatus status = AgentStatus.NEW;
     private final ContainerManager manager;
     
     LifecycleAgentImpl(HostContext contex) {
@@ -47,7 +47,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
     
     synchronized void init() {
-    	status = AgentStatus.READY;
+        status = AgentStatus.READY;
     }
     
     @Override
@@ -100,13 +100,13 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         throw new LcaException("cannot proceed: component is not known within application instance.");
     }
 
-	@Override
-	public AgentStatus getAgentStatus() {
-		return status;
-	}
+    @Override
+    public AgentStatus getAgentStatus() {
+        return status;
+    }
 
-	@Override
-	public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
-		return manager.getComponentContainerStatus(cid);
-	}
+    @Override
+    public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
+        return manager.getComponentContainerStatus(cid);
+    }
 }

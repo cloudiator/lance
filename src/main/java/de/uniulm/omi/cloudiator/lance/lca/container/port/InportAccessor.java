@@ -4,6 +4,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 
 public interface InportAccessor {
 
-	void accessPort(String portName, HierarchyLevelState<Integer> clientState) throws ContainerException;
+    void accessPort(String portName, HierarchyLevelState<Integer> clientState) throws ContainerException;
 
 }

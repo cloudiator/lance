@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 final class EnvContext implements HostContext {
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
-	
+    private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
+    
     public static final String PUBLIC_IP_KEY = "host.ip.public";
     public static final String PRIVATE_IP_KEY = "host.ip.private";
     // public static final String HOST_OS_KEY = "host.os";
@@ -85,8 +85,8 @@ final class EnvContext implements HostContext {
 
     @Override
     public ScheduledFuture<?> scheduleAction(Runnable runner) {
-    	ScheduledFuture<?> sf = periodicExecutor.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
-    	return sf;
+        ScheduledFuture<?> sf = periodicExecutor.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
+        return sf;
     }
     
     @Override @Deprecated

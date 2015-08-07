@@ -107,7 +107,7 @@ public class DockerContainerManager implements ContainerManager {
         LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, os, shellFactory);
         
         try { 
-        	accessor.init(id); 
+            accessor.init(id); 
         } catch(RegistrationException re) { 
             throw new ContainerException("cannot start container, because registry not available", re); 
         }
@@ -129,14 +129,14 @@ public class DockerContainerManager implements ContainerManager {
         // FIXME: add other parts to shut down //
     }
 
-	@Override
-	public List<ComponentInstanceId> getAllContainers() {
-		return registry.listComponentInstances();
-	}
+    @Override
+    public List<ComponentInstanceId> getAllContainers() {
+        return registry.listComponentInstances();
+    }
 
-	@Override
-	public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
-		ContainerController dc = registry.getContainer(cid);
-		return dc.getState();
-	}
+    @Override
+    public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
+        ContainerController dc = registry.getContainer(cid);
+        return dc.getState();
+    }
 }

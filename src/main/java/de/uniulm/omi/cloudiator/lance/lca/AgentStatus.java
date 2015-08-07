@@ -4,13 +4,13 @@ import de.uniulm.omi.cloudiator.lance.util.state.State;
 
 public enum AgentStatus implements State {
 
-	NEW,
-	CREATING,
-	CREATED,
-	INITIALISING,
-	READY,
-	SHUTTING_DOWN,
-	CLEARED,
-	DESTROYED,
-	;
+    NEW,
+    CREATING,
+    CREATED,
+    INITIALISING,
+    READY,
+    SHUTTING_DOWN,
+    CLEARED,
+    DESTROYED,
+    ;
 }

@@ -44,8 +44,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
-	private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
-	
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
+    
     private final ComponentInstanceId myId;
     private final DockerConnector client;
     
@@ -100,7 +100,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         } catch(ContainerException ce) {
             throw ce;
         }  catch(Exception ex) {
-        	throw new ContainerException(ex);
+            throw new ContainerException(ex);
         } finally {
             shellFactory.closeShell();
         }
@@ -126,80 +126,80 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
      * @throws DockerException */
     @Override
     public InportAccessor getPortMapper() {
-    	return ( (portName, clientState) -> {
-    		try {
-				Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
-				int mapped = client.getPortMapping(myId, portNumber);
-				Integer i = Integer.valueOf(mapped);
-				clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
-				clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
-				clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
-    		} catch(DockerException de) {
-        		throw new ContainerException("coulnd not register all port mappings", de);
-        	}
-    	});
+        return ( (portName, clientState) -> {
+            try {
+                Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
+                int mapped = client.getPortMapping(myId, portNumber);
+                Integer i = Integer.valueOf(mapped);
+                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
+                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
+                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
+            } catch(DockerException de) {
+                throw new ContainerException("coulnd not register all port mappings", de);
+            }
+        });
     }
 
-	@Override
-	public String getLocalAddress() {
-		try {
-			return client.getContainerIp(myId);
-		} catch(DockerException de) {
-			// this means that that the container is not
-			// up and running; hence, no IP address is
-			// available. it is up to the caller to figure
-			// out the semantics of this state 
-		}
-		return null;
-	}
-	
-	/*
-	DockerLifecycleInterceptor(GlobalRegistryAccessor  accessorParam, ComponentInstanceId idParam,
-			NetworkHandler portHandlerParam, DeployableComponent componentParam, DockerShellFactory shellFactoryParam) {
-		registryAccessor = accessorParam;
-		myId = idParam;
-		myComponent = componentParam;
-		portHandler = portHandlerParam;
-		shellFactory = shellFactoryParam;
-	}*/
-	
-	@Override
-	public void prepare(LifecycleHandlerType type) {
-		if(type == LifecycleHandlerType.INSTALL) {
-			preInstallAction();
-		} 
-	}
+    @Override
+    public String getLocalAddress() {
+        try {
+            return client.getContainerIp(myId);
+        } catch(DockerException de) {
+            // this means that that the container is not
+            // up and running; hence, no IP address is
+            // available. it is up to the caller to figure
+            // out the semantics of this state 
+        }
+        return null;
+    }
+    
+    /*
+    DockerLifecycleInterceptor(GlobalRegistryAccessor  accessorParam, ComponentInstanceId idParam,
+            NetworkHandler portHandlerParam, DeployableComponent componentParam, DockerShellFactory shellFactoryParam) {
+        registryAccessor = accessorParam;
+        myId = idParam;
+        myComponent = componentParam;
+        portHandler = portHandlerParam;
+        shellFactory = shellFactoryParam;
+    }*/
+    
+    @Override
+    public void prepare(LifecycleHandlerType type) {
+        if(type == LifecycleHandlerType.INSTALL) {
+            preInstallAction();
+        } 
+    }
 
-	private void preInstallAction() {
-		DockerShellWrapper w = shellFactory.createShell();
-		prepareEnvironment(w.shell);
-	}
+    private void preInstallAction() {
+        DockerShellWrapper w = shellFactory.createShell();
+        prepareEnvironment(w.shell);
+    }
 
-	@Override
-	public void postprocess(LifecycleHandlerType type) {
-		if(type == LifecycleHandlerType.PRE_INSTALL) {
-			postPreInstall();
-		} else if(type == LifecycleHandlerType.POST_INSTALL) {
-	        // TODO: do we have to make a snapshot after this? //
-		}
-		updateStateInRegistry(type);			
-	}
-	
-	private void postPreInstall() {
-		try {
-			imageHandler.runPostInstallAction(myId);
-		} catch (DockerException de) {
-			LOGGER.warn("could not update finalise image handling.", de);
-		}
-	}
+    @Override
+    public void postprocess(LifecycleHandlerType type) {
+        if(type == LifecycleHandlerType.PRE_INSTALL) {
+            postPreInstall();
+        } else if(type == LifecycleHandlerType.POST_INSTALL) {
+            // TODO: do we have to make a snapshot after this? //
+        }
+        updateStateInRegistry(type);            
+    }
+    
+    private void postPreInstall() {
+        try {
+            imageHandler.runPostInstallAction(myId);
+        } catch (DockerException de) {
+            LOGGER.warn("could not update finalise image handling.", de);
+        }
+    }
 
-	private void updateStateInRegistry(LifecycleHandlerType type) {
-		try {
-			accessor.updateInstanceState(myId, type);
-		} catch(RegistrationException ex) {
-			LOGGER.warn("could not update status in registry.", ex);
-		}
-	}
+    private void updateStateInRegistry(LifecycleHandlerType type) {
+        try {
+            accessor.updateInstanceState(myId, type);
+        } catch(RegistrationException ex) {
+            LOGGER.warn("could not update status in registry.", ex);
+        }
+    }
     
     private void prepareEnvironment(DockerShell dshell) {
         BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);

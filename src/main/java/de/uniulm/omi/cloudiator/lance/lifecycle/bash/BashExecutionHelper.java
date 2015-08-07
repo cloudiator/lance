@@ -7,17 +7,17 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 final class BashExecutionHelper {
-	
-	private BashExecutionHelper() {
-		// no instances of this class //
-	}
-	
+    
+    private BashExecutionHelper() {
+        // no instances of this class //
+    }
+    
     private static boolean osMatches(OperatingSystem osParam, ExecutionContext ec) {
-    	return osParam.equals(ec.getOperatingSystem());
+        return osParam.equals(ec.getOperatingSystem());
     }
     
     private static String buildStringFromCommandLine(String[] cmd) {
-    	String res = "";
+        String res = "";
         for(String s : cmd) { 
             res = res + " " + s;
         }
@@ -33,20 +33,20 @@ final class BashExecutionHelper {
     }
     
     static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
-    	  if(!osMatches(osParam, ec))
-    		  return;
-    	  
+          if(!osMatches(osParam, ec))
+              return;
+          
           Shell shell = ec.getShell();
           for(String[] cmd : commands) {
-        	  String res = buildStringFromCommandLine(cmd);
+              String res = buildStringFromCommandLine(cmd);
               doExecuteCommand(false, res, shell);
           }
     }
     
     static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
-    	if(!osMatches(osParam, ec))
-  		  return;
-  	  
+        if(!osMatches(osParam, ec))
+            return;
+        
         Shell shell = ec.getShell();
         final int commandSize = commands.size();
         int counter = 0;

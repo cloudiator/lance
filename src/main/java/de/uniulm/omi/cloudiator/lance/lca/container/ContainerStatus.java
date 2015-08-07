@@ -21,10 +21,10 @@ package de.uniulm.omi.cloudiator.lance.lca.container;
 import de.uniulm.omi.cloudiator.lance.util.state.State;
 
 public enum ContainerStatus implements State {
-	/** it is known to the system that 
-	 * there shall be container 
-	 * instance. */ 
-	NEW,
+    /** it is known to the system that 
+     * there shall be container 
+     * instance. */ 
+    NEW,
     CREATING,
     /** the container has been created
      * on a physical level. yet, the 

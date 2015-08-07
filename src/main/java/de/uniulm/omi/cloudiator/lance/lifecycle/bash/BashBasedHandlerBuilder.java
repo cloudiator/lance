@@ -84,7 +84,7 @@ class BashPreInstallHandler implements PreInstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-    	BashExecutionHelper.executeCommands(os, ec, commands);
+        BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
@@ -101,7 +101,7 @@ class BashInstallHandler implements InstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-    	BashExecutionHelper.executeCommands(os, ec, commands);
+        BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
@@ -118,7 +118,7 @@ class BashPostInstallHandler implements PostInstallHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-    	BashExecutionHelper.executeCommands(os, ec, commands);
+        BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
@@ -135,7 +135,7 @@ class BashStartHandler implements StartHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-    	BashExecutionHelper.executeBlockingCommands(os, ec, commands);
+        BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
 
@@ -153,6 +153,6 @@ class BashPortUpdateHandler implements PortUpdateHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-    	BashExecutionHelper.executeBlockingCommands(os, ec, commands);
+        BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }

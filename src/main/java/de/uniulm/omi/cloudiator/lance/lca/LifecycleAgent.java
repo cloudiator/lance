@@ -32,10 +32,10 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public interface LifecycleAgent extends Remote {
 
-	AgentStatus getAgentStatus();
-	
-	ContainerStatus getComponentContainerStatus(ComponentInstanceId cid);
-	
+    AgentStatus getAgentStatus();
+    
+    ContainerStatus getComponentContainerStatus(ComponentInstanceId cid);
+    
     void stop() throws RemoteException;
 
     void terminate() throws RemoteException;

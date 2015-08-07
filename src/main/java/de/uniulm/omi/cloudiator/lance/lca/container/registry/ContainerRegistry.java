@@ -43,8 +43,8 @@ public final class ContainerRegistry {
         return containers.get(idParam);
     }
 
-	public synchronized List<ComponentInstanceId> listComponentInstances() {
-		List<ComponentInstanceId> arrayList = new ArrayList<>(containers.keySet());
-		return arrayList;
-	}
+    public synchronized List<ComponentInstanceId> listComponentInstances() {
+        List<ComponentInstanceId> arrayList = new ArrayList<>(containers.keySet());
+        return arrayList;
+    }
 }

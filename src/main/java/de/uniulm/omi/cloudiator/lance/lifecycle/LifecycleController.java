@@ -49,7 +49,7 @@ public final class LifecycleController {
     private final LifecycleActionInterceptor interceptor;
     
     public LifecycleController(LifecycleStore storeParam, LifecycleActionInterceptor interceptorParam, 
-    		OperatingSystem osParam, ShellFactory shellFactoryParam) {
+            OperatingSystem osParam, ShellFactory shellFactoryParam) {
         store = storeParam;
         ec = new ExecutionContext(osParam, shellFactoryParam);
         machine = buildStateMachine();
@@ -58,9 +58,9 @@ public final class LifecycleController {
     }
     
     void run(LifecycleHandlerType type) {
-    	interceptor.prepare(type);
-    	machine.transit(type);
-    	interceptor.postprocess(type);
+        interceptor.prepare(type);
+        machine.transit(type);
+        interceptor.postprocess(type);
     }
 
     public synchronized void blockingInit() {
@@ -68,23 +68,23 @@ public final class LifecycleController {
     }
 
     public synchronized void skipInstall() {
-    	run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
-    	run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
-    	run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
+        run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
+        run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
+        run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
     }
     
     public synchronized void blockingInstall() {
-    	run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
-    	run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
+        run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
+        run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
     }
 
     public synchronized void blockingConfigure() {
-    	run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
-    	run(LifecycleHandlerType.POST_INSTALL);    // moves to PRE_START 
+        run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
+        run(LifecycleHandlerType.POST_INSTALL);    // moves to PRE_START 
     }
     
     public synchronized void blockingStart() {
-    	run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
+        run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
         // FIXME: establish start detector
         // machine.transit(LifecycleHandlerType.START);        // moves to POST_START
     }

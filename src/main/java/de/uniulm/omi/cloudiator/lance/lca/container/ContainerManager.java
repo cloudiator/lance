@@ -44,6 +44,6 @@ public interface ContainerManager {
     CommandSequence addDeploymentSequence();
     ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException;
     void terminate();
-	List<ComponentInstanceId> getAllContainers();
-	ContainerStatus getComponentContainerStatus(ComponentInstanceId cid);
+    List<ComponentInstanceId> getAllContainers();
+    ContainerStatus getComponentContainerStatus(ComponentInstanceId cid);
 }

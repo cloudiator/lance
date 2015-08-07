@@ -39,7 +39,7 @@ final class DockerImageHandler {
     private volatile ImageCreationType initSource;
     
     DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, 
-    			DockerConnector clientParam, DeployableComponent componentParam) {
+                DockerConnector clientParam, DeployableComponent componentParam) {
         if(osParam == null) 
             throw new NullPointerException("operating system has to be set.");
         
@@ -49,13 +49,13 @@ final class DockerImageHandler {
         myComponent = componentParam;
     }
     
-	
+    
     static String createComponentInstallId(DeployableComponent myComponent) {
         return "dockering." + "component." + myComponent.getComponentId().toString(); 
     }
     
     private String createComponentInstallId() {
-    	return createComponentInstallId(myComponent);
+        return createComponentInstallId(myComponent);
     }
     
     private String buildImageTagName(ImageCreationType type, String componentInstallId) {
@@ -98,7 +98,7 @@ final class DockerImageHandler {
     }
     
     String doPullImages(ComponentInstanceId myId) throws DockerException {
-    	String componentInstallId = createComponentInstallId();
+        String componentInstallId = createComponentInstallId();
         // first step: try to find matching image for configured component
         // currently not implemented; TODO: implement
         
@@ -123,7 +123,7 @@ final class DockerImageHandler {
     /** here, we may want to run a snapshotting action 
      * @throws DockerException */
     void runPostInstallAction(ComponentInstanceId myId) throws DockerException {
-    	String componentInstallId = createComponentInstallId();
+        String componentInstallId = createComponentInstallId();
         if(initSource == ImageCreationType.OPERATING_SYSTEM) {
             // we probably will not need this return value
             // let's keep it for debugging purposes, though

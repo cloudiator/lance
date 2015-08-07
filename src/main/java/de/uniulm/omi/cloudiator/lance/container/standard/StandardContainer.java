@@ -47,7 +47,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
     
     static Logger getLogger() { 
-    	return LOGGER; 
+        return LOGGER; 
     }
     
     private final StateMachine<ContainerStatus> stateMachine;
@@ -57,7 +57,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     final LifecycleController controller;
     
     public StandardContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-    						LifecycleController controllerParam) {
+                            LifecycleController controllerParam) {
         containerId = id;
         logic = logicParam;
         network = networkParam;
@@ -70,10 +70,10 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
     
     @Override public ComponentInstanceId getId() { 
-    	return containerId; 
+        return containerId; 
     }
     @Override public ContainerStatus getState() { 
-    	return stateMachine.getState(); 
+        return stateMachine.getState(); 
     }
 
     @Override public void create() {
@@ -101,48 +101,48 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
     
     void preCreateAction() throws ContainerException {
-    	String address = logic.getLocalAddress();
-    	try {
-    		network.initPorts(address == null ? "<unknown>" : address);
-    	} catch(RegistrationException re) {
-    		throw new ContainerException("cannot access registry.", re);
-    	}
+        String address = logic.getLocalAddress();
+        try {
+            network.initPorts(address == null ? "<unknown>" : address);
+        } catch(RegistrationException re) {
+            throw new ContainerException("cannot access registry.", re);
+        }
     }
     
     void postCreateAction() throws ContainerException {
         // add dummy values so that other components are aware of this instance, 
         // but can see that it is not ready for use yet.
-    	network.publishLocalData(containerId);
+        network.publishLocalData(containerId);
     }
     
     void postBootstrapAction() throws ContainerException {
-    	String address = logic.getLocalAddress();
-    	if(address == null) 
-    		throw new ContainerException("container has no IP address set after bootstrapping.");
+        String address = logic.getLocalAddress();
+        if(address == null) 
+            throw new ContainerException("container has no IP address set after bootstrapping.");
         network.updateAddress(PortRegistryTranslator.PORT_HIERARCHY_2, address);
         network.iterateOverInPorts(logic.getPortMapper());
         network.pollForNeededConnections();
     }
     
-	void postInitAction() throws ContainerException {
-		// FIXME: make sure that start detector has been run successfully 
+    void postInitAction() throws ContainerException {
+        // FIXME: make sure that start detector has been run successfully 
         // FIXME: make sure that stop detectors run periodically //
-		// FIXME: this code should not be here; it is completely independent 
-		// from any container implementation. These values have to be set
-		// according to the container lifecycle.
+        // FIXME: this code should not be here; it is completely independent 
+        // from any container implementation. These values have to be set
+        // according to the container lifecycle.
         
         // only that we have started, can the ports be 
         // retrieved and then registered at the registry // 
-		network.publishLocalData(containerId);
-		network.startPortUpdaters(controller);
-	}
+        network.publishLocalData(containerId);
+        network.startPortUpdaters(controller);
+    }
     
     private StateMachineBuilder<ContainerStatus> addCreateTransition(StateMachineBuilder<ContainerStatus> b) {
         return b.addAsynchronousTransition(ContainerStatus.NEW, ContainerStatus.CREATING, ContainerStatus.CREATED,
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try {
-                        	preCreateAction();
+                            preCreateAction();
                             checkForCreationParameters(params); 
                             logic.doCreate(); 
                             postCreateAction();
@@ -173,7 +173,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         return b.addAsynchronousTransition(ContainerStatus.BOOTSTRAPPED, ContainerStatus.INITIALISING, ContainerStatus.READY,
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) {
-                    	//TODO: add code for starting from snapshot (skip init and install steps)
+                        //TODO: add code for starting from snapshot (skip init and install steps)
                         controller.blockingInit();
                         controller.blockingInstall();
                         controller.blockingConfigure();

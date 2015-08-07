@@ -39,5 +39,5 @@ public interface ContainerLogic {
      */
     String getLocalAddress() throws ContainerException;
 
-	InportAccessor getPortMapper();
+    InportAccessor getPortMapper();
 }

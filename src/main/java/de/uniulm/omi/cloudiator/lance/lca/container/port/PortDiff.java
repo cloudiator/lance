@@ -29,7 +29,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class PortDiff<T> {
 
-	private final OutPort myPort;
+    private final OutPort myPort;
     private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
     private final Set<ComponentInstanceId> added;
     private final Set<ComponentInstanceId> removed;
@@ -93,7 +93,7 @@ public final class PortDiff<T> {
         return !(added.isEmpty() && removed.isEmpty() && diffSet.isEmpty());
     }
 
-	public OutPort getPort() {
-		return myPort;
-	}
+    public OutPort getPort() {
+        return myPort;
+    }
 }
