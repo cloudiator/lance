@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ScheduledFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,31 +31,38 @@ import org.slf4j.LoggerFactory;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
-import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
+import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.PortUpdateCallback;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 
-public final class NetworkHandler implements PortUpdateCallback {
+public final class NetworkHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHandler.class);
+    private volatile ScheduledFuture<?> updateFuture = null;
     
     private final PortHierarchy portHierarchy;
     private final DeployableComponent myComponent;
     private final PortRegistryTranslator portAccessor;
     
     private final HierarchyLevelState<String> ipAddresses;
+    private final HostContext hostContext;
+    private final DownstreamPortUpdater updater;
     private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<>();
     
     private final OutPortHandler outPorts;
     
-    public NetworkHandler(PortRegistryTranslator portAccessorParam, PortHierarchy portHierarchyParam,  DeployableComponent myComponentParam) {
+    public NetworkHandler(PortRegistryTranslator portAccessorParam, PortHierarchy portHierarchyParam,  
+    						DeployableComponent myComponentParam, HostContext hostContextParam,
+    						LifecycleController controller) {
         portHierarchy = portHierarchyParam;
         myComponent = myComponentParam;
         portAccessor = portAccessorParam;
+        hostContext = hostContextParam;
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
+        updater = new DownstreamPortUpdater(outPorts, portAccessor, portHierarchy, controller);
     }
 
     public void initPorts(PortHierarchyLevel level2Param, String valueParam) throws RegistrationException {
@@ -95,14 +103,33 @@ public final class NetworkHandler implements PortUpdateCallback {
     void registerAddress(PortHierarchyLevel level, String address) {
         ipAddresses.registerValueAtLevel(level, address);
     }
+    
+    public<T extends Exception> void iterateOverInPorts(InportAccessor<T> accessor) throws T {
+    	 List<InPort> inPortsTmp = myComponent.getExposedPorts();
+         for(InPort in : inPortsTmp) {
+        	 String portName = in.getPortName();
+        	 HierarchyLevelState<Integer> clientState = new HierarchyLevelState<>(portName, portHierarchy);
+        	 accessor.accessPort(portName, clientState);
+        	 					
+        	 HierarchyLevelState<Integer> state = inPorts.get(portName);
+        	 if(state == null) 
+        		 throw new IllegalStateException("something went terribly wrong when initialising NetworkHandler");
+        	 for(PortHierarchyLevel level : state) {
+        		 // the way the loop is constructed makes sure that  
+        		 // the client has set all needed levels 
+        		 state.registerValueAtLevel(level, clientState.valueAtLevel(level));
+        	 }
+         }
+    }
 
-    public void registerInPort(PortHierarchyLevel level, String portName, Integer portNumber) {
+    /*
+    private void registerInPort(PortHierarchyLevel level, String portName, Integer portNumber) {
         HierarchyLevelState<Integer> state = inPorts.get(portName);
         if(state == null) { 
             throw new IllegalStateException("attempt to register an unknown port '" + portName + "': " + inPorts); 
         }
         state.registerValueAtLevel(level, portNumber);
-    }
+    }*/
 
     public void publishLocalData(ComponentInstanceId myId) throws ContainerException {
         publishLocalAddresses(myId, portAccessor);
@@ -114,23 +141,7 @@ public final class NetworkHandler implements PortUpdateCallback {
      * connection is available (e.g. an application server may require 
      * that the database is up and running). */
     public void pollForNeededConnections() {
-        while(true) {
-            try { 
-                outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
-                if(outPorts.requiredDownstreamPortsSet()) {
-                    return;
-                }
-            } catch (RegistrationException e) {
-                LOGGER.warn("could not access registry for retrieving downstream ports", e);
-            }
-            LOGGER.info("did not find initial values for all required out ports; sleeping for some time... ");
-            try { 
-                Thread.sleep(3000); 
-            } catch(InterruptedException ie) {
-                LOGGER.info("thread interrupted (by system?)", ie);
-            }
-        }
-        // throw new IllegalStateException();
+    	updater.pollForNeededConnections();
     }
     
     private void publishLocalAddresses(ComponentInstanceId myId, PortRegistryTranslator registryAccessor) throws ContainerException {
@@ -171,35 +182,18 @@ public final class NetworkHandler implements PortUpdateCallback {
         throw new ContainerException("could register all ports: " + myId + "[" + failed.toString() + "]");
     }
 
-    @Override
-    public void handleUpdate(OutPort port, PortDiff<?> diff) {
-    /*    //FIXME: ensure that we are in running state 
-        // if(!controller.isRunning()) return;
-        
-        // updating is rather easy. step 1: we get the update handler 
-        // for this port from the deployable component and then either
-        // do nothing or restart the application 
-        try {
-            DockerShell dshell = client.getSideShell(myId);
-            flushEnvironmentVariables(dshell);
-            flushSinglePort(dshell, port, diff.getCurrentSinkSet());
-            shellFactory.installDockerShell(dshell);
-            PortUpdateHandler handler = port.getUpdateHandler();
-            controller.blockingUpdatePorts(handler);
-        } catch(DockerException de) {
-            logger.info("problem when accessing registry", de); 
-        } catch (RegistrationException e) {
-            logger.info("problem when accessing registry", e); 
-        } finally {
-            shellFactory.closeShell();
-        }
-        //FIXME: only *now* update the set in the OutPortState
-        System.out.println("update the set in the OutPortState => ..."); //.printStackTrace();
-        */
-    }
-
     public void startPortUpdaters() {
-        outPorts.startPortUpdaters();
+    	ScheduledFuture<?> sf = hostContext.scheduleAction(updater);
+    	updateFuture = sf;
+    }
+    
+    public void stopPortUpdaters() {
+    	ScheduledFuture<?> sf = updateFuture;
+    	if(sf == null) {
+    		LOGGER.warn("updateFuture has not been set.");
+    	} else {
+    		sf.cancel(false);
+    	}
     }
 
     public void accept(NetworkVisitor visitor) {
