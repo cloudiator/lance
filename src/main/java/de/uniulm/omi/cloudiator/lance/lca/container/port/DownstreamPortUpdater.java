@@ -73,7 +73,7 @@ final class DownstreamPortUpdater implements Runnable {
             controller.blockingUpdatePorts(port, handler, diff);
             // FIXME: only *now* update the set in the OutPortState, 
             // ==> split updateDownstreamPorts in two parts
-            System.out.println("update the set in the OutPortState => ..."); 
+            LOGGER.error("update the set in the OutPortState => ..."); 
         }
     }
     
