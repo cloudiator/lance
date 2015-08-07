@@ -27,7 +27,8 @@ public final class LifecycleStoreBuilder {
     }
     
     public LifecycleStoreBuilder setHandler(LifecycleHandler h, LifecycleHandlerType t) {
-        if(h == null) throw new NullPointerException();
+        if(h == null) 
+        	throw new NullPointerException();
         Class<?> superClass = t.getTypeClass();
         Class<?> inheritCla = h.getClass();
         if(! superClass.isAssignableFrom(inheritCla)) {
