@@ -21,7 +21,8 @@ package de.uniulm.omi.cloudiator.lance.lca;
 
 public final class LcaRegistryConstants {
 
-    public static final String COMPONENT_INSTANCE_STATUS = "Status";
+	public static final String CONTAINER_STATUS = "Container Status";
+    public static final String COMPONENT_INSTANCE_STATUS = "Component Instance Status";
     public static final String HOST_PUBLIC_IP = "Host_Public_Ip";
     public static final String CLOUD_PROVIDER_ID = "Cloud_Provider_Id";
     public static final String HOST_INTERNAL_IP = "Host_Internal_Ip";

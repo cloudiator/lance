@@ -27,23 +27,27 @@ import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManagerFactory;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
+	private volatile AgentStatus status = AgentStatus.NEW;
     private final ContainerManager manager;
     
     LifecycleAgentImpl(HostContext contex) {
         DockerContainerManagerFactory.enableRemoteAccess();
         manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER_REMOTE);
+        status = AgentStatus.CREATED;
     }
     
     synchronized void init() {
-        //FIXME: anything to do here? //
+    	status = AgentStatus.READY;
     }
     
     @Override
@@ -65,7 +69,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
 
     @Override
-    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws LcaException, RegistrationException {
+    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws LcaException, RegistrationException, ContainerException {
         applicationRegistered(ctx);
         componentPartOfApplication(ctx, component);
         
@@ -95,4 +99,14 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         
         throw new LcaException("cannot proceed: component is not known within application instance.");
     }
+
+	@Override
+	public AgentStatus getAgentStatus() {
+		return status;
+	}
+
+	@Override
+	public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
+		return manager.getComponentContainerStatus(cid);
+	}
 }
