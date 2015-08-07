@@ -24,6 +24,8 @@ import de.uniulm.omi.cloudiator.lance.util.AsyncCallback;
 import de.uniulm.omi.cloudiator.lance.util.AsyncRunner;
 import de.uniulm.omi.cloudiator.lance.util.AsyncRunner.Setter;
 
+// FIXME: add some nice, generic callback mechanism that can be
+// exploited to update the registry on the fly.
 public final class StateTransition<T extends Enum<?> & State > {
 
     private final T from;
