@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -43,7 +45,7 @@ final class EnvContext implements HostContext {
     };
     
     private final Map<String,String> hostContext;
-    //private final ScheduledExecutorService periodicExecutor = Executors.newScheduledThreadPool(4);
+    private final ScheduledExecutorService periodicExecutor = Executors.newScheduledThreadPool(4);
     private final ExecutorService executor = Executors.newScheduledThreadPool(4);
     
     EnvContext(Map<String,String> ctxParam) {
@@ -82,12 +84,12 @@ final class EnvContext implements HostContext {
     }
 
     @Override
-    public void scheduleAction(Runnable runner) {
-        // TODO: reintroduce 
-        // periodicExecutor.scheduleWithFixedDelay(runner, 0L, 10L, TimeUnit.SECONDS);
+    public ScheduledFuture<?> scheduleAction(Runnable runner) {
+    	ScheduledFuture<?> sf = periodicExecutor.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
+    	return sf;
     }
     
-    @Override
+    @Override @Deprecated
     public void run(Runnable runner) {
         executor.execute(runner);
     }

@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public interface ContainerLogic {
@@ -31,5 +32,12 @@ public interface ContainerLogic {
     void doDestroy() throws ContainerException;
 
     // ComponentInstanceId getId();
+    /**
+     * 
+     * @return null if no address is available;
+     * otherwise a stringified form of an IP address
+     */
+    String getLocalAddress() throws ContainerException;
 
+	InportAccessor getPortMapper();
 }

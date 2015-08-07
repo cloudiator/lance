@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import java.util.List;
+import java.util.List; 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +33,16 @@ import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.container.registry.ContainerRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.ConnectorFactory;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
+import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
@@ -50,7 +53,6 @@ public class DockerContainerManager implements ContainerManager {
     private final HostContext hostContext;
     private final String hostname;
     private final DockerConnector client;
-    // private final DockerOperatingSystemTranslator translator;
     private final ContainerRegistry registry = new ContainerRegistry();
     
     public DockerContainerManager(HostContext vmId) {
@@ -94,15 +96,23 @@ public class DockerContainerManager implements ContainerManager {
     }
 
     @Override
-    public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent comp, OperatingSystem os) {
+    public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent comp, OperatingSystem os) throws ContainerException {
         ComponentInstanceId id = new ComponentInstanceId();
+        DockerShellFactory shellFactory = new DockerShellFactory();
         GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
-        PortRegistryTranslator portAccessor = new PortRegistryTranslator(accessor, hostContext);
-        NetworkHandler handler = new NetworkHandler(portAccessor, DockerContainerManagerFactory.DOCKER_PORT_HIERARCHY, comp);
+
+        NetworkHandler networkHandler = new NetworkHandler(accessor, comp, hostContext);
+        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory, accessor);
+        // DockerLifecycleInterceptor interceptor = new DockerLifecycleInterceptor(accessor, id, networkHandler, comp, shellFactory);
+        LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, os, shellFactory);
         
+        try { 
+        	accessor.init(id); 
+        } catch(RegistrationException re) { 
+            throw new ContainerException("cannot start container, because registry not available", re); 
+        }
         
-        DockerContainerLogic l = new DockerContainerLogic(id, client, accessor, comp, ctx, os, handler);
-        ContainerController dc = new StandardContainer<>(id, l);
+        ContainerController dc = new StandardContainer<>(id, logic, networkHandler, controller);
         registry.addContainer(dc);
         dc.create();
         return dc;
@@ -122,5 +132,11 @@ public class DockerContainerManager implements ContainerManager {
 	@Override
 	public List<ComponentInstanceId> getAllContainers() {
 		return registry.listComponentInstances();
+	}
+
+	@Override
+	public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
+		ContainerController dc = registry.getContainer(cid);
+		return dc.getState();
 	}
 }

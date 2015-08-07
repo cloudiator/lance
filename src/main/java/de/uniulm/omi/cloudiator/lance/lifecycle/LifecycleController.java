@@ -21,7 +21,10 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
@@ -43,40 +46,50 @@ public final class LifecycleController {
     final LifecycleStore store;
     final ExecutionContext ec;
     private final StateMachine<LifecycleHandlerType> machine;
+    private final LifecycleActionInterceptor interceptor;
     
-    public LifecycleController(LifecycleStore storeParam, OperatingSystem osParam, ShellFactory shellFactoryParam) {
+    public LifecycleController(LifecycleStore storeParam, LifecycleActionInterceptor interceptorParam, 
+    		OperatingSystem osParam, ShellFactory shellFactoryParam) {
         store = storeParam;
         ec = new ExecutionContext(osParam, shellFactoryParam);
         machine = buildStateMachine();
+        interceptor = interceptorParam; 
+        
+    }
+    
+    void run(LifecycleHandlerType type) {
+    	interceptor.prepare(type);
+    	machine.transit(type);
+    	interceptor.postprocess(type);
     }
 
     public synchronized void blockingInit() {
-        machine.transit(LifecycleHandlerType.NEW);            // moves to INIT
+        run(LifecycleHandlerType.NEW);            // moves to INIT
     }
 
     public synchronized void skipInstall() {
-        machine.transit(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
-        machine.transit(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
-        machine.transit(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
+    	run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
+    	run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
+    	run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
     }
     
     public synchronized void blockingInstall() {
-        machine.transit(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
-        machine.transit(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
+    	run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
+    	run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
     }
 
     public synchronized void blockingConfigure() {
-        machine.transit(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
-        machine.transit(LifecycleHandlerType.POST_INSTALL);    // moves to PRE_START 
+    	run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
+    	run(LifecycleHandlerType.POST_INSTALL);    // moves to PRE_START 
     }
     
     public synchronized void blockingStart() {
-        machine.transit(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
+    	run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
         // FIXME: establish start detector
         // machine.transit(LifecycleHandlerType.START);        // moves to POST_START
     }
     
-    public synchronized void blockingUpdatePorts(PortUpdateHandler handler) {
+    public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) {
         handler.execute(ec);
         // FIXME: change to according state //
     }

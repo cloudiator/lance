@@ -1,7 +1,9 @@
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
-public interface InportAccessor<T extends Exception> {
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 
-	void accessPort(String portName, HierarchyLevelState<Integer> clientState) throws T;
+public interface InportAccessor {
+
+	void accessPort(String portName, HierarchyLevelState<Integer> clientState) throws ContainerException;
 
 }

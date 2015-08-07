@@ -67,12 +67,19 @@ final class OutPortHandler {
         }
     }
     
+    /**
+     * 
+     * @param accessor
+     * @param portHierarchy
+     * @return those ports that do have a diff. for these, the port updaters have to be run //
+     * @throws RegistrationException
+     */
     List<PortDiff<DownstreamAddress>> updateDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
         List<PortDiff<DownstreamAddress>> changedPorts = new LinkedList<>();
-        for(OutPortState out_port : portStates) {
-            Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(out_port.getPort(), portHierarchy);
+        for(OutPortState outPort : portStates) {
+            Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(outPort.getPort(), portHierarchy);
             instances = filterInstancesWithUnsetPorts(instances);
-            PortDiff<DownstreamAddress> diff = out_port.updateWithDiff(instances);
+            PortDiff<DownstreamAddress> diff = outPort.updateWithDiff(instances);
             if(diff.hasDiffs()) {
                 changedPorts.add(diff);
             }

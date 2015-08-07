@@ -29,15 +29,22 @@ import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchy.PortHierarchyBuilder;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public final class PortRegistryTranslator {
 
     private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
     private static final String PORT_HIERARCHY_1_NAME = "CLOUD";
-    
+    private static final String PORT_HIERARCHY_2_NAME = "CONTAINER";
+        
     public static final PortHierarchyLevel PORT_HIERARCHY_0 = PortHierarchyLevel.create(PORT_HIERARCHY_0_NAME);
     public static final PortHierarchyLevel PORT_HIERARCHY_1 = PortHierarchyLevel.create(PORT_HIERARCHY_1_NAME);
+    public static final PortHierarchyLevel PORT_HIERARCHY_2 = PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
+    
+    public static final PortHierarchy PORT_HIERARCHY = new PortHierarchyBuilder().addLevel(PortRegistryTranslator.PORT_HIERARCHY_0).
+            addLevel(PortRegistryTranslator.PORT_HIERARCHY_1).addLevel(PORT_HIERARCHY_2).build();
+
     
     public static final Integer UNSET_PORT = Integer.valueOf(-1);
     public static final String PORT_PREFIX = "ACCESS_";

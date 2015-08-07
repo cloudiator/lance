@@ -25,6 +25,10 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
+import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachine;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
@@ -42,24 +46,35 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
     
-    static Logger getLogger() { return LOGGER; }
+    static Logger getLogger() { 
+    	return LOGGER; 
+    }
     
     private final StateMachine<ContainerStatus> stateMachine;
     final T logic;
     private final ComponentInstanceId containerId;
+    private final NetworkHandler network;
+    final LifecycleController controller;
     
-    public StandardContainer(ComponentInstanceId id, T logicParam) {
+    public StandardContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
+    						LifecycleController controllerParam) {
         containerId = id;
         logic = logicParam;
+        network = networkParam;
+        controller = controllerParam;
         stateMachine = addDestroyTransition(
-        addInitTransition(
+        addInitTransition(addBootstrapTransition(
         addCreateTransition(new StateMachineBuilder<>(ContainerStatus.NEW).
-                addAllState(ContainerStatus.values()))
+                addAllState(ContainerStatus.values())))
                 )).build();
     }
     
-    @Override public ComponentInstanceId getId() { return containerId; }
-    @Override public ContainerStatus getState() { return stateMachine.getState(); }
+    @Override public ComponentInstanceId getId() { 
+    	return containerId; 
+    }
+    @Override public ContainerStatus getState() { 
+    	return stateMachine.getState(); 
+    }
 
     @Override public void create() {
         stateMachine.transit(ContainerStatus.NEW, new Object[] { }); 
@@ -85,13 +100,52 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         stateMachine.waitForTransitionEnd(ContainerStatus.DESTROYED);
     }
     
+    void preCreateAction() throws ContainerException {
+    	String address = logic.getLocalAddress();
+    	try {
+    		network.initPorts(address == null ? "<unknown>" : address);
+    	} catch(RegistrationException re) {
+    		throw new ContainerException("cannot access registry.", re);
+    	}
+    }
+    
+    void postCreateAction() throws ContainerException {
+        // add dummy values so that other components are aware of this instance, 
+        // but can see that it is not ready for use yet.
+    	network.publishLocalData(containerId);
+    }
+    
+    void postBootstrapAction() throws ContainerException {
+    	String address = logic.getLocalAddress();
+    	if(address == null) 
+    		throw new ContainerException("container has no IP address set after bootstrapping.");
+        network.updateAddress(PortRegistryTranslator.PORT_HIERARCHY_2, address);
+        network.iterateOverInPorts(logic.getPortMapper());
+        network.pollForNeededConnections();
+    }
+    
+	void postInitAction() throws ContainerException {
+		// FIXME: make sure that start detector has been run successfully 
+        // FIXME: make sure that stop detectors run periodically //
+		// FIXME: this code should not be here; it is completely independent 
+		// from any container implementation. These values have to be set
+		// according to the container lifecycle.
+        
+        // only that we have started, can the ports be 
+        // retrieved and then registered at the registry // 
+		network.publishLocalData(containerId);
+		network.startPortUpdaters(controller);
+	}
+    
     private StateMachineBuilder<ContainerStatus> addCreateTransition(StateMachineBuilder<ContainerStatus> b) {
         return b.addAsynchronousTransition(ContainerStatus.NEW, ContainerStatus.CREATING, ContainerStatus.CREATED,
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
-                        try { 
+                        try {
+                        	preCreateAction();
                             checkForCreationParameters(params); 
                             logic.doCreate(); 
+                            postCreateAction();
                         } catch(ContainerException ce) { 
                             getLogger().error("could not create container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
@@ -100,16 +154,37 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 });
     }
     
-    private StateMachineBuilder<ContainerStatus> addInitTransition(StateMachineBuilder<ContainerStatus> b) {
-        return b.addAsynchronousTransition(ContainerStatus.CREATED, ContainerStatus.INITIALISING, ContainerStatus.READY,
+    private StateMachineBuilder<ContainerStatus> addBootstrapTransition(StateMachineBuilder<ContainerStatus> b) {
+        return b.addAsynchronousTransition(ContainerStatus.CREATED, ContainerStatus.BOOTSTRAPPING, ContainerStatus.BOOTSTRAPPED,
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
-                            logic.doInit(checkForInitParameters(params)); 
+                            logic.doInit(checkForInitParameters(params));
+                            postBootstrapAction();
                         } catch(ContainerException ce) { 
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
+                    }
+        });
+    }
+    
+    private StateMachineBuilder<ContainerStatus> addInitTransition(StateMachineBuilder<ContainerStatus> b) {
+        return b.addAsynchronousTransition(ContainerStatus.BOOTSTRAPPED, ContainerStatus.INITIALISING, ContainerStatus.READY,
+                new TransitionAction() {                    
+                    @Override public void transit(Object[] params) {
+                    	//TODO: add code for starting from snapshot (skip init and install steps)
+                        controller.blockingInit();
+                        controller.blockingInstall();
+                        controller.blockingConfigure();
+                        controller.blockingStart();
+                        /*try { 
+                            logic.doInit(checkForInitParameters(params));
+                            postInitAction();
+                        } catch(ContainerException ce) { 
+                            getLogger().error("could not initialise container; FIXME add error state", ce); 
+                            /* FIXME: change to error state * / 
+                        }*/
                     }
         });
     }

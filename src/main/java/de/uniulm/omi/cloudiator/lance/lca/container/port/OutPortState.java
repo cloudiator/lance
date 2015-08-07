@@ -56,7 +56,7 @@ public final class OutPortState {
 
     public PortDiff<DownstreamAddress> updateWithDiff(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> newSinks) {
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> oldSinks = getCurrentSinkSet();
-        PortDiff<DownstreamAddress> diff = new PortDiff<>(newSinks, oldSinks, thePort.getName());
+        PortDiff<DownstreamAddress> diff = new PortDiff<>(newSinks, oldSinks, thePort);
         
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> compOldSinks = installNewSinks(newSinks);
         if(!oldSinks.equals(compOldSinks)) {

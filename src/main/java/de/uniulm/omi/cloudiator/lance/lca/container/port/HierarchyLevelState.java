@@ -32,8 +32,8 @@ public final class HierarchyLevelState<T> implements Iterable<PortHierarchyLevel
     private final String name;
     private final Map<PortHierarchyLevel, T> mapping = new HashMap<>(); 
     
-    public HierarchyLevelState(String levelName, PortHierarchy portHierarchy) {
-        name = levelName;
+    public HierarchyLevelState(String stateName, PortHierarchy portHierarchy) {
+        name = stateName;
         for(PortHierarchyLevel level : portHierarchy.levels()) {
             mapping.put(level, null);
         }

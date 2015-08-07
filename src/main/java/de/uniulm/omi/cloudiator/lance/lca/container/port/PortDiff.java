@@ -24,25 +24,27 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public final class PortDiff<T> {
 
+	private final OutPort myPort;
     private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
     private final Set<ComponentInstanceId> added;
     private final Set<ComponentInstanceId> removed;
-    // @SuppressWarnings("unused") private final String portName;
     private final Set<ComponentInstanceId> diffSet;
     
     PortDiff(Map<ComponentInstanceId, HierarchyLevelState<T>> newSinksParam,
             Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinksParam,
-            @SuppressWarnings("unused") String portNameParam) {
+            OutPort myPortParam) {
         
         // portName = portNameParam;
         current = newSinksParam;
         added  = inFirstNotInSecond(newSinksParam, oldSinksParam);
         removed = inFirstNotInSecond(oldSinksParam, newSinksParam);
         diffSet = diffPerElement(oldSinksParam);
+        myPort = myPortParam;
     }
 
     private Set<ComponentInstanceId> diffPerElement(Map<ComponentInstanceId, HierarchyLevelState<T>> old) {
@@ -90,4 +92,8 @@ public final class PortDiff<T> {
     public boolean hasDiffs() {
         return !(added.isEmpty() && removed.isEmpty() && diffSet.isEmpty());
     }
+
+	public OutPort getPort() {
+		return myPort;
+	}
 }

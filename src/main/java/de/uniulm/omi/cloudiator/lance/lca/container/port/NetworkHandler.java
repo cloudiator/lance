@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -48,29 +49,26 @@ public final class NetworkHandler {
     
     private final HierarchyLevelState<String> ipAddresses;
     private final HostContext hostContext;
-    private final DownstreamPortUpdater updater;
     private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<>();
     
     private final OutPortHandler outPorts;
     
-    public NetworkHandler(PortRegistryTranslator portAccessorParam, PortHierarchy portHierarchyParam,  
-    						DeployableComponent myComponentParam, HostContext hostContextParam,
-    						LifecycleController controller) {
-        portHierarchy = portHierarchyParam;
+    public NetworkHandler(GlobalRegistryAccessor accessorParam, DeployableComponent myComponentParam, HostContext hostContextParam) {
+    	
+        portHierarchy = PortRegistryTranslator.PORT_HIERARCHY;
         myComponent = myComponentParam;
-        portAccessor = portAccessorParam;
         hostContext = hostContextParam;
+        portAccessor = new PortRegistryTranslator(accessorParam, hostContext);
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
-        updater = new DownstreamPortUpdater(outPorts, portAccessor, portHierarchy, controller);
     }
 
-    public void initPorts(PortHierarchyLevel level2Param, String valueParam) throws RegistrationException {
+    public void initPorts(String valueParam) throws RegistrationException {
         portAccessor.shareHostAddresses(this);
-        registerAddress(level2Param, valueParam);
+        registerAddress(PortRegistryTranslator.PORT_HIERARCHY_2, valueParam);
         initInPorts();
         outPorts.initPortStates(portAccessor, portHierarchy);
-        portAccessor.registerLocalAddressAtLevel(level2Param, valueParam);
+        portAccessor.registerLocalAddressAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, valueParam);
     }
 
     private void initInPorts() {
@@ -104,7 +102,7 @@ public final class NetworkHandler {
         ipAddresses.registerValueAtLevel(level, address);
     }
     
-    public<T extends Exception> void iterateOverInPorts(InportAccessor<T> accessor) throws T {
+    public void iterateOverInPorts(InportAccessor accessor) throws ContainerException {
     	 List<InPort> inPortsTmp = myComponent.getExposedPorts();
          for(InPort in : inPortsTmp) {
         	 String portName = in.getPortName();
@@ -141,7 +139,7 @@ public final class NetworkHandler {
      * connection is available (e.g. an application server may require 
      * that the database is up and running). */
     public void pollForNeededConnections() {
-    	updater.pollForNeededConnections();
+    	DownstreamPortUpdater.pollForNeededConnections(outPorts, portAccessor, portHierarchy);
     }
     
     private void publishLocalAddresses(ComponentInstanceId myId, PortRegistryTranslator registryAccessor) throws ContainerException {
@@ -182,7 +180,8 @@ public final class NetworkHandler {
         throw new ContainerException("could register all ports: " + myId + "[" + failed.toString() + "]");
     }
 
-    public void startPortUpdaters() {
+    public void startPortUpdaters(LifecycleController controller) {
+    	DownstreamPortUpdater updater = new DownstreamPortUpdater(outPorts, portAccessor, portHierarchy, controller);
     	ScheduledFuture<?> sf = hostContext.scheduleAction(updater);
     	updateFuture = sf;
     }

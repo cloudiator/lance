@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
@@ -33,18 +34,30 @@ final class DockerImageHandler {
     private final DockerOperatingSystemTranslator translator;
     private final OperatingSystem os;
     private final DockerConnector client;
+    private final DeployableComponent myComponent;
     
     private volatile ImageCreationType initSource;
     
-    DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, DockerConnector clientParam) {
+    DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, 
+    			DockerConnector clientParam, DeployableComponent componentParam) {
         if(osParam == null) 
             throw new NullPointerException("operating system has to be set.");
         
         os = osParam;
         translator = translatorParam;
         client = clientParam;
+        myComponent = componentParam;
     }
-
+    
+	
+    static String createComponentInstallId(DeployableComponent myComponent) {
+        return "dockering." + "component." + myComponent.getComponentId().toString(); 
+    }
+    
+    private String createComponentInstallId() {
+    	return createComponentInstallId(myComponent);
+    }
+    
     private String buildImageTagName(ImageCreationType type, String componentInstallId) {
         final String key;
         switch(type){
@@ -84,7 +97,8 @@ final class DockerImageHandler {
         }
     }
     
-    String doPullImages(ComponentInstanceId myId, String componentInstallId) throws DockerException {
+    String doPullImages(ComponentInstanceId myId) throws DockerException {
+    	String componentInstallId = createComponentInstallId();
         // first step: try to find matching image for configured component
         // currently not implemented; TODO: implement
         
@@ -108,7 +122,8 @@ final class DockerImageHandler {
 
     /** here, we may want to run a snapshotting action 
      * @throws DockerException */
-    void runPostInstallAction(ComponentInstanceId myId, String componentInstallId) throws DockerException {
+    void runPostInstallAction(ComponentInstanceId myId) throws DockerException {
+    	String componentInstallId = createComponentInstallId();
         if(initSource == ImageCreationType.OPERATING_SYSTEM) {
             // we probably will not need this return value
             // let's keep it for debugging purposes, though
