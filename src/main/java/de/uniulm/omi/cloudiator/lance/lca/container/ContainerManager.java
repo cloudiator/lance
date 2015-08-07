@@ -42,7 +42,8 @@ public interface ContainerManager {
     ContainerController getContainer(ComponentInstanceId id);
     void runApplication(ComponentInstanceId id, LifecycleStore store);
     CommandSequence addDeploymentSequence();
-    ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os);
+    ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException;
     void terminate();
 	List<ComponentInstanceId> getAllContainers();
+	ContainerStatus getComponentContainerStatus(ComponentInstanceId cid);
 }
