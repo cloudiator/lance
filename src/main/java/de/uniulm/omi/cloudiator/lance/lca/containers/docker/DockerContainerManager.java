@@ -42,6 +42,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.registry.ContainerRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.ConnectorFactory;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
@@ -102,9 +103,10 @@ public class DockerContainerManager implements ContainerManager {
         GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, comp, hostContext);
-        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory, accessor);
+        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory);
         // DockerLifecycleInterceptor interceptor = new DockerLifecycleInterceptor(accessor, id, networkHandler, comp, shellFactory);
-        LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, os, shellFactory);
+        ExecutionContext ec = new ExecutionContext(os, shellFactory);
+        LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec);
         
         try { 
             accessor.init(id); 
@@ -112,7 +114,7 @@ public class DockerContainerManager implements ContainerManager {
             throw new ContainerException("cannot start container, because registry not available", re); 
         }
         
-        ContainerController dc = new StandardContainer<>(id, logic, networkHandler, controller);
+        ContainerController dc = new StandardContainer<>(id, logic, networkHandler, controller, accessor);
         registry.addContainer(dc);
         dc.create();
         return dc;

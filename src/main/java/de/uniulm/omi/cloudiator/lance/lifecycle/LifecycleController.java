@@ -23,8 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
+import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
@@ -47,13 +49,15 @@ public final class LifecycleController {
     final ExecutionContext ec;
     private final StateMachine<LifecycleHandlerType> machine;
     private final LifecycleActionInterceptor interceptor;
+    private final GlobalRegistryAccessor accessor;
     
     public LifecycleController(LifecycleStore storeParam, LifecycleActionInterceptor interceptorParam, 
-            OperatingSystem osParam, ShellFactory shellFactoryParam) {
+            GlobalRegistryAccessor accessorParam, ExecutionContext ecParam) {
         store = storeParam;
-        ec = new ExecutionContext(osParam, shellFactoryParam);
+        ec = ecParam;
         machine = buildStateMachine();
         interceptor = interceptorParam; 
+        accessor = accessorParam;
         
     }
     
@@ -61,6 +65,15 @@ public final class LifecycleController {
         interceptor.prepare(type);
         machine.transit(type);
         interceptor.postprocess(type);
+        updateStateInRegistry(type);
+    }
+    
+    private void updateStateInRegistry(LifecycleHandlerType type) {
+        try {
+            accessor.updateInstanceState(interceptor.getComponentId(), type);
+        } catch(RegistrationException ex) {
+            LOGGER.warn("could not update status in registry.", ex);
+        }
     }
 
     public synchronized void blockingInit() {

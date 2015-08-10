@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.container.standard;
 import org.slf4j.Logger; 
 import org.slf4j.LoggerFactory;
 
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -35,7 +36,6 @@ import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForBootstrapParameters;
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForCreationParameters;
-import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForInitParameters;
 
 // FIXME: move status updates to network handler to this class instead of keeping
 // them in the individual container classes 
@@ -52,17 +52,19 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
     
     private final StateMachine<ContainerStatus> stateMachine;
+    private final GlobalRegistryAccessor accessor;
     final T logic;
     private final ComponentInstanceId containerId;
     private final NetworkHandler network;
     final LifecycleController controller;
     
     public StandardContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-                            LifecycleController controllerParam) {
+                            LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
         containerId = id;
         logic = logicParam;
         network = networkParam;
         controller = controllerParam;
+        accessor = accessorParam;
         stateMachine = addDestroyTransition(
         addInitTransition(addBootstrapTransition(
         addCreateTransition(new StateMachineBuilder<>(ContainerStatus.NEW).
@@ -153,6 +155,10 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         network.startPortUpdaters(controller);
     }
     
+    void registerStatus(ContainerStatus status) throws RegistrationException {
+    	accessor.updateContainerState(containerId, status);
+    }
+    
     private StateMachineBuilder<ContainerStatus> addCreateTransition(StateMachineBuilder<ContainerStatus> b) {
         return b.addAsynchronousTransition(ContainerStatus.NEW, ContainerStatus.CREATING, ContainerStatus.CREATED,
                 new TransitionAction() {                    
@@ -162,7 +168,8 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                             checkForCreationParameters(params); 
                             logic.doCreate(); 
                             postCreateAction();
-                        } catch(ContainerException ce) { 
+                            registerStatus(ContainerStatus.CREATED);
+                        } catch(ContainerException | RegistrationException ce) { 
                             getLogger().error("could not create container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
@@ -178,7 +185,8 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                         	checkForBootstrapParameters(params);
                             logic.doInit(null);
                             postBootstrapAction();
-                        } catch(ContainerException ce) { 
+                            registerStatus(ContainerStatus.BOOTSTRAPPED);
+                        } catch(ContainerException | RegistrationException ce) { 
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
@@ -195,7 +203,8 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                         try { 
                             logic.completeInit();
                             postInitAction();
-                        } catch(ContainerException ce) { 
+                            registerStatus(ContainerStatus.READY);
+                        } catch(ContainerException | RegistrationException ce) { 
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
@@ -209,7 +218,8 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                     @Override public void transit(Object[] params) { 
                         try { 
                             logic.doDestroy(); 
-                        } catch(ContainerException ce) { 
+                            registerStatus(ContainerStatus.DESTROYED);
+                        } catch(ContainerException | RegistrationException ce) { 
                             getLogger().error("could not shut down container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }
