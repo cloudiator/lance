@@ -42,7 +42,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     
     LifecycleAgentImpl(HostContext contex) {
         DockerContainerManagerFactory.enableRemoteAccess();
-        manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER_REMOTE);
+        manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER);
         status = AgentStatus.CREATED;
     }
     
