@@ -25,6 +25,8 @@ public interface HostContext {
     String getPublicIp();
 
     String getInternalIp();
+
+    String getContainerType();
     
     String getCloudIdentifier();
 
