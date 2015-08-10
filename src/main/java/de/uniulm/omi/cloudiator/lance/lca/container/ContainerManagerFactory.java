@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
 import java.util.EnumMap;
+import java.util.logging.Logger;
 
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 
@@ -36,6 +37,7 @@ public final class ContainerManagerFactory {
     
     public static ContainerManager createContainerManager(HostContext myId, ContainerType type) {
         SpecificContainerManagerFactory sf = mapper.get(type);
+        System.out.println(type.toString());
         if(sf == null) 
         	throw new IllegalArgumentException("Type: " + type + " not supported");
         return sf.createContainerManager(myId);

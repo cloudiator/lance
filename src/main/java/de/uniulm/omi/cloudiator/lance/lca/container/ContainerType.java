@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
+import de.uniulm.omi.cloudiator.lance.lca.containers.plain.PlainContainerManagerFactory;
 
 
 public enum ContainerType {
@@ -51,7 +52,7 @@ public enum ContainerType {
     PLAIN("plain"){
         @Override
         public SpecificContainerManagerFactory getContainerFactory() {
-            return UnsupportedTypeFactory.INSTANCE;
+            return PlainContainerManagerFactory.INSTANCE;
         }
     }
     ;
