@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
-import org.slf4j.Logger;
+import org.slf4j.Logger; 
 import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
@@ -33,6 +33,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachine;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
+import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForBootstrapParameters;
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForCreationParameters;
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForInitParameters;
 
@@ -80,20 +81,28 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         stateMachine.transit(ContainerStatus.NEW, new Object[] { }); 
     }
     
-    @Override public void init(LifecycleStore store) {
-        stateMachine.transit(ContainerStatus.CREATED, new Object[] { store }); 
+    @Override public void awaitCreation() {
+        stateMachine.waitForTransitionEnd(ContainerStatus.CREATED);        
     }
     
-    @Override public void tearDown() {
-        stateMachine.transit(ContainerStatus.READY);
+    @Override public void bootstrap() {
+        stateMachine.transit(ContainerStatus.CREATED, new Object[] { }); 
+    }
+    
+    @Override public void awaitBootstrap() {
+        stateMachine.waitForTransitionEnd(ContainerStatus.BOOTSTRAPPED);
+    }
+    
+    @Override public void init(LifecycleStore store) {
+        stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[] { store }); 
     }
     
     @Override public void awaitInitialisation() {
         stateMachine.waitForTransitionEnd(ContainerStatus.READY);
     }
     
-    @Override public void awaitCreation() {
-        stateMachine.waitForTransitionEnd(ContainerStatus.CREATED);        
+    @Override public void tearDown() {
+        stateMachine.transit(ContainerStatus.READY);
     }
     
     @Override public void awaitDestruction() {
@@ -122,6 +131,13 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         network.updateAddress(PortRegistryTranslator.PORT_HIERARCHY_2, address);
         network.iterateOverInPorts(logic.getPortMapper());
         network.pollForNeededConnections();
+    }
+    
+    void preInitAction() {
+    	controller.blockingInit();
+        controller.blockingInstall();
+        controller.blockingConfigure();
+        controller.blockingStart();
     }
     
     void postInitAction() throws ContainerException {
@@ -159,7 +175,8 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
-                            logic.doInit(checkForInitParameters(params));
+                        	checkForBootstrapParameters(params);
+                            logic.doInit(null);
                             postBootstrapAction();
                         } catch(ContainerException ce) { 
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
@@ -174,17 +191,14 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) {
                         //TODO: add code for starting from snapshot (skip init and install steps)
-                        controller.blockingInit();
-                        controller.blockingInstall();
-                        controller.blockingConfigure();
-                        controller.blockingStart();
-                        /*try { 
-                            logic.doInit(checkForInitParameters(params));
+                        preInitAction();
+                        try { 
+                            logic.completeInit();
                             postInitAction();
                         } catch(ContainerException ce) { 
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
-                            /* FIXME: change to error state * / 
-                        }*/
+                            /* FIXME: change to error state */ 
+                        }
                     }
         });
     }

@@ -28,6 +28,8 @@ public interface ContainerLogic {
     void doCreate() throws ContainerException;
 
     void doInit(LifecycleStore store) throws ContainerException;
+    
+    void completeInit() throws ContainerException;
 
     void doDestroy() throws ContainerException;
 

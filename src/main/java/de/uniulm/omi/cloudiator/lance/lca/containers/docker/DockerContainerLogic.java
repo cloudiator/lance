@@ -95,15 +95,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
         try {
-            doStartContainer();
-
+            DockerShell shell = doStartContainer();
+            shellFactory.installDockerShell(shell);
         } catch(ContainerException ce) {
             throw ce;
         }  catch(Exception ex) {
             throw new ContainerException(ex);
-        } finally {
-            shellFactory.closeShell();
-        }
+        } 
     }
 
     @Override
@@ -152,6 +150,11 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         }
         return null;
     }
+    
+	@Override
+	public void completeInit() throws ContainerException {
+		shellFactory.closeShell();	
+	}
     
     /*
     DockerLifecycleInterceptor(GlobalRegistryAccessor  accessorParam, ComponentInstanceId idParam,
