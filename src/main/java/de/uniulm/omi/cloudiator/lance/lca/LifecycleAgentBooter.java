@@ -95,7 +95,7 @@ public final class LifecycleAgentBooter {
         try { 
             o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
         } catch(NotBoundException nbe){
-            LOGGER.info("could not remove element as it was not registered.", nbe);
+            LOGGER.debug("could not remove element as it was not registered.", nbe);
             return; 
         }
             

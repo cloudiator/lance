@@ -38,4 +38,8 @@ public interface ContainerController {
 
     void awaitDestruction();
 
+	void bootstrap();
+
+	void awaitBootstrap();
+
 }

@@ -1,6 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
+import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
@@ -19,6 +20,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
 
+    }
+
+    @Override
+    public void completeInit() throws ContainerException {
+        
     }
 
     @Override
@@ -44,5 +50,10 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     @Override
     public void postprocess(LifecycleHandlerType type) {
 
+    }
+
+    @Override
+    public ComponentInstanceId getComponentId() {
+        return null;
     }
 }

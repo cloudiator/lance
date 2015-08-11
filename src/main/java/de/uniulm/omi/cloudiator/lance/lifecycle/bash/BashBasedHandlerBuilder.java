@@ -71,7 +71,7 @@ public final class BashBasedHandlerBuilder {
     }
 }
 
-class BashPreInstallHandler implements PreInstallHandler {
+final class BashPreInstallHandler implements PreInstallHandler {
 
     private static final long serialVersionUID = 6252852219310892573L;
     private final OperatingSystem os;
@@ -88,7 +88,7 @@ class BashPreInstallHandler implements PreInstallHandler {
     }
 }
 
-class BashInstallHandler implements InstallHandler {
+final class BashInstallHandler implements InstallHandler {
 
     private static final long serialVersionUID = 7579233877994910327L;
     private final OperatingSystem os;
@@ -105,7 +105,7 @@ class BashInstallHandler implements InstallHandler {
     }
 }
 
-class BashPostInstallHandler implements PostInstallHandler {
+final class BashPostInstallHandler implements PostInstallHandler {
 
     private static final long serialVersionUID = -5666019177853948866L;
     private final OperatingSystem os;
@@ -122,7 +122,7 @@ class BashPostInstallHandler implements PostInstallHandler {
     }
 }
 
-class BashStartHandler implements StartHandler {
+final class BashStartHandler implements StartHandler {
 
     private static final long serialVersionUID = -5666019177853948866L;
     private final OperatingSystem os;
@@ -139,7 +139,7 @@ class BashStartHandler implements StartHandler {
     }
 }
 
-class BashPortUpdateHandler implements PortUpdateHandler {
+final class BashPortUpdateHandler implements PortUpdateHandler {
 
     private static final long serialVersionUID = -7036692445701185053L;
     

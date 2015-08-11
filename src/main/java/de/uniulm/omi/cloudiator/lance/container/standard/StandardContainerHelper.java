@@ -41,4 +41,12 @@ final class StandardContainerHelper {
             throw new IllegalArgumentException(Arrays.toString(o));
         return (LifecycleStore) o[0];
     }
+    
+    static void checkForBootstrapParameters(Object[] o){
+        //if(o == null || o.length == 0 || o.length > 1 || !(o[0] instanceof OperatingSystem)) throw new IllegalArgumentException(Arrays.toString(o));
+        if(o == null || o.length > 0) 
+            throw new IllegalArgumentException(Arrays.toString(o));
+        // return (OperatingSystem) o[0];
+        return;
+    }
 }

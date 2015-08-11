@@ -77,6 +77,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         
         ContainerController cc = manager.createNewContainer(ctx, component, os);
         cc.awaitCreation();
+        cc.bootstrap();
+        cc.awaitBootstrap();
         cc.init(component.getLifecycleStore());
         cc.awaitInitialisation();
         return cc.getId();

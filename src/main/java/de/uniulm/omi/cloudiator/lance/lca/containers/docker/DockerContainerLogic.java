@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import java.util.Map;
+import java.util.Map; 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,6 @@ import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
-import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
@@ -37,7 +36,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
-import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -55,19 +53,17 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     private final DockerImageHandler imageHandler;
     private final NetworkHandler networkHandler;
     
-    private final GlobalRegistryAccessor accessor;
     private final DeployableComponent myComponent;
     
     DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,  
                             DeploymentContext ctx, OperatingSystem os, NetworkHandler network, 
-                            DockerShellFactory shellFactoryParam, GlobalRegistryAccessor accessorParam) {
-        this(id, client, os, ctx, comp, network, shellFactoryParam, accessorParam);
+                            DockerShellFactory shellFactoryParam) {
+        this(id, client, os, ctx, comp, network, shellFactoryParam);
     }
     
     private  DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam, OperatingSystem osParam,
                                 DeploymentContext ctx, DeployableComponent componentParam, 
-                                NetworkHandler networkParam, DockerShellFactory shellFactoryParam,
-                                GlobalRegistryAccessor accessorParam) {
+                                NetworkHandler networkParam, DockerShellFactory shellFactoryParam) {
         
         if(osParam == null) 
             throw new NullPointerException("operating system has to be set.");
@@ -78,10 +74,15 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         deploymentContext = ctx;
         shellFactory = shellFactoryParam;
         myComponent = componentParam;
-        accessor = accessorParam;
         
         networkHandler = networkParam;
     }
+    
+
+	@Override
+	public ComponentInstanceId getComponentId() {
+		return myId;
+	}
         
     @Override
     public synchronized void doCreate() throws ContainerException {
@@ -95,15 +96,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
         try {
-            doStartContainer();
-
+            DockerShell shell = doStartContainer();
+            shellFactory.installDockerShell(shell);
         } catch(ContainerException ce) {
             throw ce;
         }  catch(Exception ex) {
             throw new ContainerException(ex);
-        } finally {
-            shellFactory.closeShell();
-        }
+        } 
     }
 
     @Override
@@ -153,6 +152,11 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         return null;
     }
     
+	@Override
+	public void completeInit() throws ContainerException {
+		shellFactory.closeShell();	
+	}
+    
     /*
     DockerLifecycleInterceptor(GlobalRegistryAccessor  accessorParam, ComponentInstanceId idParam,
             NetworkHandler portHandlerParam, DeployableComponent componentParam, DockerShellFactory shellFactoryParam) {
@@ -181,8 +185,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
             postPreInstall();
         } else if(type == LifecycleHandlerType.POST_INSTALL) {
             // TODO: do we have to make a snapshot after this? //
-        }
-        updateStateInRegistry(type);            
+        }            
     }
     
     private void postPreInstall() {
@@ -190,14 +193,6 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
             imageHandler.runPostInstallAction(myId);
         } catch (DockerException de) {
             LOGGER.warn("could not update finalise image handling.", de);
-        }
-    }
-
-    private void updateStateInRegistry(LifecycleHandlerType type) {
-        try {
-            accessor.updateInstanceState(myId, type);
-        } catch(RegistrationException ex) {
-            LOGGER.warn("could not update status in registry.", ex);
         }
     }
     
