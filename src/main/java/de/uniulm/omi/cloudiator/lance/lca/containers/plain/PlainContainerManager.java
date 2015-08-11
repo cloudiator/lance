@@ -5,8 +5,9 @@ import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.*;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
+import de.uniulm.omi.cloudiator.lance.lca.container.registry.ContainerRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -15,20 +16,21 @@ import java.util.List;
  */
 public class PlainContainerManager implements ContainerManager {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContainerManager.class);
+    private final ContainerRegistry registry = new ContainerRegistry();
+
     public PlainContainerManager(HostContext vmId){
 
     }
 
     @Override
     public ContainerType getContainerType() {
-        //fixme: copy
-        return null;
+        return ContainerType.PLAIN;
     }
 
     @Override
     public ContainerController getContainer(ComponentInstanceId id) {
-        //fixme: copy
-        return null;
+        return this.registry.getContainer(id);
     }
 
     @Override
@@ -45,13 +47,12 @@ public class PlainContainerManager implements ContainerManager {
 
     @Override
     public List<ComponentInstanceId> getAllContainers() {
-        //fixme: copy
-        return null;
+        return registry.listComponentInstances();
     }
 
     @Override
     public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
-        //fixme: copy
-        return null;
+        ContainerController dc = registry.getContainer(cid);
+        return dc.getState();
     }
 }
