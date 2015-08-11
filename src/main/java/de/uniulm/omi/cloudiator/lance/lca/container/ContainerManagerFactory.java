@@ -37,8 +37,7 @@ public final class ContainerManagerFactory {
     
     public static ContainerManager createContainerManager(HostContext myId, ContainerType type) {
         SpecificContainerManagerFactory sf = mapper.get(type);
-        System.out.println(type.toString());
-        if(sf == null) 
+        if(sf == null)
         	throw new IllegalArgumentException("Type: " + type + " not supported");
         return sf.createContainerManager(myId);
     }

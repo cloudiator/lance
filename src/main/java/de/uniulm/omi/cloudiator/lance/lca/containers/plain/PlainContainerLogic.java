@@ -19,12 +19,12 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
-
+        //possibly not needed for plain container
     }
 
     @Override
     public void completeInit() throws ContainerException {
-        
+
     }
 
     @Override

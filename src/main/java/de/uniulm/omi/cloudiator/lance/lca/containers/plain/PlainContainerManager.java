@@ -31,17 +31,6 @@ public class PlainContainerManager implements ContainerManager {
         return null;
     }
 
-    /*
-    @Override
-    public void runApplication(ComponentInstanceId id, LifecycleStore store) {
-
-    }
-
-    @Override
-    public CommandSequence addDeploymentSequence() {
-        return null;
-    }*/
-
     @Override
     public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException {
 
