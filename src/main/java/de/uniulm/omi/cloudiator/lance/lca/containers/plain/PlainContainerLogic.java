@@ -13,7 +13,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
     @Override
     public void doCreate() throws ContainerException {
-
+        //prepare container env, e.g. create folders
     }
 
     @Override

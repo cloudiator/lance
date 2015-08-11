@@ -21,11 +21,13 @@ public class PlainContainerManager implements ContainerManager {
 
     @Override
     public ContainerType getContainerType() {
+        //fixme: copy
         return null;
     }
 
     @Override
     public ContainerController getContainer(ComponentInstanceId id) {
+        //fixme: copy
         return null;
     }
 
@@ -42,21 +44,25 @@ public class PlainContainerManager implements ContainerManager {
 
     @Override
     public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException {
+
+        //fixme: implement this
         return null;
     }
 
     @Override
     public void terminate() {
-
+        //fixme: implement this
     }
 
     @Override
     public List<ComponentInstanceId> getAllContainers() {
+        //fixme: copy
         return null;
     }
 
     @Override
     public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
+        //fixme: copy
         return null;
     }
 }
