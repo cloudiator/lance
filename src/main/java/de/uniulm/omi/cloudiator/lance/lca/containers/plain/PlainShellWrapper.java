@@ -28,7 +28,7 @@ public class PlainShellWrapper implements Shell {
 
     @Override
     public ExecutionResult executeBlockingCommand(String command){
-        ExecutionResult result = this.plainShell.executeCommand(command);
+        ExecutionResult result = this.plainShell.executeBlockingCommand(command);
         checkResult(command, result);
         return result;
     }
