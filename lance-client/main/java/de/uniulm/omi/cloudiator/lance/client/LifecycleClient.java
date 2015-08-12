@@ -46,8 +46,9 @@ public final class LifecycleClient {
 		private static final LifecycleClient client ;
 		static {
 			LifecycleClient _client = null;
-			try { _client = new LifecycleClient(); }
-			catch(Throwable t) {
+			try { 
+				_client = new LifecycleClient(); 
+			} catch(Throwable t) {
 				System.err.println("error while setting up client singleton.");
 				t.printStackTrace();
 				System.exit(-1);
