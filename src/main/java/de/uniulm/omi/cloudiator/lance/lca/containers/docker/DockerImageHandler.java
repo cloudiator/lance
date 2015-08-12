@@ -138,5 +138,7 @@ final class DockerImageHandler {
         OPERATING_SYSTEM,
     }
 
-    OperatingSystem getOperatingSystem() { return os; }
+    OperatingSystem getOperatingSystem() { 
+    	return os; 
+    }
 }

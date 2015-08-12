@@ -67,16 +67,22 @@ public final class OutPort implements Serializable {
         return name;
     }
 
-    public int getLowerBound() { return min; }
+    public int getLowerBound() { 
+    	return min; 
+    }
 
-    public int getUpperBound() { return max; }
+    public int getUpperBound() { 
+    	return max; 
+    }
     
     @Override
     public String toString() {
         return name + ": [" + min + "," + max + "]";
     }
 
-    public PortUpdateHandler getUpdateHandler() { return handler; }
+    public PortUpdateHandler getUpdateHandler() { 
+    	return handler; 
+    }
 
     @Override
     public int hashCode() {

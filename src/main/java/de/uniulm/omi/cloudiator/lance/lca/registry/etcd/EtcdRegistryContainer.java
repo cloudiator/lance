@@ -41,7 +41,10 @@ public final class EtcdRegistryContainer implements RegistryContainer {
         impl = implParam;
     }
     
-    @Override public LcaRegistry getRegistry() { return impl; }
+    @Override 
+    public LcaRegistry getRegistry() { 
+    	return impl; 
+    }
     
     public static EtcdRegistryContainer create() throws RegistrationException {
         LOGGER.info("checking for etcd hosts configuration: " + LCA_REGISTRY_CONFIG_ETCD_HOSTS_KEY);

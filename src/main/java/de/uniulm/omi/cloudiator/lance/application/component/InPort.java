@@ -40,5 +40,7 @@ public final class InPort implements Serializable {
         return type == PortType.PUBLIC_PORT;
     }
 
-    public String getPortName() { return name; }
+    public String getPortName() { 
+    	return name; 
+    }
 }

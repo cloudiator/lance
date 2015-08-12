@@ -61,7 +61,9 @@ public final class DeployableComponent implements Serializable {
         return lifecycle;
     }
 
-    public ComponentId getComponentId() { return myId; }
+    public ComponentId getComponentId() { 
+    	return myId; 
+    }
 
     public List<InPort> getExposedPorts() {
         List<InPort> ports = new ArrayList<>(inPorts.size());

@@ -28,8 +28,13 @@ public class AsyncRunner implements Runnable {
     
     private final Setter setter;
     
-    private AsyncRunner(Setter s) {setter = s;}
-    @Override public void run() { setter.set(); }
+    private AsyncRunner(Setter s) {
+    	setter = s;
+    }
+    
+    @Override public void run() { 
+    	setter.set(); 
+    }
     
     public static<T> Thread createWrappedStateRunner(Setter s, AsyncCallback<T> callback) {
         AsyncRunner r = new AsyncRunner(s);

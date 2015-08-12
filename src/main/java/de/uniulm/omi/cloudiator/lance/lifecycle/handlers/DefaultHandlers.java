@@ -9,7 +9,9 @@ public final class DefaultHandlers {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHandlers.class);
     
-    static Logger getLogger() { return LOGGER; }
+    static Logger getLogger() { 
+    	return LOGGER; 
+    }
 
     public static final InitHandler DEFAULT_INIT_HANDLER = new InitHandler() {
 

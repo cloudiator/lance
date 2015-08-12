@@ -73,10 +73,14 @@ final class EnvContext implements HostContext {
     }
 
     @Override
-    public String getPublicIp() { return hostContext.get(PUBLIC_IP_KEY); }
+    public String getPublicIp() { 
+    	return hostContext.get(PUBLIC_IP_KEY); 
+    }
 
     @Override
-    public String getInternalIp() { return hostContext.get(PRIVATE_IP_KEY); }
+    public String getInternalIp() { 
+    	return hostContext.get(PRIVATE_IP_KEY); 
+    }
 
     @Override
     public String toString() {
@@ -92,6 +96,7 @@ final class EnvContext implements HostContext {
     @Override @Deprecated
     public void run(Runnable runner) {
         executor.execute(runner);
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -36,8 +36,11 @@ public final class PortReference implements Serializable {
        // linkage = _linkage;
     }
 
-    public String getPortName() { return propertyName; }
+    public String getPortName() { 
+    	return propertyName; 
+    }
 
-    public ComponentId getComponentId() { return compId; }
-
+    public ComponentId getComponentId() { 
+    	return compId; 
+    }
 }

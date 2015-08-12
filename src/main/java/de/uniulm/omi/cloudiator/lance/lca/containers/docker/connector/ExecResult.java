@@ -30,7 +30,9 @@ class ExecResult {
         error = errorParam;
     }
 
-    public boolean isSuccess() { return retval == 0; }
+    public boolean isSuccess() { 
+    	return retval == 0; 
+    }
 
     public String getError() {
         return error;

@@ -32,7 +32,9 @@ public final class PortHierarchy {
 
         private final List<PortHierarchyLevel> levels = new LinkedList<>(); 
         
-        public PortHierarchyBuilder() {}
+        public PortHierarchyBuilder() {
+        	// nothing to do; should become a singleton? //
+        }
         
         public PortHierarchyBuilder addLevel(PortHierarchyLevel level) { 
             levels.add(level); 

@@ -48,7 +48,9 @@ public final class StateTransition<T extends Enum<?> & State > {
         intermediate = intermediateParam;
     }
 
-    State getSource() { return from; }
+    State getSource() { 
+    	return from; 
+    }
 
     boolean isIntermediateOrEndState(T status) {
         if(status == null) 

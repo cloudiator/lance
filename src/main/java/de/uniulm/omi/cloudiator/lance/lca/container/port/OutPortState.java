@@ -43,7 +43,9 @@ public final class OutPortState {
         possibleSinks = new HashMap<>(instancesParam);
     }
 
-    public String getPortName() { return thePort.getName(); }
+    public String getPortName() { 
+    	return thePort.getName(); 
+    }
     
     @Override
     public String toString() {
@@ -70,7 +72,9 @@ public final class OutPortState {
         return sinks.size() > thePort.getLowerBound();
     }
     
-    OutPort getPort() { return thePort; }
+    OutPort getPort() { 
+    	return thePort; 
+    }
 
     Map<PortHierarchyLevel, List<DownstreamAddress>> sinksByHierarchyLevel() {
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks = getCurrentSinkSet();
