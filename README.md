@@ -5,10 +5,10 @@ component.
 
 If you are targeting to run your application on a (virtual) machine
 X, an instance of the lifecycle agent has to run there. As prerequistes
-you have to install Java (version 7+) maven and git on that machine. 
+you have to install Java (version 8+) maven and git on that machine. 
 Then, clone the sources from git
 ```
-TODO: add command line here 
+git clone git@github.com:cloudiator/lance.git
 ```
 
 Then, enter the ``LifecycleAgent`` directory and run maven
