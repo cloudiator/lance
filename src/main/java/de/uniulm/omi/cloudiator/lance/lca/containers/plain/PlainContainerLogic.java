@@ -1,15 +1,20 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+
+import java.io.IOException;
 
 /**
  * Created by Daniel Seybold on 10.08.2015.
@@ -17,18 +22,33 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
     private final ComponentInstanceId myId;
-
+    private final DeployableComponent deployableComponent;
     private final DeploymentContext deploymentContext;
+    private final OperatingSystem os;
+    private final NetworkHandler networkHandler;
+    private final PlainShellFactory plainShellFactory;
 
-    PlainContainerLogic(ComponentInstanceId id, DeploymentContext deploymentContext){
+    PlainContainerLogic(ComponentInstanceId id, DeployableComponent deployableComponent, DeploymentContext deploymentContext,
+                        OperatingSystem os, NetworkHandler networkHandler, PlainShellFactory plainShellFactory){
 
         this.myId = id;
+        this.deployableComponent = deployableComponent;
         this.deploymentContext = deploymentContext;
+        this.os = os;
+        this.networkHandler = networkHandler;
+        this.plainShellFactory = plainShellFactory;
     }
 
     @Override
     public void doCreate() throws ContainerException {
-        //prepare container env, e.g. create folders
+        //prepare the component folder
+        ProcessBuilder builder = new ProcessBuilder( "mkdir", this.myId.toString());
+
+        try {
+            builder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

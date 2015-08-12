@@ -3,9 +3,15 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.standard.StandardContainer;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.*;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.registry.ContainerRegistry;
+import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +24,14 @@ public class PlainContainerManager implements ContainerManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerManager.class);
     private final ContainerRegistry registry = new ContainerRegistry();
+    private final HostContext hostContext;
 
     public PlainContainerManager(HostContext vmId){
 
+        this.hostContext = vmId;
     }
+
+
 
     @Override
     public ContainerType getContainerType() {
@@ -36,13 +46,40 @@ public class PlainContainerManager implements ContainerManager {
     @Override
     public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException {
 
-        //fixme: implement this
-        return null;
+        ComponentInstanceId componentInstanceId = new ComponentInstanceId();
+
+        PlainShellFactory plainShellFactory = new PlainShellFactory();
+
+        GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, component, componentInstanceId);
+
+        NetworkHandler networkHandler = new NetworkHandler(accessor, component, this.hostContext);
+        PlainContainerLogic plainContainerLogic = new PlainContainerLogic(componentInstanceId, component, ctx, os, networkHandler, plainShellFactory);
+
+        ExecutionContext executionContext = new ExecutionContext(os, plainShellFactory);
+        LifecycleController lifecycleController = new LifecycleController(component.getLifecycleStore(), plainContainerLogic, accessor, executionContext);
+
+        try {
+            accessor.init(componentInstanceId);
+        } catch (RegistrationException re) {
+            throw new ContainerException("cannot start container, because registry not available", re);
+        }
+
+        ContainerController containerController = new StandardContainer<>(componentInstanceId, plainContainerLogic, networkHandler, lifecycleController, accessor);
+
+        this.registry.addContainer(containerController);
+        containerController.create();
+        return containerController;
     }
 
     @Override
     public void terminate() {
-        //fixme: implement this
+        try {
+            this.hostContext.close();
+        } catch(InterruptedException ie) {
+            LOGGER.warn("shutting down interrupted");
+        }
+        LOGGER.error("terminate has not been fully implemented, closing further parts need to be implemented!");
+        // FIXME: add other parts to shut down //
     }
 
     @Override
