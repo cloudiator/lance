@@ -18,30 +18,27 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.rmi.NoSuchObjectException; 
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
-import java.rmi.server.RemoteRef;
-import java.rmi.server.UnicastRemoteObject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
+import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
+import de.uniulm.omi.cloudiator.lance.util.Registrator;
 
 public final class LifecycleAgentBooter {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentBooter.class);
+    private final static Registrator<LifecycleAgent> reg = Registrator.create(LifecycleAgent.class);
     
     public static void main(String[] args) {
         LOGGER.info("LifecycleAgentBooter: starting.");
         LifecycleAgentImpl lca = createAgentImplementation();
-        LifecycleAgent stub = exportAgent(lca);
+        
+        LifecycleAgent stub = reg.export(lca, LcaConstants.AGENT_RMI_PORT);
         // TODO: it might be worth exploiting ways to get rid of this
         // dependency to a registry. note that there does not seem to
         // be an easy way to do it (i.e. relaying on standard interfaces)
-        if(stub != null && addToRegistry(stub)) {
+        if(stub != null && reg.addToRegistry(stub, LcaConstants.AGENT_REGISTRY_KEY)) {
             // from here on RMI takes over //
             LOGGER.info("LifecycleAgentBooter: agent exported. waiting for requests.");
         } else {
@@ -57,68 +54,11 @@ public final class LifecycleAgentBooter {
         impl.init();
         return impl;
     }
-    
-    private static LifecycleAgent exportAgent(LifecycleAgentImpl agent) {
-        try {
-            return (LifecycleAgent) UnicastRemoteObject.exportObject(agent, LcaConstants.AGENT_RMI_PORT);
-        } catch(RemoteException re) {
-            LOGGER.error("got exception at export; quitting the platform", re);
-        }
-        return null;
-    }
-    RemoteRef ref;
-    private static boolean addToRegistry(LifecycleAgent lca) {
-        try {
-            Registry reg = getAndCreateRegistry();
-            removeExisting(reg);
-            reg.rebind(LcaConstants.AGENT_REGISTRY_KEY, lca);
-            return true;
-        } catch(RemoteException e) { // includes AccessException //
-            LOGGER.error("got exception at startup: could not add lca to registry. aborting.", e);
-        } 
-        return false;
-    }
-    
-    private static Registry getAndCreateRegistry() throws RemoteException {
-        try { 
-            return java.rmi.registry.LocateRegistry.createRegistry(Registry.REGISTRY_PORT); 
-        } catch(RemoteException re) {
-            LOGGER.info("could not create registry. assuming, it already exists.", re);
-            return java.rmi.registry.LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
-        }
-    }
-    
-    private static void removeExisting(Registry reg) throws RemoteException {
-        LifecycleAgent agent = null;
-        Object o = null;
-        
-        try { 
-            o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
-        } catch(NotBoundException nbe){
-            LOGGER.debug("could not remove element as it was not registered.", nbe);
-            return; 
-        }
-            
-        if(o instanceof LifecycleAgent) {
-            agent = (LifecycleAgent) o;
-            agent.stop();
-        }
-            
-        try { 
-            reg.unbind(LcaConstants.AGENT_REGISTRY_KEY); 
-        } catch(NotBoundException nbe){
-            LOGGER.info("could not remove element as it was not registered.", nbe);
-            return; 
-        }
-    }
 
-    public static void unregister(LifecycleAgentImpl lifecycleAgentImpl) {
-        try { 
-            UnicastRemoteObject.unexportObject(lifecycleAgentImpl, true);
-            // TODO: shutdown registry if possible //
-        } catch(NoSuchObjectException ex) {
-            LOGGER.info("LCA has not been registered at this registry.", ex);
-        }
-    }
+	public static void unregister(LifecycleAgentImpl lifecycleAgentImpl) {
+		reg.unregister(lifecycleAgentImpl);
+	}
+    
+    
 
 }
