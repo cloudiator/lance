@@ -1,5 +1,5 @@
 .idea/
-lance.iml
+*.iml
 target/
 .classpath
 .project
