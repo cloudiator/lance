@@ -1,6 +1,7 @@
 .idea/
-lance.iml
+*.iml
 target/
 .classpath
 .project
 .settings
+/bin/

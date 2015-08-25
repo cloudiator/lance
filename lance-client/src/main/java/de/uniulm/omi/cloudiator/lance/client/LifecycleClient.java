@@ -69,19 +69,23 @@ public final class LifecycleClient {
 			LifecycleAgent agent = findLifecycleAgent(serverIp);
 			deploy(agent, ctx, comp, os);
 		} catch(RemoteException re) {
-			Throwable t = re.getCause();
-			if(t == null) 
-				throw new LcaException("network exception occurred");
-			if(t instanceof LcaException)
-				throw (LcaException) t;
-			if(t instanceof RegistrationException)
-				throw (RegistrationException) t;
-			throw new LcaException("downstream exception occurred.", t);
+			handleRemoteException(re);
 		} catch (NotBoundException e) {
 			throw new RegistrationException("bad registry handling.", e);
 		}
 	}
 	
+	private static void handleRemoteException(RemoteException re) throws LcaException, RegistrationException {
+		Throwable t = re.getCause();
+		if(t == null) 
+			throw new LcaException("network exception occurred");
+		if(t instanceof LcaException)
+			throw (LcaException) t;
+		if(t instanceof RegistrationException)
+			throw (RegistrationException) t;
+		throw new LcaException("downstream exception occurred.", t);
+	
+	}
 	
 	private static LifecycleAgent findLifecycleAgent(String serverIp) throws RemoteException, NotBoundException {
 		
