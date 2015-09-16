@@ -24,23 +24,23 @@ public final class Registrator<T extends Remote> {
 		myClass = classParam;
 	}
 	
-	public <S extends T> T export(S agent, int port) {
+	public <S extends T> T export(S object, int port) {
         try {
-            return (T) UnicastRemoteObject.exportObject(agent, port);
+            return (T) UnicastRemoteObject.exportObject(object, port);
         } catch(RemoteException re) {
-            LOGGER.error("got exception at export; quitting the platform", re);
+            LOGGER.error("got exception at object export; quitting the platform", re);
         }
         return null;
     }
     
-    public boolean addToRegistry(T lca, String key) {
+    public boolean addToRegistry(T object, String key) {
         try {
             Registry reg = getAndCreateRegistry();
             removeExisting(reg, key);
-            reg.rebind(key, lca);
+            reg.rebind(key, object);
             return true;
         } catch(RemoteException e) { // includes AccessException //
-            LOGGER.error("got exception at startup: could not add lca to registry. aborting.", e);
+            LOGGER.error("got exception at startup: could not add object to registry. aborting.", e);
         } 
         return false;
     }
@@ -55,7 +55,6 @@ public final class Registrator<T extends Remote> {
     }
     
     private void removeExisting(Registry reg, String key) throws RemoteException {
-        T object = null;
         Object o = null;
         
         try { 

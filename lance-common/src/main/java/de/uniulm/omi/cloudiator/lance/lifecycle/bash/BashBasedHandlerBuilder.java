@@ -45,20 +45,25 @@ public final class BashBasedHandlerBuilder {
     }
     
     public LifecycleHandler build(LifecycleHandlerType type) {
+    	LifecycleHandler retVal = null;
          switch(type) {
          case PRE_INSTALL:
-             return new BashPreInstallHandler(os, commands);
+             retVal = new BashPreInstallHandler(os, commands);
+             break;
          case INSTALL:
-             return new BashInstallHandler(os, commands);
+        	 retVal = new BashInstallHandler(os, commands);
+        	 break;
          case POST_INSTALL:
-             return new BashPostInstallHandler(os, commands);
+        	 retVal = new BashPostInstallHandler(os, commands);
+        	 break;
          case START:
-             return new BashStartHandler(os, commands);
+        	 retVal = new BashStartHandler(os, commands);
+        	 break;
          case INIT:
-             throw new UnsupportedOperationException();
          default:
              throw new UnsupportedOperationException();
          }
+         return retVal;
     }
 
     public BashBasedHandlerBuilder setOperatingSystem(OperatingSystem osParam) {

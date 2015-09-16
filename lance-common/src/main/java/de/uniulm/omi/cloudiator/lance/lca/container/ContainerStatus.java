@@ -57,5 +57,6 @@ public enum ContainerStatus implements State {
     READY,
     SHUTTING_DOWN,
     DESTROYED,
+    ERROR,
     ;
 }
