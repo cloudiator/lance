@@ -15,4 +15,8 @@ public interface PlainShell extends ShellLikeInterface {
     public ExecutionResult executeBlockingCommand(String command);
 
     public void close();
+
+    public void setDirectory(String directory);
+
+    public void setEnvVar(String key, String value);
 }

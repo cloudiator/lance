@@ -1,12 +1,14 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell;
 
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Daniel Seybold on 11.08.2015.
@@ -15,22 +17,88 @@ public class PlainShellImpl implements PlainShell {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PlainShell.class);
 
+    private  ProcessBuilder processBuilder = new ProcessBuilder();
+    //private ProcessBuilder processBuilder = new ProcessBuilder().inheritIO();
+
+    private final List<String> osShell = new ArrayList<String>();
+
+    public PlainShellImpl(OperatingSystem operatingSystem){
+
+        //fixme: do this in a more generic way
+        //add the os respective shells for execution
+        if(operatingSystem.equals(OperatingSystem.WINDOWS_7)){
+
+            this.osShell.add("powershell.exe");
+            this.osShell.add("-command");
+
+        }else if(operatingSystem.equals(OperatingSystem.UBUNTU_14_04)){
+
+            this.osShell.add("/bin/bash");
+            this.osShell.add("-c");
+
+        }else{
+            throw new IllegalStateException("Unkown OS: " + operatingSystem.toString());
+        }
+    }
+
 
     @Override
     public ExecutionResult executeCommand(String command) {
         ExecutionResult executionResult = null;
         Process shellProcess;
+
+        List<String>commands = this.buildCommand(command);
+
         try {
-            shellProcess = new ProcessBuilder(command).inheritIO().start();
-        } catch (IOException e) {
+
+            shellProcess = this.processBuilder.command(commands).start();
+
+            //just for debugging
+            List<String> debuglist = this.processBuilder.command();
+            debuglist.stream().forEach((string) -> {
+                System.out.println("Content: " + string);
+            });
+
+            String commandOut = this.extractCommandOutput(shellProcess);
+            System.out.println(commandOut); //debugging
+
+            String errorOut = this.extractErrorOutput(shellProcess);
+            System.out.println(errorOut); //debugging
+
+
+            //important, wait for or it will run in an deadlock!!, adapt execution result maybe
+            int exitValue =shellProcess.waitFor();
+
+            executionResult = this.createExecutionResult(exitValue, commandOut, errorOut);
+
+        } catch (IOException | InterruptedException e) {
             LOGGER.error("Error while executing command: " + command,e);
             executionResult = ExecutionResult.systemFailure(e.getLocalizedMessage());
             return executionResult;
         }
 
-        executionResult = this.createExecutionResult(shellProcess);
 
         return executionResult;
+    }
+
+    private List<String> buildCommand(String commandLine){
+
+        String[] splittedCommands = this.splitCommandLines(commandLine);
+
+        //create list with os specific commands
+        List<String> result = new ArrayList<String>(this.osShell);
+
+        //add app commands
+        result.addAll(Arrays.asList(splittedCommands));
+
+        return result;
+
+    }
+
+    private String[] splitCommandLines(String commandLine){
+        String[] commands = commandLine.split(" ");
+
+        return commands;
     }
 
     @Override
@@ -45,17 +113,29 @@ public class PlainShellImpl implements PlainShell {
         //fixme: implement this, check what needs to be closed or process killed?
     }
 
-    private ExecutionResult createExecutionResult(Process process){
+    @Override
+    public void setDirectory(String directory) {
+        this.processBuilder.directory(new File(directory));
+
+        LOGGER.info(this.processBuilder.directory().getAbsoluteFile().toString());
+    }
+
+    @Override
+    public void setEnvVar(String key, String value) {
+
+    }
+
+
+    private ExecutionResult createExecutionResult(int exitValue, String commandOut, String errorOut){
 
         ExecutionResult executionResult;
 
-        int exitValue = process.exitValue();
 
         switch (exitValue){
             case 0:
-                executionResult = ExecutionResult.success(extractCommandOutput(process),extractErrorOutput(process));
+                executionResult = ExecutionResult.success(commandOut,errorOut);
             default:
-                executionResult = ExecutionResult.commandFailure(exitValue, extractCommandOutput(process),extractErrorOutput(process));
+                executionResult = ExecutionResult.commandFailure(exitValue, commandOut,errorOut);
 
         }
 
@@ -74,12 +154,17 @@ public class PlainShellImpl implements PlainShell {
                 builder.append(line);
                 builder.append(System.getProperty("line.separator"));
             }
+            //closing
+            reader.close();
         } catch (IOException e) {
             LOGGER.error("Error while reading process outputstream", e);
             e.printStackTrace();
         }
 
         output = builder.toString();
+
+
+
 
         return output;
     }
@@ -95,6 +180,8 @@ public class PlainShellImpl implements PlainShell {
                 builder.append(line);
                 builder.append(System.getProperty("line.separator"));
             }
+            //closing
+            reader.close();
         } catch (IOException e) {
             LOGGER.error("Error while reading process errorstream", e);
             e.printStackTrace();

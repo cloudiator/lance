@@ -18,13 +18,13 @@ public class PlainShellFactory implements ShellFactory {
 
     @Override
     public PlainShellWrapper createShell() {
-        PlainShellWrapper wrapper = this.reference.get();
+        PlainShellWrapper wrapper = reference.get();
         if(wrapper == null)
-            throw new IllegalStateException("shell not set");
+            throw new IllegalStateException("plain shell not set");
         return wrapper;
     }
 
-    void installDockerShell(PlainShell plainShell) {
+    void installPlainShell(PlainShell plainShell) {
         final PlainShellWrapper wrapper = new PlainShellWrapper(plainShell);
         PlainShellWrapper old = reference.getAndSet(wrapper);
         if(old != null) {

@@ -8,16 +8,18 @@ import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
+import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
+import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -42,27 +44,32 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         this.deployableComponent = deployableComponent;
         this.deploymentContext = deploymentContext;
         this.os = os;
-        this.networkHandler = networkHandler; //FIXME: obsolet for plain container?
+        this.networkHandler = networkHandler;
         this.plainShellFactory = plainShellFactory;
     }
 
     @Override
     public void doCreate() throws ContainerException {
-        LOGGER.debug("creating new plain container with foldername " + this.myId.toString());
-        //prepare the component folder
-        ProcessBuilder builder = new ProcessBuilder( "mkdir", this.myId.toString());
+        LOGGER.info("Creating shell for operating system: " + this.os.toString());
+        PlainShell plainShell = new PlainShellImpl(this.os);
 
-        try {
-            builder.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        LOGGER.info("creating new plain container with foldername " + this.myId.toString());
+        plainShell.executeCommand("mkdir " + this.myId.toString());
+
+        LOGGER.info("Switching to plain container: " + System.getProperty("user.dir") + "\\" + this.myId.toString());
+        plainShell.setDirectory(System.getProperty("user.dir") + "\\" + this.myId.toString());
+
+        //installing shell
+        this.plainShellFactory.installPlainShell(plainShell);
+
     }
 
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
-        //possibly not needed for plain container
+        //probably not needed for plain container
+
     }
+
 
     @Override
     public void completeInit() throws ContainerException {
@@ -114,11 +121,24 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     private void preInstallAction() {
         PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
-        BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
-        visitor.addEnvironmentVariable("TERM", "dumb");
-        networkHandler.accept(visitor);
-        this.deployableComponent.accept(this.deploymentContext, visitor);
+        //todo: move os switch to a central point (currently here and in PlainShellImpl)
+        if(this.os.equals(OperatingSystem.WINDOWS_7)){
+
+            PowershellExportBasedVisitor visitor = new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
+            networkHandler.accept(visitor);
+            this.deployableComponent.accept(this.deploymentContext, visitor);
+
+        }else if(this.os.equals(OperatingSystem.UBUNTU_14_04)){
+            BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShellWrapper.plainShell);
+
+            networkHandler.accept(visitor);
+            this.deployableComponent.accept(this.deploymentContext, visitor);
+
+        }else{
+            throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
+        }
+
     }
 
     @Override
