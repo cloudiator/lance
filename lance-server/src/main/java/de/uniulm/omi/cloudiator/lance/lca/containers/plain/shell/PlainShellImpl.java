@@ -114,13 +114,15 @@ public class PlainShellImpl implements PlainShell {
     @Override
     public ExecutionResult executeBlockingCommand(String command) {
         //fixme: implement this in a blocking way, check if blocking command are necessary
-        return null;
+        LOGGER.warn("Using currently same impl for blocking/nonblocking execution of commands!");
+        return this.executeCommand(command);
     }
 
 
     @Override
     public void close() {
         //fixme: implement this, check what needs to be closed or process killed?
+        LOGGER.warn("Closing PlainShellImpl needs to be implemented!");
     }
 
     @Override
