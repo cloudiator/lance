@@ -5,6 +5,8 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchyLevel;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -12,6 +14,8 @@ import java.util.List;
  * Created by Daniel Seybold on 10.09.2015.
  */
 public class PowershellExportBasedVisitor implements NetworkVisitor, PropertyVisitor{
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PowershellExportBasedVisitor.class);
 
     private final ShellLikeInterface shellLikeInterface;
 
@@ -21,13 +25,17 @@ public class PowershellExportBasedVisitor implements NetworkVisitor, PropertyVis
     }
 
     public void addEnvironmentVariable(String name, String value) {
-        //fixme: change this to powershell commands, check splitting of commands for blanks inside '' ";
-        ExecutionResult result = shellLikeInterface.executeCommand("SETX " + name + " " + value + " ");
-        if(result.isSuccess()) {
-            shellLikeInterface.executeCommand("SETX " + name + " " + value + " /m");
-            return;
+        //fixme: replace all doubles quotes to single quotes to be able to execute the powershell command;
+        //do not use double quotes for powershell
+        //ExecutionResult result = shellLikeInterface.executeCommand("[Environment]::SetEnvironmentVariable(\"" + name + "\", \"" + value + " \", \"User\")");
+        ExecutionResult result = shellLikeInterface.executeCommand("[Environment]::SetEnvironmentVariable('" + name + "', '" + value + " ', 'User')");
+        if(!result.isSuccess()) {
+            //shellLikeInterface.executeCommand("[Environment]::SetEnvironmentVariable(\"" + name + "\", \"" + value + " \", \"User\")");
+            throw new IllegalStateException("could not set environment variables: " + name + "=" + value + "\n output: " + result.getOutput() );
+
         }
-        throw new IllegalStateException("could not set environment variables: " + name + "=" + value);
+        LOGGER.debug("Successfull set env var: " + name + " = " + value);
+
     }
 
 

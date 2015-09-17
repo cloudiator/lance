@@ -9,6 +9,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Daniel Seybold on 11.08.2015.
@@ -68,10 +70,12 @@ public class PlainShellImpl implements PlainShell {
 
             //important, wait for or it will run in an deadlock!!, adapt execution result maybe
             int exitValue =shellProcess.waitFor();
+            System.out.println("ExitCode: " + exitValue);
 
             executionResult = this.createExecutionResult(exitValue, commandOut, errorOut);
 
         } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
             LOGGER.error("Error while executing command: " + command,e);
             executionResult = ExecutionResult.systemFailure(e.getLocalizedMessage());
             return executionResult;
@@ -85,11 +89,17 @@ public class PlainShellImpl implements PlainShell {
 
         String[] splittedCommands = this.splitCommandLines(commandLine);
 
+        List<String> commandList = new ArrayList<String>();
+        Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(commandLine);
+        while (m.find())
+            commandList.add(m.group(1)); // Add .replace("\"", "") to remove surrounding quotes.
+
+
         //create list with os specific commands
         List<String> result = new ArrayList<String>(this.osShell);
 
         //add app commands
-        result.addAll(Arrays.asList(splittedCommands));
+        result.addAll(commandList);
 
         return result;
 
@@ -130,13 +140,10 @@ public class PlainShellImpl implements PlainShell {
 
         ExecutionResult executionResult;
 
-
-        switch (exitValue){
-            case 0:
-                executionResult = ExecutionResult.success(commandOut,errorOut);
-            default:
-                executionResult = ExecutionResult.commandFailure(exitValue, commandOut,errorOut);
-
+        if(exitValue == 0){
+            executionResult = ExecutionResult.success(commandOut,errorOut);
+        }else{
+            executionResult = ExecutionResult.commandFailure(exitValue, commandOut,errorOut);
         }
 
         return executionResult;
