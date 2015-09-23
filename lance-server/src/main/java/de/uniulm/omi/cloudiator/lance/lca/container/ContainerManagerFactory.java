@@ -41,6 +41,7 @@ public final class ContainerManagerFactory {
         	throw new IllegalArgumentException("Type: " + type + " not supported");
         return sf.createContainerManager(myId);
     }
+
     
     private ContainerManagerFactory() {
         // empty constructor //
