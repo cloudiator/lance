@@ -22,6 +22,10 @@ import java.util.EnumMap;
 import java.util.logging.Logger;
 
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
+import de.uniulm.omi.cloudiator.lance.lca.containers.plain.PlainContainerManagerFactory;
+
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerType.*;
 
 public final class ContainerManagerFactory {
 
@@ -30,8 +34,8 @@ public final class ContainerManagerFactory {
     static {
         // FIXME: add initialisation code
         mapper = new EnumMap<>(ContainerType.class);
-        for(ContainerType t : ContainerType.values()) {
-            mapper.put(t, t.getContainerFactory());    
+        for(ContainerType t : values()) {
+            mapper.put(t,getContainerFactoryFromContainerType(t));
         }
     }
     
@@ -42,7 +46,22 @@ public final class ContainerManagerFactory {
         return sf.createContainerManager(myId);
     }
 
-    
+    private static SpecificContainerManagerFactory getContainerFactoryFromContainerType(ContainerType containerType){
+
+        switch (containerType){
+            case PLAIN: return PlainContainerManagerFactory.INSTANCE;
+
+            case DOCKER: return DockerContainerManagerFactory.INSTANCE;
+
+            case DOCKER_REMOTE: return DockerContainerManagerFactory.REMOTE;
+
+            default: throw new IllegalStateException("Unsupported Container type: " + containerType.toString());
+
+        }
+
+    }
+
+
     private ContainerManagerFactory() {
         // empty constructor //
     }

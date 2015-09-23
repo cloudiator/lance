@@ -33,6 +33,7 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
 
@@ -64,10 +65,10 @@ public final class LifecycleClient {
 	}
 	
 	
-	public final void deploy(String serverIp, final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os) throws LcaException, RegistrationException, ContainerException {
+	public final void deploy(String serverIp, final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType) throws LcaException, RegistrationException, ContainerException {
 		try {
 			LifecycleAgent agent = findLifecycleAgent(serverIp);
-			deploy(agent, ctx, comp, os);
+			deploy(agent, ctx, comp, os, containerType);
 		} catch(RemoteException re) {
 			handleRemoteException(re);
 		} catch (NotBoundException e) {
@@ -95,7 +96,7 @@ public final class LifecycleClient {
 		return agent;
 	}
 	
-	private static void deploy(final LifecycleAgent agent, final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os) throws RemoteException, LcaException, RegistrationException, ContainerException {
+	private static void deploy(final LifecycleAgent agent, final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException {
 		/*executor.submit(new Callable<ComponentInstanceId>() {
 
 			@Override
@@ -103,7 +104,7 @@ public final class LifecycleClient {
 				return agent.deployComponent(ctx, comp, os);		
 			}
 		});*/
-		agent.deployComponent(ctx, comp, os);
+		agent.deployComponent(ctx, comp, os, containerType);
 		// catch(Throwable t) {t.printStackTrace();}
 	}
 

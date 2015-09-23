@@ -18,24 +18,25 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
-import de.uniulm.omi.cloudiator.lance.lca.containers.plain.PlainContainerManagerFactory;
-
 
 public enum ContainerType {
     
     DOCKER("dockering") {
+        /*
         @Override
         public SpecificContainerManagerFactory getContainerFactory() {
             return DockerContainerManagerFactory.INSTANCE;
         }
+        */
     },
     
     DOCKER_REMOTE("docker-remote") {
+        /*
         @Override
         public SpecificContainerManagerFactory getContainerFactory() {
             return DockerContainerManagerFactory.REMOTE;
         }
+        */
     },
 
     /*DUMMY("dummy") {
@@ -50,10 +51,11 @@ public enum ContainerType {
      * components.
      */
     PLAIN("plain"){
+        /*
         @Override
         public SpecificContainerManagerFactory getContainerFactory() {
             return PlainContainerManagerFactory.INSTANCE;
-        }
+        }*/
     }
     ;
     
@@ -63,7 +65,7 @@ public enum ContainerType {
         myName = myNameParam;
     }
     
-    public abstract SpecificContainerManagerFactory getContainerFactory();
+    //public abstract SpecificContainerManagerFactory getContainerFactory();
 
     /**
      * @param containername

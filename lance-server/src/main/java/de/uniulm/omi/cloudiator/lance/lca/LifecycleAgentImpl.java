@@ -69,12 +69,12 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
 
     @Override
-    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws LcaException, RegistrationException, ContainerException {
+    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException {
         applicationRegistered(ctx);
         componentPartOfApplication(ctx, component);
 
         //fixme: add containertype parameter!!!! just for testing plain
-        manager = MultiContainerManagerFactory.createContainerManager(this.hostContext, os, ContainerType.PLAIN);
+        manager = MultiContainerManagerFactory.createContainerManager(this.hostContext, os, containerType);
 
         ContainerController cc = manager.createNewContainer(ctx, component, os);
         cc.awaitCreation();
