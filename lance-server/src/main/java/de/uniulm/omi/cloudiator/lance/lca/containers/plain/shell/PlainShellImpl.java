@@ -4,6 +4,7 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.rmi.runtime.Log;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -58,19 +59,22 @@ public class PlainShellImpl implements PlainShell {
             //just for debugging
             List<String> debuglist = this.processBuilder.command();
             debuglist.stream().forEach((string) -> {
-                System.out.println("Content: " + string);
+                LOGGER.debug("Content: " + string);
+                //System.out.println("Content: " + string);
             });
 
             String commandOut = this.extractCommandOutput(shellProcess);
-            System.out.println(commandOut); //debugging
+            //System.out.println(commandOut); //debugging
+            LOGGER.debug(commandOut);
 
             String errorOut = this.extractErrorOutput(shellProcess);
-            System.out.println(errorOut); //debugging
+            //System.out.println(errorOut); //debugging
+            LOGGER.debug(errorOut);
 
 
             //important, wait for or it will run in an deadlock!!, adapt execution result maybe
             int exitValue =shellProcess.waitFor();
-            System.out.println("ExitCode: " + exitValue);
+            LOGGER.debug("ExitCode: " + exitValue);
 
             executionResult = this.createExecutionResult(exitValue, commandOut, errorOut);
 
