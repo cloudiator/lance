@@ -25,24 +25,24 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManagerFactory;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
+import de.uniulm.omi.cloudiator.lance.lca.container.*;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
     private volatile AgentStatus status = AgentStatus.NEW;
-    private final ContainerManager manager;
+    //private final ContainerManager manager;
+    private  ContainerManager manager;
+
+    private final HostContext hostContext;
     
     LifecycleAgentImpl(HostContext contex) {
+        //FIXME: where to put this code?
         DockerContainerManagerFactory.enableRemoteAccess();
-        manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.DOCKER);
+
+        //manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.fromString(contex.getContainerType()));
+        this.hostContext = contex;
         status = AgentStatus.CREATED;
     }
     
@@ -69,10 +69,13 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
 
     @Override
-    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws LcaException, RegistrationException, ContainerException {
+    public ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException {
         applicationRegistered(ctx);
         componentPartOfApplication(ctx, component);
-        
+
+        //fixme: add containertype parameter!!!! just for testing plain
+        manager = MultiContainerManagerFactory.createContainerManager(this.hostContext, os, containerType);
+
         ContainerController cc = manager.createNewContainer(ctx, component, os);
         cc.awaitCreation();
         cc.bootstrap();

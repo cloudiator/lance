@@ -77,17 +77,6 @@ public class DockerContainerManager implements ContainerManager {
     public ContainerController getContainer(ComponentInstanceId idParam) {
         return registry.getContainer(idParam);
     }
-    
-    @Override
-    public void runApplication(ComponentInstanceId idParam, LifecycleStore store) {
-        ContainerController c = getContainer(idParam);
-        c.init(store);
-    }
-
-    @Override
-    public CommandSequence addDeploymentSequence() {
-        return DockerDeployment.create();
-    }
 
     @Override
     public ContainerType getContainerType() {

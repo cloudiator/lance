@@ -28,6 +28,7 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public interface LifecycleAgent extends Remote {
@@ -43,6 +44,6 @@ public interface LifecycleAgent extends Remote {
     List<ComponentInstanceId> listContainers() throws RemoteException;
 
     ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, 
-                OperatingSystem os) throws RemoteException, LcaException, RegistrationException, ContainerException;
+                OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
     
 }
