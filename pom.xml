@@ -39,6 +39,18 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>lance</name>
+    <description>A Java component for deploying and controlling applications in a distributed
+        environment.
+    </description>
+    <url>https://github.com/cloudiator</url>
+
+    <scm>
+        <connection>scm:git@github.com:cloudiator/lance.git</connection>
+        <developerConnection>scm:git@github.com:cloudiator/lance.git</developerConnection>
+        <url>git@github.com:cloudiator/lance.git</url>
+    </scm>
+
     <modules>
         <module>common</module>
         <module>server</module>
