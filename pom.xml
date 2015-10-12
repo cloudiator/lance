@@ -24,7 +24,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <my.version>1.0.0-SNAPSHOT</my.version>
+        <my.version>0.1.0-SNAPSHOT</my.version>
         <slf.version>1.7.12</slf.version>
         <mousio.version>2.7.0</mousio.version>
     </properties>
@@ -32,11 +32,11 @@
     <parent>
         <groupId>io.github.cloudiator</groupId>
         <artifactId>project</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
     <groupId>io.github.cloudiator.lance</groupId>
     <artifactId>project</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>lance</name>
