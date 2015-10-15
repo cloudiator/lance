@@ -49,6 +49,7 @@
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.5.2</version>
                     <configuration>
+                        <finalName>lance-server</finalName>
                         <archive>
                             <manifest>
                                 <mainClass>de.uniulm.omi.cloudiator.lance.lca.LifecycleAgentBooter
