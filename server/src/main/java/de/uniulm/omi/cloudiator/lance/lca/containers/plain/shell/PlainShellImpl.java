@@ -107,7 +107,7 @@ public class PlainShellImpl implements PlainShell {
 
     private List<String> buildCommand(String commandLine) {
 
-        List<String> commandList = new ArrayList<String>();
+        List<String> commandList = new ArrayList<>();
         //Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(commandLine);
         //while (m.find())
         //    commandList.add(m.group(1)); // Add .replace("\"", "") to remove surrounding quotes.
@@ -118,7 +118,7 @@ public class PlainShellImpl implements PlainShell {
         commandList.addAll(this.osShell);
 
         //todo check if already wrapped
-        commandList.add("\"" + commandLine + "\"");
+        commandList.add(commandLine);
 
         //add app commands and wrap them in double quotes, single quotes won't work on Windows
         //result.add("\"");
