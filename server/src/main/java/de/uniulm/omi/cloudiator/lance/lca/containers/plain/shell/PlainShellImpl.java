@@ -120,8 +120,10 @@ public class PlainShellImpl implements PlainShell {
         //create list with os specific commands
         List<String> result = new ArrayList<String>(this.osShell);
 
-        //add app commands
+        //add app commands and wrap them in double quotes, single quotes won't work on Windows
+        result.add("\"");
         result.addAll(commandList);
+        result.add("\"");
 
         return result;
 
