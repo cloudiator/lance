@@ -108,9 +108,7 @@ public class PlainShellImpl implements PlainShell {
     }
 
     private List<String> buildCommand(String commandLine){
-
-        String[] splittedCommands = this.splitCommandLines(commandLine);
-
+        
         List<String> commandList = new ArrayList<String>();
         Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(commandLine);
         while (m.find())
@@ -127,12 +125,6 @@ public class PlainShellImpl implements PlainShell {
 
         return result;
 
-    }
-
-    private String[] splitCommandLines(String commandLine){
-        String[] commands = commandLine.split(" ");
-
-        return commands;
     }
 
     @Override
