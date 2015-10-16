@@ -103,13 +103,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     @Override
     public String getLocalAddress() throws ContainerException {
+
+        //not used in Plain Container
         String result = null;
-        try {
-            result = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            LOGGER.error("Error while getting local address" , e);
-            e.printStackTrace();
-        }
 
         return result;
     }
