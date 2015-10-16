@@ -74,8 +74,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         LOGGER.info("creating new plain container with foldername " + this.myId.toString());
         plainShell.executeCommand("mkdir " + this.myId.toString());
 
-        LOGGER.info("Switching to plain container: " + System.getProperty("user.dir") + "\\" + this.myId.toString());
-        plainShell.setDirectory(System.getProperty("user.dir") + "\\" + this.myId.toString());
+        String createFolderCommand = System.getProperty("user.dir") + System.getProperty("file.separator") + this.myId.toString();
+        LOGGER.info("Switching to plain container: " + createFolderCommand);
+        plainShell.setDirectory(createFolderCommand);
 
         //installing shell
         this.plainShellFactory.installPlainShell(plainShell);
