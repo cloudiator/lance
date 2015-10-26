@@ -44,69 +44,73 @@ public class PlainContainerManager implements ContainerManager {
     private final ContainerRegistry registry = new ContainerRegistry();
     private final HostContext hostContext;
 
-    public PlainContainerManager(HostContext vmId){
+    public PlainContainerManager(HostContext vmId) {
 
         this.hostContext = vmId;
     }
 
 
 
-    @Override
-    public ContainerType getContainerType() {
+    @Override public ContainerType getContainerType() {
         return ContainerType.PLAIN;
     }
 
-    @Override
-    public ContainerController getContainer(ComponentInstanceId id) {
+    @Override public ContainerController getContainer(ComponentInstanceId id) {
         return this.registry.getContainer(id);
     }
 
-    @Override
-    public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException {
+    @Override public ContainerController createNewContainer(DeploymentContext ctx,
+        DeployableComponent component, OperatingSystem os) throws ContainerException {
 
         ComponentInstanceId componentInstanceId = new ComponentInstanceId();
 
         PlainShellFactory plainShellFactory = new PlainShellFactory();
 
-        GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, component, componentInstanceId);
+        GlobalRegistryAccessor accessor =
+            new GlobalRegistryAccessor(ctx, component, componentInstanceId);
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, component, this.hostContext);
-        PlainContainerLogic plainContainerLogic = new PlainContainerLogic(componentInstanceId, component, ctx, os, networkHandler, plainShellFactory);
+        PlainContainerLogic plainContainerLogic =
+            new PlainContainerLogic(componentInstanceId, component, ctx, os, networkHandler,
+                plainShellFactory, this.hostContext);
 
         ExecutionContext executionContext = new ExecutionContext(os, plainShellFactory);
-        LifecycleController lifecycleController = new LifecycleController(component.getLifecycleStore(), plainContainerLogic, accessor, executionContext);
+        LifecycleController lifecycleController =
+            new LifecycleController(component.getLifecycleStore(), plainContainerLogic, accessor,
+                executionContext);
 
         try {
             accessor.init(componentInstanceId);
         } catch (RegistrationException re) {
-            throw new ContainerException("cannot start container, because registry not available", re);
+            throw new ContainerException("cannot start container, because registry not available",
+                re);
         }
 
-        ContainerController containerController = new StandardContainer<>(componentInstanceId, plainContainerLogic, networkHandler, lifecycleController, accessor);
+        ContainerController containerController =
+            new StandardContainer<>(componentInstanceId, plainContainerLogic, networkHandler,
+                lifecycleController, accessor);
 
         this.registry.addContainer(containerController);
         containerController.create();
         return containerController;
     }
 
-    @Override
-    public void terminate() {
+    @Override public void terminate() {
         try {
             this.hostContext.close();
-        } catch(InterruptedException ie) {
+        } catch (InterruptedException ie) {
             LOGGER.warn("shutting down interrupted");
         }
-        LOGGER.error("terminate has not been fully implemented, closing further parts need to be implemented!");
+        LOGGER.error(
+            "terminate has not been fully implemented, closing further parts need to be implemented!");
         // FIXME: add other parts to shut down //
     }
 
-    @Override
-    public List<ComponentInstanceId> getAllContainers() {
+    @Override public List<ComponentInstanceId> getAllContainers() {
         return registry.listComponentInstances();
     }
 
-    @Override
-    public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
+    @Override public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
         ContainerController dc = registry.getContainer(cid);
         return dc.getState();
     }
