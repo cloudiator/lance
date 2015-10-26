@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +39,11 @@ public class PlainShellImpl implements PlainShell {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlainShell.class);
 
     private ProcessBuilder processBuilder = new ProcessBuilder();
-    //private ProcessBuilder processBuilder = new ProcessBuilder().inheritIO();
 
     private final List<String> osShell = new ArrayList<String>();
 
     public PlainShellImpl(OperatingSystem operatingSystem) {
-
+        
         //fixme: do this in a more generic way
         //add the os respective shells for execution
         if (operatingSystem.equals(OperatingSystem.WINDOWS_7)) {
@@ -76,15 +76,12 @@ public class PlainShellImpl implements PlainShell {
             List<String> debuglist = this.processBuilder.command();
             debuglist.stream().forEach((string) -> {
                 LOGGER.debug("Content: " + string);
-                //System.out.println("Content: " + string);
             });
 
             String commandOut = extractCommandOutput(shellProcess);
-            //System.out.println(commandOut); //debugging
             LOGGER.debug(commandOut);
 
             String errorOut = extractErrorOutput(shellProcess);
-            //System.out.println(errorOut); //debugging
             LOGGER.debug(errorOut);
 
 

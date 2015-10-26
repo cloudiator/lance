@@ -104,10 +104,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
         return hostContext.getInternalIp();
 
-        //not used in Plain Container
-        // String result = null;
-
-        //return result;
     }
 
     /**
