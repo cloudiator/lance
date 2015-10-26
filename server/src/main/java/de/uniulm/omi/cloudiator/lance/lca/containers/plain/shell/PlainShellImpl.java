@@ -43,21 +43,20 @@ public class PlainShellImpl implements PlainShell {
     private final List<String> osShell = new ArrayList<String>();
 
     public PlainShellImpl(OperatingSystem operatingSystem) {
-        
-        //fixme: do this in a more generic way
+
         //add the os respective shells for execution
-        if (operatingSystem.equals(OperatingSystem.WINDOWS_7)) {
+        if (operatingSystem.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
             this.osShell.add("powershell.exe");
             this.osShell.add("-command");
 
-        } else if (operatingSystem.equals(OperatingSystem.UBUNTU_14_04)) {
+        } else if (operatingSystem.equals(OperatingSystemFamily.LINUX)) {
 
             this.osShell.add("/bin/bash");
             this.osShell.add("-c");
 
         } else {
-            throw new IllegalStateException("Unkown OS: " + operatingSystem.toString());
+            throw new IllegalStateException("Unkown OS family: " + operatingSystem.getFamily().name());
         }
     }
 
