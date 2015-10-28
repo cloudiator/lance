@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,26 +39,24 @@ public class PlainShellImpl implements PlainShell {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlainShell.class);
 
     private ProcessBuilder processBuilder = new ProcessBuilder();
-    //private ProcessBuilder processBuilder = new ProcessBuilder().inheritIO();
 
     private final List<String> osShell = new ArrayList<String>();
 
     public PlainShellImpl(OperatingSystem operatingSystem) {
 
-        //fixme: do this in a more generic way
         //add the os respective shells for execution
-        if (operatingSystem.equals(OperatingSystem.WINDOWS_7)) {
+        if (operatingSystem.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
             this.osShell.add("powershell.exe");
             this.osShell.add("-command");
 
-        } else if (operatingSystem.equals(OperatingSystem.UBUNTU_14_04)) {
+        } else if (operatingSystem.equals(OperatingSystemFamily.LINUX)) {
 
             this.osShell.add("/bin/bash");
             this.osShell.add("-c");
 
         } else {
-            throw new IllegalStateException("Unkown OS: " + operatingSystem.toString());
+            throw new IllegalStateException("Unkown OS family: " + operatingSystem.getFamily().name());
         }
     }
 
@@ -76,15 +75,12 @@ public class PlainShellImpl implements PlainShell {
             List<String> debuglist = this.processBuilder.command();
             debuglist.stream().forEach((string) -> {
                 LOGGER.debug("Content: " + string);
-                //System.out.println("Content: " + string);
             });
 
             String commandOut = extractCommandOutput(shellProcess);
-            //System.out.println(commandOut); //debugging
             LOGGER.debug(commandOut);
 
             String errorOut = extractErrorOutput(shellProcess);
-            //System.out.println(errorOut); //debugging
             LOGGER.debug(errorOut);
 
 
@@ -105,6 +101,7 @@ public class PlainShellImpl implements PlainShell {
         return executionResult;
     }
 
+
     private List<String> buildCommand(String commandLine) {
 
         List<String> commandList = new ArrayList<>();
@@ -114,11 +111,13 @@ public class PlainShellImpl implements PlainShell {
 
 
 
+
         //create list with os specific commands
         commandList.addAll(this.osShell);
 
         //todo check if already wrapped
         commandList.add(commandLine);
+
 
         //add app commands and wrap them in double quotes, single quotes won't work on Windows
         //result.add("\"");
@@ -129,6 +128,7 @@ public class PlainShellImpl implements PlainShell {
     }
 
     @Override public ExecutionResult executeBlockingCommand(String command) {
+
         //fixme: implement this in a blocking way, check if blocking command are necessary
         LOGGER.warn("Using currently same impl for blocking/nonblocking execution of commands!");
         return this.executeCommand(command);
