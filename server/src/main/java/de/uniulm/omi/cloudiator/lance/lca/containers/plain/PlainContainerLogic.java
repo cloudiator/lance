@@ -22,6 +22,7 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -71,14 +72,13 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         LOGGER.info("Creating shell for operating system: " + this.os.toString());
         PlainShell plainShell = new PlainShellImpl(this.os);
 
-        LOGGER.info("creating new plain container with foldername " + this.myId.toString());
-        plainShell.executeCommand("mkdir " + this.myId.toString());
+        LOGGER.debug("Java System user.dir value: " + System.getProperty("user.dir"));
+        final String plainContainerFolder = System.getProperty("user.dir") + System.getProperty("file.separator") + this.myId.toString();
+        LOGGER.info("creating new plain container with foldername " + plainContainerFolder);
+        plainShell.executeCommand("mkdir " + plainContainerFolder);
 
-        String switchFolderCommand =
-            System.getProperty("user.dir") + System.getProperty("file.separator") + this.myId
-                .toString();
-        LOGGER.info("Switching to plain container: " + switchFolderCommand);
-        plainShell.setDirectory(switchFolderCommand);
+        LOGGER.info("Switching to plain container: " + plainContainerFolder);
+        plainShell.setDirectory(plainContainerFolder);
 
         //installing shell
         this.plainShellFactory.installPlainShell(plainShell);
@@ -133,14 +133,14 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
         //todo: move os switch to a central point (currently here and in PlainShellImpl)
-        if (this.os.equals(OperatingSystem.WINDOWS_7)) {
+        if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
             PowershellExportBasedVisitor visitor =
                 new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
             networkHandler.accept(visitor);
             this.deployableComponent.accept(this.deploymentContext, visitor);
 
-        } else if (this.os.equals(OperatingSystem.UBUNTU_14_04)) {
+        } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
             BashExportBasedVisitor visitor =
                 new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
