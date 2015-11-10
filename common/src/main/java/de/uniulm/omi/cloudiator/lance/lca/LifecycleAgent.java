@@ -46,4 +46,5 @@ public interface LifecycleAgent extends Remote {
     ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, 
                 OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
     
+    boolean stopComponentInstance(ContainerType containerType, ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
 }

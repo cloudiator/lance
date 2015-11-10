@@ -173,6 +173,16 @@ final class ProcessBasedConnector implements DockerConnector {
         ExecResult result = pw.toExecutionResult();
         throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
     }
+    
+	@Override
+	public void stopContainer(ComponentInstanceId myId) throws DockerException {
+		  ExecResult result = ProcessWrapper.singleDockerCommand("stop", buildContainerName(myId));    
+	        if(result.isSuccess()) { 
+	            return;
+	        }
+	        throw new DockerException("cannot terminate container: " + result.getError());
+	        //FIXME: add sth to purge container from machine //
+	}
 
     @Override
     public String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException {

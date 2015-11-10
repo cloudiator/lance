@@ -217,6 +217,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
+                        	//FIXME: remove entries from the registries //
                             logic.doDestroy(); 
                             registerStatus(ContainerStatus.DESTROYED);
                         } catch(ContainerException | RegistrationException ce) { 
