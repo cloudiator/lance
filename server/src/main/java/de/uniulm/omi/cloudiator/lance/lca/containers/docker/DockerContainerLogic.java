@@ -106,8 +106,8 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
 
     @Override
-    public void doDestroy() throws ContainerException {
-        //FIXME: call stop handler //
+    public void doDestroy(boolean force) throws ContainerException {
+    	/* docker ignores the flag */
     	try {
     		client.stopContainer(myId);
     	} catch(DockerException de) {

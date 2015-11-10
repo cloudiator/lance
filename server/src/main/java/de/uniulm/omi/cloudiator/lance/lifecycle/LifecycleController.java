@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
@@ -102,6 +101,10 @@ public final class LifecycleController {
         run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
         // FIXME: establish start detector
         // machine.transit(LifecycleHandlerType.START);        // moves to POST_START
+    }
+    
+    public synchronized void blockingStop() {
+    	throw new UnsupportedOperationException("not calling stop handler; this is not part of the state machine (yet).");
     }
     
     public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) {
