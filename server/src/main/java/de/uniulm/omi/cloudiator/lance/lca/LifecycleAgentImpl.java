@@ -73,7 +73,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         applicationRegistered(ctx);
         componentPartOfApplication(ctx, component);
 
-        //fixme: add containertype parameter!!!! just for testing plain
+        //FIXME: add containertype parameter!!!! just for testing plain
         manager = MultiContainerManagerFactory.createContainerManager(this.hostContext, os, containerType);
 
         ContainerController cc = manager.createNewContainer(ctx, component, os);
@@ -84,6 +84,21 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         cc.awaitInitialisation();
         return cc.getId();
     }
+    
+	@Override
+	public boolean stopComponentInstance( ContainerType containerType, ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException {
+		ContainerController cid = manager.getContainer(instanceId);
+		if(cid == null) { 
+			throw new LcaException("Component instance not known: " + instanceId);
+		}
+		ContainerStatus state = cid.getState();
+		if(state != ContainerStatus.READY) {
+			throw new ContainerException("container in wrong state: " + state);
+		}
+		cid.tearDown();
+		cid.awaitDestruction();
+		return true;
+	}
     
     private static void applicationRegistered(DeploymentContext ctx) throws LcaException, RegistrationException {
         LcaRegistry reg = ctx.getRegistry();
