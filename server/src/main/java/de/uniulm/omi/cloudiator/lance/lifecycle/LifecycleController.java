@@ -122,6 +122,7 @@ public final class LifecycleController {
     public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) {
 	    try {
 	    	preRun(DetectorType.PORT_UPDATE);
+	    	LOGGER.warn("updating ports via port handler.");
 	        handler.execute(ec);
 	        postRun(DetectorType.PORT_UPDATE);
 	        updateStateInRegistry(LifecycleHandlerType.START);

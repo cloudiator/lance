@@ -176,6 +176,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         } else if(type == DetectorType.PORT_UPDATE) {
         	try {
         		DockerShell shell = client.getSideShell(myId);
+        		prepareEnvironment(shell);
         		shellFactory.installDockerShell(shell);
         	} catch(DockerException de) {
         		throw new ContainerException("cannot create shell for port updates.", de);
