@@ -174,7 +174,7 @@ public final class PortRegistryTranslator {
         try { 
             InetAddress.getByName(value); 
         } catch(UnknownHostException uhe) { 
-            throw new RegistrationException("illegal IP address", uhe);
+            throw new RegistrationException("illegal IP address: " + value, uhe);
         } return value;
     }
 }
