@@ -45,9 +45,10 @@ final class DownstreamPortUpdater implements Runnable {
         controller = controllerParam;
     }
     
+    /*
     @Deprecated
     public void handleUpdate(OutPort port, PortDiff<?> diff) {
-    /*    //FIXME: ensure that we are in running state 
+        //FIXME: ensure that we are in running state 
         // if(!controller.isRunning()) return;
         
         // updating is rather easy. step 1: we get the update handler 
@@ -69,8 +70,8 @@ final class DownstreamPortUpdater implements Runnable {
         }
         //FIXME: only *now* update the set in the OutPortState
         System.out.println("update the set in the OutPortState => ..."); //.printStackTrace();
-        */
-    }
+      
+    }  */
 
     private void doRun() throws RegistrationException {
         List<PortDiff<DownstreamAddress>> diffs = outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
