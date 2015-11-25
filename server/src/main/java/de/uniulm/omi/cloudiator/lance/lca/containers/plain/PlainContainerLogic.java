@@ -34,9 +34,11 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
+import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +124,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         });
     }
 
-    @Override public void prepare(LifecycleHandlerType type) {
+    @Override public void prepare(HandlerType type) {
         if (type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
         }
@@ -153,7 +155,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     }
 
-    @Override public void postprocess(LifecycleHandlerType type) {
+    @Override public void postprocess(HandlerType type) {
         if (type == LifecycleHandlerType.PRE_INSTALL) {
             postPreInstall();
         } else if (type == LifecycleHandlerType.POST_INSTALL) {

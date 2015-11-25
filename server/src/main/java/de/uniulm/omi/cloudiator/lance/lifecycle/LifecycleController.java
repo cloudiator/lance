@@ -23,9 +23,11 @@ import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
@@ -62,11 +64,25 @@ public final class LifecycleController {
         
     }
     
-    void run(LifecycleHandlerType type) {
-        interceptor.prepare(type);
-        machine.transit(type);
+    private void preRun(HandlerType type) throws ContainerException{
+    	interceptor.prepare(type);
+    }
+    
+    private void postRun(HandlerType type) {
         interceptor.postprocess(type);
-        updateStateInRegistry(type);
+    }
+    
+    void run(LifecycleHandlerType type) {
+    	try {
+    		preRun(type);
+    		machine.transit(type);
+    		postRun(type);
+            updateStateInRegistry(type);
+    	} catch (ContainerException ce) {
+    		LOGGER.warn("Exception when executing state transition. this is not thoroughly handled.", ce);
+    		// set error state
+            // updateStateInRegistry(type);
+    	}
     }
     
     private void updateStateInRegistry(LifecycleHandlerType type) {
@@ -104,8 +120,16 @@ public final class LifecycleController {
     }
     
     public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) {
-        handler.execute(ec);
-        // FIXME: change to according state //
+	    try {
+	    	preRun(DetectorType.PORT_UPDATE);
+	        handler.execute(ec);
+	        postRun(DetectorType.PORT_UPDATE);
+	        updateStateInRegistry(LifecycleHandlerType.START);
+		} catch (ContainerException ce) {
+			LOGGER.warn("Exception when executing state transition. this is not thoroughly handled.", ce);
+			// set error state 
+			// updateStateInRegistry(LifecycleHandlerType.START);
+		}
     }
 
     private StateMachine<LifecycleHandlerType> buildStateMachine() {

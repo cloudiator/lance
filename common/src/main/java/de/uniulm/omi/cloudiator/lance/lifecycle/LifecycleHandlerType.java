@@ -38,7 +38,7 @@ import de.uniulm.omi.cloudiator.lance.util.state.State;
  * @author Joerg Domaschka
  *
  */
-public enum LifecycleHandlerType implements State {
+public enum LifecycleHandlerType implements State, HandlerType {
 
     NEW(VoidHandler.class, DefaultFactories.VOID_FACTORY),
     /**

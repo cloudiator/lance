@@ -19,12 +19,13 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 
 public interface LifecycleActionInterceptor {
 
-    void prepare(LifecycleHandlerType type);
+    void prepare(HandlerType type) throws ContainerException;
 
-    void postprocess(LifecycleHandlerType type);
+    void postprocess(HandlerType type);
 
 	ComponentInstanceId getComponentId();
 

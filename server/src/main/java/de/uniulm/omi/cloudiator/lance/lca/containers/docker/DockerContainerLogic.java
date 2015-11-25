@@ -36,9 +36,11 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
@@ -168,10 +170,17 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }*/
     
     @Override
-    public void prepare(LifecycleHandlerType type) {
+    public void prepare(HandlerType type) throws ContainerException {
         if(type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
-        } 
+        } else if(type == DetectorType.PORT_UPDATE) {
+        	try {
+        		DockerShell shell = client.getSideShell(myId);
+        		shellFactory.installDockerShell(shell);
+        	} catch(DockerException de) {
+        		throw new ContainerException("cannot create shell for port updates.", de);
+        	}
+        }
     }
 
     private void preInstallAction() {
@@ -180,12 +189,14 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
 
     @Override
-    public void postprocess(LifecycleHandlerType type) {
+    public void postprocess(HandlerType type) {
         if(type == LifecycleHandlerType.PRE_INSTALL) {
             postPreInstall();
         } else if(type == LifecycleHandlerType.POST_INSTALL) {
             // TODO: do we have to make a snapshot after this? //
-        }            
+        } else if(type == DetectorType.PORT_UPDATE) {
+        	shellFactory.closeShell();
+        }
     }
     
     private void postPreInstall() {

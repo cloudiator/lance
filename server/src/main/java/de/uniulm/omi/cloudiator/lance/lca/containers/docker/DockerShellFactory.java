@@ -50,7 +50,7 @@ final class DockerShellFactory implements ShellFactory {
     void closeShell() {
         DockerShellWrapper old = reference.getAndSet(null);
         if(old == null) {
-            LOGGER.error("ERROR: no shell set that can be closed.");
+            LOGGER.error("ERROR: no shell set that can be closed. this should never happen.");
         } else {
             old.shell.close();
         }
