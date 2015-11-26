@@ -114,7 +114,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     void preCreateAction() throws ContainerException {
         String address = logic.getLocalAddress();
         try {
-            network.initPorts(address == null ? "<unknown>" : address);
+            network.initPorts(address);
         } catch(RegistrationException re) {
             throw new ContainerException("cannot access registry.", re);
         }

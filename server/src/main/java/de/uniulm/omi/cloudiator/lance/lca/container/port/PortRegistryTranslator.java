@@ -171,6 +171,9 @@ public final class PortRegistryTranslator {
         if(value == null) {
             throw new RegistrationException("ip address not found.");
         }
+        if(NetworkHandler.UNKNOWN_ADDRESS.equals(value.trim())) {
+        	return null;
+        }
         try { 
             InetAddress.getByName(value); 
         } catch(UnknownHostException uhe) { 

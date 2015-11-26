@@ -40,6 +40,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 
 public final class NetworkHandler {
 
+	public static final String UNKNOWN_ADDRESS = "<unknown>";
+	
     private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHandler.class);
     private volatile ScheduledFuture<?> updateFuture = null;
     
@@ -63,7 +65,8 @@ public final class NetworkHandler {
         outPorts =  new OutPortHandler(myComponent);
     }
 
-    public void initPorts(String valueParam) throws RegistrationException {
+    public void initPorts(String address) throws RegistrationException {
+    	String valueParam = (address == null ? UNKNOWN_ADDRESS : address); 
         portAccessor.shareHostAddresses(this);
         registerAddress(PortRegistryTranslator.PORT_HIERARCHY_2, valueParam);
         initInPorts();
