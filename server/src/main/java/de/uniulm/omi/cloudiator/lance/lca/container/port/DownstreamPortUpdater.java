@@ -138,7 +138,7 @@ final class DownstreamPortUpdater implements Runnable {
         try {
             doRun();
         } catch(RegistrationException ex) {
-            LOGGER.error("cannot access downstream ports. registry not available.");
+            LOGGER.error("cannot access downstream ports. registry not available.", ex);
         } catch(RuntimeException re) {
             LOGGER.error("runtime exception occurred.", re);
             throw re;
