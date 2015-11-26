@@ -195,7 +195,7 @@ public final class NetworkHandler {
         }
     }
 
-    public void accept(NetworkVisitor visitor) {
+    public void accept(NetworkVisitor visitor, PortDiff<DownstreamAddress> diffSet) {
         for(PortHierarchyLevel level : ipAddresses) {
             visitor.visitNetworkAddress(level, ipAddresses.valueAtLevel(level));
         }
@@ -208,7 +208,7 @@ public final class NetworkHandler {
             }    
         }
         
-        outPorts.accept(visitor);
+        outPorts.accept(visitor, diffSet);
     }
 
     public void updateAddress(PortHierarchyLevel level2Param, String containerIp) {

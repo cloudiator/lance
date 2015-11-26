@@ -55,8 +55,36 @@ public final class OutPortState {
     public boolean matchesPort(OutPort thatPort) {
         return thePort.namesMatch(thatPort);
     }
+    
+    PortDiff<DownstreamAddress> computeDiffSet(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> newSinks) {
+    	Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> oldSinks = getCurrentSinkSet();
+        PortDiff<DownstreamAddress> diff = new PortDiff<>(newSinks, oldSinks, thePort);
+        return diff;
+    }
+    
+    /**
+     * 
+     * @param diff the diff set to apply
+     * @return true if the port of the OutPort of the diff set matches the OutPort maintained by this OutPortState.
+     */
+    boolean enactDiffSet(PortDiff<DownstreamAddress> diff) {
+    	if(!diff.portMatches(thePort)) {
+    		return false;
+    	}
+    	
+    	Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> newSinks = diff.getCurrentSinkSet();
+        Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> oldSinks = diff.getOldSinkSet();
+        
+    	Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> compOldSinks = installNewSinks(newSinks);
+        if(!oldSinks.equals(compOldSinks)) {
+            LOGGER.warn("old sinks do not match; do we have concurrency pvroblems?" + oldSinks + " vs " + compOldSinks); 
+        }
+        
+        return true;
+    }
 
-    public PortDiff<DownstreamAddress> updateWithDiff(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> newSinks) {
+    @Deprecated
+    PortDiff<DownstreamAddress> updateWithDiff(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> newSinks) {
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> oldSinks = getCurrentSinkSet();
         PortDiff<DownstreamAddress> diff = new PortDiff<>(newSinks, oldSinks, thePort);
         
@@ -78,6 +106,10 @@ public final class OutPortState {
 
     Map<PortHierarchyLevel, List<DownstreamAddress>> sinksByHierarchyLevel() {
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks = getCurrentSinkSet();
+        return orderSinksByHierarchyLevel(sinks);
+    }
+    
+    static Map<PortHierarchyLevel, List<DownstreamAddress>> orderSinksByHierarchyLevel(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks){
         Map<PortHierarchyLevel,List<DownstreamAddress>> elements = new HashMap<>();
         for(Entry<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> entry : sinks.entrySet()) {
             // ComponentInstanceId id = entry.getKey();

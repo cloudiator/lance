@@ -31,6 +31,7 @@ public final class PortDiff<T> {
 
     private final OutPort myPort;
     private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
+    private final Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinks;
     private final Set<ComponentInstanceId> added;
     private final Set<ComponentInstanceId> removed;
     private final Set<ComponentInstanceId> diffSet;
@@ -39,7 +40,10 @@ public final class PortDiff<T> {
             Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinksParam,
             OutPort myPortParam) {
         
+    	if(myPortParam == null) 
+    		throw new NullPointerException("port cannot be  null");
         // portName = portNameParam;
+    	oldSinks = oldSinksParam;
         current = newSinksParam;
         added  = inFirstNotInSecond(newSinksParam, oldSinksParam);
         removed = inFirstNotInSecond(oldSinksParam, newSinksParam);
@@ -96,4 +100,18 @@ public final class PortDiff<T> {
     public OutPort getPort() {
         return myPort;
     }
+    
+    @Override
+    public String toString() {
+    	return "PortDiff ( " + myPort + "): +[" + added + "]; -[" + removed + "]"; 
+    }
+
+	public final Map<ComponentInstanceId, HierarchyLevelState<T>> getOldSinkSet() {
+		return oldSinks;
+	}
+
+	boolean portMatches(OutPort thePort) {
+		if(thePort == null) return false;
+		return myPort.equals(thePort);
+	}
 }

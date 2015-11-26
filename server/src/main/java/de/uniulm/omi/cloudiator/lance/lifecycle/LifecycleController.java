@@ -119,12 +119,12 @@ public final class LifecycleController {
         // machine.transit(LifecycleHandlerType.START);        // moves to POST_START
     }
     
-    public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) {
+    public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {
 	    try {
-	    	preRun(DetectorType.PORT_UPDATE);
+	    	interceptor.preprocessPortUpdate(diff);
 	    	LOGGER.warn("updating ports via port handler.");
 	        handler.execute(ec);
-	        postRun(DetectorType.PORT_UPDATE);
+	        interceptor.postprocessPortUpdate(diff);
 	        updateStateInRegistry(LifecycleHandlerType.START);
 		} catch (ContainerException ce) {
 			LOGGER.warn("Exception when executing state transition. this is not thoroughly handled.", ce);

@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import java.util.Map; 
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +31,10 @@ import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
@@ -40,7 +42,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
@@ -173,14 +174,6 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     public void prepare(HandlerType type) throws ContainerException {
         if(type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
-        } else if(type == DetectorType.PORT_UPDATE) {
-        	try {
-        		DockerShell shell = client.getSideShell(myId);
-        		prepareEnvironment(shell);
-        		shellFactory.installDockerShell(shell);
-        	} catch(DockerException de) {
-        		throw new ContainerException("cannot create shell for port updates.", de);
-        	}
         }
     }
 
@@ -190,14 +183,28 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
 
     @Override
+    public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
+    	try {
+    		DockerShell shell = client.getSideShell(myId);
+    		prepareEnvironment(shell, diffSet);
+    		shellFactory.installDockerShell(shell);
+    	} catch(DockerException de) {
+    		throw new ContainerException("cannot create shell for port updates.", de);
+    	}
+    }
+    
+    @Override
+    public void postprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) {
+    	shellFactory.closeShell();
+    }
+    
+    @Override
     public void postprocess(HandlerType type) {
         if(type == LifecycleHandlerType.PRE_INSTALL) {
             postPreInstall();
         } else if(type == LifecycleHandlerType.POST_INSTALL) {
             // TODO: do we have to make a snapshot after this? //
-        } else if(type == DetectorType.PORT_UPDATE) {
-        	shellFactory.closeShell();
-        }
+        } 
     }
     
     private void postPreInstall() {
@@ -209,9 +216,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
     
     private void prepareEnvironment(DockerShell dshell) {
+    	prepareEnvironment(dshell, null);
+    }
+    
+    private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
         BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
         visitor.addEnvironmentVariable("TERM", "dumb");
-        networkHandler.accept(visitor);
+        networkHandler.accept(visitor, diff);
         myComponent.accept(deploymentContext, visitor);
     }
     

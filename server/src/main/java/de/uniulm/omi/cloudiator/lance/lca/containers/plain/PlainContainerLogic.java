@@ -29,8 +29,10 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
@@ -134,19 +136,19 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     private void preInstallAction() {
         PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
-        //todo: move os switch to a central point (currently here and in PlainShellImpl)
+        //TODO: move os switch to a central point (currently here and in PlainShellImpl)
         if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
             PowershellExportBasedVisitor visitor =
                 new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-            networkHandler.accept(visitor);
+            networkHandler.accept(visitor, null);
             this.deployableComponent.accept(this.deploymentContext, visitor);
 
         } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
             BashExportBasedVisitor visitor =
                 new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
-            networkHandler.accept(visitor);
+            networkHandler.accept(visitor, null);
             this.deployableComponent.accept(this.deploymentContext, visitor);
 
         } else {
@@ -164,10 +166,21 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
 
     private void postPreInstall() {
-        //FIXME: not necessary for plain container
+    	// TODO: empty method?
     }
 
     @Override public ComponentInstanceId getComponentId() {
         return this.myId;
     }
+
+	@Override
+	public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
+		LOGGER.error("postprocessPortUpdate is not implemented for plain container");
+	}
+
+	@Override
+	public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
+			throws ContainerException {
+		LOGGER.error("preprocessPortUpdate is not implemented for plain container");
+	}
 }

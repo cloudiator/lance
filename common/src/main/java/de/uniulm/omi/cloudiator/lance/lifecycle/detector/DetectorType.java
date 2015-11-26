@@ -6,5 +6,5 @@ public enum DetectorType implements HandlerType {
 
 	START,
 	STOP,
-	PORT_UPDATE;
+	;
 }
