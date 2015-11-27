@@ -161,7 +161,7 @@ public final class PortRegistryTranslator {
             }
             throw new RegistrationException("(" + key + ") " + " received an unexpected result");
         } catch(NumberFormatException nfe) {
-            throw new RegistrationException("(" + key + ") " + " value was not an expected number", nfe);
+            throw new RegistrationException("(" + key + ") " + " value was not an expected number: " + value, nfe);
         }
     }
     
