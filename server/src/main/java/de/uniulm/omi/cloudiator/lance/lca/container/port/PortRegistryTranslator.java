@@ -147,15 +147,20 @@ public final class PortRegistryTranslator {
             	continue;
             }
             HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<>(id.toString(), portHierarchy);
-            addresses.put(id, state);
-            
+            boolean forAll = true;
             for(PortHierarchyLevel level : portHierarchy.levels()) {
                 Integer i = getHierarchicalPort(sinkReference, map, level);
                 String ip = getHierarchicalHostname(level, map);
                 if(i == null || ip == null) {
+                	forAll = false;
                     continue;
                 }
                 state.registerValueAtLevel(level, new DownstreamAddress(ip, i));
+            }
+            if(forAll) { // only pass on when we found sth for all levels.
+            	addresses.put(id, state);
+            } else {
+            	// drop values to avoid inconsistencies
             }
         }
         return addresses;
