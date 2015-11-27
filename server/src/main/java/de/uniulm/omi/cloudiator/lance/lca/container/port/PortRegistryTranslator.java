@@ -165,6 +165,12 @@ public final class PortRegistryTranslator {
         String key = buildFullPortName(sinkReference.getPortName(), level);
         String value = dump.get(key);
         try {
+        	if(value == null) {
+        		//FIXME: distinguish these two cases //
+        		LOGGER.warn("port with '" + key + "' has not been found. "
+        				+ "this may either be a wrong configuration or a synchronisation problem");
+        		return null;
+        	}
             Integer i = Integer.valueOf(value);
             if(isValidPortOrUnset(i)) {
                 return i;
