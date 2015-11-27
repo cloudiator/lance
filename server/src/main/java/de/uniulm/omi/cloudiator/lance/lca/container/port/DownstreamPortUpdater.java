@@ -84,7 +84,7 @@ final class DownstreamPortUpdater implements Runnable {
     			LOGGER.info("omitting port update. other update already in progress.");
     			return null;
     		}
-    		List<PortDiff<DownstreamAddress>> diffs = outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
+    		List<PortDiff<DownstreamAddress>> diffs = outPorts.getUpdatedDownstreamPorts(portAccessor, portHierarchy);
     		if(! outPorts.requiredDownstreamPortsSet()) {
     			LOGGER.error("not all downstream ports are available. this may cause some issues");
     			// FIXME: what should happen is that we return to INSTALL state //

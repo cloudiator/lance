@@ -74,7 +74,7 @@ final class OutPortHandler {
      * @return those ports that do have a diff. for these, the port updaters have to be run //
      * @throws RegistrationException
      */
-    List<PortDiff<DownstreamAddress>> updateDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
+    List<PortDiff<DownstreamAddress>> getUpdatedDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
         List<PortDiff<DownstreamAddress>> changedPorts = new LinkedList<>();
         for(OutPortState outPort : portStates) {
             Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(outPort.getPort(), portHierarchy);
@@ -86,6 +86,13 @@ final class OutPortHandler {
             }
         }
         return changedPorts;
+    }
+    
+    void updateDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
+    	List<PortDiff<DownstreamAddress>> diffs = getUpdatedDownstreamPorts(accessor, portHierarchy);
+    	for(PortDiff<DownstreamAddress> diff : diffs) {
+    		manifestChangeset(diff);
+    	}
     }
 
     public boolean requiredDownstreamPortsSet() {
