@@ -24,15 +24,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchy.PortHierarchyBuilder;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public final class PortRegistryTranslator {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(PortRegistryTranslator.class);
 
     private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
     private static final String PORT_HIERARCHY_1_NAME = "CLOUD";
@@ -108,9 +114,7 @@ public final class PortRegistryTranslator {
         accessor.addLocalProperty(key, value);
     }
     
-    /* FIXME: this is bullshit: we cannot use the portHierarchy of the searching host, but have to use the one of the target 
-     * probably this information has to be added to the registry for retrieval;
-     * alternatively, define 3 levels of hierarchy throughout the applicatin */
+    /* define 3 levels of hierarchy throughout the applicatin */
     public Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> findDownstreamInstances(OutPort out, PortHierarchy portHierarchy) throws RegistrationException {
         PortReference sinkReference = null;        
         Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
@@ -136,9 +140,15 @@ public final class PortRegistryTranslator {
         Map<ComponentInstanceId,HierarchyLevelState<DownstreamAddress>> addresses = new HashMap<>(); 
         for(Entry<ComponentInstanceId, Map<String, String>> entry : dump.entrySet()) {
             ComponentInstanceId id = entry.getKey();
+            Map<String,String> map = entry.getValue();
+            boolean isReady = GlobalRegistryAccessor.dumpMapHasContainerStatus(map, ContainerStatus.READY);
+            if(!isReady) {
+            	LOGGER.info("dropping data (ports and ips of component instance " + id + " as it is not in ready state");
+            	continue;
+            }
             HierarchyLevelState<DownstreamAddress> state = new HierarchyLevelState<>(id.toString(), portHierarchy);
             addresses.put(id, state);
-            Map<String,String> map = entry.getValue();
+            
             for(PortHierarchyLevel level : portHierarchy.levels()) {
                 Integer i = getHierarchicalPort(sinkReference, map, level);
                 String ip = getHierarchicalHostname(level, map);
@@ -150,8 +160,8 @@ public final class PortRegistryTranslator {
         }
         return addresses;
     }
-    
-    private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
+
+	private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
         String key = buildFullPortName(sinkReference.getPortName(), level);
         String value = dump.get(key);
         try {
