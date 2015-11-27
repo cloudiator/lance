@@ -27,7 +27,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
