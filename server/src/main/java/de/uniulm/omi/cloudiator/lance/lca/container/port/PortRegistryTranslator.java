@@ -171,10 +171,9 @@ public final class PortRegistryTranslator {
         String value = dump.get(key);
         try {
         	if(value == null) {
-        		//FIXME: distinguish these two cases //
-        		LOGGER.warn("port with '" + key + "' has not been found. "
-        				+ "this may either be a wrong configuration or a synchronisation problem");
-        		return null;
+        		// we only check when other component is in state "READY"
+        		// hence, port has to be set.
+        		throw new RegistrationException("port with '" + key + "' has not been found. Value was null.");
         	}
             Integer i = Integer.valueOf(value);
             if(isValidPortOrUnset(i)) {
@@ -190,7 +189,7 @@ public final class PortRegistryTranslator {
         String key = buildFullHostName(level);
         String value = dump.get(key);
         if(value == null) {
-            throw new RegistrationException("ip address not found.");
+        	throw new RegistrationException("ipaddress for '" + key + "' has not been found. Value was null.");
         }
         if(NetworkHandler.UNKNOWN_ADDRESS.equals(value.trim())) {
         	return null;

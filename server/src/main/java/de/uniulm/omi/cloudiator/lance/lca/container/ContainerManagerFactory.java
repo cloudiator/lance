@@ -19,7 +19,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
 import java.util.EnumMap;
-import java.util.logging.Logger;
 
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
