@@ -153,7 +153,7 @@ class Inprogress implements DockerShell {
     @Override
     public ExecutionResult executeCommand(String command) {
         if(! processStillRunning() ) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("shell not available for executing command: " + command);
         }
         try {
             doExecuteCommand(command + "; " + EXIT_CODE + " ; " + BELL_COMMAND);
