@@ -21,10 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.container.SpecificContainerManagerFactory;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchy;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchy.PortHierarchyBuilder;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchyLevel;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 
 public enum DockerContainerManagerFactory implements SpecificContainerManagerFactory {
 
