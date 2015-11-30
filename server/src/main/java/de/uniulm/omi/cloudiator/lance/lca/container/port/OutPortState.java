@@ -106,17 +106,12 @@ public final class OutPortState {
         Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> sinks =
             getCurrentSinkSet();
 
-        if (sinks.size() > thePort.getLowerBound()) {
-            LOGGER.debug(String
-                .format("Number of sinks (%s) is > as the lower bound (%s). Returning true",
-                    sinks.size(), thePort.getLowerBound()));
-            return true;
-        } else {
-            LOGGER.debug(String
-                .format("Number of sinks (%s) is !> as the lower bound (%s). Returning false",
-                    sinks.size(), thePort.getLowerBound()));
-            return false;
-        }
+        boolean ret = !(thePort.getLowerBound() > sinks.size());
+
+        LOGGER.debug("Evaluating require and set - lower bound: %s; sinks: %s. Return %s.",
+            thePort.getLowerBound(), sinks.size(), ret);
+
+        return ret;
     }
 
     OutPort getPort() {
