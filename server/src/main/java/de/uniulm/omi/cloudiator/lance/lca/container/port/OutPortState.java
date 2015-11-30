@@ -108,8 +108,9 @@ public final class OutPortState {
 
         boolean ret = !(thePort.getLowerBound() > sinks.size());
 
-        LOGGER.debug("Evaluating require and set - lower bound: %s; sinks: %s. Return %s.",
-            thePort.getLowerBound(), sinks.size(), ret);
+        LOGGER.debug(String
+            .format("Evaluating require and set - lower bound: %s; sinks: %s. Return %s.",
+                thePort.getLowerBound(), sinks.size(), ret));
 
         return ret;
     }
