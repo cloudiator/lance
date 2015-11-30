@@ -158,6 +158,6 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
     
     @Override
     public void execute(ExecutionContext ec) {
-        BashExecutionHelper.executeBlockingCommands(os, ec, commands);
+        BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
