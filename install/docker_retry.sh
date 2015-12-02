@@ -8,7 +8,14 @@ docker_available() {
     fi
 }
 
+wget https://get.docker.com ./docker_install.sh
+sudo chmod +x ./docker_install.sh
+./docker_install.sh > 2>&1
+
 while [ $(docker_available) -eq 0 ]; do
         sleep 5
-        ./docker_install.sh
+        rm ./docker_install.sh
+        wget https://get.docker.com ./docker_install.sh
+        sudo chmod +x ./docker_install.sh
+        ./docker_install.sh > docker_install.out 2>&1
 done
