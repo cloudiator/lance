@@ -67,6 +67,10 @@ class Inprogress implements DockerShell {
         return readAvailable(stdErr, -1);
     }
     
+    // FIXME: change return value and interface such that
+    //  i) a StringBuilder is passed as a parameter
+    // ii) return enum Status.TERMINATOR or 
+    // 				   Status.EOF
     private static String readAvailable(BufferedReader std, int terminator) {
         StringBuilder builder = new StringBuilder();
         try { 
@@ -158,6 +162,7 @@ class Inprogress implements DockerShell {
         try {
             doExecuteCommand(command + "; " + EXIT_CODE + " ; " + BELL_COMMAND);
             String tmpOut = readOutUntilBell();
+            // use a return value to figure out if shell was closed
             String tmpErr = readErrAvailable();
             int exit = drainAfterExitStatus(tmpOut);
             return exit == 0 ? ExecutionResult.success(tmpOut, tmpErr) : ExecutionResult.commandFailure(exit, tmpOut, tmpErr);
