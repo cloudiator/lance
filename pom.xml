@@ -38,7 +38,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <my.version>0.1.0-SNAPSHOT</my.version>
         <slf.version>1.7.12</slf.version>
         <mousio.version>2.7.0</mousio.version>
     </properties>
@@ -60,9 +59,9 @@
     <url>https://github.com/cloudiator</url>
 
     <scm>
-        <connection>scm:git@github.com:cloudiator/lance.git</connection>
-        <developerConnection>scm:git@github.com:cloudiator/lance.git</developerConnection>
-        <url>git@github.com:cloudiator/lance.git</url>
+        <connection>scm:git:https://github.com/cloudiator/lance.git</connection>
+        <developerConnection>scm:git:git@github.com:cloudiator/lance.git</developerConnection>
+        <url>https://github.com/cloudiator/lance/</url>
     </scm>
 
     <modules>
@@ -76,7 +75,7 @@
             <dependency>
                 <groupId>io.github.cloudiator.lance</groupId>
                 <artifactId>common</artifactId>
-                <version>${my.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.mousio</groupId>
