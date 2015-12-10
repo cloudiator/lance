@@ -21,26 +21,27 @@ package de.uniulm.omi.cloudiator.lance.lca;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.*;
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 public class LifecycleAgentImpl implements LifecycleAgent {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentImpl.class);
+	
     private volatile AgentStatus status = AgentStatus.NEW;
-    //private final ContainerManager manager;
-    private  ContainerManager manager;
-
+    private final ContainerContainment containers = new ContainerContainment();
+    
     private final HostContext hostContext;
     
     LifecycleAgentImpl(HostContext contex) {
-        //FIXME: where to put this code?
-        DockerContainerManagerFactory.enableRemoteAccess();
-
+        
         //manager = ContainerManagerFactory.createContainerManager(contex, ContainerType.fromString(contex.getContainerType()));
         this.hostContext = contex;
         status = AgentStatus.CREATED;
@@ -52,9 +53,13 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     
     @Override
     public synchronized void terminate() {
-        //FIXME: terminate all instances //
         LifecycleAgentBooter.unregister(this);
-        manager.terminate();
+        try { 
+            hostContext.close(); 
+        } catch(InterruptedException ie) {
+            LOGGER.warn("shutting down interrupted");
+        }
+        containers.terminate();
     }
 
     
@@ -65,7 +70,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     @Override
     public List<ComponentInstanceId> listContainers() throws RemoteException {
-        return manager.getAllContainers();
+        return containers.getAllContainers();
     }
 
     @Override
@@ -73,9 +78,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         applicationRegistered(ctx);
         componentPartOfApplication(ctx, component);
 
-        //fixme: add containertype parameter!!!! just for testing plain
-        manager = MultiContainerManagerFactory.createContainerManager(this.hostContext, os, containerType);
-
+        ContainerManager manager = containers.getContainerManager(hostContext, os, containerType);
         ContainerController cc = manager.createNewContainer(ctx, component, os);
         cc.awaitCreation();
         cc.bootstrap();
@@ -112,6 +115,6 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     @Override
     public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
-        return manager.getComponentContainerStatus(cid);
+        return containers.getComponentContainerStatus(cid);
     }
 }

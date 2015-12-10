@@ -18,25 +18,34 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
+
 
 public enum ContainerType {
     
     DOCKER("dockering") {
-        /*
-        @Override
-        public SpecificContainerManagerFactory getContainerFactory() {
-            return DockerContainerManagerFactory.INSTANCE;
-        }
-        */
+
+		@Override
+		public boolean supportsOsFamily(OperatingSystemFamily family) {
+			switch(family){
+				case LINUX:
+					return true;
+				case BSD:
+				case WINDOWS:
+				case OTHER:
+					return false;
+				default: 
+					throw new IllegalArgumentException("OS type: " + family + " is not known");
+			}
+		}
     },
     
     DOCKER_REMOTE("docker-remote") {
-        /*
-        @Override
-        public SpecificContainerManagerFactory getContainerFactory() {
-            return DockerContainerManagerFactory.REMOTE;
-        }
-        */
+
+		@Override
+		public boolean supportsOsFamily(OperatingSystemFamily family) {
+			return DOCKER.supportsOsFamily(family);
+		}
     },
 
     /*DUMMY("dummy") {
@@ -51,11 +60,19 @@ public enum ContainerType {
      * components.
      */
     PLAIN("plain"){
-        /*
-        @Override
-        public SpecificContainerManagerFactory getContainerFactory() {
-            return PlainContainerManagerFactory.INSTANCE;
-        }*/
+		@Override
+		public boolean supportsOsFamily(OperatingSystemFamily family) {
+			switch(family){
+				case LINUX:
+				case WINDOWS:
+					return true;
+				case BSD:
+				case OTHER:
+					return false;
+				default: 
+					throw new IllegalArgumentException("OS type: " + family + " is not known");
+			}
+		}
     }
     ;
     
@@ -64,8 +81,6 @@ public enum ContainerType {
     private ContainerType(String myNameParam) {
         myName = myNameParam;
     }
-    
-    //public abstract SpecificContainerManagerFactory getContainerFactory();
 
     /**
      * @param containername
@@ -84,4 +99,6 @@ public enum ContainerType {
     public String toString() {
         return myName;
     }
+
+	public abstract boolean supportsOsFamily(OperatingSystemFamily family);
 }
