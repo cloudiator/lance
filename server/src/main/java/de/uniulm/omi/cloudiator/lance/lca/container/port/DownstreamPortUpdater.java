@@ -50,34 +50,6 @@ final class DownstreamPortUpdater implements Runnable {
         controller = controllerParam;
     }
     
-    /*
-    @Deprecated
-    public void handleUpdate(OutPort port, PortDiff<?> diff) {
-        //FIXME: ensure that we are in running state 
-        // if(!controller.isRunning()) return;
-        
-        // updating is rather easy. step 1: we get the update handler 
-        // for this port from the deployable component and then either
-        // do nothing or restart the application 
-        try {
-            DockerShell dshell = client.getSideShell(myId);
-            flushEnvironmentVariables(dshell);
-            flushSinglePort(dshell, port, diff.getCurrentSinkSet());
-            shellFactory.installDockerShell(dshell);
-            PortUpdateHandler handler = port.getUpdateHandler();
-            controller.blockingUpdatePorts(handler);
-        } catch(DockerException de) {
-            logger.info("problem when accessing registry", de); 
-        } catch (RegistrationException e) {
-            logger.info("problem when accessing registry", e); 
-        } finally {
-            shellFactory.closeShell();
-        }
-        //FIXME: only *now* update the set in the OutPortState
-        System.out.println("update the set in the OutPortState => ..."); //.printStackTrace();
-      
-    }  */
-    
     private List<PortDiff<DownstreamAddress>> getUpdatedPortSet() throws RegistrationException {
     	synchronized(portUpdateLock) {
     		if(updateInProgress) {
