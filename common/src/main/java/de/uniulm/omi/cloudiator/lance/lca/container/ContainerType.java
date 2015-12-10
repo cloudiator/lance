@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
+
 
 public enum ContainerType {
     
@@ -84,4 +86,9 @@ public enum ContainerType {
     public String toString() {
         return myName;
     }
+
+	public final boolean supportsOsFamily(OperatingSystemFamily family) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

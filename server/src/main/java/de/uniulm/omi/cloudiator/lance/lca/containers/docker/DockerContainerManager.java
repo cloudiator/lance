@@ -108,12 +108,7 @@ public class DockerContainerManager implements ContainerManager {
 
     @Override
     public void terminate() {
-        try { 
-            hostContext.close(); 
-        } catch(InterruptedException ie) {
-            LOGGER.warn("shutting down interrupted");
-        }
-        LOGGER.error("terminate has not been fully implemented");
+        LOGGER.error("terminate has not been fully implemented; not terminating containers.");
         // FIXME: add other parts to shut down //
     }
 
