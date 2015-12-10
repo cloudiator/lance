@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 
 public final class DefaultHandlers {
     
@@ -123,6 +125,15 @@ public final class DefaultHandlers {
             getLogger().info("DEFAULT StopHandler doing nothing");
         }
     };
+    
+    public static final StartDetector DEFAULT_START_DETECTOR = new StartDetector() {
+    	
+		@Override
+		public DetectorState execute(ExecutionContext ec) {
+			getLogger().info("DEFAULT StopHandler doing nothing");
+			return DetectorState.DETECTED;
+		}
+	};
     
     public static final VoidHandler DEFAULT_VOID_HANDLER = new VoidHandler(); 
     

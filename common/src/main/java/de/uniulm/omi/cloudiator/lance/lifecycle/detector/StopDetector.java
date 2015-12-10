@@ -24,6 +24,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
  * 
  * @author Joerg Domaschka
  */
-public interface StopDetector {
+public interface StopDetector extends Detector {
  // empty interface; methods not yet fixed //
 }
