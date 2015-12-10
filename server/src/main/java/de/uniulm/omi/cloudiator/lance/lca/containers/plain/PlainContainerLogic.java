@@ -40,6 +40,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,5 +183,15 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 	public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
 			throws ContainerException {
 		LOGGER.error("preprocessPortUpdate is not implemented for plain container");
+	}
+
+	@Override
+	public void postprocessDetector(DetectorType type) {
+		LOGGER.error("postprocessDetector is not implemented for plain container");
+	}
+
+	@Override
+	public void preprocessDetector(DetectorType type) throws ContainerException {
+		LOGGER.error("preprocessDetector is not implemented for plain container");
 	}
 }

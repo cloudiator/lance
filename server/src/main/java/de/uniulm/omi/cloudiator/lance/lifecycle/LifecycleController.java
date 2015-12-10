@@ -31,7 +31,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachine;
 public final class LifecycleController {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
 
     static Logger getLogger() { 
@@ -103,28 +103,30 @@ public final class LifecycleController {
         run(LifecycleHandlerType.POST_INSTALL);    // moves to PRE_START 
     }
     
-    public synchronized void blockingStart() {
+    public synchronized void blockingStart() throws LifecycleException {
         run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
-        // FIXME: establish start detectors
-        getLogger().warn("TODO: run start detector");
-        // FIXME: establish stop detector
+        StartDetectorHandler.runStartDetector(interceptor, store.getStartDetector(), ec);
+        // FIXME: establish periodic invocation of stop detector
         getLogger().warn("TODO: run start detector");
         machine.transit(LifecycleHandlerType.START);        // moves to POST_START
     }
     
     public synchronized void blockingUpdatePorts(@SuppressWarnings("unused") OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {
+    	boolean preprocessed = false;
 	    try {
 	    	interceptor.preprocessPortUpdate(diff);
-	    	LOGGER.warn("updating ports via port handler.");
+	    	preprocessed = true;
+	    	LOGGER.info("updating ports via port handler.");
 	        handler.execute(ec);
-	        interceptor.postprocessPortUpdate(diff);
-	        updateStateInRegistry(LifecycleHandlerType.START);
 		} catch (ContainerException ce) {
 			LOGGER.warn("Exception when executing state transition. this is not thoroughly handled.", ce);
 			// set error state 
 			// updateStateInRegistry(LifecycleHandlerType.START);
+		} finally {
+			if(preprocessed) {
+		        interceptor.postprocessPortUpdate(diff);
+		        updateStateInRegistry(LifecycleHandlerType.START);
+			}
 		}
     }
-
-
 }

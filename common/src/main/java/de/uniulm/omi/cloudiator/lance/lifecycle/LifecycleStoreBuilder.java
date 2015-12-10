@@ -18,12 +18,24 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
+
 public final class LifecycleStoreBuilder {
 
     private final LifecycleHandler[] handlers = new LifecycleHandler[LifecycleHandlerType.values().length];
+    private volatile StartDetector startDetector;
     
     public LifecycleStoreBuilder() {
         // empty!
+    }
+    
+    public synchronized LifecycleStoreBuilder setStartDetector(StartDetector start) {
+    	if(startDetector == null || startDetector == start) {
+    		startDetector = start;
+    	} else {
+    		throw new IllegalStateException("start detector has already been set.");
+    	}
+    	return this;
     }
     
     public LifecycleStoreBuilder setHandler(LifecycleHandler h, LifecycleHandlerType t) {
@@ -48,7 +60,10 @@ public final class LifecycleStoreBuilder {
                 handlers[t.ordinal()] = t.getDefaultImplementation();
             }
         }
-        return new LifecycleStore(handlers);
+        if(startDetector == null) {
+        	throw new NullPointerException("start detector cannot be null");
+        }
+        return new LifecycleStore(handlers, startDetector);
     }
     
 }

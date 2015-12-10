@@ -30,6 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachine;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
@@ -135,7 +136,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         network.pollForNeededConnections();
     }
     
-    void preInitAction() {
+    void preInitAction() throws LifecycleException {
     	controller.blockingInit();
         controller.blockingInstall();
         controller.blockingConfigure();
@@ -143,13 +144,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
     
     void postInitAction() throws ContainerException {
-        // FIXME: make sure that start detector has been run successfully 
-        // FIXME: make sure that stop detectors run periodically //
-        // FIXME: this code should not be here; it is completely independent 
-        // from any container implementation. These values have to be set
-        // according to the container lifecycle.
-        
-        // only that we have started, can the ports be 
+        // only now that we have started, can the ports be 
         // retrieved and then registered at the registry // 
         network.publishLocalData(containerId);
         network.startPortUpdaters(controller);
@@ -199,12 +194,12 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) {
                         //TODO: add code for starting from snapshot (skip init and install steps)
-                        preInitAction();
                         try { 
+                        	preInitAction();
                             logic.completeInit();
                             postInitAction();
                             registerStatus(ContainerStatus.READY);
-                        } catch(ContainerException | RegistrationException ce) { 
+                        } catch(ContainerException | LifecycleException | RegistrationException ce ) { 
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */ 
                         }

@@ -18,11 +18,15 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+
 /**
  * may be used to notify USM that a started event is ready for use
  * 
  * @author Joerg Domaschka
  */
 public interface StartDetector {
+
+	DetectorState execute(ExecutionContext ec);
     // empty interface; methods not yet fixed //
 }
