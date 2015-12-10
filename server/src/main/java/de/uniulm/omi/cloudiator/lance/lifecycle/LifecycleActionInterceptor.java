@@ -22,6 +22,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 public interface LifecycleActionInterceptor {
 
@@ -35,4 +36,7 @@ public interface LifecycleActionInterceptor {
 
 	void preprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException;
 
+	void postprocessDetector(DetectorType type);
+
+	void preprocessDetector(DetectorType type) throws ContainerException;
 }
