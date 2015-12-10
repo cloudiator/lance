@@ -134,20 +134,33 @@ class Inprogress implements DockerShell {
         stdIn.flush();
     }
     
-    private static int drainAfterExitStatus(String in) {
+    private static int drainAfterExitStatus(String in, StringBuffer buffer) {
         String tmpOut = in.trim();
+        // we enforced this line break before the return 
+        // value ==> EXIT_CODE command
         int index = tmpOut.lastIndexOf("\n");
         // at least one element is required for number //
+        // this means something went really wrong //
         if(index >= tmpOut.length() -1) {
             return -1;
         }
-        // it may well be < 0 when the command did not 
-        // print anything 
+        // it may well be < 0 when the command 
+        // did not print anything 
         String toparse = tmpOut.substring(index + 1);
+        int trailIndex = in.lastIndexOf(toparse);
+        if(trailIndex > 0) {
+        	String trail = in.substring(0, trailIndex - 1);
+        	buffer.append(trail);
+        } else if(trailIndex > -1) {
+        	buffer.append(""); // no output was written
+        } else {
+        	LOGGER.error("could not find trailing element: " + toparse + " in input " + in);
+        	buffer.append(in);
+        }
         return Integer.parseInt(toparse);
     }
 
-    private static final String EXIT_CODE = "echo \"$?\"";
+    private static final String EXIT_CODE = "echo -n -e \"\\n$?\"";
     static final String BELL_COMMAND = "echo -e \"\\a\""; 
     
     @Override
@@ -159,8 +172,9 @@ class Inprogress implements DockerShell {
             doExecuteCommand(command + "; " + EXIT_CODE + " ; " + BELL_COMMAND);
             String tmpOut = readOutUntilBell();
             String tmpErr = readErrAvailable();
-            int exit = drainAfterExitStatus(tmpOut);
-            return exit == 0 ? ExecutionResult.success(tmpOut, tmpErr) : ExecutionResult.commandFailure(exit, tmpOut, tmpErr);
+            StringBuffer buffer = new StringBuffer();
+            int exit = drainAfterExitStatus(tmpOut, buffer);
+            return exit == 0 ? ExecutionResult.success(buffer.toString(), tmpErr) : ExecutionResult.commandFailure(exit, buffer.toString(), tmpErr);
         } catch(IOException ioe) {
             LOGGER.warn("problem when reading from external process", ioe);
             return ExecutionResult.systemFailure(ioe.getMessage());
