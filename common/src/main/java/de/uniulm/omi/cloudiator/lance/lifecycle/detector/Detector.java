@@ -1,5 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 
-public interface Detector {
+import java.io.Serializable;
+
+public interface Detector extends Serializable {
 
 }

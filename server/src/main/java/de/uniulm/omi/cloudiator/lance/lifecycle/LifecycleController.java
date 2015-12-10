@@ -107,7 +107,7 @@ public final class LifecycleController {
         run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
         StartDetectorHandler.runStartDetector(interceptor, store.getStartDetector(), ec);
         // FIXME: establish periodic invocation of stop detector
-        getLogger().warn("TODO: run start detector");
+        getLogger().warn("TODO: periodically run stop detector");
         machine.transit(LifecycleHandlerType.START);        // moves to POST_START
     }
     
