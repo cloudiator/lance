@@ -47,6 +47,7 @@ final class StartDetectorHandler {
 	    		default:
 	    			throw new IllegalStateException("state " + state + " not captured");
     		}
+		getLogger().info("container not ready, sleeping.");
     		sleep();
     	}
     	throw new LifecycleException("application would not start. abort to wait.");
@@ -64,10 +65,12 @@ final class StartDetectorHandler {
     private DetectorState runStartDetectorLoop() {
     	boolean preprocessed = false;
     	 try {
+		 getLogger().info("running start detector");
     		 interceptor.preprocessDetector(DetectorType.START);
     		 preprocessed = true;
     		 return detector.execute(ec);
     	 } catch (ContainerException ce) {
+		 getLogger().warn("detection failed with exception", ce);
  			return DetectorState.DETECTION_FAILED;
  		} finally {
 			if(preprocessed) {
