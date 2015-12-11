@@ -48,8 +48,8 @@ final class ContainerContainment implements BasicContainer {
     	if(containerType.supportsOsFamily(operatingSystem.getFamily())) {
     		synchronized(managers) {
     			ContainerManager mng = managers.get(containerType);
-    			if(mng != null) {
-    				mng = ContainerManagerFactory.createContainerManager(contex, containerType);
+    			if(mng == null) {
+					mng = ContainerManagerFactory.createContainerManager(contex, containerType);
     				managers.put(containerType, mng);
         		}
     			return mng;
