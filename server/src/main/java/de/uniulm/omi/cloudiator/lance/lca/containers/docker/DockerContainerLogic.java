@@ -42,6 +42,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
@@ -112,17 +113,6 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     public void doDestroy() {
         throw new UnsupportedOperationException();
     }
-    
-    private DockerShell doStartContainer() throws ContainerException {
-        final DockerShell dshell;
-        try { 
-            dshell = client.startContainer(myId); 
-        } catch(DockerException de) {
-            throw new ContainerException("cannot start container: " + myId, de);
-        }
-        shellFactory.installDockerShell(dshell);
-        return dshell;
-    }
 
     /** retrieved the actual port numbers and the way docker maps them 
      * @throws DockerException */
@@ -160,26 +150,11 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 		shellFactory.closeShell();	
 	}
     
-    /*
-    DockerLifecycleInterceptor(GlobalRegistryAccessor  accessorParam, ComponentInstanceId idParam,
-            NetworkHandler portHandlerParam, DeployableComponent componentParam, DockerShellFactory shellFactoryParam) {
-        registryAccessor = accessorParam;
-        myId = idParam;
-        myComponent = componentParam;
-        portHandler = portHandlerParam;
-        shellFactory = shellFactoryParam;
-    }*/
-    
     @Override
     public void prepare(HandlerType type) throws ContainerException {
         if(type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
         }
-    }
-
-    private void preInstallAction() {
-        DockerShellWrapper w = shellFactory.createShell();
-        prepareEnvironment(w.shell);
     }
 
     @Override
@@ -207,6 +182,40 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         } 
     }
     
+	@Override
+	public void preprocessDetector(DetectorType type) throws ContainerException {
+		// nothing special to do; just create a shell and prepare an environment //
+		try {
+    		DockerShell shell = client.getSideShell(myId);
+    		prepareEnvironment(shell);
+    		shellFactory.installDockerShell(shell);
+    	} catch(DockerException de) {
+    		throw new ContainerException("cannot create shell for port updates.", de);
+    	}
+	}
+    
+	@Override
+	public void postprocessDetector(DetectorType type) {
+		// nothing special to do; just create a shell //
+		shellFactory.closeShell();
+	}
+    
+    private DockerShell doStartContainer() throws ContainerException {
+        final DockerShell dshell;
+        try { 
+            dshell = client.startContainer(myId); 
+        } catch(DockerException de) {
+            throw new ContainerException("cannot start container: " + myId, de);
+        }
+        shellFactory.installDockerShell(dshell);
+        return dshell;
+    }
+
+    private void preInstallAction() {
+        DockerShellWrapper w = shellFactory.createShell();
+        prepareEnvironment(w.shell);
+    }
+    
     private void postPreInstall() {
         try {
             imageHandler.runPostInstallAction(myId);
@@ -232,20 +241,4 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         //@SuppressWarnings("unused") String dockerId = 
         client.createContainer(target, myId, portsToSet);
     }
-/*
-    private void registerPortMappings2() throws DockerException {
-        // for all ports, get the port mapping //
-        List<InPort> inPortsTmp = myComponent.getExposedPorts();
-        for(InPort in : inPortsTmp) {
-            String name = in.getPortName();
-            Integer portNumber = (Integer) deploymentContext.getProperty(name, InPort.class);
-            int mapped = client.getPortMapping(myId, portNumber);
-            
-            Integer i = Integer.valueOf(mapped);
-            networkHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_0, name, i);
-            networkHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_1, name, i);
-            networkHandler.registerInPort(DockerContainerManagerFactory.PORT_HIERARCHY_2, name, portNumber);
-        }
-    }
-  */
 }

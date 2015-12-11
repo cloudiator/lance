@@ -23,9 +23,12 @@ import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreInstallHandler;
@@ -42,6 +45,10 @@ public final class BashBasedHandlerBuilder {
 
     public PortUpdateHandler buildPortUpdateHandler() {
         return new BashPortUpdateHandler(os, commands);
+    }
+    
+    public StartDetector buildStartDetector() {
+    	return new BashStartDetectorHandler(os, commands);
     }
     
     public LifecycleHandler build(LifecycleHandlerType type) {
@@ -159,5 +166,35 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
     @Override
     public void execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
+    }
+}
+
+final class BashStartDetectorHandler implements StartDetector {
+
+    private static final long serialVersionUID = -7036692445701185053L;
+    
+    private final OperatingSystem os;
+    private final List<String[]> commands;
+    
+    BashStartDetectorHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
+    }
+    
+    @Override
+    public DetectorState execute(ExecutionContext ec) {
+        BashExecutionHelper.executeCommands(os, ec, commands);
+        ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());
+        if(result.isSuccess()) {
+        	// return values for docker is:
+        	// \nfalse\n0\n
+        	if("true".equals(result.getOutput().trim())) {
+        		return DetectorState.DETECTED;
+        	}
+        	if("false".equals(result.getOutput().trim())) {
+        		return DetectorState.NOT_DETECTED;
+        	}
+        } 
+        return DetectorState.DETECTION_FAILED;
     }
 }

@@ -20,6 +20,8 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerFactory;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorFactory;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 
 public final class DefaultFactories {
 
