@@ -13,7 +13,7 @@ final class StartDetectorHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StartDetectorHandler.class);
 	
 	/** waiting 5 minutes per default */
-	private static final int MAXIMUM_START_WAIT_TIME = 300000;
+	private static final int MAXIMUM_START_WAIT_TIME = 900000;
 	/** waiting 30 seconds per loop */
 	private static final int START_LOOP_WAIT_TIME = 30000;
 	
