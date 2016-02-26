@@ -29,14 +29,19 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
+import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +130,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         });
     }
 
-    @Override public void prepare(LifecycleHandlerType type) {
+    @Override public void prepare(HandlerType type) {
         if (type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
         }
@@ -135,19 +140,19 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     private void preInstallAction() {
         PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
-        //todo: move os switch to a central point (currently here and in PlainShellImpl)
+        //TODO: move os switch to a central point (currently here and in PlainShellImpl)
         if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
             PowershellExportBasedVisitor visitor =
                 new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-            networkHandler.accept(visitor);
+            networkHandler.accept(visitor, null);
             this.deployableComponent.accept(this.deploymentContext, visitor);
 
         } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
             BashExportBasedVisitor visitor =
                 new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
-            networkHandler.accept(visitor);
+            networkHandler.accept(visitor, null);
             this.deployableComponent.accept(this.deploymentContext, visitor);
 
         } else {
@@ -156,7 +161,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     }
 
-    @Override public void postprocess(LifecycleHandlerType type) {
+    @Override public void postprocess(HandlerType type) {
         if (type == LifecycleHandlerType.PRE_INSTALL) {
             postPreInstall();
         } else if (type == LifecycleHandlerType.POST_INSTALL) {
@@ -165,10 +170,31 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
 
     private void postPreInstall() {
-        //FIXME: not necessary for plain container
+    	// TODO: empty method?
     }
 
     @Override public ComponentInstanceId getComponentId() {
         return this.myId;
     }
+
+	@Override
+	public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
+		LOGGER.error("postprocessPortUpdate is not implemented for plain container");
+	}
+
+	@Override
+	public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
+			throws ContainerException {
+		LOGGER.error("preprocessPortUpdate is not implemented for plain container");
+	}
+
+	@Override
+	public void postprocessDetector(DetectorType type) {
+		LOGGER.error("postprocessDetector is not implemented for plain container");
+	}
+
+	@Override
+	public void preprocessDetector(DetectorType type) throws ContainerException {
+		LOGGER.error("preprocessDetector is not implemented for plain container");
+	}
 }

@@ -28,7 +28,6 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.StandardContainer;
-import de.uniulm.omi.cloudiator.lance.deployment.self.DockerDeployment;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
@@ -44,8 +43,6 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConn
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public class DockerContainerManager implements ContainerManager {
 
@@ -111,12 +108,7 @@ public class DockerContainerManager implements ContainerManager {
 
     @Override
     public void terminate() {
-        try { 
-            hostContext.close(); 
-        } catch(InterruptedException ie) {
-            LOGGER.warn("shutting down interrupted");
-        }
-        LOGGER.error("terminate has not been fully implemented");
+        LOGGER.error("terminate has not been fully implemented; not terminating containers.");
         // FIXME: add other parts to shut down //
     }
 

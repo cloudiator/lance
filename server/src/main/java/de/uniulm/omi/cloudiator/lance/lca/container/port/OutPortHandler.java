@@ -74,17 +74,25 @@ final class OutPortHandler {
      * @return those ports that do have a diff. for these, the port updaters have to be run //
      * @throws RegistrationException
      */
-    List<PortDiff<DownstreamAddress>> updateDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
+    List<PortDiff<DownstreamAddress>> getUpdatedDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
         List<PortDiff<DownstreamAddress>> changedPorts = new LinkedList<>();
         for(OutPortState outPort : portStates) {
             Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(outPort.getPort(), portHierarchy);
             instances = filterInstancesWithUnsetPorts(instances);
-            PortDiff<DownstreamAddress> diff = outPort.updateWithDiff(instances);
+            PortDiff<DownstreamAddress> diff = outPort.computeDiffSet(instances);
+            //outdated code: updateWithDiff(instances);
             if(diff.hasDiffs()) {
                 changedPorts.add(diff);
             }
         }
         return changedPorts;
+    }
+    
+    void updateDownstreamPorts(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
+    	List<PortDiff<DownstreamAddress>> diffs = getUpdatedDownstreamPorts(accessor, portHierarchy);
+    	for(PortDiff<DownstreamAddress> diff : diffs) {
+    		manifestChangeset(diff);
+    	}
     }
 
     public boolean requiredDownstreamPortsSet() {
@@ -94,11 +102,6 @@ final class OutPortHandler {
             }
         }
         return true;
-    }
-
-    @SuppressWarnings("static-method")
-    public void startPortUpdaters() {
-        LOGGER.error("Port updaters are currently not run.");
     }
     
     private static Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> filterInstancesWithUnsetPorts(Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances) {
@@ -121,9 +124,15 @@ final class OutPortHandler {
         return retVal;
     }
 
-    void accept(NetworkVisitor visitor) {
+    void accept(NetworkVisitor visitor, PortDiff<DownstreamAddress> diffSet) {
         for(OutPortState out : portStates) {
-            Map<PortHierarchyLevel, List<DownstreamAddress>> elements = out.sinksByHierarchyLevel();
+        	Map<PortHierarchyLevel, List<DownstreamAddress>> elements = null;
+        	if(diffSet != null && out.matchesPort(diffSet.getPort())) {
+        		elements = OutPortState.orderSinksByHierarchyLevel(diffSet.getCurrentSinkSet());
+        	} else {
+        		elements = out.sinksByHierarchyLevel();
+        	}
+            
             Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit = elements.isEmpty() ? 
                     doCollect(out, EMPTY_VISIT_MAP) : doCollect(out, elements);        
             doVisit(visitor, out, toVisit);
@@ -157,8 +166,22 @@ final class OutPortHandler {
             visitor.visitOutPort(out.getPortName(), level, sinks);
         }
     }
+
+	void manifestChangeset(PortDiff<DownstreamAddress> diff) {
+		for(OutPortState state : portStates) {
+            boolean success = state.enactDiffSet(diff);
+            if(success) {
+            	return;
+            }
+        }
+		LOGGER.error("could not apply diff set " + diff + " to port configuration.");
+	}
     
-    /*
+    /* old/unused code 
+    @SuppressWarnings("static-method")
+    public void startPortUpdaters() {
+        LOGGER.error("Port updaters are currently not run.");
+    }
         private OutPortState findMatchingOutPortState(OutPort the_port) {
         for(OutPortState state : portStates) {
             if(state.matchesPort(the_port)) return state;

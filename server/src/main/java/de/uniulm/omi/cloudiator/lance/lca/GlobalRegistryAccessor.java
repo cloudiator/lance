@@ -65,6 +65,12 @@ public final class GlobalRegistryAccessor {
         reg.addComponentProperty(appInstId, compId, myId, CONTAINER_STATUS, type.toString());
     }
     
+    public static boolean dumpMapHasContainerStatus(Map<String, String> map, ContainerStatus type) {
+    	if(type == null) 
+    		throw new NullPointerException("type has to be set");
+    	return type.toString().equals(map.get(CONTAINER_STATUS));
+    }
+    
     /* 
     @Deprecated
     public final String getProperty(ComponentInstanceId myId, String name) throws RegistrationException {

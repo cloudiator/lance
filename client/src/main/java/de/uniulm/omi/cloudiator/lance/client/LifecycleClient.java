@@ -87,12 +87,16 @@ public final class LifecycleClient {
     }
 
 
+
     public final Optional<ComponentInstanceId> deploy(String serverIp, final DeploymentContext ctx,
+
         final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
         throws LcaException, RegistrationException, ContainerException {
         try {
             LifecycleAgent agent = findLifecycleAgent(serverIp);
+
             return Optional.of(deploy(agent, ctx, comp, os, containerType));
+
         } catch (RemoteException re) {
             handleRemoteException(re);
         } catch (NotBoundException e) {
@@ -123,9 +127,11 @@ public final class LifecycleClient {
         return agent;
     }
 
+
     private static ComponentInstanceId deploy(final LifecycleAgent agent,
         final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os,
         final ContainerType containerType)
+
         throws RemoteException, LcaException, RegistrationException, ContainerException {
     /*executor.submit(new Callable<ComponentInstanceId>() {
 
@@ -134,7 +140,9 @@ public final class LifecycleClient {
 				return agent.deployComponent(ctx, comp, os);		
 			}
 		});*/
+
         return agent.deployComponent(ctx, comp, os, containerType);
+
         // catch(Throwable t) {t.printStackTrace();}
     }
 

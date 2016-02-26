@@ -18,31 +18,24 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-import java.util.List;
-
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 /** an implementation of this interface
  * controls all containers asscociated 
- * with a particular lifecycle agent
+ * with a particular container type
+ * for this lifecycle agent
  * (there is one LifecycleAgent per
  * node and one ContainerManager per
- * lifecycle agent)
+ * container type)
  * 
  * @author Joerg Domaschka
  *
  */
-public interface ContainerManager {
+public interface ContainerManager extends BasicContainer {
 
     ContainerType getContainerType();
-    ContainerController getContainer(ComponentInstanceId id);
 
     ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException;
-    void terminate();
-    List<ComponentInstanceId> getAllContainers();
-    ContainerStatus getComponentContainerStatus(ComponentInstanceId cid);
 }

@@ -67,6 +67,10 @@ class Inprogress implements DockerShell {
         return readAvailable(stdErr, -1);
     }
     
+    // FIXME: change return value and interface such that
+    //  i) a StringBuilder is passed as a parameter
+    // ii) return enum Status.TERMINATOR or 
+    // 				   Status.EOF
     private static String readAvailable(BufferedReader std, int terminator) {
         StringBuilder builder = new StringBuilder();
         try { 
@@ -88,7 +92,10 @@ class Inprogress implements DockerShell {
             proc.exitValue(); 
             return false; 
         } catch(IllegalThreadStateException ex) {
-            LOGGER.debug("process not terminated", ex);
+        	// do not print this exception. it is not an error
+        	// it depends on the calling method to figure out
+        	// if this the process shall be running or not
+            // LOGGER.debug("process not terminated", ex);
             return true;
         }
     }
@@ -131,33 +138,48 @@ class Inprogress implements DockerShell {
         stdIn.flush();
     }
     
-    private static int drainAfterExitStatus(String in) {
+    private static int drainAfterExitStatus(String in, StringBuffer buffer) {
         String tmpOut = in.trim();
+        // we enforced this line break before the return 
+        // value ==> EXIT_CODE command
         int index = tmpOut.lastIndexOf("\n");
         // at least one element is required for number //
+        // this means something went really wrong //
         if(index >= tmpOut.length() -1) {
             return -1;
         }
-        // it may well be < 0 when the command did not 
-        // print anything 
+        // it may well be < 0 when the command 
+        // did not print anything 
         String toparse = tmpOut.substring(index + 1);
+        int trailIndex = in.lastIndexOf(toparse);
+        if(trailIndex > 0) {
+        	String trail = in.substring(0, trailIndex - 1);
+        	buffer.append(trail);
+        } else if(trailIndex > -1) {
+        	buffer.append(""); // no output was written
+        } else {
+        	LOGGER.error("could not find trailing element: " + toparse + " in input " + in);
+        	buffer.append(in);
+        }
         return Integer.parseInt(toparse);
     }
 
-    private static final String EXIT_CODE = "echo \"$?\"";
+    private static final String EXIT_CODE = "echo -n -e \"\\n$?\"";
     static final String BELL_COMMAND = "echo -e \"\\a\""; 
     
     @Override
     public ExecutionResult executeCommand(String command) {
         if(! processStillRunning() ) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("shell not available for executing command: " + command);
         }
         try {
             doExecuteCommand(command + "; " + EXIT_CODE + " ; " + BELL_COMMAND);
             String tmpOut = readOutUntilBell();
+            // use a return value to figure out if shell was closed
             String tmpErr = readErrAvailable();
-            int exit = drainAfterExitStatus(tmpOut);
-            return exit == 0 ? ExecutionResult.success(tmpOut, tmpErr) : ExecutionResult.commandFailure(exit, tmpOut, tmpErr);
+            StringBuffer buffer = new StringBuffer();
+            int exit = drainAfterExitStatus(tmpOut, buffer);
+            return exit == 0 ? ExecutionResult.success(buffer.toString(), tmpErr) : ExecutionResult.commandFailure(exit, buffer.toString(), tmpErr);
         } catch(IOException ioe) {
             LOGGER.warn("problem when reading from external process", ioe);
             return ExecutionResult.systemFailure(ioe.getMessage());

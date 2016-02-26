@@ -22,6 +22,7 @@ import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 final class BashExecutionHelper {
@@ -42,12 +43,12 @@ final class BashExecutionHelper {
         return res;
     }
     
-    private static void doExecuteCommand(boolean blocking, String command, Shell shell) {
+    static ExecutionResult doExecuteCommand(boolean blocking, String command, Shell shell) {
+    	// TODO: evaluate return values of commands and throw exceptions //
         if(blocking) {
-            shell.executeBlockingCommand(command);
-        } else { 
-            shell.executeCommand(command); 
-        }
+            return shell.executeBlockingCommand(command);
+        } 
+        return shell.executeCommand(command); 
     }
     
     static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {

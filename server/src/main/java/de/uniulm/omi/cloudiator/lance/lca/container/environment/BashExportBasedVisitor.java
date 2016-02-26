@@ -20,13 +20,19 @@ package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchyLevel;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
 public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVisitor {
-
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(OutPort.class);
+	
     private final ShellLikeInterface interfce;
     
     public BashExportBasedVisitor(ShellLikeInterface ifc) {
@@ -44,12 +50,16 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
 
     @Override
     public void visitNetworkAddress(PortHierarchyLevel level, String address) {
-        addEnvironmentVariable(level.getName().toUpperCase() + "_IP", address);
+    	String name = level.getName().toUpperCase() + "_IP";
+    	LOGGER.info("exporting network address as environment variable: " + name + " = " + address);
+        addEnvironmentVariable(name, address);
     }
 
     @Override
     public void visitInPort(String portName, PortHierarchyLevel level, Integer portNr) {
-        addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName.toUpperCase(), portNr.toString());
+    	String name = level.getName().toUpperCase() + "_" + portName.toUpperCase();
+    	LOGGER.info("exporting inPort as environment variable: " + name + " = " + portNr);
+        addEnvironmentVariable(name, portNr.toString());
     }
 
     @Override
@@ -60,8 +70,11 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
                 value = value + ","; 
             }
             value = value + element.toString();
+        
         }
-        addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName, value);
+        String name = level.getName().toUpperCase() + "_" + portName;
+        LOGGER.info("exporting out port as environment variable: " + name + " = " + value);
+        addEnvironmentVariable(name, value);
     }
 
     @Override

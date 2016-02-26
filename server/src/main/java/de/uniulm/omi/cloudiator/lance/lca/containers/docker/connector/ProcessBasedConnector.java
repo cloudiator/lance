@@ -171,7 +171,7 @@ final class ProcessBasedConnector implements DockerConnector {
             return pw; 
         } 
         ExecResult result = pw.toExecutionResult();
-        throw new DockerException("cannot start process; return value: " + result.exitCode() + "; " + result.getError());
+        throw new DockerException("cannot start docker container: " + buildContainerName(myId) + "; return value: " + result.exitCode() + "; " + result.getError() + ";" + result.getOutput());
     }
     
 	@Override

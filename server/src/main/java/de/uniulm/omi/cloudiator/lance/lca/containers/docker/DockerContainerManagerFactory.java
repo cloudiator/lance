@@ -21,13 +21,9 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.container.SpecificContainerManagerFactory;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchy;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchy.PortHierarchyBuilder;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchyLevel;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 
 public enum DockerContainerManagerFactory implements SpecificContainerManagerFactory {
-
+	
     INSTANCE {
         @Override
         public ContainerManager createContainerManager(HostContext vmId) {
@@ -43,6 +39,16 @@ public enum DockerContainerManagerFactory implements SpecificContainerManagerFac
             throw new UnsupportedOperationException("remote IP address needs to be defined.");
         }
     };
+    
+    static { 
+    	int i = 0;
+    	if(1 == i) {
+    		// TODO: add configuration flag or remove
+    		// note that in order to support this,
+    		// Docker has to be made remote enabled
+    		DockerContainerManagerFactory.enableRemoteAccess();
+    	}
+    }
     
     static boolean isRemoteAccessenabled() {
         return remote_enabled;

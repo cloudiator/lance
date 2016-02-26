@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import java.util.Map; 
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +31,18 @@ import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
@@ -114,17 +118,6 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     		throw new ContainerException(de);
     	}
     }
-    
-    private DockerShell doStartContainer() throws ContainerException {
-        final DockerShell dshell;
-        try { 
-            dshell = client.startContainer(myId); 
-        } catch(DockerException de) {
-            throw new ContainerException("cannot start container: " + myId, de);
-        }
-        shellFactory.installDockerShell(dshell);
-        return dshell;
-    }
 
     /** retrieved the actual port numbers and the way docker maps them 
      * @throws DockerException */
@@ -162,35 +155,70 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 		shellFactory.closeShell();	
 	}
     
-    /*
-    DockerLifecycleInterceptor(GlobalRegistryAccessor  accessorParam, ComponentInstanceId idParam,
-            NetworkHandler portHandlerParam, DeployableComponent componentParam, DockerShellFactory shellFactoryParam) {
-        registryAccessor = accessorParam;
-        myId = idParam;
-        myComponent = componentParam;
-        portHandler = portHandlerParam;
-        shellFactory = shellFactoryParam;
-    }*/
-    
     @Override
-    public void prepare(LifecycleHandlerType type) {
+    public void prepare(HandlerType type) throws ContainerException {
         if(type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
+        }
+    }
+
+    @Override
+    public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
+    	try {
+    		DockerShell shell = client.getSideShell(myId);
+    		prepareEnvironment(shell, diffSet);
+    		shellFactory.installDockerShell(shell);
+    	} catch(DockerException de) {
+    		throw new ContainerException("cannot create shell for port updates.", de);
+    	}
+    }
+    
+    @Override
+    public void postprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) {
+    	shellFactory.closeShell();
+    }
+    
+    @Override
+    public void postprocess(HandlerType type) {
+        if(type == LifecycleHandlerType.PRE_INSTALL) {
+            postPreInstall();
+        } else if(type == LifecycleHandlerType.POST_INSTALL) {
+            // TODO: do we have to make a snapshot after this? //
         } 
+    }
+    
+	@Override
+	public void preprocessDetector(DetectorType type) throws ContainerException {
+		// nothing special to do; just create a shell and prepare an environment //
+		try {
+    		DockerShell shell = client.getSideShell(myId);
+    		prepareEnvironment(shell);
+    		shellFactory.installDockerShell(shell);
+    	} catch(DockerException de) {
+    		throw new ContainerException("cannot create shell for port updates.", de);
+    	}
+	}
+    
+	@Override
+	public void postprocessDetector(DetectorType type) {
+		// nothing special to do; just create a shell //
+		shellFactory.closeShell();
+	}
+    
+    private DockerShell doStartContainer() throws ContainerException {
+        final DockerShell dshell;
+        try { 
+            dshell = client.startContainer(myId); 
+        } catch(DockerException de) {
+            throw new ContainerException("cannot start container: " + myId, de);
+        }
+        shellFactory.installDockerShell(dshell);
+        return dshell;
     }
 
     private void preInstallAction() {
         DockerShellWrapper w = shellFactory.createShell();
         prepareEnvironment(w.shell);
-    }
-
-    @Override
-    public void postprocess(LifecycleHandlerType type) {
-        if(type == LifecycleHandlerType.PRE_INSTALL) {
-            postPreInstall();
-        } else if(type == LifecycleHandlerType.POST_INSTALL) {
-            // TODO: do we have to make a snapshot after this? //
-        }            
     }
     
     private void postPreInstall() {
@@ -202,9 +230,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
     
     private void prepareEnvironment(DockerShell dshell) {
+    	prepareEnvironment(dshell, null);
+    }
+    
+    private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
         BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
         visitor.addEnvironmentVariable("TERM", "dumb");
-        networkHandler.accept(visitor);
+        networkHandler.accept(visitor, diff);
         myComponent.accept(deploymentContext, visitor);
     }
     
@@ -214,20 +246,4 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         //@SuppressWarnings("unused") String dockerId = 
         client.createContainer(target, myId, portsToSet);
     }
-/*
-    private void registerPortMappings2() throws DockerException {
-        // for all ports, get the port mapping //
-        List<InPort> inPortsTmp = myComponent.getExposedPorts();
-        for(InPort in : inPortsTmp) {
-            String name = in.getPortName();
-            Integer portNumber = (Integer) deploymentContext.getProperty(name, InPort.class);
-            int mapped = client.getPortMapping(myId, portNumber);
-            
-            Integer i = Integer.valueOf(mapped);
-            networkHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_0, name, i);
-            networkHandler.registerInPort(PortRegistryTranslator.PORT_HIERARCHY_1, name, i);
-            networkHandler.registerInPort(DockerContainerManagerFactory.PORT_HIERARCHY_2, name, portNumber);
-        }
-    }
-  */
 }

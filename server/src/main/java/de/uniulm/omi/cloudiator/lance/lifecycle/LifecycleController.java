@@ -18,61 +18,69 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostStartHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreInstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreStartHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachine;
-import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
-import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class LifecycleController {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
 
-    static Logger getLogger() { 
-    	return LOGGER; 
+    static Logger getLogger() {
+        return LOGGER;
     }
-    
+
     final LifecycleStore store;
     final ExecutionContext ec;
     private final StateMachine<LifecycleHandlerType> machine;
     private final LifecycleActionInterceptor interceptor;
     private final GlobalRegistryAccessor accessor;
-    
-    public LifecycleController(LifecycleStore storeParam, LifecycleActionInterceptor interceptorParam, 
-            GlobalRegistryAccessor accessorParam, ExecutionContext ecParam) {
+
+    public LifecycleController(LifecycleStore storeParam,
+        LifecycleActionInterceptor interceptorParam, GlobalRegistryAccessor accessorParam,
+        ExecutionContext ecParam) {
         store = storeParam;
         ec = ecParam;
-        machine = buildStateMachine();
-        interceptor = interceptorParam; 
+        machine = LifecycleControllerTransitions.buildStateMachine(store, ec);
+        interceptor = interceptorParam;
         accessor = accessorParam;
-        
+
     }
-    
-    void run(LifecycleHandlerType type) {
+
+    private void preRun(HandlerType type) throws ContainerException {
         interceptor.prepare(type);
-        machine.transit(type);
-        interceptor.postprocess(type);
-        updateStateInRegistry(type);
     }
-    
+
+    private void postRun(HandlerType type) {
+        interceptor.postprocess(type);
+    }
+
+    void run(LifecycleHandlerType type) {
+        try {
+            preRun(type);
+            machine.transit(type);
+            postRun(type);
+            updateStateInRegistry(type);
+        } catch (ContainerException ce) {
+            LOGGER
+                .warn("Exception when executing state transition. this is not thoroughly handled.",
+                    ce);
+            // set error state
+            // updateStateInRegistry(type);
+        }
+    }
+
     private void updateStateInRegistry(LifecycleHandlerType type) {
         try {
             accessor.updateInstanceState(interceptor.getComponentId(), type);
-        } catch(RegistrationException ex) {
+        } catch (RegistrationException ex) {
             LOGGER.warn("could not update status in registry.", ex);
         }
     }
@@ -86,7 +94,7 @@ public final class LifecycleController {
         run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
         run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
     }
-    
+
     public synchronized void blockingInstall() {
         run(LifecycleHandlerType.INIT);         // moves to PRE_INSTALL
         run(LifecycleHandlerType.PRE_INSTALL);    // moves to INSTALL
@@ -96,88 +104,40 @@ public final class LifecycleController {
         run(LifecycleHandlerType.INSTALL);        // moves to POST_INSTALL
         run(LifecycleHandlerType.POST_INSTALL);    // moves to PRE_START 
     }
-    
-    public synchronized void blockingStart() {
+
+    public synchronized void blockingStart() throws LifecycleException {
         run(LifecycleHandlerType.PRE_START);    // moves to START and calls 'start handler'
-        // FIXME: establish start detector
-        // machine.transit(LifecycleHandlerType.START);        // moves to POST_START
-    }
-    
-    public synchronized void blockingStop() {
-    	throw new UnsupportedOperationException("not calling stop handler; this is not part of the state machine (yet).");
-    }
-    
-    public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) {
-        handler.execute(ec);
-        // FIXME: change to according state //
+        StartDetectorHandler.runStartDetector(interceptor, store.getStartDetector(), ec);
+        // FIXME: establish periodic invocation of stop detector
+        getLogger().warn("TODO: periodically run stop detector");
+        machine.transit(LifecycleHandlerType.START);        // moves to POST_START
     }
 
-    private StateMachine<LifecycleHandlerType> buildStateMachine() {
-        return addInitTransition(
-                addInstallTransitions(
-                        addStartTransitions(
-                                new  StateMachineBuilder<>(LifecycleHandlerType.NEW).
-                                addAllState(LifecycleHandlerType.values())
-                    ))).build();
+    public synchronized void blockingStop() {
+        throw new UnsupportedOperationException(
+            "not calling stop handler; this is not part of the state machine (yet).");
     }
-    
-    private StateMachineBuilder<LifecycleHandlerType> addInitTransition(StateMachineBuilder<LifecycleHandlerType> b) {
-        return b.addSynchronousTransition(LifecycleHandlerType.NEW, LifecycleHandlerType.INIT,
-                new TransitionAction() {
-                    @Override public void transit(Object[] params) {
-                        InitHandler h = store.getHandler(LifecycleHandlerType.INIT, InitHandler.class);
-                        h.execute(ec);
-                    }
-                });
-    }
-    
-    private StateMachineBuilder<LifecycleHandlerType> addInstallTransitions(StateMachineBuilder<LifecycleHandlerType> b) {
-        return b.addSynchronousTransition(LifecycleHandlerType.INIT, LifecycleHandlerType.PRE_INSTALL,
-                new TransitionAction() {
-                    @Override public void transit(Object[] params) {
-                        PreInstallHandler h = store.getHandler(LifecycleHandlerType.PRE_INSTALL, PreInstallHandler.class);
-                        h.execute(ec);
-                    }
-                }).
-                addSynchronousTransition(LifecycleHandlerType.PRE_INSTALL, LifecycleHandlerType.INSTALL, 
-                    new TransitionAction() {
-                        @Override public void transit(Object[] params) {
-                            InstallHandler h = store.getHandler(LifecycleHandlerType.INSTALL, InstallHandler.class);
-                            h.execute(ec);
-                        }
-                }). 
-                addSynchronousTransition(LifecycleHandlerType.INSTALL, LifecycleHandlerType.POST_INSTALL, 
-                    new TransitionAction() {
-                        @Override public void transit(Object[] params) {
-                            PostInstallHandler h = store.getHandler(LifecycleHandlerType.POST_INSTALL, PostInstallHandler.class);
-                            h.execute(ec);
-                        }
-                });        
-    }
-    
-    private StateMachineBuilder<LifecycleHandlerType> addStartTransitions(StateMachineBuilder<LifecycleHandlerType> b) {
-        return b.addSynchronousTransition(LifecycleHandlerType.POST_INSTALL, LifecycleHandlerType.PRE_START, 
-                new TransitionAction() {
-                    @Override public void transit(Object[] params) {
-                            PreStartHandler h = store.getHandler(LifecycleHandlerType.PRE_START, PreStartHandler.class);
-                            h.execute(ec);
-                    }
-                }).
-                addSynchronousTransition(LifecycleHandlerType.PRE_START, LifecycleHandlerType.START,
-                    new TransitionAction() {
-                        @Override public void transit(Object[] params) {
-                            StartHandler h = store.getHandler(LifecycleHandlerType.START, StartHandler.class);
-                            h.execute(ec);
-                            // FIXME: run start detector and stop detector //
-                            getLogger().warn("WARNING: run start detector and stop detector");
-                        }
-                }). 
-                addSynchronousTransition(LifecycleHandlerType.START, LifecycleHandlerType.POST_START,
-                    new TransitionAction() {
-                        @Override public void transit(Object[] params) {
-                            PostStartHandler h = store.getHandler(LifecycleHandlerType.POST_START, PostStartHandler.class);
-                            h.execute(ec);
-                    }
-                });
+
+
+    public synchronized void blockingUpdatePorts(@SuppressWarnings("unused") OutPort port,
+        PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {
+        boolean preprocessed = false;
+        try {
+            interceptor.preprocessPortUpdate(diff);
+            preprocessed = true;
+            LOGGER.info("updating ports via port handler.");
+            handler.execute(ec);
+        } catch (ContainerException ce) {
+            LOGGER
+                .warn("Exception when executing state transition. this is not thoroughly handled.",
+                    ce);
+            // set error state
+            // updateStateInRegistry(LifecycleHandlerType.START);
+        } finally {
+            if (preprocessed) {
+                interceptor.postprocessPortUpdate(diff);
+                updateStateInRegistry(LifecycleHandlerType.START);
+            }
+        }
     }
 }
