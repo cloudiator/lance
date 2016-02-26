@@ -42,6 +42,7 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
@@ -55,7 +56,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Optional;
 
 public final class LifecycleClient {
 
@@ -88,33 +88,33 @@ public final class LifecycleClient {
 
 
 
-    public final Optional<ComponentInstanceId> deploy(String serverIp, final DeploymentContext ctx,
+    public final ComponentInstanceId deploy(String serverIp, final DeploymentContext ctx,
 
         final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
-        throws LcaException, RegistrationException, ContainerException {
+        throws DeploymentException {
         try {
             LifecycleAgent agent = findLifecycleAgent(serverIp);
 
-            return Optional.of(deploy(agent, ctx, comp, os, containerType));
+            return deploy(agent, ctx, comp, os, containerType);
 
         } catch (RemoteException re) {
-            handleRemoteException(re);
+            throw new DeploymentException(handleRemoteException(re));
         } catch (NotBoundException e) {
-            throw new RegistrationException("bad registry handling.", e);
+            throw new DeploymentException(new RegistrationException("bad registry handling.", e));
+        } catch (LcaException | ContainerException | RegistrationException e) {
+            throw new DeploymentException(e);
         }
-        return Optional.empty();
     }
 
-    private static void handleRemoteException(RemoteException re)
-        throws LcaException, RegistrationException {
+    private static Exception handleRemoteException(RemoteException re) {
         Throwable t = re.getCause();
         if (t == null)
-            throw new LcaException("network exception occurred");
+            return new LcaException("network exception occurred");
         if (t instanceof LcaException)
-            throw (LcaException) t;
+            return (LcaException) t;
         if (t instanceof RegistrationException)
-            throw (RegistrationException) t;
-        throw new LcaException("downstream exception occurred.", t);
+            return (RegistrationException) t;
+        return new LcaException("downstream exception occurred.", t);
 
     }
 
