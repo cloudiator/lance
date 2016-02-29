@@ -87,9 +87,7 @@ public final class LifecycleClient {
     }
 
 
-
     public final ComponentInstanceId deploy(String serverIp, final DeploymentContext ctx,
-
         final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
         throws DeploymentException {
         try {
@@ -102,6 +100,21 @@ public final class LifecycleClient {
         } catch (NotBoundException e) {
             throw new DeploymentException(new RegistrationException("bad registry handling.", e));
         } catch (LcaException | ContainerException | RegistrationException e) {
+            throw new DeploymentException(e);
+        }
+    }
+
+    public final boolean undeploy(String serverIp, ComponentInstanceId componentInstanceId,
+        ContainerType containerType) throws DeploymentException {
+
+        try {
+            LifecycleAgent agent = findLifecycleAgent(serverIp);
+            return undeploy(agent, containerType, componentInstanceId);
+        } catch (RemoteException e) {
+            throw new DeploymentException(handleRemoteException(e));
+        } catch (NotBoundException e) {
+            throw new DeploymentException(new RegistrationException("bad registry handling.", e));
+        } catch (LcaException | ContainerException e) {
             throw new DeploymentException(e);
         }
     }
@@ -127,6 +140,11 @@ public final class LifecycleClient {
         return agent;
     }
 
+    private static boolean undeploy(final LifecycleAgent agent, ContainerType containerType,
+        ComponentInstanceId componentInstanceId)
+        throws LcaException, RemoteException, ContainerException {
+        return agent.stopComponentInstance(containerType, componentInstanceId);
+    }
 
     private static ComponentInstanceId deploy(final LifecycleAgent agent,
         final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os,
