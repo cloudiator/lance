@@ -51,4 +51,6 @@ public interface DockerConnector {
     int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException;
 
     DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
+
+	void stopContainer(ComponentInstanceId myId) throws DockerException;
 }

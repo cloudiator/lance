@@ -31,7 +31,13 @@ public interface ContainerLogic {
     
     void completeInit() throws ContainerException;
 
-    void doDestroy() throws ContainerException;
+    /**
+     * 
+     * @param forceShutdown if false, the 'stop' command was successful and the container can shut down gracefully. 
+     * 				Otherwise, it does its best to terminate the application if possible.
+     * @throws ContainerException when shutting down the container was not possible
+     */
+    void doDestroy(boolean forceShutdown) throws ContainerException;
 
     // ComponentInstanceId getId();
     /**

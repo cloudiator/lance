@@ -110,8 +110,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
 
     @Override
-    public void doDestroy() {
-        throw new UnsupportedOperationException();
+    public void doDestroy(boolean force) throws ContainerException {
+    	/* docker ignores the flag */
+    	try {
+    		client.stopContainer(myId);
+    	} catch(DockerException de) {
+    		throw new ContainerException(de);
+    	}
     }
 
     /** retrieved the actual port numbers and the way docker maps them 
