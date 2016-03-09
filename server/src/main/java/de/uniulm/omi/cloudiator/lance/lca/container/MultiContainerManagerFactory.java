@@ -25,9 +25,7 @@ import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 /**
  * Created by Daniel Seybold on 23.09.2015.
  */
-public class MultiContainerManagerFactory {
-
-
+public final class MultiContainerManagerFactory {
 
     public static ContainerManager createContainerManager(HostContext contex, OperatingSystem operatingSystem, ContainerType containerType){
 

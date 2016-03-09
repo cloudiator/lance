@@ -101,8 +101,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         this.plainShellFactory.closeShell();
     }
 
-    @Override public void doDestroy() throws ContainerException {
-        throw new UnsupportedOperationException();
+    @Override public void doDestroy(boolean forceShutdown) throws ContainerException {
+    	if(forceShutdown) {
+    		throw new ContainerException("cannot force shutdown in plain container. shutdown will fail.");
+    	}
+        throw new UnsupportedOperationException("graceful shutdown not implemented.");
     }
 
     @Override public String getLocalAddress() throws ContainerException {

@@ -150,6 +150,11 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
         network.startPortUpdaters(controller);
     }
     
+    void preDestroyAction() {
+    	controller.blockingStop();
+    	//FIXME: remove entries from the registries //
+    }
+    
     void registerStatus(ContainerStatus status) throws RegistrationException {
     	accessor.updateContainerState(containerId, status);
     }
@@ -212,7 +217,14 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                 new TransitionAction() {                    
                     @Override public void transit(Object[] params) { 
                         try { 
-                            logic.doDestroy(); 
+                        	boolean forceShutdown = false;
+                        	try {
+                        		preDestroyAction();
+                        	} catch(Exception ex) {
+                        		getLogger().error("could not shut down component; trying to force shut down of container", ex);
+                        		forceShutdown = true;
+                        	}
+                            logic.doDestroy(forceShutdown); 
                             registerStatus(ContainerStatus.DESTROYED);
                         } catch(ContainerException | RegistrationException ce) { 
                             getLogger().error("could not shut down container; FIXME add error state", ce); 
