@@ -39,27 +39,22 @@ public class PlainShellImpl implements PlainShell {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlainShell.class);
 
     private ProcessBuilder processBuilder = new ProcessBuilder();
-
+    private final OperatingSystem opSys;
     private final List<String> osShell = new ArrayList<String>();
 
     public PlainShellImpl(OperatingSystem operatingSystem) {
-
+    	opSys = operatingSystem;
         //add the os respective shells for execution
         if (operatingSystem.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-
             this.osShell.add("powershell.exe");
             this.osShell.add("-command");
-
-        } else if (operatingSystem.equals(OperatingSystemFamily.LINUX)) {
-
+        } else if (operatingSystem.getFamily().equals(OperatingSystemFamily.LINUX)) {
             this.osShell.add("/bin/bash");
             this.osShell.add("-c");
-
         } else {
             throw new IllegalStateException("Unkown OS family: " + operatingSystem.getFamily().name());
         }
     }
-
 
     @Override public ExecutionResult executeCommand(String command) {
         ExecutionResult executionResult;

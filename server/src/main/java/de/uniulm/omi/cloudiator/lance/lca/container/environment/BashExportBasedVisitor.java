@@ -45,7 +45,7 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
             interfce.executeCommand("echo export " + name + "=" + value);
             return;
         }
-        throw new IllegalStateException("could not set environment variables: " + name + "=" + value);
+        throw new IllegalStateException("could not set environment variables: " + name + "=" + value + ": " + result);
     }
 
     @Override
