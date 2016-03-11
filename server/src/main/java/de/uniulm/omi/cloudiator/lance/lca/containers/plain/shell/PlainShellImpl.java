@@ -40,7 +40,7 @@ public class PlainShellImpl implements PlainShell {
 
     private ProcessBuilder processBuilder = new ProcessBuilder();
     private final OperatingSystem opSys;
-    private final List<String> osShell = new ArrayList<String>();
+    private final List<String> osShell = new ArrayList<>();
 
     public PlainShellImpl(OperatingSystem operatingSystem) {
     	opSys = operatingSystem;
@@ -63,7 +63,6 @@ public class PlainShellImpl implements PlainShell {
         List<String> commands = this.buildCommand(command);
 
         try {
-
             shellProcess = this.processBuilder.command(commands).start();
 
             //just for debugging
@@ -78,12 +77,11 @@ public class PlainShellImpl implements PlainShell {
             String errorOut = extractErrorOutput(shellProcess);
             LOGGER.debug(errorOut);
 
-
             //important, wait for or it will run in an deadlock!!, adapt execution result maybe
             int exitValue = shellProcess.waitFor();
             LOGGER.debug("ExitCode: " + exitValue);
 
-            executionResult = this.createExecutionResult(exitValue, commandOut, errorOut);
+            executionResult = createExecutionResult(exitValue, commandOut, errorOut);
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -91,8 +89,6 @@ public class PlainShellImpl implements PlainShell {
             executionResult = ExecutionResult.systemFailure(e.getLocalizedMessage());
             return executionResult;
         }
-
-
         return executionResult;
     }
 
@@ -103,35 +99,28 @@ public class PlainShellImpl implements PlainShell {
         //Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(commandLine);
         //while (m.find())
         //    commandList.add(m.group(1)); // Add .replace("\"", "") to remove surrounding quotes.
-
-
-
-
         //create list with os specific commands
         commandList.addAll(this.osShell);
 
-        //todo check if already wrapped
+        //TODO: check if already wrapped
         commandList.add(commandLine);
-
-
-        //add app commands and wrap them in double quotes, single quotes won't work on Windows
-        //result.add("\"");
-        //result.addAll(commandList);
-        //result.add("\"");
 
         return commandList;
     }
 
     @Override public ExecutionResult executeBlockingCommand(String command) {
 
-        //fixme: implement this in a blocking way, check if blocking command are necessary
+        //FIXME: implement this in a non-blocking way, check if blocking command are necessary
+    	// int exitValue = shellProcess.waitFor(); will block forever otherwise.
         LOGGER.warn("Using currently same impl for blocking/nonblocking execution of commands!");
         return this.executeCommand(command);
     }
 
 
     @Override public void close() {
-        //fixme: implement this, check what needs to be closed or process killed?
+        //FIXME: implement this, check what needs to be closed or process killed?
+    	// Comment (jd): should be fine. As we run external processes, closing 
+    	// the shell should not be needed
         LOGGER.warn("Closing PlainShellImpl needs to be implemented!");
     }
 
@@ -141,69 +130,50 @@ public class PlainShellImpl implements PlainShell {
         LOGGER.info(this.processBuilder.directory().getAbsoluteFile().toString());
     }
 
-    private ExecutionResult createExecutionResult(int exitValue, String commandOut,
-        String errorOut) {
-
+    private static ExecutionResult createExecutionResult(int exitValue, String commandOut, String errorOut) {
         ExecutionResult executionResult;
-
         if (exitValue == 0) {
             executionResult = ExecutionResult.success(commandOut, errorOut);
         } else {
             executionResult = ExecutionResult.commandFailure(exitValue, commandOut, errorOut);
         }
-
         return executionResult;
-
     }
 
     private static String extractCommandOutput(Process process) {
-        String output;
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         StringBuilder builder = new StringBuilder();
-        String line;
-        try {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));) {
+            String line;            
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
                 builder.append(System.getProperty("line.separator"));
             }
-            //closing
-            reader.close();
         } catch (IOException e) {
             LOGGER.error("Error while reading process outputstream", e);
             e.printStackTrace();
         }
 
-        output = builder.toString();
-
-
-
-        return output;
+        return builder.toString();
     }
 
     private static String extractErrorOutput(Process process) {
-        String output;
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         StringBuilder builder = new StringBuilder();
-        String line;
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
+            String line;
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
                 builder.append(System.getProperty("line.separator"));
             }
-            //closing
-            reader.close();
         } catch (IOException e) {
             LOGGER.error("Error while reading process errorstream", e);
             e.printStackTrace();
         }
-
-        output = builder.toString();
-
-        return output;
+        return builder.toString();
     }
 
-
-
+	@Override
+	public void setEnvironmentVariable(String key, String value) {
+		processBuilder.environment().put(key, value);
+		LOGGER.info("exporting environment variable: " + key + " = " + value);
+	}
 }

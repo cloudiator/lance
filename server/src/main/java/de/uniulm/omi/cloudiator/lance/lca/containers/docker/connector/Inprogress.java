@@ -199,4 +199,14 @@ class Inprogress implements DockerShell {
             LOGGER.info("exception when closing InProgress shell", ioe);
         }
     }
+
+    @Override
+    public void setEnvironmentVariable(String name, String value) {
+	ExecutionResult result = executeCommand("export " + name + "=" + value);
+        if(result.isSuccess()) {
+            executeCommand("echo export " + name + "=" + value);
+            return;
+        }
+        throw new IllegalStateException("could not set environment variables: " + name + "=" + value + ": " + result);
+    }
 }

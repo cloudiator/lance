@@ -40,12 +40,7 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
     }
     
     public void addEnvironmentVariable(String name, String value) {
-        ExecutionResult result = interfce.executeCommand("export " + name + "=" + value);
-        if(result.isSuccess()) {
-            interfce.executeCommand("echo export " + name + "=" + value);
-            return;
-        }
-        throw new IllegalStateException("could not set environment variables: " + name + "=" + value + ": " + result);
+        interfce.setEnvironmentVariable(name, value);
     }
 
     @Override

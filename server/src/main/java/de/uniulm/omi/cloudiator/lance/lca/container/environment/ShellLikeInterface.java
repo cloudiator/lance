@@ -23,5 +23,5 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 public interface ShellLikeInterface {
 
     ExecutionResult executeCommand(String string);
-
+    void setEnvironmentVariable(String key, String value);
 }
