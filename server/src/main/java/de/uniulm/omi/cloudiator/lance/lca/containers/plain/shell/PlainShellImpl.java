@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ import java.util.List;
  */
 public class PlainShellImpl implements PlainShell {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PlainShell.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(PlainShell.class);
 
     private ProcessBuilder processBuilder = new ProcessBuilder();
     private final OperatingSystem opSys;
@@ -71,18 +72,28 @@ public class PlainShellImpl implements PlainShell {
                 LOGGER.debug("Content: " + string);
             });
 
-            String commandOut = extractCommandOutput(shellProcess);
-            LOGGER.debug(commandOut);
-
-            String errorOut = extractErrorOutput(shellProcess);
-            LOGGER.debug(errorOut);
-
+            StringBuilder commandOut = new StringBuilder();
+            StringBuilder errorOut = new StringBuilder();
+            Thread t1 = createDrainThread(commandOut, shellProcess.getInputStream());
+            Thread t2 = createDrainThread(errorOut, shellProcess.getErrorStream());
+            t1.start();
+            t2.start();
+            
+            while(true) {
+            	try {
+            		t1.join();
+            		t2.join();
+            		break;
+            	} catch(InterruptedException ie) {
+            		 LOGGER.debug("caught interrupted exception: ", ie);
+            	}
+            }
+            
             //important, wait for or it will run in an deadlock!!, adapt execution result maybe
             int exitValue = shellProcess.waitFor();
             LOGGER.debug("ExitCode: " + exitValue);
 
-            executionResult = createExecutionResult(exitValue, commandOut, errorOut);
-
+            executionResult = createExecutionResult(exitValue, commandOut.toString(), errorOut.toString());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             LOGGER.error("Error while executing command: " + command, e);
@@ -90,6 +101,21 @@ public class PlainShellImpl implements PlainShell {
             return executionResult;
         }
         return executionResult;
+    }
+    
+    private static Thread createDrainThread(StringBuilder out, InputStream stream) {
+    	Thread t = new Thread(){
+        	public void run() {
+        		try {
+        			String s = extractCommandOutput(stream);
+        			LOGGER.debug(s);
+        			out.append(s);
+        		} catch(Exception ex) {
+        			LOGGER.debug("failed when draining stream", ex);
+        		}
+        	}
+        };
+        return t;
     }
 
 
@@ -140,12 +166,13 @@ public class PlainShellImpl implements PlainShell {
         return executionResult;
     }
 
-    private static String extractCommandOutput(Process process) {
+    private static String extractCommandOutput(InputStream stream) {
         StringBuilder builder = new StringBuilder();
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));) {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(stream));) {
             String line;            
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
+                LOGGER.debug(line);
                 builder.append(System.getProperty("line.separator"));
             }
         } catch (IOException e) {
@@ -153,21 +180,7 @@ public class PlainShellImpl implements PlainShell {
             e.printStackTrace();
         }
 
-        return builder.toString();
-    }
-
-    private static String extractErrorOutput(Process process) {
-        StringBuilder builder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))){
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-                builder.append(System.getProperty("line.separator"));
-            }
-        } catch (IOException e) {
-            LOGGER.error("Error while reading process errorstream", e);
-            e.printStackTrace();
-        }
+        LOGGER.debug("captured " + builder.length() + " elements to string builder.");
         return builder.toString();
     }
 
