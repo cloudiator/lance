@@ -34,6 +34,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
 import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
@@ -179,13 +180,39 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
 	@Override
 	public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
-		LOGGER.error("postprocessPortUpdate is not implemented for plain container");
+		plainShellFactory.closeShell();
 	}
 
 	@Override
 	public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
 			throws ContainerException {
-		LOGGER.error("preprocessPortUpdate is not implemented for plain container");
+
+        //TODO: again duplicated code, needs refactoring
+
+        PlainShell plainShell = new PlainShellImpl(this.os);
+        plainShellFactory.installPlainShell(plainShell);
+        PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
+
+        if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+
+            PowershellExportBasedVisitor visitor =
+                    new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
+            networkHandler.accept(visitor, diff);
+            this.deployableComponent.accept(this.deploymentContext, visitor);
+
+        } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+            BashExportBasedVisitor visitor =
+                    new BashExportBasedVisitor(plainShellWrapper.plainShell);
+
+            networkHandler.accept(visitor, diff);
+            this.deployableComponent.accept(this.deploymentContext, visitor);
+
+        } else {
+            throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
+        }
+
+
+
 	}
 
 	@Override
@@ -197,4 +224,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 	public void preprocessDetector(DetectorType type) throws ContainerException {
 		LOGGER.error("preprocessDetector is not implemented for plain container");
 	}
+
+
+
 }
