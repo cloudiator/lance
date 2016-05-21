@@ -106,6 +106,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     	if(forceShutdown) {
     		throw new ContainerException("cannot force shutdown in plain container. shutdown will fail.");
     	}
+
         throw new UnsupportedOperationException("graceful shutdown not implemented.");
     }
 
