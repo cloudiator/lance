@@ -116,11 +116,15 @@ public final class LifecycleController {
     public synchronized void blockingStop() {
         //throw new UnsupportedOperationException(
           //  "not calling stop handler; this is not part of the state machine (yet).");
-        machine.transit(LifecycleHandlerType.PRE_STOP);
-        //run(LifecycleHandlerType.PRE_STOP);
+        //machine.transit(LifecycleHandlerType.PRE_STOP);
+        getLogger().warn("running POST_START state!");
+        run(LifecycleHandlerType.POST_START);
+
+        getLogger().warn("running PRE_STOP state!");
+        run(LifecycleHandlerType.PRE_STOP);
         //FIXME: is a stop detector action required at this point?
         getLogger().warn("Stopping instance, running PRE_STOP state!");
-        //run(LifecycleHandlerType.STOP);
+        run(LifecycleHandlerType.STOP);
         //machine.transit(LifecycleHandlerType.STOP);
     }
 
