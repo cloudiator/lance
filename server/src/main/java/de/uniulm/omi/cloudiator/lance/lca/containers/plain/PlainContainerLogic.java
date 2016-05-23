@@ -60,10 +60,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     private final NetworkHandler networkHandler;
     private final PlainShellFactory plainShellFactory;
     private final HostContext hostContext;
+    private boolean stopped = false;
 
     PlainContainerLogic(ComponentInstanceId id, DeployableComponent deployableComponent,
-        DeploymentContext deploymentContext, OperatingSystem os, NetworkHandler networkHandler,
-        PlainShellFactory plainShellFactory, HostContext hostContext) {
+                        DeploymentContext deploymentContext, OperatingSystem os, NetworkHandler networkHandler,
+                        PlainShellFactory plainShellFactory, HostContext hostContext) {
 
         this.myId = id;
         this.deployableComponent = deployableComponent;
@@ -74,7 +75,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         this.hostContext = hostContext;
     }
 
-    @Override public void doCreate() throws ContainerException {
+    @Override
+    public void doCreate() throws ContainerException {
         LOGGER.info("Creating shell for operating system: " + this.os.toString());
         PlainShell plainShell = new PlainShellImpl(this.os);
 
@@ -91,29 +93,31 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     }
 
-    @Override public void doInit(LifecycleStore store) throws ContainerException {
+    @Override
+    public void doInit(LifecycleStore store) throws ContainerException {
         //probably not needed for plain container
 
     }
 
 
-    @Override public void completeInit() throws ContainerException {
+    @Override
+    public void completeInit() throws ContainerException {
 
         this.plainShellFactory.closeShell();
     }
 
-    @Override public void doDestroy(boolean forceShutdown) throws ContainerException {
-    	if(forceShutdown) {
-    		throw new ContainerException("cannot force shutdown in plain container. shutdown will fail.");
-    	}
-
-        throw new UnsupportedOperationException("graceful shutdown not implemented.");
+    @Override
+    public void doDestroy(boolean forceShutdown) throws ContainerException {
+        //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
+        LOGGER.warn("doDestroy not implemented!");
     }
 
-    @Override public String getLocalAddress() throws ContainerException {
-
-        return hostContext.getInternalIp();
-
+    @Override
+    public String getLocalAddress() throws ContainerException {
+        if (!stopped) {
+            return hostContext.getInternalIp();
+        }
+        return null;
     }
 
     /**
@@ -121,7 +125,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
      *
      * @return
      */
-    @Override public InportAccessor getPortMapper() {
+    @Override
+    public InportAccessor getPortMapper() {
         return ((portName, clientState) -> {
 
             Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
@@ -132,9 +137,16 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         });
     }
 
-    @Override public void prepare(HandlerType type) {
+    @Override
+    public void prepare(HandlerType type) {
+
+        //TODO: open shells here?
+
         if (type == LifecycleHandlerType.INSTALL) {
             preInstallAction();
+        }
+        if (type == LifecycleHandlerType.PRE_STOP) {
+            stopped = true;
         }
 
     }
@@ -146,13 +158,13 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
             PowershellExportBasedVisitor visitor =
-                new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
+                    new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
             networkHandler.accept(visitor, null);
             this.deployableComponent.accept(this.deploymentContext, visitor);
 
         } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
             BashExportBasedVisitor visitor =
-                new BashExportBasedVisitor(plainShellWrapper.plainShell);
+                    new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
             networkHandler.accept(visitor, null);
             this.deployableComponent.accept(this.deploymentContext, visitor);
@@ -163,7 +175,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     }
 
-    @Override public void postprocess(HandlerType type) {
+    @Override
+    public void postprocess(HandlerType type) {
         if (type == LifecycleHandlerType.PRE_INSTALL) {
             postPreInstall();
         } else if (type == LifecycleHandlerType.POST_INSTALL) {
@@ -172,21 +185,22 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
 
     private void postPreInstall() {
-    	// TODO: empty method?
+        // TODO: empty method?
     }
 
-    @Override public ComponentInstanceId getComponentId() {
+    @Override
+    public ComponentInstanceId getComponentId() {
         return this.myId;
     }
 
-	@Override
-	public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
-		plainShellFactory.closeShell();
-	}
+    @Override
+    public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
+        plainShellFactory.closeShell();
+    }
 
-	@Override
-	public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
-			throws ContainerException {
+    @Override
+    public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
+            throws ContainerException {
 
         //TODO: again duplicated code, needs refactoring
 
@@ -213,19 +227,17 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         }
 
 
+    }
 
-	}
+    @Override
+    public void postprocessDetector(DetectorType type) {
+        LOGGER.error("postprocessDetector is not implemented for plain container");
+    }
 
-	@Override
-	public void postprocessDetector(DetectorType type) {
-		LOGGER.error("postprocessDetector is not implemented for plain container");
-	}
-
-	@Override
-	public void preprocessDetector(DetectorType type) throws ContainerException {
-		LOGGER.error("preprocessDetector is not implemented for plain container");
-	}
-
+    @Override
+    public void preprocessDetector(DetectorType type) throws ContainerException {
+        LOGGER.error("preprocessDetector is not implemented for plain container");
+    }
 
 
 }
