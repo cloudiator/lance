@@ -165,11 +165,11 @@ public final class LifecycleClient {
     }
 
     /**
-     * @param myInstanceId
-     * @param lsyAppId
+     * @param myInstanceId the instance id
+     * @param lsyAppId the aplication id
      * @return true if this application instance has been added successfully. false if it was already contained
      * in the registry.
-     * @throws RegistrationException
+     * @throws RegistrationException when an registration error occurs
      */
     public boolean registerApplicationInstance(ApplicationInstanceId myInstanceId,
         ApplicationId lsyAppId) throws RegistrationException {

@@ -37,7 +37,7 @@ public interface DockerConnector {
      * @param key should be the id to use; either component id after initialisation
      * of the component instance id after configuration 
      * @param os will be used as a tag in both cases
-     * @return 
+     * @return the name of the container
      * @throws DockerException 
      */
     String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException;

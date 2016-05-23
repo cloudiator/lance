@@ -119,8 +119,6 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     	}
     }
 
-    /** retrieved the actual port numbers and the way docker maps them 
-     * @throws DockerException */
     @Override
     public InportAccessor getPortMapper() {
         return ( (portName, clientState) -> {

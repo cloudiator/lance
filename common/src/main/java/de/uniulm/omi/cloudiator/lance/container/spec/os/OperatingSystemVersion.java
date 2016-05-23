@@ -51,6 +51,7 @@ public final class OperatingSystemVersion implements Serializable {
      * 
      * @param year in 'y' or 'yy' format
      * @param month either 10 or 4
+     * @return returns the operating system object
      */
     public static OperatingSystemVersion getUbuntuVersion(int year, int month) {
         if(year > 6 && year <= (Calendar.getInstance().get(Calendar.YEAR) % 100) &&
