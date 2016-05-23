@@ -44,6 +44,7 @@ public interface ContainerLogic {
      * 
      * @return null if no address is available;
      * otherwise a stringified form of an IP address
+     * @throws ContainerException when a container-specific exception occurs
      */
     String getLocalAddress() throws ContainerException;
 

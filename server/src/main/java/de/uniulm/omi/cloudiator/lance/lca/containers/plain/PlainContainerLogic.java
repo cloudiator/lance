@@ -117,9 +117,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
 
     /**
-     * loops the port numbers through <a,b> -> <(a,a) , (b,b)>
+     * loops the port numbers through (a,b) --- ((a,a) , (b,b))
      *
-     * @return
+     * @return the inport accessor
      */
     @Override public InportAccessor getPortMapper() {
         return ((portName, clientState) -> {

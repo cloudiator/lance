@@ -33,12 +33,12 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 public interface LcaRegistry extends Serializable {
 
     /**
-     * @param instId
-     * @param appId
-     * @param name
+     * @param instId the uuid of the application instance
+     * @param appId the uuid of the application 
+     * @param name the name of the application
      * @return @return true if this application instance has been added successfully. false if it was already contained
      * in the registry.
-     * @throws RegistrationException
+     * @throws RegistrationException when a registration error occurs.
      */
     public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
     public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;

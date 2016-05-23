@@ -83,7 +83,7 @@ public enum ContainerType {
     }
 
     /**
-     * @param containername
+     * @param containername the name of the containers
      * @return returns the ContainerType matching the parameter. Null otherwise.
      */
     public static ContainerType fromString(String containername) {

@@ -129,6 +129,8 @@ public final class StateMachine<T extends Enum<?> & State > {
     }
     /**
      * @param startState the start state of the transition 
+     * @param params set of application specific parameters to be passed through to the
+     * transition
      */
     public synchronized void transit(T startState, Object[] params) {
         StateTransition<T> transition = findTransition(startState);
