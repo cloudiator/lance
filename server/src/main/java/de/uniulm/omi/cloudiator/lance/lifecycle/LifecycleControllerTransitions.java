@@ -1,15 +1,9 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InitHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostStartHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreInstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreStartHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachine;
 import de.uniulm.omi.cloudiator.lance.util.state.StateMachineBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
@@ -35,9 +29,11 @@ public class LifecycleControllerTransitions {
         return transitions.addInitTransition(
         		transitions.addInstallTransitions(
         				transitions.addStartTransitions(
+                                transitions.addStopTransitions(
                                 new  StateMachineBuilder<>(LifecycleHandlerType.NEW).
                                 addAllState(LifecycleHandlerType.values())
-                    ))).build();
+
+                                )))).build();
     }
     
     private StateMachineBuilder<LifecycleHandlerType> addInitTransition(StateMachineBuilder<LifecycleHandlerType> b) {
@@ -96,5 +92,29 @@ public class LifecycleControllerTransitions {
                             h.execute(ec);
                     }
                 });
+    }
+
+    private StateMachineBuilder<LifecycleHandlerType> addStopTransitions(StateMachineBuilder<LifecycleHandlerType> b) {
+        return b.addSynchronousTransition(LifecycleHandlerType.POST_START, LifecycleHandlerType.PRE_STOP,
+                new TransitionAction() {
+                    @Override public void transit(Object[] params) {
+                        PreStopHandler h = store.getHandler(LifecycleHandlerType.PRE_STOP, PreStopHandler.class);
+                        h.execute(ec);
+                    }
+                }).
+                addSynchronousTransition(LifecycleHandlerType.PRE_STOP, LifecycleHandlerType.STOP,
+                        new TransitionAction() {
+                            @Override public void transit(Object[] params) {
+                                StopHandler h = store.getHandler(LifecycleHandlerType.STOP, StopHandler.class);
+                                h.execute(ec);
+                            }
+                        }).
+                addSynchronousTransition(LifecycleHandlerType.STOP, LifecycleHandlerType.POST_STOP,
+                        new TransitionAction() {
+                            @Override public void transit(Object[] params) {
+                                PostStopHandler h = store.getHandler(LifecycleHandlerType.POST_STOP, PostStopHandler.class);
+                                h.execute(ec);
+                            }
+                        });
     }
 }

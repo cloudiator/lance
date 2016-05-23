@@ -29,10 +29,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreInstallHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.*;
 
 public final class BashBasedHandlerBuilder {
 
@@ -66,6 +63,12 @@ public final class BashBasedHandlerBuilder {
          case START:
         	 retVal = new BashStartHandler(os, commands);
         	 break;
+         case PRE_STOP:
+             retVal = new BashPreStopHandler(os, commands);
+             break;
+         case STOP:
+             retVal = new BashStopHandler(os, commands);
+             break;
          case INIT:
          default:
              throw new UnsupportedOperationException();
@@ -139,12 +142,46 @@ final class BashStartHandler implements StartHandler {
     private static final long serialVersionUID = -5666019177853948866L;
     private final OperatingSystem os;
     private final List<String[]> commands;
-    
+
     BashStartHandler(OperatingSystem osParam, List<String[]> commandsParam) {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+    @Override
+    public void execute(ExecutionContext ec) {
+        BashExecutionHelper.executeBlockingCommands(os, ec, commands);
+    }
+}
+
+final class BashStopHandler implements StopHandler {
+
+    private static final long serialVersionUID = -5666019177853948866L;
+    private final OperatingSystem os;
+    private final List<String[]> commands;
+
+    BashStopHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) {
+        BashExecutionHelper.executeBlockingCommands(os, ec, commands);
+    }
+}
+
+final class BashPreStopHandler implements PreStopHandler {
+
+    private static final long serialVersionUID = -5666019177853948866L;
+    private final OperatingSystem os;
+    private final List<String[]> commands;
+
+    BashPreStopHandler(OperatingSystem osParam, List<String[]> commandsParam) {
+        os = osParam;
+        commands = commandsParam;
+    }
+
     @Override
     public void execute(ExecutionContext ec) {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
