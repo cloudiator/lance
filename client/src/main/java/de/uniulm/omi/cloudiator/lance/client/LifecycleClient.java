@@ -127,7 +127,7 @@ public final class LifecycleClient {
             return (LcaException) t;
         if (t instanceof RegistrationException)
             return (RegistrationException) t;
-        return new LcaException("downstream exception occurred.", t);
+        return new LcaException("downstream exception occurred.", re);
 
     }
 
