@@ -51,6 +51,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
 
     @Override public synchronized void terminate() {
+        LOGGER.info("terminating lifecycle agent");
         LifecycleAgentBooter.unregister(this);
         try {
             hostContext.close();
@@ -62,6 +63,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
 
     @Override public synchronized void stop() {
+        LOGGER.info("stopping lifecycle agent. no further connections possible.");
         LifecycleAgentBooter.unregister(this);
     }
 

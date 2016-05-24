@@ -29,10 +29,11 @@ public final class LifecycleAgentBooter {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentBooter.class);
     private final static Registrator<LifecycleAgent> reg = Registrator.create(LifecycleAgent.class);
+    private static volatile LifecycleAgentImpl lca;
     
     public static void main(String[] args) {
         LOGGER.info("LifecycleAgentBooter: starting.");
-        LifecycleAgentImpl lca = createAgentImplementation();
+        lca = createAgentImplementation();
         
         LifecycleAgent stub = reg.export(lca, LcaConstants.AGENT_RMI_PORT);
         // TODO: it might be worth exploiting ways to get rid of this

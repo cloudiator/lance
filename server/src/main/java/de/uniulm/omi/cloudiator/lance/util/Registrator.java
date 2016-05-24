@@ -24,6 +24,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +36,7 @@ public final class Registrator<T extends Remote> {
 	}
 	
 	private final static Logger LOGGER = LoggerFactory.getLogger(Registrator.class);
-
+    private final AtomicReference<Registry> the_registry = new AtomicReference<>();
 	private final Class<T> myClass;
 	
 	private Registrator (Class<T> classParam) {
@@ -43,6 +44,9 @@ public final class Registrator<T extends Remote> {
 	}
 	
 	public <S extends T> T export(S object, int port) {
+        assert object != null : "object must not be null";
+        LOGGER.info("exporting object " + object + " to registry on port " + port);
+
         try {
             return (T) UnicastRemoteObject.exportObject(object, port);
         } catch(RemoteException re) {
@@ -52,6 +56,7 @@ public final class Registrator<T extends Remote> {
     }
     
     public boolean addToRegistry(T object, String key) {
+        LOGGER.info("adding object to registry with key " + key);
         try {
             Registry reg = getAndCreateRegistry();
             removeExisting(reg, key);
@@ -63,22 +68,27 @@ public final class Registrator<T extends Remote> {
         return false;
     }
     
-    private static Registry getAndCreateRegistry() throws RemoteException {
-        try { 
-            return java.rmi.registry.LocateRegistry.createRegistry(Registry.REGISTRY_PORT); 
+    private synchronized Registry getAndCreateRegistry() throws RemoteException {
+        LOGGER.info("creating rmi registry");
+        Registry reg = the_registry.get();
+        if(reg != null) return reg;
+        try {
+            reg = java.rmi.registry.LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
         } catch(RemoteException re) {
-            LOGGER.info("could not create registry. assuming, it already exists.", re);
-            return java.rmi.registry.LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
+            LOGGER.info("could not create local registry. assuming, it already exists.");
+            reg = java.rmi.registry.LocateRegistry.getRegistry(Registry.REGISTRY_PORT);
         }
+        the_registry.set(reg);
+        return reg;
     }
     
     private void removeExisting(Registry reg, String key) throws RemoteException {
         Object o = null;
-        
+        LOGGER.info("removing object from registry with key " + key);
         try { 
             o = reg.lookup(key);
         } catch(NotBoundException nbe){
-            LOGGER.debug("could not remove element as it was not registered.", nbe);
+            LOGGER.debug("could not remove element as it was not registered.");
             return; 
         }
         
@@ -100,6 +110,7 @@ public final class Registrator<T extends Remote> {
     }
 
     public<S extends T> void unregister(S element) {
+        LOGGER.info("unexporting object " + element);
         try { 
             UnicastRemoteObject.unexportObject(element, true);
             // TODO: shutdown registry if possible //
