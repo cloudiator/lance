@@ -57,7 +57,7 @@ final class AppInstanceContainer {
     void addComponentProperty(ComponentId cid, ComponentInstanceId cinstId, String property, Object value) {
         ComponentInstanceContainer c = comps.get(cid);
         if(c == null) 
-            throw new IllegalArgumentException("not known: " + cid);
+            throw new IllegalArgumentException("component not known: " + cid);
         c.addComponentProperty(cinstId, property, value);
     }
 

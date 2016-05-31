@@ -30,7 +30,7 @@ public interface LifecycleActionInterceptor {
 
     void postprocess(HandlerType type);
 
-	ComponentInstanceId getComponentId();
+	ComponentInstanceId getComponentInstanceId();
 
 	void postprocessPortUpdate(PortDiff<DownstreamAddress> diff);
 

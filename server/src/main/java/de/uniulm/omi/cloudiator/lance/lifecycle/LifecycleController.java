@@ -79,7 +79,7 @@ public final class LifecycleController {
 
     private void updateStateInRegistry(LifecycleHandlerType type) {
         try {
-            accessor.updateInstanceState(interceptor.getComponentId(), type);
+            accessor.updateInstanceState(interceptor.getComponentInstanceId(), type);
         } catch (RegistrationException ex) {
             LOGGER.warn("could not update status in registry.", ex);
         }
@@ -110,7 +110,8 @@ public final class LifecycleController {
         StartDetectorHandler.runStartDetector(interceptor, store.getStartDetector(), ec);
         // FIXME: establish periodic invocation of stop detector
         getLogger().warn("TODO: periodically run stop detector");
-        machine.transit(LifecycleHandlerType.START);        // moves to POST_START
+ 
+        run(LifecycleHandlerType.START);        // moves to POST_START
     }
 
     public synchronized void blockingStop() {

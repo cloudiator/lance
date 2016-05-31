@@ -74,7 +74,7 @@ final class StartDetectorHandler {
  			return DetectorState.DETECTION_FAILED;
  		} finally {
 			if(preprocessed) {
-		        interceptor.postprocessDetector(DetectorType.STOP);
+		        interceptor.postprocessDetector(DetectorType.START);
 			}
 		}
     }

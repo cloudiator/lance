@@ -74,7 +74,7 @@ public final class StateMachine<T extends Enum<?> & State > {
         final Future<?> f;
         synchronized(this) {
             if(status == null) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("status not set");
             }
             if(status == endState) {
                 return;

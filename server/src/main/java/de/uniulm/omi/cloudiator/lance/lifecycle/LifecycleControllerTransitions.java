@@ -20,6 +20,8 @@ public class LifecycleControllerTransitions {
     final ExecutionContext ec;
     
 	private LifecycleControllerTransitions(LifecycleStore storeParam, ExecutionContext ecParam) {
+		if(storeParam == null)
+			throw new NullPointerException("store must be set.");
 		store = storeParam;
 		ec = ecParam;
 	}

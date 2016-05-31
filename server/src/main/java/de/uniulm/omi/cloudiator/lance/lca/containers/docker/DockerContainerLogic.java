@@ -84,7 +84,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     
 
 	@Override
-	public ComponentInstanceId getComponentId() {
+	public ComponentInstanceId getComponentInstanceId() {
 		return myId;
 	}
         

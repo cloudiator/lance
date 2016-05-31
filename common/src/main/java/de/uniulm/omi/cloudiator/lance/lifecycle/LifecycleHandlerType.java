@@ -69,8 +69,7 @@ public enum LifecycleHandlerType implements State, HandlerType {
      */
     PRE_START(PreStartHandler.class, DefaultFactories.PRE_START_FACTORY),
     /**
-     * may be used for checking that required operating system
-     * files are available, like files, disk space, and port 
+     * starts the component instance
      */
     START(StartHandler.class, DefaultFactories.START_FACTORY),
     /**
