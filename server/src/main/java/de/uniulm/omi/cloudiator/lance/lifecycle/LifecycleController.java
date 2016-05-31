@@ -58,7 +58,7 @@ public final class LifecycleController {
         interceptor.prepare(type);
     }
 
-    private void postRun(HandlerType type) {
+    private void postRun(HandlerType type) throws ContainerException {
         interceptor.postprocess(type);
     }
 
@@ -72,6 +72,7 @@ public final class LifecycleController {
             LOGGER
                 .warn("Exception when executing state transition. this is not thoroughly handled.",
                     ce);
+            throw new IllegalStateException("wrong state: should be in error state", ce);
             // set error state
             // updateStateInRegistry(type);
         }
@@ -142,6 +143,7 @@ public final class LifecycleController {
             LOGGER
                 .warn("Exception when executing state transition. this is not thoroughly handled.",
                     ce);
+            throw new IllegalStateException("wrong state: should be in error state?", ce);
             // set error state
             // updateStateInRegistry(LifecycleHandlerType.START);
         } finally {

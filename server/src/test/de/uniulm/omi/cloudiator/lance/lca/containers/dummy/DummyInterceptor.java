@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -25,6 +26,8 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 	private volatile HandlerType ongoingPreparation = null;  
 	
 	private final static HandlerType portUpdateType = new HandlerType(){};
+	
+	private final Map<HandlerType, List<Integer>> failureMap = new HashMap<>();
 
 	@Override
 	public void prepare(HandlerType type) throws ContainerException {
@@ -38,10 +41,11 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 		countingHandlerCalls.put(type, 1);
 		invocations.add("prepare_"+type);
 		called.add(type);
+		checkForFailure(type);
 	}
 
 	@Override
-	public void postprocess(HandlerType type) {
+	public void postprocess(HandlerType type) throws ContainerException {
 		if(!countingHandlerCalls.containsKey(type)) {
 			throw new IllegalStateException("prepare handler not called: " + type);
 		}
@@ -52,6 +56,7 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 		countingHandlerCalls.put(type, i+1);
 		ongoingPreparation = null;
 		invocations.add("postprocess_"+type);
+		checkForFailure(type);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 	}
 
 	@Override
-	public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
+	public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException {
 		if(!countingHandlerCalls.containsKey(portUpdateType)) {
 			throw new IllegalStateException("prepare port update handler not called");
 		}
@@ -72,6 +77,7 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 		countingHandlerCalls.put(portUpdateType, i+1);
 		ongoingPreparation = null;
 		invocations.add("postprocessPortUpdate_"+diff);
+		checkForFailure(portUpdateType);
 	}
 
 	@Override
@@ -86,11 +92,11 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 		countingHandlerCalls.put(portUpdateType, 1);
 		invocations.add("preprocessPortUpdate_"+diff);
 		called.add(portUpdateType);
-		throw new UnsupportedOperationException();
+		checkForFailure(portUpdateType);
 	}
 
 	@Override
-	public void postprocessDetector(DetectorType type) {
+	public void postprocessDetector(DetectorType type) throws ContainerException {
 		if(!countingHandlerCalls.containsKey(type)) {
 			throw new IllegalStateException("prepare detector handler not called: " + type + ": " +called);
 		}
@@ -101,6 +107,7 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 		countingHandlerCalls.put(type, i+1);
 		ongoingPreparation = null;
 		invocations.add("postprocessDetector_"+type);
+		checkForFailure(type);
 	}
 
 	@Override
@@ -108,13 +115,15 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 		if(ongoingPreparation != null) {
 			throw new IllegalStateException("preparation is ongoing: " + ongoingPreparation); 
 		}
+		int number = 0;
 		if(countingHandlerCalls.containsKey(type)) {
-			throw new IllegalStateException("handler called twice: " + type);
+			countingHandlerCalls.get(type);
 		}
 		ongoingPreparation = type;
-		countingHandlerCalls.put(type, 1);
+		countingHandlerCalls.put(type, number + 1);
 		invocations.add("preprocessDetector_"+type);
 		called.add(type);
+		checkForFailure(type);
 	}
 
 	public int handlerCalls() {
@@ -131,6 +140,35 @@ public class DummyInterceptor implements LifecycleActionInterceptor {
 
 	public List<HandlerType> invokedHandlers() {
 		return new ArrayList<>(called);
+	}
+	
+	public DummyInterceptor failsAt(HandlerType t, boolean preprocess, int iteration) {
+		if(iteration < 0) throw new IllegalArgumentException();
+		int count = iteration * 2 + (preprocess ? 1 : 2);
+		addToFailure(t, count);
+		return this;
+	}
+	
+	private void checkForFailure(HandlerType t) throws ContainerException {
+		Integer i = countingHandlerCalls.get(t);
+		if(i == null) {
+			throw new IllegalStateException();
+		}
+		List<Integer> j = failureMap.get(t);
+		if(j == null) 
+			return;
+		if(j.contains(i)){
+			throw new ContainerException();
+		}
+	}
+	
+	private void addToFailure(HandlerType t, int count) {
+		List<Integer> l = failureMap.get(t);
+		if(l == null) {
+			l = new ArrayList<>();
+			failureMap.put(t, l);
+		}
+		l.add(count);
 	}
 
 }

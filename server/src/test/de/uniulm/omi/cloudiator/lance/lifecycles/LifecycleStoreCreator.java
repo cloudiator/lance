@@ -33,7 +33,11 @@ public class LifecycleStoreCreator {
 	}
 	
 	public LifecycleStoreCreator addDefaultStartDetector() {
-		TestLifecycleHandler h = new TestLifecycleHandler(DetectorType.START);
+		return addDefaultStartDetector(1);
+	}
+	
+	public LifecycleStoreCreator addDefaultStartDetector(int i) {
+		TestLifecycleHandler h = new TestLifecycleHandler(DetectorType.START, i, false);
 		StartDetector hh = createProxy(h, StartDetector.class);
 		builder.setStartDetector(hh);
 		addToMapping(DetectorType.START, h);
@@ -51,10 +55,18 @@ public class LifecycleStoreCreator {
 		addToMapping(LifecycleHandlerType.START, h);
 		return this;
 	}
+	
+	public LifecycleStoreCreator addLifecycleHandler(LifecycleHandlerType type, boolean throwsException) {
+		TestLifecycleHandler h = new TestLifecycleHandler(type, throwsException);
+		LifecycleHandler hh = createProxy(h, type.getTypeClass());
+		builder.setHandler(hh, type);
+		addToMapping(type, h);
+		return this;
+	}
 
-	public boolean checkHandlerHasBeenInvoked(HandlerType type) {
+	public boolean checkHandlerHasBeenInvoked(HandlerType type, int i) {
 		TestLifecycleHandler h = mapping.get(type);
-		return h.wasCalled();
+		return h.wasCalled(i);
 	}
 
 }

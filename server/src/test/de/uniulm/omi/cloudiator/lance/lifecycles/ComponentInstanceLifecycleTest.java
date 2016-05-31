@@ -85,6 +85,38 @@ public class ComponentInstanceLifecycleTest {
 	}
 	
 	@Test
+	public void failingInitWithMinimalStore() throws RegistrationException {
+		bootstrap(true);
+		creator.addEmptyStartHandler();
+		creator.addDefaultStartDetector();
+		createLifecycleController(true);
+		interceptor.failsAt(LifecycleHandlerType.NEW, true, 0);
+		lcc.blockingInit();
+		
+		assertEquals(2, interceptor.handlerCalls());
+		assertEquals(Arrays.asList(new HandlerType[]{LifecycleHandlerType.NEW}), 
+						interceptor.invokedHandlers());
+		checkBasicRegistryValue(1, LifecycleHandlerType.NEW);
+	}
+	
+	@Test
+	public void failingInstallHandler() throws RegistrationException {
+		bootstrap(true);
+		creator.addEmptyStartHandler();
+		creator.addLifecycleHandler(LifecycleHandlerType.INIT, true);
+		creator.addDefaultStartDetector();
+		createLifecycleController(true);
+		lcc.blockingInit();
+		lcc.blockingInstall();
+		
+		assertEquals(6, interceptor.handlerCalls());
+		assertEquals(Arrays.asList(new HandlerType[]{
+				LifecycleHandlerType.NEW, LifecycleHandlerType.INIT, LifecycleHandlerType.PRE_INSTALL, }), 
+						interceptor.invokedHandlers());
+		checkBasicRegistryValue(1, LifecycleHandlerType.PRE_INSTALL);
+	}
+	
+	@Test
 	public void installWithMinimalStore() throws RegistrationException {
 		bootstrap(true);
 		creator.addEmptyStartHandler();
@@ -129,16 +161,37 @@ public class ComponentInstanceLifecycleTest {
 		lcc.blockingStart();
 		
 		assertEquals(16, interceptor.handlerCalls());
-		System.out.println(interceptor.invokedHandlers());
 		assertEquals(Arrays.asList(new HandlerType[]{
 				LifecycleHandlerType.NEW, LifecycleHandlerType.INIT, LifecycleHandlerType.PRE_INSTALL, 
 				LifecycleHandlerType.INSTALL, LifecycleHandlerType.POST_INSTALL, LifecycleHandlerType.PRE_START,
 				DetectorType.START, LifecycleHandlerType.START}), 
 						interceptor.invokedHandlers());
 		checkBasicRegistryValue(1, LifecycleHandlerType.START);
+		assertTrue("handler was not called", creator.checkHandlerHasBeenInvoked(LifecycleHandlerType.START, 1));
+		assertTrue("handler was not called", creator.checkHandlerHasBeenInvoked(DetectorType.START, 1));
+	}
+	
+	@Test
+	public void longStartWithMinimalStore() throws RegistrationException, LifecycleException {
+		bootstrap(true);
+		creator.addEmptyStartHandler();
+		creator.addDefaultStartDetector(3);
+		createLifecycleController(true);
+		lcc.blockingInit();
+		lcc.blockingInstall();
+		lcc.blockingConfigure();
+		lcc.blockingStart();
 		
-		assertTrue("handler was not called", creator.checkHandlerHasBeenInvoked(LifecycleHandlerType.START));
-		assertTrue("handler was not called", creator.checkHandlerHasBeenInvoked(DetectorType.START));
+		assertEquals(16, interceptor.handlerCalls());
+		assertEquals(Arrays.asList(new HandlerType[]{
+				LifecycleHandlerType.NEW, LifecycleHandlerType.INIT, LifecycleHandlerType.PRE_INSTALL, 
+				LifecycleHandlerType.INSTALL, LifecycleHandlerType.POST_INSTALL, LifecycleHandlerType.PRE_START,
+				DetectorType.START, DetectorType.START, DetectorType.START, LifecycleHandlerType.START}), 
+						interceptor.invokedHandlers());
+		checkBasicRegistryValue(1, LifecycleHandlerType.START);
+		
+		assertTrue("handler was not called", creator.checkHandlerHasBeenInvoked(LifecycleHandlerType.START, 1));
+		assertTrue("handler was not called", creator.checkHandlerHasBeenInvoked(DetectorType.START, 3));
 	}
 
 	private void checkBasicRegistryValue(int compInstances, LifecycleHandlerType expectedType) throws RegistrationException {

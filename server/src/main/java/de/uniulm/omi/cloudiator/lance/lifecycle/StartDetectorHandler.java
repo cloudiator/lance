@@ -65,16 +65,23 @@ final class StartDetectorHandler {
     private DetectorState runStartDetectorLoop() {
     	boolean preprocessed = false;
     	 try {
-		 getLogger().info("running start detector");
+    		 getLogger().info("running start detector");
     		 interceptor.preprocessDetector(DetectorType.START);
     		 preprocessed = true;
     		 return detector.execute(ec);
     	 } catch (ContainerException ce) {
-		 getLogger().warn("detection failed with exception", ce);
+    		 getLogger().warn("detection failed with exception", ce);
  			return DetectorState.DETECTION_FAILED;
  		} finally {
 			if(preprocessed) {
-		        interceptor.postprocessDetector(DetectorType.START);
+				try {
+					interceptor.postprocessDetector(DetectorType.START);
+				} catch (ContainerException ce) {
+					// FIXME: what shall we do here? easiest is to disallow
+					// exceptions in postprocessing ... 
+					getLogger().warn("error when postprocessing detection", ce);
+					throw new IllegalStateException("wrong state: should be in error state?", ce);
+				}
 			}
 		}
     }

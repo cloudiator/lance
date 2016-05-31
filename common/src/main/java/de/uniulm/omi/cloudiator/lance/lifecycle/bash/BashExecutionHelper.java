@@ -44,7 +44,6 @@ final class BashExecutionHelper {
     }
     
     static ExecutionResult doExecuteCommand(boolean blocking, String command, Shell shell) {
-    	// TODO: evaluate return values of commands and throw exceptions //
         if(blocking) {
             return shell.executeBlockingCommand(command);
         } 

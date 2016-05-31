@@ -2,39 +2,51 @@ package de.uniulm.omi.cloudiator.lance.lifecycles;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Stack;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.Detector;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 
 public class TestLifecycleHandler implements InvocationHandler {
 
 	public final HandlerType type;
-	public volatile ExecutionContext ec = null; 
+	public volatile Stack<ExecutionContext> ec = new Stack<>(); 
 	public final boolean throwsException;
+	public final int count;
 	
 	public TestLifecycleHandler(HandlerType myType, boolean throwException) {
 		type = myType;
 		throwsException = throwException;
+		count = 0;
 	}
 	
-	public TestLifecycleHandler(HandlerType myType) {
+	public TestLifecycleHandler(LifecycleHandlerType myType) {
 		this(myType, false);
 	}
 	
-	public Object execute(ExecutionContext ec) {
+	public TestLifecycleHandler(DetectorType start, int i, boolean throwException) {
+		type = start;
+		throwsException = throwException;
+		count = i;
+	}
+
+	public Object execute(ExecutionContext ec) throws LifecycleException {
 		if(ec == null) 
 			throw new NullPointerException();
-		this.ec = ec;
+		this.ec.push(ec);
 		if(throwsException){
-			throw new RuntimeException();
+			throw new LifecycleException("cold not execute command 'ls' in " + type + " handler.");
 		}
 		if(type == DetectorType.START) {
-			return DetectorState.DETECTED;
+			if(this.ec.size() == count)
+				return DetectorState.DETECTED;
+			if(this.ec.size() < count)
+				return DetectorState.NOT_DETECTED;
+			throw new IllegalStateException();
 		}
 		return null;
 	}
@@ -47,7 +59,7 @@ public class TestLifecycleHandler implements InvocationHandler {
 		throw new IllegalArgumentException(method.toString());
 	}
 
-	public boolean wasCalled() {
-		return ec != null;
+	public boolean wasCalled(int i) {
+		return ec.size() == i;
 	}
 }
