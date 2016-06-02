@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public final class StateMachine<T extends Enum<?> & State > {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(StateMachine.class);

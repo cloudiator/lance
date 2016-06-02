@@ -44,7 +44,8 @@ import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContaine
 
 // FIXME: update component instance status each time a state has been reached
 
-// FIXME: introduce error states to life cycle handling 
+// FIXME: introduce error states to life cycle handling
+@Deprecated
 public final class StandardContainer<T extends ContainerLogic> implements ContainerController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerController.class);
