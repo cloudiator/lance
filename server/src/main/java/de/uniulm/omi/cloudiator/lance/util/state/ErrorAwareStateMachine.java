@@ -197,12 +197,27 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
 			// will eventually be stored.
 			// endOfTransition = endOfTransition
 		}
-    	
     }
 
-	public synchronized Throwable[] collectExceptions() {
-		Throwable[] t = collectedExceptions.toArray(new Throwable[collectedExceptions.size()]);
+	public synchronized Throwable collectExceptions() {
+		if(collectedExceptions.isEmpty())
+			throw new IllegalStateException("collectException shall only be called when something bad has actually happened.");
+		
+		Throwable ret = collectedExceptions.pop();
+		while(!collectedExceptions.isEmpty()) {
+			Throwable up = collectedExceptions.pop();
+			ret = addAsLastCause(up, ret);
+		}
 		collectedExceptions.clear();
+		return ret;
+	}
+	
+	private Throwable addAsLastCause(Throwable t, Throwable cause) {
+		assert t != null;
+		Throwable x = t;
+		while(x.getCause() != null)
+			x = x.getCause();
+		x.initCause(cause);
 		return t;
 	}
 }

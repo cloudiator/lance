@@ -98,13 +98,13 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitCreation() {
+    public void awaitCreation() throws ContainerException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(CreateTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(CreateTransitionAction.isKnownErrorState(stat)) {
-    		throw new IllegalStateException(stateMachine.collectExceptions());
+    		throw new ContainerException("container creation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     }
 
@@ -114,13 +114,13 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitBootstrap() {
+    public void awaitBootstrap() throws ContainerException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(BootstrapTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(BootstrapTransitionAction.isKnownErrorState(stat)) {
-    		throw new IllegalStateException(stateMachine.collectExceptions());
+    		throw new ContainerException("container bootstrap failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     }
 
@@ -130,14 +130,14 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitInitialisation() {
+    public void awaitInitialisation() throws ContainerException {
         stateMachine.waitForEndOfCurrentTransition();
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(InitTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(InitTransitionAction.isKnownErrorState(stat)) {
-    		throw new IllegalStateException(stateMachine.collectExceptions());
+    		throw new ContainerException("container initialisation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     }
 
@@ -147,14 +147,14 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitDestruction() {
+    public void awaitDestruction() throws ContainerException {
         stateMachine.waitForEndOfCurrentTransition();
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(DestroyTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(DestroyTransitionAction.isKnownErrorState(stat)) {
-    		throw new IllegalStateException(stateMachine.collectExceptions());
+    		throw new ContainerException("container deletion failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     }
 

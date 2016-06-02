@@ -8,14 +8,14 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.containers.dummy.DummyContainer;
 import de.uniulm.omi.cloudiator.lance.lca.containers.dummy.DummyInterceptor;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapper;
-
-import de.uniulm.omi.cloudiator.lance.container.standard.StandardContainer;
+import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 
 public class ContainerLifecycleTest {
 
@@ -41,12 +41,12 @@ public class ContainerLifecycleTest {
 
 	}
 	
-	private StandardContainer<DummyContainer> linkControllers() {
+	private ErrorAwareContainer<DummyContainer> linkControllers() {
 		interceptor = new DummyInterceptor();
 		LifecycleController lcc = new LifecycleController(null, interceptor, core.accessor, null);
 		
-		StandardContainer<DummyContainer> containerWrapper = 
-				new StandardContainer<>(CoreElements.componentInstanceId, container,
+		ErrorAwareContainer<DummyContainer> containerWrapper = 
+				new ErrorAwareContainer<>(CoreElements.componentInstanceId, container,
 						core.networkHandler, lcc, core.accessor);
 		return containerWrapper;
 	}
@@ -55,16 +55,16 @@ public class ContainerLifecycleTest {
 	public void testNewContainer() {
 		assertNotNull(CoreElements.context);
 		init(false);
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		assertRightState(ContainerStatus.NEW, containerWrapper);
 		assertTrue(container.invocationCount() == 0);
 	}
 	
 	@Test(expected=IllegalStateException.class)
-	public void testNewContainerWithoutRegistryInit() {
+	public void testNewContainerWithoutRegistryInit() throws ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
 	}
@@ -84,12 +84,12 @@ public class ContainerLifecycleTest {
 	}
 	
 	@Test
-	public void testContainerCreation() throws RegistrationException {
+	public void testContainerCreation() throws RegistrationException, ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
 		core.fillRegistry();
 		
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
@@ -112,12 +112,12 @@ public class ContainerLifecycleTest {
 	}
 	
 	@Test
-	public void testContainerBootstrap() throws RegistrationException {
+	public void testContainerBootstrap() throws RegistrationException, ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
 		core.fillRegistry();
 		
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
@@ -148,12 +148,12 @@ public class ContainerLifecycleTest {
 	}
 	
 	@Test
-	public void testContainerInit() throws RegistrationException {
+	public void testContainerInit() throws RegistrationException, ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
 		core.fillRegistry();
 		
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		LifecycleStoreCreator creator = new LifecycleStoreCreator();
 		creator.addDefaultStartDetector();
 		
@@ -201,7 +201,7 @@ public class ContainerLifecycleTest {
 		assertTrue(dumb.size() == compInstances);
 	}
 	
-	private static void assertRightState(ContainerStatus stat, StandardContainer<DummyContainer> container) {
+	private static void assertRightState(ContainerStatus stat, ErrorAwareContainer<DummyContainer> container) {
 		for(ContainerStatus status : ContainerStatus.values()) {
 			if(status == stat)
 				assertTrue(status == container.getState());
