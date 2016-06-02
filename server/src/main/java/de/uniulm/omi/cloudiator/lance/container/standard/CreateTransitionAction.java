@@ -43,7 +43,7 @@ final class CreateTransitionAction implements TransitionAction {
 		
 		CreateTransitionAction action = new CreateTransitionAction(container);
 		
-		// FIXME: add error handling //
+		// FIXME: add error handler //
 		transitionBuilder.setStartState(ContainerStatus.NEW).
 						setIntermediateState(ContainerStatus.CREATING, false).
 						setEndState(ContainerStatus.CREATED).

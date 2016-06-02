@@ -43,10 +43,11 @@ final class BootstrapTransitionAction implements TransitionAction {
 
 		CreateTransitionAction action = new CreateTransitionAction(container);
 		
-		// FIXME: add error handling //
+		// FIXME: add error handler //
 		transitionBuilder.setStartState(ContainerStatus.CREATED).
 						setIntermediateState(ContainerStatus.BOOTSTRAPPING, false).
 						setEndState(ContainerStatus.BOOTSTRAPPED).
+						setErrorState(ContainerStatus.BOOTSTRAPPING_FAILED).
 						addTransitionAction(action);
 		
 		transitionBuilder.buildAndRegister();
