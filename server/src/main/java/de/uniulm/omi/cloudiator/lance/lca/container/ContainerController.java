@@ -26,20 +26,20 @@ public interface ContainerController {
 
     ContainerStatus getState();
 
-    void create();
+    void create() throws ContainerException;
 
-    void init(LifecycleStore store);
+    void init(LifecycleStore store) throws ContainerException;
 
-    void tearDown();
+    void tearDown() throws ContainerException;
 
-    void awaitInitialisation();
+    void awaitInitialisation() throws ContainerException;
 
-    void awaitCreation();
+    void awaitCreation() throws ContainerException;
 
-    void awaitDestruction();
+    void awaitDestruction() throws ContainerException;
 
-	void bootstrap();
+	void bootstrap() throws ContainerException;
 
-	void awaitBootstrap();
+	void awaitBootstrap() throws ContainerException;
 
 }
