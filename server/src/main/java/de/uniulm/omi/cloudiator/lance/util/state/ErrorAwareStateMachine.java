@@ -39,7 +39,7 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
 		this.init = init;
 		status = init;
 		this.transitions = st;
-		this. genericErrorState = genericErrorState;
+		this.genericErrorState = genericErrorState;
 		this.states.addAll(states);
 	}
 	
@@ -49,13 +49,15 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
      * transition
      */
     public synchronized void transit(T fromState, T toState, Object[] params) {
+    	clearEndOfTransition();
+    	
     	ErrorAwareStateTransition<T> transition = findTransition(fromState, toState);
         if(transition.isIntermediateOrEndState(status)) 
             return ; // we are already done //
         if(!transition.isStartState(status)) 
             throw new IllegalStateException("we are in the wrong state: " + status);
-        if(endOfTransition != null) 
-            throw new IllegalStateException("we are in the wrong state: endOfTransition is set");
+        if(ongoingTransition != null) 
+            throw new IllegalStateException("another transition is currently ongoing");
         
         // everything is fine. let's invoke the transition //
         ongoingTransition = transition;
@@ -63,15 +65,21 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
     }
 	
     public synchronized T getState() {
+    	clearEndOfTransition();
+    	
         return status;
     }
 
     public synchronized boolean assertCurrentState(T checkStatus) {
+    	clearEndOfTransition();
+    	
         return status == checkStatus;
     }
     
     @SuppressWarnings("unchecked")
 	public T waitForEndOfCurrentTransition() {
+    	clearEndOfTransition();
+    	
         Object[] o = checkIfTransitionDone();
        
         if(Boolean.TRUE.equals(o[0])) {
@@ -83,6 +91,20 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
         // is triggered before the recursion and that we build up an infinite stack. Yet, 
         // this is unlikely in the envisioned usage scenario.
         return waitForEndOfCurrentTransition();
+    }
+    
+    private void clearEndOfTransition() {
+    	
+    }
+    
+    private void clearOngoingTransaction() {
+    	if(ongoingTransition == null)
+    		throw new IllegalStateException();
+    	ongoingTransition = null;
+    }
+    
+    private boolean hasOngoingTransaction() {
+    	return ongoingTransition != null;
     }
     
     private Object[] checkIfTransitionDone() {
@@ -115,13 +137,13 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
                 f.get(); 
                 return;
             } catch(InterruptedException ie){
-                // we were interrupted; ignore and re-try
-                 // FIXME: implement in a correct way
+            	// TODO: implement properly, when needed: 
+            	// (i.e. anyone interrupts a thread to stop something)
+            	// currently, just ignore and re-try
                 LOGGER.error("interrupted", ie);
             } catch(CancellationException ce) {
-                // task cancelled => state not reached
-                // FIXME: set back status or set to error state
-                // FIXME: revert changes
+            	// TODO: implement properly, when needed: 
+            	// (i.e. anyone stops the execution)
                 throw new IllegalStateException(ce);
              } catch(ExecutionException ee){
                  // an exception occurred during execution => state not reached
@@ -173,11 +195,16 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
 					status = genericErrorState;
 				else
 					status = to;
-				if(t != null) {
-					collectedExceptions.push(t);
-				}
+				
+				collectException(t);
 	            endOfTransition = null;
-	            ongoingTransition = null;
+	            clearOngoingTransaction();
+			}
+		}
+		
+		private void collectException(Throwable t) {
+			if(t != null) {
+				collectedExceptions.push(t);
 			}
 		}
 		
