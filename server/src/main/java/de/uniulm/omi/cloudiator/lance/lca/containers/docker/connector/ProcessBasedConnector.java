@@ -185,7 +185,7 @@ final class ProcessBasedConnector implements DockerConnector {
 	}
 
     @Override
-    public String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException {
+    public String createSnapshotImage(ComponentInstanceId containerId, String key) throws DockerException {
         final String author = "--author=" + "\"Cloudiator LifecylceAgent\"";
         final String message = "--message=" + "\"automatic snapshot after initialisation\"";
         
@@ -196,8 +196,16 @@ final class ProcessBasedConnector implements DockerConnector {
             return result.getOutput();
         }
         throw new DockerException(result.getError());
-        
     }
+    
+	@Override
+	public void pushImage(String imageId) throws DockerException {
+		 ExecResult result = ProcessWrapper.singleDockerCommand("push", imageId);
+		 if(result.isSuccess()) {
+	            return;
+	        }
+	      throw new DockerException(result.getError());
+	}
 
     @Override
     public DockerShell getSideShell(ComponentInstanceId myId) throws DockerException {
