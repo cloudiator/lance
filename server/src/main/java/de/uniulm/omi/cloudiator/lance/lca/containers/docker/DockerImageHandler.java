@@ -35,14 +35,16 @@ final class DockerImageHandler {
     private final OperatingSystem os;
     private final DockerConnector client;
     private final DeployableComponent myComponent;
+    private final DockerConfiguration dockerConfig;
     
     private volatile ImageCreationType initSource;
     
     DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, 
-                DockerConnector clientParam, DeployableComponent componentParam) {
+                DockerConnector clientParam, DeployableComponent componentParam, DockerConfiguration dockerConfigParam) {
         if(osParam == null) 
             throw new NullPointerException("operating system has to be set.");
         
+        dockerConfig = dockerConfigParam;
         os = osParam;
         translator = translatorParam;
         client = clientParam;
@@ -83,16 +85,19 @@ final class DockerImageHandler {
     }
     
     private String doGetSingleImage(String key) throws DockerException {
-        // TODO: remove this as soon as access to a private registry is set
         if(client.findImage(key) != null) {
             return key;
         }
-                
+        
+        if(!dockerConfig.registryCanBeUsed())
+        	return key;
+        
         try { 
-            client.pullImage(key); 
-            return key; 
+        	String pre = dockerConfig.prependRegistry(key);
+            client.pullImage(pre); 
+            return pre; 
         } catch(DockerException de) {
-            LOGGER.debug("could not pull image.", de);
+            LOGGER.debug("could not pull image. creating one.");
             return null; 
         }
     }
@@ -101,23 +106,36 @@ final class DockerImageHandler {
         String componentInstallId = createComponentInstallId();
         // first step: try to find matching image for configured component
         // currently not implemented; TODO: implement
-        
+        searchImageInLocalCache();
         // second step: try to find matching image for prepared component
+        // in case a custom docker registry is configured  
+        getImageFromPrivateRepository();
+        
+        // third step: fall back to the operating system //
+        getImageFromDefaultLocation(myId);
+        initSource = ImageCreationType.OPERATING_SYSTEM;
+        return target;
+    }
+    
+    private void searchImageInLocalCache() {
+    	
+    }
+    
+    private void getImageFromPrivateRepository() {
         String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
         String result = doGetSingleImage(target);
         if(result != null) {
             initSource = ImageCreationType.COMPONENT;
             return result; //FIXME: set in component lifecycle stage
         }
-        
-        // third step
-        target = buildImageTagName(ImageCreationType.OPERATING_SYSTEM, null);
-        result = doGetSingleImage(target);
+    }
+    
+    private void getImageFromDefaultLocation(ComponentInstanceId myId) throws DockerException {
+        String target = buildImageTagName(ImageCreationType.OPERATING_SYSTEM, null);
+        String result = doGetSingleImage(target);
         if(result == null) {
             throw new DockerException("cannot pull image: " + myId + " for key " + target);
         }
-        initSource = ImageCreationType.OPERATING_SYSTEM;
-        return target;
     }
 
     /** here, we may want to run a snapshotting action 

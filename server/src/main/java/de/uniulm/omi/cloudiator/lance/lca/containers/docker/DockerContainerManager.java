@@ -52,6 +52,7 @@ public class DockerContainerManager implements ContainerManager {
     private final String hostname;
     private final DockerConnector client;
     private final ContainerRegistry registry = new ContainerRegistry();
+    private final DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE; 
     
     public DockerContainerManager(HostContext vmId) {
         this(vmId, LcaConstants.LOCALHOST_IP, false);
@@ -89,7 +90,7 @@ public class DockerContainerManager implements ContainerManager {
         GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, comp, hostContext);
-        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory);
+        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory, dockerConfig);
         // DockerLifecycleInterceptor interceptor = new DockerLifecycleInterceptor(accessor, id, networkHandler, comp, shellFactory);
         ExecutionContext ec = new ExecutionContext(os, shellFactory);
         LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec);
