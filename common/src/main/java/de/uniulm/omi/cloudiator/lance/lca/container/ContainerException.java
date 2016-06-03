@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-public final class ContainerException extends Exception {
+public class ContainerException extends Exception {
 
     private static final long serialVersionUID = 3097082722316018152L;
 

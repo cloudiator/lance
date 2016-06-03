@@ -4,27 +4,27 @@ import static org.junit.Assert.*;
 
 import java.util.Map;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.BeforeClass;
 
-import de.uniulm.omi.cloudiator.lance.container.standard.StandardContainer;
-import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapper;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.containers.dummy.DummyContainer;
 import de.uniulm.omi.cloudiator.lance.lca.containers.dummy.DummyInterceptor;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
+import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapper;
+import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 
-@Deprecated
-public class ContainerLifecycleTest {
+public class ErrorAwareContainerLifecycleTest {
 
 	public volatile DummyInterceptor interceptor;
 	public volatile DummyContainer container;
 	private volatile CoreElements core;
-	private volatile ExecutionContext ctx;
 	public volatile LifecycleStoreCreator creator;
+	private volatile ExecutionContext ctx;
 	
 	private static final int DEFAULT_PROPERTIES = 5;
 	private static final String INITIAL_LOCAL_ADDRESS = "<unknown>";
@@ -39,20 +39,19 @@ public class ContainerLifecycleTest {
 	private void init(boolean creatRegistry) {
 		dumb = null;
 		core = new CoreElements(creatRegistry);
-		ctx = new ExecutionContext(null, null);
 		container = new DummyContainer(new String[] {null, EnvContextWrapper.getContainerIp()},
 				new Object[]{ new int[] {11, 12, 13}});
+		ctx = new ExecutionContext(null, null);
 		creator = new LifecycleStoreCreator();
 		creator.addDefaultStartDetector();
-
 	}
 	
-	private StandardContainer<DummyContainer> linkControllers() {
+	private ErrorAwareContainer<DummyContainer> linkControllers() {
 		interceptor = new DummyInterceptor();
 		LifecycleController lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx);
 		
-		StandardContainer<DummyContainer> containerWrapper = 
-				new StandardContainer<>(CoreElements.componentInstanceId, container,
+		ErrorAwareContainer<DummyContainer> containerWrapper = 
+				new ErrorAwareContainer<>(CoreElements.componentInstanceId, container,
 						core.networkHandler, lcc, core.accessor);
 		return containerWrapper;
 	}
@@ -61,16 +60,16 @@ public class ContainerLifecycleTest {
 	public void testNewContainer() {
 		assertNotNull(CoreElements.context);
 		init(false);
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		assertRightState(ContainerStatus.NEW, containerWrapper);
 		assertTrue(container.invocationCount() == 0);
 	}
 	
 	@Test(expected=IllegalStateException.class)
-	public void testNewContainerWithoutRegistryInit() {
+	public void testNewContainerWithoutRegistryInit() throws ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
 	}
@@ -90,12 +89,12 @@ public class ContainerLifecycleTest {
 	}
 	
 	@Test
-	public void testContainerCreation() throws RegistrationException {
+	public void testContainerCreation() throws RegistrationException, ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
 		core.fillRegistry();
 		
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
@@ -118,12 +117,12 @@ public class ContainerLifecycleTest {
 	}
 	
 	@Test
-	public void testContainerBootstrap() throws RegistrationException {
+	public void testContainerBootstrap() throws RegistrationException, ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
 		core.fillRegistry();
 		
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
@@ -154,12 +153,29 @@ public class ContainerLifecycleTest {
 	}
 	
 	@Test
-	public void testContainerInit() throws RegistrationException {
+	public void testBrokenContainerInit() throws RegistrationException, ContainerException {
 		assertNotNull(CoreElements.context);
 		init(true);
 		core.fillRegistry();
 		
-		StandardContainer<DummyContainer> containerWrapper = linkControllers();
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
+		
+		containerWrapper.create();
+		containerWrapper.awaitCreation();
+		containerWrapper.bootstrap();
+		containerWrapper.awaitBootstrap();
+		containerWrapper.init(creator.build());
+		containerWrapper.awaitInitialisation();
+		// run handler is missing // 
+	}
+	
+	@Test
+	public void testContainerInit() throws RegistrationException, ContainerException {
+		assertNotNull(CoreElements.context);
+		init(true);
+		core.fillRegistry();
+		
+		ErrorAwareContainer<DummyContainer> containerWrapper = linkControllers();
 		
 		containerWrapper.create();
 		containerWrapper.awaitCreation();
@@ -174,22 +190,20 @@ public class ContainerLifecycleTest {
 		assertNotNull(dumb);
 		
 		checkForDumbElements(
-				new String[] {"Component_Instance_Status", "HOST_CONTAINER_IP", "Instance_Number", "HOST_PUBLIC_IP", "HOST_CLOUD_IP", "Container_Status"},
-				DEFAULT_PROPERTIES + 1);
+				new String[] {"HOST_CONTAINER_IP", "Instance_Number", "HOST_PUBLIC_IP", "HOST_CLOUD_IP", "Container_Status"},
+				DEFAULT_PROPERTIES);
 		
 		Map<String,String> cids = dumb.get(CoreElements.componentInstanceId);
-		assertEquals(EnvContextWrapper.getContainerIp(), cids.get("HOST_CONTAINER_IP"));
+		assertEquals(INITIAL_LOCAL_ADDRESS, cids.get("HOST_CONTAINER_IP"));
 		assertEquals(EnvContextWrapper.getPublicIp(), cids.get("HOST_PUBLIC_IP"));
 		assertEquals(EnvContextWrapper.getCloudIp(), cids.get("HOST_CLOUD_IP"));
 		assertEquals("1", cids.get("Instance_Number"));
 				
-		System.out.println(container);
 		assertTrue(container.toString(), container.invocationHistoryMatches(DummyContainer.ContainerCalls.LOCAL_ADDRESSES, 
 																			DummyContainer.ContainerCalls.CREATE,
 																			DummyContainer.ContainerCalls.INIT,
 																			DummyContainer.ContainerCalls.LOCAL_ADDRESSES,
-																			DummyContainer.ContainerCalls.PORT_MAP,
-																			DummyContainer.ContainerCalls.COMPLETE_INIT));
+																			DummyContainer.ContainerCalls.PORT_MAP));
 		assertEquals(containerWrapper.getState().toString(), cids.get("Container_Status"));
 	}
 	
@@ -207,10 +221,10 @@ public class ContainerLifecycleTest {
 		assertTrue(dumb.size() == compInstances);
 	}
 	
-	private static void assertRightState(ContainerStatus stat, StandardContainer<DummyContainer> container) {
+	private static void assertRightState(ContainerStatus stat, ErrorAwareContainer<DummyContainer> container) {
 		for(ContainerStatus status : ContainerStatus.values()) {
 			if(status == stat)
-				assertTrue(status == container.getState());
+				assertEquals(status, container.getState());
 			else
 				assertFalse(status == container.getState());		
 		}

@@ -5,14 +5,11 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
-import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycles.ResponseHistory;
 
@@ -26,6 +23,7 @@ public class DummyContainer implements ContainerLogic {
 		calls.put(ContainerCalls.LOCAL_ADDRESSES, ResponseHistory.forStringMethods(local));
 		calls.put(ContainerCalls.CREATE, ResponseHistory.forVoidMethods());
 		calls.put(ContainerCalls.INIT, ResponseHistory.forVoidMethods());
+		calls.put(ContainerCalls.COMPLETE_INIT, ResponseHistory.forVoidMethods());
 		calls.put(ContainerCalls.PORT_MAP, ResponseHistory.forObjectMethods(ports));
 	}
 	
@@ -47,8 +45,8 @@ public class DummyContainer implements ContainerLogic {
 	@Override
 	public void completeInit() throws ContainerException {
 		invocationCounter++;
-		callStack.add(ContainerCalls.OTHER);
-		throw new UnsupportedOperationException();
+		callStack.add(ContainerCalls.COMPLETE_INIT);
+		calls.get(ContainerCalls.COMPLETE_INIT).getNext();
 	}
 
 	@Override
@@ -86,6 +84,7 @@ public class DummyContainer implements ContainerLogic {
 		CREATE,
 		INIT,
 		PORT_MAP,
+		COMPLETE_INIT,
 		OTHER,
 		;
 	}

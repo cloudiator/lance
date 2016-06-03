@@ -43,6 +43,10 @@ public final class ErrorAwareStateTransition<T extends Enum<?> & State > {
     ErrorAwareStateTransition(T fromParam, T intermediateParam, T toParam, 
     							T errorParam, TransitionAction actionParam, 
     							boolean asynchronous, TransitionErrorHandler<T> errorHandlerParam) {
+    	if(toParam == null) 
+    		throw new NullPointerException();
+    	if(fromParam == null) 
+    		throw new NullPointerException();
         to = toParam;
         from = fromParam;
         action = actionParam;
@@ -127,7 +131,7 @@ public final class ErrorAwareStateTransition<T extends Enum<?> & State > {
 		@Override
 		public void run() {
 			T stateToSet = null;
-			Throwable exception = null;
+			TransitionException exception = null;
 			try {
 				waitForLatch();
 	    		action.transit(params);

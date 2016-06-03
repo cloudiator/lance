@@ -6,6 +6,6 @@ public interface ErrorAwareTransitionState<T> {
 
 	void transitionStarted(T intermediate, Future<?> object);
 
-	void transitionComplete(T to, Throwable t);
+	void transitionComplete(T to, TransitionException t);
 
 }

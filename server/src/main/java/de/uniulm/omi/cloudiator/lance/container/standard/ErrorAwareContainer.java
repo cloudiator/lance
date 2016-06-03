@@ -24,8 +24,11 @@ import org.slf4j.LoggerFactory;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerConfigurationException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerOperationException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
+import de.uniulm.omi.cloudiator.lance.lca.container.UnexpectedContainerStateException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
@@ -34,17 +37,11 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareStateMachine;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareStateMachineBuilder;
-import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
-
-import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForBootstrapParameters;
-import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForCreationParameters;
 
 // FIXME: move status updates to network handler to this class instead of keeping
 // them in the individual container classes 
 
 // FIXME: update component instance status each time a state has been reached
-
-// FIXME: introduce error states to life cycle handling 
 public final class ErrorAwareContainer<T extends ContainerLogic> implements ContainerController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorAwareContainer.class);
@@ -98,14 +95,15 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitCreation() throws ContainerException {
+    public void awaitCreation() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(CreateTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(CreateTransitionAction.isKnownErrorState(stat)) {
-    		throw new ContainerException("container creation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
+    		throw new ContainerOperationException("container creation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
+    	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
     @Override
@@ -114,14 +112,15 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitBootstrap() throws ContainerException {
+    public void awaitBootstrap() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(BootstrapTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(BootstrapTransitionAction.isKnownErrorState(stat)) {
-    		throw new ContainerException("container bootstrap failed. container is now in error state: " + stat, stateMachine.collectExceptions());
+    		throw new ContainerOperationException("container bootstrap failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
+    	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
     @Override
@@ -130,15 +129,15 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitInitialisation() throws ContainerException {
-        stateMachine.waitForEndOfCurrentTransition();
+    public void awaitInitialisation() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(InitTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(InitTransitionAction.isKnownErrorState(stat)) {
-    		throw new ContainerException("container initialisation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
+    		throw new ContainerOperationException("container initialisation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
+    	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
     @Override
@@ -147,17 +146,16 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitDestruction() throws ContainerException {
-        stateMachine.waitForEndOfCurrentTransition();
+    public void awaitDestruction() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(DestroyTransitionAction.isSuccessfullEndState(stat)) {
     		return;
     	}
     	if(DestroyTransitionAction.isKnownErrorState(stat)) {
-    		throw new ContainerException("container deletion failed. container is now in error state: " + stat, stateMachine.collectExceptions());
+    		throw new ContainerOperationException("container deletion failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
+    	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
-
 
     void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();
@@ -207,5 +205,12 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
 
     void registerStatus(ContainerStatus status) throws RegistrationException {
         accessor.updateContainerState(containerId, status);
+    }
+    
+    void throwExceptionIfGenericErrorStateOrOtherState(ContainerStatus stat) throws ContainerConfigurationException, UnexpectedContainerStateException {
+    	if(stateMachine.isGenericErrorState(stat)){
+    		throw new ContainerConfigurationException("generic error state reached: " + stat, stateMachine.collectExceptions());
+    	}
+    	throw new UnexpectedContainerStateException("unexpected state reached: " + stat, stateMachine.collectExceptions());
     }
 }

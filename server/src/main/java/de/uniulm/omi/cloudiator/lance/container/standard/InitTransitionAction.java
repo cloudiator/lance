@@ -18,8 +18,8 @@ final class InitTransitionAction implements TransitionAction {
 
 	@Override
 	public void transit(Object[] params) throws TransitionException {
-        //FIXME: add code for starting from snapshot (skip init and install steps)
-		// has to be realised at a different place 
+        // FIXME: add code for starting from snapshot (skip init and install steps)
+		// probably has to be realised at a different place 
         try {
             theContainer.preInitAction();
             theContainer.logic.completeInit();
@@ -33,7 +33,7 @@ final class InitTransitionAction implements TransitionAction {
 	public static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
 			ErrorAwareContainer<?> container) {
 		
-		CreateTransitionAction action = new CreateTransitionAction(container);
+		InitTransitionAction action = new InitTransitionAction(container);
 		
 		// FIXME: add error handler //
 		transitionBuilder.setStartState(ContainerStatus.BOOTSTRAPPED).
