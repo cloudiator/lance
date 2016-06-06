@@ -19,7 +19,9 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
+import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
@@ -44,15 +46,21 @@ public final class LifecycleController {
     private final ErrorAwareStateMachine<LifecycleHandlerType> machine;
     private final LifecycleActionInterceptor interceptor;
     private final GlobalRegistryAccessor accessor;
+    private final StopDetectorHandler stopDetector;
+    private final StopDetectorCallback callback;
+    private final HostContext hostContext;
 
     public LifecycleController(LifecycleStore storeParam,
         LifecycleActionInterceptor interceptorParam, GlobalRegistryAccessor accessorParam,
-        ExecutionContext ecParam) {
+        ExecutionContext ecParam, HostContext hostContextParam) {
         store = storeParam;
         ec = ecParam;
         interceptor = interceptorParam;
         accessor = accessorParam;
         machine = initStateMachine();
+        callback = new StopDetectorCallbackImpl();
+        hostContext = hostContextParam;
+        stopDetector = StopDetectorHandler.create(interceptorParam, store.getStopDetector(), ecParam, callback);
     }
     
     private ErrorAwareStateMachine<LifecycleHandlerType> initStateMachine() {
@@ -68,8 +76,11 @@ public final class LifecycleController {
     	LifecycleTransitionHelper.createPreStartAction(builder.getTransitionBuilder(), store, ec);
     	StartTransitionAction.createStartAction(builder.getTransitionBuilder(), store, ec, interceptor);
     	LifecycleTransitionHelper.createPostStartAction(builder.getTransitionBuilder(), store, ec);
+
     	LifecycleTransitionHelper.createPreStopAction(builder.getTransitionBuilder(), store, ec);
     	LifecycleTransitionHelper.createStopAction(builder.getTransitionBuilder(), store, ec);
+    	LifecycleTransitionHelper.createSkipStopAction(builder.getTransitionBuilder());
+
     	LifecycleTransitionHelper.createPostStopAction(builder.getTransitionBuilder(), store, ec);
     	return builder.build();
     }
@@ -82,7 +93,7 @@ public final class LifecycleController {
         interceptor.postprocess(from);
     }
 
-    void run(LifecycleHandlerType from, LifecycleHandlerType to) {
+    private void run(LifecycleHandlerType from, LifecycleHandlerType to) {
         try {
             preRun(from, to);
             machine.transit(from, to);
@@ -129,32 +140,43 @@ public final class LifecycleController {
     	// calls 'start handler' and verifies start-up via start detector
         run(LifecycleHandlerType.PRE_START, LifecycleHandlerType.START); 
         
-        // FIXME: establish periodic invocation of stop detector
-        getLogger().warn("TODO: periodically run stop detector");
+        stopDetector.scheduleDetection(hostContext);
         
         // invokes POST_START handler and installs stop detector
         run(LifecycleHandlerType.START, LifecycleHandlerType.POST_START);
     }
 
     public synchronized void blockingStop() {
-        run(LifecycleHandlerType.POST_START, LifecycleHandlerType.PRE_STOP);
-        run(LifecycleHandlerType.PRE_STOP, LifecycleHandlerType.STOP);
-        //FIXME: is a stop detector action required at this point?
-        
-        getLogger().warn("Stopping instance, running PRE_STOP state!");
-        run(LifecycleHandlerType.STOP, LifecycleHandlerType.POST_STOP);
+    	stopDetector.clearSchedule();
+    	if(callback.getDetectedState() == DetectorState.NOT_DETECTED) {
+    		run(LifecycleHandlerType.POST_START, LifecycleHandlerType.PRE_STOP);
+    		run(LifecycleHandlerType.PRE_STOP, LifecycleHandlerType.STOP);
+    		try { 
+    			stopDetector.waitForFinalShutdown();
+    		} catch(LifecycleException lce) {
+    			// FIXME: here, external resources should be cleared and 
+    			// and instance should be moved to error state 
+    		}
+    		run(LifecycleHandlerType.STOP, LifecycleHandlerType.POST_STOP);
+    	} else {
+    		// this remains to be discussed //
+    	}
+    }
+    
+    synchronized void accidentalStop() {
+		// directly move to STOP. TODO: do we need to force the application?
+		run(LifecycleHandlerType.POST_START, LifecycleHandlerType.UNEXPECTED_EXECUTION_STOP);
     }
 
-    public synchronized void blockingUpdatePorts(@SuppressWarnings("unused") OutPort port,
-        PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {
+    public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {
         boolean preprocessed = false;
         try {
             interceptor.preprocessPortUpdate(diff);
             preprocessed = true;
-            LOGGER.info("updating ports via port handler.");
+            getLogger().info("updating ports via port handler.");
             handler.execute(ec);
         } catch (ContainerException ce) {
-            LOGGER
+        	getLogger()
                 .warn("Exception when executing state transition. this is not thoroughly handled.",
                     ce);
             throw new IllegalStateException("wrong state: should be in error state?", ce);
@@ -166,5 +188,39 @@ public final class LifecycleController {
                 updateStateInRegistry(LifecycleHandlerType.START);
             }
         }
+    }
+    
+    class StopDetectorCallbackImpl implements StopDetectorCallback {
+
+    	private DetectorState myState = DetectorState.NOT_DETECTED;
+    	
+		@Override
+		public synchronized void state(DetectorState state) {
+			myState = state;
+			switch(state){
+    			case DETECTION_FAILED: 
+    				getLogger().debug("stop detection failed.");
+	    		case DETECTED: 
+	    			return;
+	    		case NOT_DETECTED:
+	    			 return;
+	    		default:
+	    			throw new IllegalStateException("state " + state + " not captured");
+			}
+		}
+
+		@Override
+		public synchronized DetectorState getDetectedState() {
+			return myState;
+		}
+
+		@Override
+		public synchronized void exceptionOccurred(Exception ex) {
+			getLogger().debug("exception when running stop detector; quitting.", ex);
+			myState = DetectorState.DETECTION_FAILED;
+			stopDetector.clearSchedule();
+			accidentalStop();
+		}
+    	
     }
 }

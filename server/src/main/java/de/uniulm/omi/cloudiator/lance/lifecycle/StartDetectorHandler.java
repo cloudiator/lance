@@ -47,7 +47,7 @@ final class StartDetectorHandler {
 	    		default:
 	    			throw new IllegalStateException("state " + state + " not captured");
     		}
-		getLogger().info("container not ready, sleeping.");
+    		getLogger().info("container not ready, sleeping.");
     		sleep();
     	}
     	throw new LifecycleException("application would not start. abort to wait.");
@@ -57,7 +57,7 @@ final class StartDetectorHandler {
     	try {
 			Thread.sleep(START_LOOP_WAIT_TIME);
 		} catch(InterruptedException ie) {
-			//TODO: handle this.
+			//TODO: handle this?
 			getLogger().warn("interrupted exception", ie);
 		}
     }

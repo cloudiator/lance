@@ -49,7 +49,7 @@ public class ContainerLifecycleTest {
 	
 	private StandardContainer<DummyContainer> linkControllers() {
 		interceptor = new DummyInterceptor();
-		LifecycleController lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx);
+		LifecycleController lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx, null);
 		
 		StandardContainer<DummyContainer> containerWrapper = 
 				new StandardContainer<>(CoreElements.componentInstanceId, container,

@@ -44,9 +44,9 @@ public class ComponentInstanceLifecycleTest {
 	
 	private void createLifecycleController(boolean useCreator) {
 		if(useCreator) {
-			lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx);
+			lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx, null);
 		} else {
-			lcc = new LifecycleController(null, interceptor, core.accessor, ctx);
+			lcc = new LifecycleController(null, interceptor, core.accessor, ctx, null);
 		}
 	}
 	

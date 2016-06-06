@@ -48,7 +48,7 @@ public class ErrorAwareContainerLifecycleTest {
 	
 	private ErrorAwareContainer<DummyContainer> linkControllers() {
 		interceptor = new DummyInterceptor();
-		LifecycleController lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx);
+		LifecycleController lcc = new LifecycleController(creator.build(), interceptor, core.accessor, ctx, null);
 		
 		ErrorAwareContainer<DummyContainer> containerWrapper = 
 				new ErrorAwareContainer<>(CoreElements.componentInstanceId, container,

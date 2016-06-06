@@ -94,6 +94,7 @@ public enum LifecycleHandlerType implements State, HandlerType {
     INSTALL_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
     STARTUP_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
     TERMINATION_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
+    UNEXPECTED_EXECUTION_STOP(VoidHandler.class, DefaultFactories.VOID_FACTORY),
     UNKNOWN(VoidHandler.class, DefaultFactories.VOID_FACTORY),  
     ;
     
