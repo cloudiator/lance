@@ -89,6 +89,12 @@ public enum LifecycleHandlerType implements State, HandlerType {
      * may be used to release external resources
      */
     POST_STOP(PostStopHandler.class, DefaultFactories.POST_STOP_FACTORY),
+    
+    INIT_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
+    INSTALL_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
+    STARTUP_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
+    TERMINATION_FAILED(VoidHandler.class, DefaultFactories.VOID_FACTORY),
+    UNKNOWN(VoidHandler.class, DefaultFactories.VOID_FACTORY),  
     ;
     
     private final Class<? extends LifecycleHandler> handlerType;

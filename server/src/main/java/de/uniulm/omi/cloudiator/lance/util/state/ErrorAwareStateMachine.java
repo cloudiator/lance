@@ -10,17 +10,16 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
-
 public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
 
+    private static final Object[] DEFAULT_PARAMS = new Object[]{};
+	
 	static interface TransitionHandle<S extends Enum<?> & State > {
 
 		S waitForTransitionEnd();
 	}
 	
     final static Logger LOGGER = LoggerFactory.getLogger(ErrorAwareStateMachine.class);
-    private static final Object[] DEFAULT_PARAMS = new Object[0];
     
     // only one transition at a time.
     private final ExecutorService executor = Executors.newFixedThreadPool(1);	
@@ -125,5 +124,9 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State > {
 
 	public boolean isGenericErrorState(T stat) {
 		return localState.isGenericErrorState(stat);
+	}
+
+	public void transit(T from, T to) {
+		transit(from, to, DEFAULT_PARAMS);
 	}
 }
