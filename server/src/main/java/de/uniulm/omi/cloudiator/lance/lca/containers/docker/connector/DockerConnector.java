@@ -34,13 +34,12 @@ public interface DockerConnector {
 
     /**
      * 
-     * @param key should be the id to use; either component id after initialisation
-     * of the component instance id after configuration 
+     * @param key should be the id to use including the registry 
      * @param os will be used as a tag in both cases
      * @return the name of the container
      * @throws DockerException 
      */
-    String createImageSnapshot(ComponentInstanceId containerId, String key, OperatingSystem os) throws DockerException;
+    String createSnapshotImage(ComponentInstanceId containerId, String key) throws DockerException;
 
     String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> portsToSet) throws DockerException;
 
@@ -53,4 +52,6 @@ public interface DockerConnector {
     DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
 
 	void stopContainer(ComponentInstanceId myId) throws DockerException;
+
+	void pushImage(String target) throws DockerException;;
 }
