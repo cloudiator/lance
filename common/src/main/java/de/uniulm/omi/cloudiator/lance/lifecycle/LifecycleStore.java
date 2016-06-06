@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
 
 public class LifecycleStore implements Serializable {
 
@@ -32,8 +33,9 @@ public class LifecycleStore implements Serializable {
     private static final long serialVersionUID = 1L;
     private final LifecycleHandler[] handlers;
     private final StartDetector startDetector;
+    private final StopDetector stopDetector;
     
-    LifecycleStore(LifecycleHandler[] handlersParam, StartDetector startDetectorParam) {
+    LifecycleStore(LifecycleHandler[] handlersParam, StartDetector startDetectorParam, StopDetector stopDetectorParam) {
         handlers = handlersParam;
         assert handlers.length == LifecycleHandlerType.values().length : "array too small";
         for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
@@ -42,6 +44,7 @@ public class LifecycleStore implements Serializable {
                 throw new IllegalStateException("not the correct lifecycle handler");
         }
         startDetector = startDetectorParam;
+        stopDetector = stopDetectorParam;
     }
     
     public <T extends LifecycleHandler> T getHandler(LifecycleHandlerType t, Class<T> type) {
@@ -68,5 +71,9 @@ public class LifecycleStore implements Serializable {
 
 	public StartDetector getStartDetector() {
 		return startDetector;
+	}
+
+	public StopDetector getStopDetector() {
+		return stopDetector;
 	}
 }

@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+
 /**
  * may be used to notify USM that the service instance has stopped, 
  * be it intended or unintended
@@ -25,5 +27,6 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
  * @author Joerg Domaschka
  */
 public interface StopDetector extends Detector {
- // empty interface; methods not yet fixed //
+	
+	DetectorState execute(ExecutionContext ec);
 }

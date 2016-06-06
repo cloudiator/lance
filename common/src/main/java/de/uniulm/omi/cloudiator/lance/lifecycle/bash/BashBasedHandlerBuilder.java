@@ -223,8 +223,6 @@ final class BashStartDetectorHandler implements StartDetector {
         BashExecutionHelper.executeCommands(os, ec, commands);
         ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());
         if(result.isSuccess()) {
-        	// return values for docker is:
-        	// \nfalse\n0\n
         	if("true".equals(result.getOutput().trim())) {
         		return DetectorState.DETECTED;
         	}

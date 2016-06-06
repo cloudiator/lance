@@ -19,11 +19,13 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
 
 public final class LifecycleStoreBuilder {
 
     private final LifecycleHandler[] handlers = new LifecycleHandler[LifecycleHandlerType.values().length];
     private volatile StartDetector startDetector;
+    private volatile StopDetector stopDetector;
     
     public LifecycleStoreBuilder() {
         // empty!
@@ -63,7 +65,6 @@ public final class LifecycleStoreBuilder {
         if(startDetector == null) {
         	throw new NullPointerException("start detector cannot be null");
         }
-        return new LifecycleStore(handlers, startDetector);
+        return new LifecycleStore(handlers, startDetector, stopDetector);
     }
-    
 }

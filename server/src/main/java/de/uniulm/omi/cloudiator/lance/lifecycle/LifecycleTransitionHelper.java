@@ -94,9 +94,16 @@ final class LifecycleTransitionHelper {
 		builder.buildAndRegister();
 	}
 
-	public static void createSkipInstallAction(ErrorAwareTransitionBuilder<LifecycleHandlerType> builder) {
+	static void createSkipInstallAction(ErrorAwareTransitionBuilder<LifecycleHandlerType> builder) {
 		builder.setStartState(LifecycleHandlerType.INIT).
 			setEndState(LifecycleHandlerType.INSTALL).
+			addTransitionAction(EMPTY_TRANSITION_ACTION).
+			buildAndRegister();
+	}
+
+	public static void createSkipStopAction(ErrorAwareTransitionBuilder<LifecycleHandlerType> builder) {
+		builder.setStartState(LifecycleHandlerType.POST_START).
+			setEndState(LifecycleHandlerType.UNEXPECTED_EXECUTION_STOP).
 			addTransitionAction(EMPTY_TRANSITION_ACTION).
 			buildAndRegister();
 	}

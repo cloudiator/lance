@@ -30,7 +30,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 public interface StartDetector extends Detector {
 
 	DetectorState execute(ExecutionContext ec);
-    // empty interface; methods not yet fixed //
 }
 
 
