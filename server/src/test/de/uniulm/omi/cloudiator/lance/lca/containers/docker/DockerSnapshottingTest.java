@@ -2,7 +2,6 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
@@ -10,23 +9,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.ConnectorFactory;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.dummy.DummyInterceptor;
-import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
-import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElements;
 import de.uniulm.omi.cloudiator.lance.lifecycles.LifecycleStoreCreator;
 
@@ -102,5 +94,26 @@ public class DockerSnapshottingTest {
 									client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
 									core.networkHandler, shellFactory, dockerConfig);
 		logic.doCreate();
+		logic.doDestroy(true);
+	}
+	
+	
+	@Test
+	public void testSnapshot() throws ContainerException {
+		
+		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
+		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
+		DockerShellFactory shellFactory = new DockerShellFactory();
+		DockerContainerLogic logic = new DockerContainerLogic(core.componentInstanceId, 
+									client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
+									core.networkHandler, shellFactory, dockerConfig);
+		logic.doCreate();
+		logic.prepare(LifecycleHandlerType.PRE_INSTALL);
+		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
+		logic.doDestroy(true);
+		
+		logic = new DockerContainerLogic(core.componentInstanceId, 
+				client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
+				core.networkHandler, shellFactory, dockerConfig);
 	}
 }

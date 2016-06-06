@@ -99,7 +99,9 @@ final class ProcessBasedConnector implements DockerConnector {
     @Override
     public String findImage(String target) throws DockerException {
         String[] split = target.split(":");
-        ExecResult result = ProcessWrapper.singleDockerCommand("images", "--no-trunc=true", split[0]);
+        String imageName = split.length == 2 ? split[0] : (split[0] + split[1]);
+        String tagName = split.length == 2 ? split[1] : split[2];
+        ExecResult result = ProcessWrapper.singleDockerCommand("images", "--no-trunc=true", imageName);
         if(!result.isSuccess()) {
             return null;
         }
@@ -112,7 +114,7 @@ final class ProcessBasedConnector implements DockerConnector {
                 line = reader.readLine();
                 if(line == null) 
                     break;
-                String id = findTag(split[1], line);
+                String id = findTag(tagName, line);
                 if(id != null) 
                     return id;
             }

@@ -114,7 +114,7 @@ final class DockerImageHandler {
         	// second step: try to find matching image for prepared component
             // in case a custom docker registry is configured  
             result = getImageFromPrivateRepository();
-            if(result != null) {
+            if(result == null) {
             	// third step: fall back to the operating system //
             	result = getImageFromDefaultLocation();
             }
