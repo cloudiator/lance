@@ -20,6 +20,8 @@ public class LifecycleControllerTransitions {
     final ExecutionContext ec;
     
 	private LifecycleControllerTransitions(LifecycleStore storeParam, ExecutionContext ecParam) {
+		if(storeParam == null)
+			throw new NullPointerException("store must be set.");
 		store = storeParam;
 		ec = ecParam;
 	}
@@ -41,7 +43,7 @@ public class LifecycleControllerTransitions {
                 new TransitionAction() {
                     @Override public void transit(Object[] params) {
                         InitHandler h = store.getHandler(LifecycleHandlerType.INIT, InitHandler.class);
-                        h.execute(ec);
+                        try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                     }
                 });
     }
@@ -51,21 +53,21 @@ public class LifecycleControllerTransitions {
                 new TransitionAction() {
                     @Override public void transit(Object[] params) {
                         PreInstallHandler h = store.getHandler(LifecycleHandlerType.PRE_INSTALL, PreInstallHandler.class);
-                        h.execute(ec);
+                        try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                     }
                 }).
                 addSynchronousTransition(LifecycleHandlerType.PRE_INSTALL, LifecycleHandlerType.INSTALL, 
                     new TransitionAction() {
                         @Override public void transit(Object[] params) {
                             InstallHandler h = store.getHandler(LifecycleHandlerType.INSTALL, InstallHandler.class);
-                            h.execute(ec);
+                            try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                         }
                 }). 
                 addSynchronousTransition(LifecycleHandlerType.INSTALL, LifecycleHandlerType.POST_INSTALL, 
                     new TransitionAction() {
                         @Override public void transit(Object[] params) {
                             PostInstallHandler h = store.getHandler(LifecycleHandlerType.POST_INSTALL, PostInstallHandler.class);
-                            h.execute(ec);
+                            try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                         }
                 });        
     }
@@ -75,21 +77,21 @@ public class LifecycleControllerTransitions {
                 new TransitionAction() {
                     @Override public void transit(Object[] params) {
                             PreStartHandler h = store.getHandler(LifecycleHandlerType.PRE_START, PreStartHandler.class);
-                            h.execute(ec);
+                            try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                     }
                 }).
                 addSynchronousTransition(LifecycleHandlerType.PRE_START, LifecycleHandlerType.START,
                     new TransitionAction() {
                         @Override public void transit(Object[] params) {
                             StartHandler h = store.getHandler(LifecycleHandlerType.START, StartHandler.class);
-                            h.execute(ec);
+                            try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                         }
                 }). 
                 addSynchronousTransition(LifecycleHandlerType.START, LifecycleHandlerType.POST_START,
                     new TransitionAction() {
                         @Override public void transit(Object[] params) {
                             PostStartHandler h = store.getHandler(LifecycleHandlerType.POST_START, PostStartHandler.class);
-                            h.execute(ec);
+                            try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                     }
                 });
     }
@@ -99,21 +101,21 @@ public class LifecycleControllerTransitions {
                 new TransitionAction() {
                     @Override public void transit(Object[] params) {
                         PreStopHandler h = store.getHandler(LifecycleHandlerType.PRE_STOP, PreStopHandler.class);
-                        h.execute(ec);
+                        try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                     }
                 }).
                 addSynchronousTransition(LifecycleHandlerType.PRE_STOP, LifecycleHandlerType.STOP,
                         new TransitionAction() {
                             @Override public void transit(Object[] params) {
                                 StopHandler h = store.getHandler(LifecycleHandlerType.STOP, StopHandler.class);
-                                h.execute(ec);
+                                try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                             }
                         }).
                 addSynchronousTransition(LifecycleHandlerType.STOP, LifecycleHandlerType.POST_STOP,
                         new TransitionAction() {
                             @Override public void transit(Object[] params) {
                                 PostStopHandler h = store.getHandler(LifecycleHandlerType.POST_STOP, PostStopHandler.class);
-                                h.execute(ec);
+                                try { h.execute(ec); } catch(LifecycleException lce) {throw new RuntimeException(lce);}
                             }
                         });
     }

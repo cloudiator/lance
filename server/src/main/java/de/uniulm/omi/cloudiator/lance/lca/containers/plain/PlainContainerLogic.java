@@ -189,7 +189,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
 
     @Override
-    public ComponentInstanceId getComponentId() {
+    public ComponentInstanceId getComponentInstanceId() {
         return this.myId;
     }
 

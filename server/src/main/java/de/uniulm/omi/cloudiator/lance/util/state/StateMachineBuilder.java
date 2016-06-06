@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
+@Deprecated
 public final class StateMachineBuilder<T extends Enum<?> & State > {
 
     private final T init;

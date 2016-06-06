@@ -22,5 +22,5 @@ import java.io.Serializable;
 
 public interface LifecycleHandler extends Serializable  {
     
-    void execute(ExecutionContext ec);
+    void execute(ExecutionContext ec) throws LifecycleException;
 }

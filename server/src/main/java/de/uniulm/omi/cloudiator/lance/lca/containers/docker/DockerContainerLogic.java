@@ -84,7 +84,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     
 
 	@Override
-	public ComponentInstanceId getComponentId() {
+	public ComponentInstanceId getComponentInstanceId() {
 		return myId;
 	}
         
@@ -150,7 +150,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     
 	@Override
 	public void completeInit() throws ContainerException {
-		shellFactory.closeShell();	
+		shellFactory.closeShell();
 	}
     
     @Override

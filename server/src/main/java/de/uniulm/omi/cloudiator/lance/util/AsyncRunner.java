@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.util;
 
 import java.util.concurrent.FutureTask;
 
+@Deprecated
 public class AsyncRunner implements Runnable {
 
     public interface Setter {
