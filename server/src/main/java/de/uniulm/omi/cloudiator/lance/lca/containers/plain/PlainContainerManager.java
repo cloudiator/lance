@@ -21,7 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.container.standard.StandardContainer;
+import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.*;
@@ -45,11 +45,8 @@ public class PlainContainerManager implements ContainerManager {
     private final HostContext hostContext;
 
     public PlainContainerManager(HostContext vmId) {
-
         this.hostContext = vmId;
     }
-
-
 
     @Override public ContainerType getContainerType() {
         return ContainerType.PLAIN;
@@ -77,7 +74,7 @@ public class PlainContainerManager implements ContainerManager {
         ExecutionContext executionContext = new ExecutionContext(os, plainShellFactory);
         LifecycleController lifecycleController =
             new LifecycleController(component.getLifecycleStore(), plainContainerLogic, accessor,
-                executionContext);
+                executionContext, hostContext);
 
         try {
             accessor.init(componentInstanceId);
@@ -87,7 +84,7 @@ public class PlainContainerManager implements ContainerManager {
         }
 
         ContainerController containerController =
-            new StandardContainer<>(componentInstanceId, plainContainerLogic, networkHandler,
+            new ErrorAwareContainer<>(componentInstanceId, plainContainerLogic, networkHandler,
                 lifecycleController, accessor);
 
         this.registry.addContainer(containerController);

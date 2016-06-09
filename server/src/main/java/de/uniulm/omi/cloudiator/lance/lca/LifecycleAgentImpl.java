@@ -78,7 +78,6 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         applicationRegistered(ctx);
         componentPartOfApplication(ctx, component);
 
-
         ContainerManager manager = containers.getContainerManager(hostContext, os, containerType);
 
         ContainerController cc = manager.createNewContainer(ctx, component, os);

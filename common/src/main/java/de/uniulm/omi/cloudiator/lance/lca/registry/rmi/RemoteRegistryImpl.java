@@ -87,7 +87,7 @@ public final class RemoteRegistryImpl implements RmiLcaRegistry {
     
     @Override
     public String getComponentProperty(ApplicationInstanceId appInstId,
-            ComponentId compId, ComponentInstanceId myId, String name) {
+            ComponentId compId, ComponentInstanceId myId, String name) throws RemoteException {
         
         AppInstanceContainer c = apps.get(appInstId);
         if(c == null) 

@@ -66,13 +66,21 @@ public final class StateTransition<T extends Enum<?> & State > {
 
     void execute(final StateSetter<T> setter, final Object[] params) {
         if(isSynchronous()) {
-            action.transit(params);
+        	try {
+        		action.transit(params);
+        	} catch (TransitionException te) {
+        		throw new RuntimeException(te);
+        	}
             setter.setFinalState(to);
         } else {
             Thread t = AsyncRunner.createWrappedStateRunner(
                     new Setter() { 
-                        @Override public void set() { 
-                            action.transit(params);
+                        @Override public void set() {
+                        	try {
+                        		action.transit(params);
+                        	} catch (TransitionException te) {
+                        		throw new RuntimeException(te);
+                        	}
                             setter.setFinalState(to);
                         } 
                     },

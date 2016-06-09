@@ -61,20 +61,21 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     
     DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,  
                             DeploymentContext ctx, OperatingSystem os, NetworkHandler network, 
-                            DockerShellFactory shellFactoryParam) {
-        this(id, client, os, ctx, comp, network, shellFactoryParam);
+                            DockerShellFactory shellFactoryParam, DockerConfiguration dockerConfig) {
+        this(id, client, os, ctx, comp, network, shellFactoryParam, dockerConfig);
     }
     
     private  DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam, OperatingSystem osParam,
                                 DeploymentContext ctx, DeployableComponent componentParam, 
-                                NetworkHandler networkParam, DockerShellFactory shellFactoryParam) {
+                                NetworkHandler networkParam, DockerShellFactory shellFactoryParam, 
+                                DockerConfiguration dockerConfigParam) {
         
         if(osParam == null) 
             throw new NullPointerException("operating system has to be set.");
         
         myId = id;
         client = clientParam;
-        imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(), clientParam, componentParam);
+        imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(), clientParam, componentParam, dockerConfigParam);
         deploymentContext = ctx;
         shellFactory = shellFactoryParam;
         myComponent = componentParam;
@@ -84,7 +85,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     
 
 	@Override
-	public ComponentInstanceId getComponentId() {
+	public ComponentInstanceId getComponentInstanceId() {
 		return myId;
 	}
         
@@ -111,7 +112,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
     @Override
     public void doDestroy(boolean force) throws ContainerException {
-    	/* docker ignores the flag */
+    	/* currently docker ignores the flag */
     	try {
     		client.stopContainer(myId);
     	} catch(DockerException de) {
@@ -150,7 +151,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     
 	@Override
 	public void completeInit() throws ContainerException {
-		shellFactory.closeShell();	
+		shellFactory.closeShell();
 	}
     
     @Override

@@ -73,13 +73,14 @@ final class ComponentInstanceContainer {
         if(props == null) 
             throw new IllegalArgumentException("not known: " + cinstId);
         Object old = props.put(property, value);
+        String add = "";
         if(old != null) { 
-            LOGGER.warn("warning: overriding value!");
+            add = " (old value was " + old + ")";
         }
         //FIXME: wake up listeners (?)
         LOGGER.error("TODO: wake up listeners");
         
-        LOGGER.info("LcaRegistry: added property: " + this + "/" + cinstId + "." + property + "=" + value);
+        LOGGER.info("LcaRegistry: added property: " + this + "/" + cinstId + "." + property + "=" + value + old);
     }
 
     public void addComponentInstance(ComponentInstanceId cinstId) {

@@ -27,7 +27,7 @@ import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.container.standard.StandardContainer;
+import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
@@ -52,6 +52,7 @@ public class DockerContainerManager implements ContainerManager {
     private final String hostname;
     private final DockerConnector client;
     private final ContainerRegistry registry = new ContainerRegistry();
+    private final DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE; 
     
     public DockerContainerManager(HostContext vmId) {
         this(vmId, LcaConstants.LOCALHOST_IP, false);
@@ -89,10 +90,10 @@ public class DockerContainerManager implements ContainerManager {
         GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, comp, hostContext);
-        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory);
+        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory, dockerConfig);
         // DockerLifecycleInterceptor interceptor = new DockerLifecycleInterceptor(accessor, id, networkHandler, comp, shellFactory);
         ExecutionContext ec = new ExecutionContext(os, shellFactory);
-        LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec);
+        LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec, hostContext);
         
         try { 
             accessor.init(id); 
@@ -100,7 +101,7 @@ public class DockerContainerManager implements ContainerManager {
             throw new ContainerException("cannot start container, because registry not available", re); 
         }
         
-        ContainerController dc = new StandardContainer<>(id, logic, networkHandler, controller, accessor);
+        ContainerController dc = new ErrorAwareContainer<>(id, logic, networkHandler, controller, accessor);
         registry.addContainer(dc);
         dc.create();
         return dc;
