@@ -10,6 +10,9 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponentBuilder;
+import de.uniulm.omi.cloudiator.lance.application.component.InPort;
+import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
+import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
 import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapper;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
@@ -20,6 +23,12 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.dummy.DummyRegistry;
 
 public class CoreElements {
+	
+	public final static String GHOST_COMPONENT_NAME = "ghost-blog";
+	public final static ComponentId GHOST_COMPONENT_ID = ComponentId.fromString("e07eb01f-9b77-4443-bca6-67116126dac3");
+	public final static String GHOST_IN_PORT_NAME = "GHOST_INPORT";
+	
+	public final static int GHOST_DEFAULT_IN_PORT = 2368;
 
 	public volatile static ApplicationInstanceId appInstanceId;
 	public volatile static ApplicationId appId;
@@ -37,6 +46,7 @@ public class CoreElements {
 	public CoreElements(boolean createRegistry) {
 		reg = createRegistry ? new DummyRegistry() : null;
 		ctx = new DeploymentContext(appId, appInstanceId, reg);
+		ctx.setProperty(GHOST_IN_PORT_NAME, GHOST_DEFAULT_IN_PORT, InPort.class);
 		comp = componentBuilder.build();
 		accessor = new GlobalRegistryAccessor(ctx, comp, componentInstanceId);
 		networkHandler = new NetworkHandler(accessor, comp, context);
@@ -61,5 +71,6 @@ public class CoreElements {
 		componentInstanceId = new ComponentInstanceId();
 		componentId = new ComponentId();
 		componentBuilder = DeployableComponentBuilder.createBuilder("jUnitTestComponent", CoreElements.componentId);
+		componentBuilder.addInport(GHOST_IN_PORT_NAME, PortType.PUBLIC_PORT, PortProperties.INFINITE_CARDINALITY, GHOST_DEFAULT_IN_PORT);
 	}
 }

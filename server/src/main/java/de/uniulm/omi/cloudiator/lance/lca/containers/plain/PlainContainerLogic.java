@@ -34,9 +34,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
-import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
 import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
@@ -78,8 +76,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     @Override
     public void doCreate() throws ContainerException {
         LOGGER.info("Creating shell for operating system: " + this.os.toString());
-        PlainShell plainShell = new PlainShellImpl(this.os);
 
+        PlainShell plainShell = this.plainShellFactory.createAndinstallPlainShell(os);
         LOGGER.debug("Java System user.dir value: " + System.getProperty("user.home"));
         final String plainContainerFolder = System.getProperty("user.home") + System.getProperty("file.separator") + this.myId.toString();
         LOGGER.info("creating new plain container with foldername " + plainContainerFolder);
@@ -87,9 +85,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
         LOGGER.info("Switching to plain container: " + plainContainerFolder);
         plainShell.setDirectory(plainContainerFolder);
-
-        //installing shell
-        this.plainShellFactory.installPlainShell(plainShell);
 
     }
 
@@ -203,9 +198,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
             throws ContainerException {
 
         //TODO: again duplicated code, needs refactoring
-
-        PlainShell plainShell = new PlainShellImpl(this.os);
-        plainShellFactory.installPlainShell(plainShell);
+        plainShellFactory.createAndinstallPlainShell(this.os);
         PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
         if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {

@@ -61,7 +61,7 @@ public class PlainContainerManager implements ContainerManager {
 
         ComponentInstanceId componentInstanceId = new ComponentInstanceId();
 
-        PlainShellFactory plainShellFactory = new PlainShellFactory();
+        PlainShellFactory plainShellFactory = new PlainShellFactoryImpl();
 
         GlobalRegistryAccessor accessor =
             new GlobalRegistryAccessor(ctx, component, componentInstanceId);
