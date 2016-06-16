@@ -161,7 +161,12 @@ final class DockerImageHandler {
             // let's keep it for debugging purposes, though
             // @SuppressWarnings("unused") String imageSnapshot = 
             client.createSnapshotImage(myId, target);
-            client.pushImage(target);
+            if(dockerConfig.registryCanBeUsed()) {
+            	// only push, if there is a registry used
+            	client.pushImage(target);
+            } else if(dockerConfig.registryEnabled()) {
+            	LOGGER.warn("cannot push image even though registry enabled.");	
+            }
         }
     }
     
