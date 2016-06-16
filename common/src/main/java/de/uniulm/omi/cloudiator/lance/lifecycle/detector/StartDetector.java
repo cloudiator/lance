@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
@@ -29,7 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface StartDetector extends Detector {
 
-	DetectorState execute(ExecutionContext ec);
+	DetectorState execute(ExecutionContext ec) throws LifecycleException;
 }
 
 
@@ -44,7 +45,7 @@ final class StartDetectorHandler implements StartDetector {
     }
 
     @Override
-    public DetectorState execute(ExecutionContext ec) {
+    public DetectorState execute(ExecutionContext ec) throws LifecycleException {
         d.execute(LifecycleHandlerType.INSTALL, ec);
         return DetectorState.DETECTED;
     }

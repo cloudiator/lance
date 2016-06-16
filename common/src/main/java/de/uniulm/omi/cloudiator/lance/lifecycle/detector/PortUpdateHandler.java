@@ -21,9 +21,10 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 import java.io.Serializable;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 
 public interface PortUpdateHandler extends Serializable {
     
-    void execute(ExecutionContext ec);
+    void execute(ExecutionContext ec) throws LifecycleException;
 
 }

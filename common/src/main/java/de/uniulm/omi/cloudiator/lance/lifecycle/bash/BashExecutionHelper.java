@@ -23,6 +23,7 @@ import java.util.List;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 final class BashExecutionHelper {
@@ -43,14 +44,19 @@ final class BashExecutionHelper {
         return res;
     }
     
-    static ExecutionResult doExecuteCommand(boolean blocking, String command, Shell shell) {
+    static ExecutionResult doExecuteCommand(boolean blocking, String command, Shell shell) throws LifecycleException {
+    	ExecutionResult res = null;
         if(blocking) {
-            return shell.executeBlockingCommand(command);
+            res = shell.executeBlockingCommand(command);
         } 
-        return shell.executeCommand(command); 
+        res = shell.executeCommand(command);
+        if(res.isSuccess()) { 
+        	return res;
+        }
+        throw new LifecycleException("execution of command '" + command + "' failed: " + res);
     }
     
-    static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
+    static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) throws LifecycleException {
           if(!osMatches(osParam, ec))
               return;
           
@@ -61,7 +67,7 @@ final class BashExecutionHelper {
           }
     }
     
-    static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
+    static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) throws LifecycleException {
         if(!osMatches(osParam, ec))
             return;
         

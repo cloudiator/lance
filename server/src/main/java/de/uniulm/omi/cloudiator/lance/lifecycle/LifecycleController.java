@@ -177,11 +177,16 @@ public final class LifecycleController {
             handler.execute(ec);
         } catch (ContainerException ce) {
         	getLogger()
-                .warn("Exception when executing state transition. this is not thoroughly handled.",
+                .warn("Exception when executing update ports. this is not thoroughly handled.",
                     ce);
             throw new IllegalStateException("wrong state: should be in error state?", ce);
             // set error state
             // updateStateInRegistry(LifecycleHandlerType.START);
+        } catch(LifecycleException le) {
+        	getLogger()
+            .warn("Exception when executing port update. this is not thoroughly handled.",
+                le);
+        throw new IllegalStateException("wrong state: should be in error state?", le);
         } finally {
             if (preprocessed) {
                 interceptor.postprocessPortUpdate(diff);

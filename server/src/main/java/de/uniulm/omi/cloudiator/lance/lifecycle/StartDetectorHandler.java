@@ -69,6 +69,9 @@ final class StartDetectorHandler {
     		 interceptor.preprocessDetector(DetectorType.START);
     		 preprocessed = true;
     		 return detector.execute(ec);
+    	 } catch (LifecycleException le) {
+    		 getLogger().warn("detection failed with exception", le);
+  			return DetectorState.DETECTION_FAILED;
     	 } catch (ContainerException ce) {
     		 getLogger().warn("detection failed with exception", ce);
  			return DetectorState.DETECTION_FAILED;
