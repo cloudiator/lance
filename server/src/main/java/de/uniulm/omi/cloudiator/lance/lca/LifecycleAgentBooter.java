@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
 import de.uniulm.omi.cloudiator.lance.util.Registrator;
+import de.uniulm.omi.cloudiator.lance.util.Version;
 
 public final class LifecycleAgentBooter {
 
@@ -32,7 +33,7 @@ public final class LifecycleAgentBooter {
     private static volatile LifecycleAgentImpl lca;
     
     public static void main(String[] args) {
-        LOGGER.info("LifecycleAgentBooter: starting.");
+        LOGGER.info("LifecycleAgentBooter: starting. running version: " + Version.getVersionString());
         lca = createAgentImplementation();
         
         LifecycleAgent stub = reg.export(lca, LcaConstants.AGENT_RMI_PORT);

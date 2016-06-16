@@ -12,7 +12,7 @@ final class InitTransitionAction implements TransitionAction {
 
 	private final ErrorAwareContainer<?> theContainer;
 	
-	InitTransitionAction(ErrorAwareContainer<?> container) {
+	private InitTransitionAction(ErrorAwareContainer<?> container) {
 		theContainer = container;
 	}
 

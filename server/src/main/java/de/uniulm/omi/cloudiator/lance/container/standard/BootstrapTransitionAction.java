@@ -13,7 +13,7 @@ final class BootstrapTransitionAction implements TransitionAction {
 
 	private final ErrorAwareContainer<?> theContainer;
 	
-    BootstrapTransitionAction(ErrorAwareContainer<?> container) {
+    private BootstrapTransitionAction(ErrorAwareContainer<?> container) {
 		theContainer = container;
 	}
 	
@@ -41,7 +41,7 @@ final class BootstrapTransitionAction implements TransitionAction {
 	public static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
 			ErrorAwareContainer<?> container) {
 
-		CreateTransitionAction action = new CreateTransitionAction(container);
+		BootstrapTransitionAction action = new BootstrapTransitionAction(container);
 		
 		// FIXME: add error handler //
 		transitionBuilder.setStartState(ContainerStatus.CREATED).
