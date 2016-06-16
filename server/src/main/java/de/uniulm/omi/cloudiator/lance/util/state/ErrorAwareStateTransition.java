@@ -137,7 +137,7 @@ public final class ErrorAwareStateTransition<T extends Enum<?> & State > {
 	    		action.transit(params);
 	    		stateToSet = to;
 	    	} catch(TransitionException te) {
-	    		LOGGER.debug("cannot execute transition: " + this, te);
+	    		LOGGER.debug("transition runner failed: cannot execute transition: " + TransitionRunner.this, te);
 	    		if(errorHandler != null) {
 	    			errorHandler.run(te, from, to);
 	    		}
