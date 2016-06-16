@@ -11,7 +11,7 @@ final class DestroyTransitionAction implements TransitionAction {
 
 	private final ErrorAwareContainer<?> theContainer;
 	
-	DestroyTransitionAction(ErrorAwareContainer<?> container) {
+	private DestroyTransitionAction(ErrorAwareContainer<?> container) {
 		theContainer = container;
 	}
 	
