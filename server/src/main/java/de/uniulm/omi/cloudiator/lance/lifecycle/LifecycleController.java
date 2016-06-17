@@ -95,8 +95,11 @@ public final class LifecycleController {
 
     private void run(LifecycleHandlerType from, LifecycleHandlerType to) {
         try {
+            LOGGER.info("starting transition from " + from + " to " + to + " state");
             preRun(from, to);
+            LOGGER.info("running transition from " + from + " to " + to + " state");
             machine.transit(from, to);
+            LOGGER.info("postprocessing transition from " + from + " to " + to + " state");
             postRun(from, to);
             updateStateInRegistry(from);
         } catch (ContainerException ce) {
