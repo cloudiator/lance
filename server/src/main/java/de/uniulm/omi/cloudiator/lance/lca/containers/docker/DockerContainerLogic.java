@@ -194,7 +194,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     		prepareEnvironment(shell);
     		shellFactory.installDockerShell(shell);
     	} catch(DockerException de) {
-    		throw new ContainerException("cannot create shell for port updates.", de);
+    		throw new ContainerException("cannot create shell for " + type + " detector.", de);
     	}
 	}
     
