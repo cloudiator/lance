@@ -42,7 +42,7 @@
                 <maxFileSize>50MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
             <!-- Daily rollover with compression -->
-            <fileNamePattern>${user.home}/rmi-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <fileNamePattern>${user.home}/rmi-log--%i-%d{yyyy-MM-dd}.gz</fileNamePattern>
             <!-- keep 30 days worth of history -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>
@@ -63,6 +63,8 @@
         </encoder>
     </appender>
 
+    <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
+
     <logger name="sun.rmi.client" level="FINER" additivity="false">
         <appender-ref ref="RMI"/>
     </logger>
@@ -73,7 +75,7 @@
         <appender-ref ref="RMI"/>
     </logger>
 
-    <root level="DEBUG">
+    <root level="WARN">
         <appender-ref ref="APPFILE"/>
     </root>
 
