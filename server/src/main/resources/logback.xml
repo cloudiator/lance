@@ -65,13 +65,7 @@
 
     <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
 
-    <logger name="sun.rmi.client" level="FINER" additivity="false">
-        <appender-ref ref="RMI"/>
-    </logger>
-    <logger name="sun.rmi.server" level="FINER" additivity="false">
-        <appender-ref ref="RMI"/>
-    </logger>
-    <logger name="sun.rmi.transport" level="FINER" additivity="false">
+    <logger name="sun.rmi" level="FINER" additivity="false">
         <appender-ref ref="RMI"/>
     </logger>
 
