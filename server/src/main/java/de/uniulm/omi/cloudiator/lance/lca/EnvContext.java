@@ -18,21 +18,20 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import de.uniulm.omi.cloudiator.lance.util.execution.LoggingScheduledThreadPoolExecutor;
+import de.uniulm.omi.cloudiator.lance.util.execution.LoggingThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.*;
 
 final class EnvContext implements HostContext {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
-    
+
     public static final String PUBLIC_IP_KEY = "host.ip.public";
     public static final String PRIVATE_IP_KEY = "host.ip.private";
     // public static final String HOST_OS_KEY = "host.os";
@@ -40,31 +39,37 @@ final class EnvContext implements HostContext {
     public static final String VM_ID_KEY = "host.vm.id";
     public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
     //public static final String CONTAINER_TYPE = "host.container.type";
-    
-    private static final String[] VALUES = new String[] {
-        PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY/*, CONTAINER_TYPE*/
-    };
-    
-    private final Map<String,String> hostContext;
-    private final ScheduledExecutorService periodicExecutor = Executors.newScheduledThreadPool(4);
-    private final ExecutorService executor = Executors.newScheduledThreadPool(4);
-    
-    EnvContext(Map<String,String> ctxParam) {
+
+    private static final String[] VALUES =
+        new String[] {PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY/*, CONTAINER_TYPE*/};
+
+    private final Map<String, String> hostContext;
+    private final ScheduledExecutorService periodicExecutor;
+    private final ExecutorService executor;
+
+    EnvContext(Map<String, String> ctxParam) {
         hostContext = ctxParam;
+        final ThreadFactory periodicThreadFactory =
+            new ThreadFactoryBuilder().setNameFormat("EnvContextPeriodicExecutor-%d").build();
+        this.periodicExecutor = new LoggingScheduledThreadPoolExecutor(4, periodicThreadFactory);
+        final ThreadFactory threadFactory =
+            new ThreadFactoryBuilder().setNameFormat("EnvContextExecutor-%d").build();
+        this.executor = new LoggingThreadPoolExecutor(4, threadFactory);
     }
-    
+
     private void registerRmiAddress() {
         LOGGER.info("setting RMI server hostname to: " + getPublicIp());
         System.setProperty("java.rmi.server.hostname", getPublicIp());
     }
 
     static HostContext fromEnvironment() {
-        Map<String,String> values = new HashMap<>();
-        for(String key : VALUES) {
+        Map<String, String> values = new HashMap<>();
+        for (String key : VALUES) {
             String s = System.getProperty(key);
-            if(s == null || s.isEmpty()) {
+            if (s == null || s.isEmpty()) {
                 // s = "<unknown>";
-                throw new IllegalStateException("property " + key + " needs to be set before LCA can start.");
+                throw new IllegalStateException(
+                    "property " + key + " needs to be set before LCA can start.");
             }
             values.put(key, s);
         }
@@ -73,47 +78,41 @@ final class EnvContext implements HostContext {
         return ctx;
     }
 
-    @Override
-    public String getPublicIp() { 
-    	return hostContext.get(PUBLIC_IP_KEY); 
+    @Override public String getPublicIp() {
+        return hostContext.get(PUBLIC_IP_KEY);
     }
 
-    @Override
-    public String getInternalIp() { 
-    	return hostContext.get(PRIVATE_IP_KEY); 
+    @Override public String getInternalIp() {
+        return hostContext.get(PRIVATE_IP_KEY);
     }
 
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return "HostContext: " + hostContext;
     }
 
-    @Override
-    public ScheduledFuture<?> scheduleAction(Runnable runner) {
-        ScheduledFuture<?> sf = periodicExecutor.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
+    @Override public ScheduledFuture<?> scheduleAction(Runnable runner) {
+        ScheduledFuture<?> sf =
+            periodicExecutor.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
         return sf;
     }
-    
-    @Override @Deprecated
-    public void run(Runnable runner) {
+
+    @Override @Deprecated public void run(Runnable runner) {
         executor.execute(runner);
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void close() throws InterruptedException {
+    @Override public void close() throws InterruptedException {
         executor.shutdownNow();
-        while(true) {
+        while (true) {
             executor.awaitTermination(10, TimeUnit.SECONDS);
-            if(executor.isTerminated()) {
+            if (executor.isTerminated()) {
                 return;
             }
         }
     }
 
-    @Override
-    public String getCloudIdentifier() {
+    @Override public String getCloudIdentifier() {
         return hostContext.get(CLOUD_ID_KEY);
     }
 }

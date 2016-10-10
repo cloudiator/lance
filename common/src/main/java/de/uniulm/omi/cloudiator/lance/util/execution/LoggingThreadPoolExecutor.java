@@ -19,18 +19,7 @@ public class LoggingThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
-        Throwable tToLog = t;
-        if (tToLog == null && r instanceof Future<?>) {
-            try {
-                if (((Future) r).isDone() && !((Future) r).isCancelled()) {
-                    ((Future) r).get();
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-                tToLog = e.getCause();
-            }
-        }
+        Throwable tToLog = ResolveErrorFromExecution.of(r,t).error();
         if (tToLog != null) {
             LOGGER.error("Uncaught exception occurred during the execution of task " + r + ".",
                 tToLog);
