@@ -26,4 +26,5 @@ de.uniulm.omi.cloudiator.lance.lifecycle.language
 de.uniulm.omi.cloudiator.lance.lifecycle.language.command
 de.uniulm.omi.cloudiator.lance.lifecycle.language.install
 de.uniulm.omi.cloudiator.lance.util
+de.uniulm.omi.cloudiator.lance.util.execution
 de.uniulm.omi.cloudiator.lance.util.state
