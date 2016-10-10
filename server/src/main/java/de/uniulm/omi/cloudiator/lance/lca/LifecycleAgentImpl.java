@@ -80,12 +80,21 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
         ContainerManager manager = containers.getContainerManager(hostContext, os, containerType);
 
+        LOGGER.info(String
+            .format("Creating new container using context %s, os %s and containerType %s.",
+                hostContext, os, containerType));
         ContainerController cc = manager.createNewContainer(ctx, component, os);
+        LOGGER.info(String.format("Awaiting creation of %s.", cc));
         cc.awaitCreation();
+        LOGGER.info(String.format("Bootstrapping %s.", cc));
         cc.bootstrap();
+        LOGGER.info(String.format("Awaiting Bootstrapping %s.", cc));
         cc.awaitBootstrap();
+        LOGGER.info(String.format("Initiating lifecycle store of component %s.", component));
         cc.init(component.getLifecycleStore());
+        LOGGER.info(String.format("Awaiting Initialisation of %s.", cc));
         cc.awaitInitialisation();
+        LOGGER.info(String.format("Returning ID %s of %s", cc.getId(), cc));
         return cc.getId();
     }
 
