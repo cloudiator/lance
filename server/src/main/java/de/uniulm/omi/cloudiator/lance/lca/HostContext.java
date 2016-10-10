@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
 public interface HostContext {
@@ -25,12 +27,14 @@ public interface HostContext {
     String getPublicIp();
 
     String getInternalIp();
-    
+
     String getCloudIdentifier();
 
     void close() throws InterruptedException;
 
-    void run(Runnable runner);
+    Future<?> run(Runnable runner);
+
+    <T> Future<T> run(Callable<T> callable);
 
     ScheduledFuture<?> scheduleAction(Runnable runner);
 

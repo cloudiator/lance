@@ -20,7 +20,6 @@ package de.uniulm.omi.cloudiator.lance.lca;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import de.uniulm.omi.cloudiator.lance.util.execution.LoggingScheduledThreadPoolExecutor;
-import de.uniulm.omi.cloudiator.lance.util.execution.LoggingThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,17 +43,13 @@ final class EnvContext implements HostContext {
         new String[] {PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY/*, CONTAINER_TYPE*/};
 
     private final Map<String, String> hostContext;
-    private final ScheduledExecutorService periodicExecutor;
-    private final ExecutorService executor;
+    private final ScheduledExecutorService executorService;
 
     EnvContext(Map<String, String> ctxParam) {
         hostContext = ctxParam;
-        final ThreadFactory periodicThreadFactory =
-            new ThreadFactoryBuilder().setNameFormat("EnvContextPeriodicExecutor-%d").build();
-        this.periodicExecutor = new LoggingScheduledThreadPoolExecutor(4, periodicThreadFactory);
         final ThreadFactory threadFactory =
             new ThreadFactoryBuilder().setNameFormat("EnvContextExecutor-%d").build();
-        this.executor = new LoggingThreadPoolExecutor(4, threadFactory);
+        this.executorService = new LoggingScheduledThreadPoolExecutor(4, threadFactory);
     }
 
     private void registerRmiAddress() {
@@ -93,20 +88,23 @@ final class EnvContext implements HostContext {
 
     @Override public ScheduledFuture<?> scheduleAction(Runnable runner) {
         ScheduledFuture<?> sf =
-            periodicExecutor.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
+            executorService.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
         return sf;
     }
 
-    @Override @Deprecated public void run(Runnable runner) {
-        executor.execute(runner);
-        throw new UnsupportedOperationException();
+    @Override public Future<?> run(Runnable runnable) {
+        return executorService.submit(runnable);
+    }
+
+    @Override public <T> Future<T> run(Callable<T> callable) {
+        return executorService.submit(callable);
     }
 
     @Override public void close() throws InterruptedException {
-        executor.shutdownNow();
+        executorService.shutdownNow();
         while (true) {
-            executor.awaitTermination(10, TimeUnit.SECONDS);
-            if (executor.isTerminated()) {
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            if (executorService.isTerminated()) {
                 return;
             }
         }
