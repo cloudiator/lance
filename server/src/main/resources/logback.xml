@@ -33,26 +33,6 @@
         </encoder>
     </appender>
 
-    <appender name="RMI" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.home}/rmi.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <timeBasedFileNamingAndTriggeringPolicy
-                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <!-- or whenever the file size reaches 50MB -->
-                <maxFileSize>50MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <!-- Daily rollover with compression -->
-            <fileNamePattern>${user.home}/rmi-log--%i-%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <!-- keep 30 days worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from %logger in %thread -
-                %message%n%xException
-            </pattern>
-        </encoder>
-    </appender>
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- encoders are assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
@@ -65,9 +45,7 @@
 
     <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
 
-    <logger name="sun.rmi" level="FINER" additivity="false">
-        <appender-ref ref="RMI"/>
-    </logger>
+    <logger name="sun.rmi" level="DEBUG"/>
 
     <root level="WARN">
         <appender-ref ref="APPFILE"/>
