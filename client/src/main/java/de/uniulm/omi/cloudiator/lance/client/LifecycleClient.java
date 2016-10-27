@@ -48,6 +48,7 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
@@ -101,6 +102,40 @@ public final class LifecycleClient {
             throw new DeploymentException(new RegistrationException("bad registry handling.", e));
         } catch (LcaException | ContainerException | RegistrationException e) {
             throw new DeploymentException(e);
+        }
+    }
+
+    public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
+        throws DeploymentException {
+        try {
+            final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
+            return lifecycleAgent.getComponentContainerStatus(cid);
+        } catch (RemoteException e) {
+            throw new DeploymentException(handleRemoteException(e));
+        } catch (NotBoundException e) {
+            throw new DeploymentException(new RegistrationException("bad registry handling.", e));
+        }
+    }
+
+    public void waitForDeployment(ComponentInstanceId cid, String serverIp) {
+        try {
+            final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
+            while (!lifecycleAgent.getComponentContainerStatus(cid).equals(ContainerStatus.READY)) {
+                final ContainerStatus componentContainerStatus =
+                    lifecycleAgent.getComponentContainerStatus(cid);
+                if (ContainerStatus.errorStates().contains(componentContainerStatus)) {
+                    throw new IllegalStateException(String
+                        .format("Container reached illegal state %s while waiting for state %s",
+                            componentContainerStatus, ContainerStatus.READY));
+                }
+                Thread.sleep(10000);
+            }
+        } catch (RemoteException | NotBoundException e) {
+            throw new RuntimeException(
+                String.format("Error while waiting for container %s to be ready.", cid), e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Got interrupted while waiting for container to be ready.");
         }
     }
 
@@ -166,7 +201,7 @@ public final class LifecycleClient {
 
     /**
      * @param myInstanceId the instance id
-     * @param lsyAppId the aplication id
+     * @param lsyAppId     the aplication id
      * @return true if this application instance has been added successfully. false if it was already contained
      * in the registry.
      * @throws RegistrationException when an registration error occurs
