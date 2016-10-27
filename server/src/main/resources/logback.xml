@@ -45,7 +45,7 @@
 
     <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
 
-    <logger name="sun.rmi" level="DEBUG"/>
+    <logger name="sun.rmi" level="TRACE"/>
 
     <root level="WARN">
         <appender-ref ref="APPFILE"/>

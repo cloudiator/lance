@@ -34,6 +34,11 @@
             <artifactId>logback-classic</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.9</version>
+        </dependency>
+        <dependency>
             <groupId>io.github.cloudiator.lance</groupId>
             <artifactId>common</artifactId>
         </dependency>
