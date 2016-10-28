@@ -119,10 +119,14 @@ public final class LifecycleClient {
 
     public void waitForDeployment(ComponentInstanceId cid, String serverIp) {
         try {
-            final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
-            while (!lifecycleAgent.getComponentContainerStatus(cid).equals(ContainerStatus.READY)) {
+
+            while (!Thread.currentThread().isInterrupted()) {
+                final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
                 final ContainerStatus componentContainerStatus =
                     lifecycleAgent.getComponentContainerStatus(cid);
+                if(ContainerStatus.READY.equals(componentContainerStatus)) {
+                    return;
+                }
                 if (ContainerStatus.errorStates().contains(componentContainerStatus)) {
                     throw new IllegalStateException(String
                         .format("Container reached illegal state %s while waiting for state %s",
