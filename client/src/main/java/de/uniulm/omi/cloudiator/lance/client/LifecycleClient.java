@@ -58,55 +58,48 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public final class LifecycleClient {
 
-    public static LifecycleClient getClient() {
-        return InnerClient.client;
+    public static LifecycleClient getClient(String serverIp) throws RemoteException, NotBoundException {
+        checkNotNull(serverIp);
+        checkArgument(!serverIp.isEmpty());
+        return new LifecycleClient(serverIp);
     }
 
-    private static class InnerClient {
-        private static final LifecycleClient client;
 
-        static {
-            LifecycleClient _client = null;
-            try {
-                _client = new LifecycleClient();
-            } catch (Throwable t) {
-                System.err.println("error while setting up client singleton.");
-                t.printStackTrace();
-                System.exit(-1);
-            }
-            client = _client;
+    private static final LcaRegistry currentRegistry;
+    private final LifecycleAgent lifecycleAgent;
+
+    private LifecycleClient(String serverIp) throws RemoteException, NotBoundException {
+        this.lifecycleAgent = findLifecycleAgent(serverIp);
+    }
+
+    static {
+        try {
+            currentRegistry = RegistryFactory.createRegistry();
+        } catch (RegistrationException e) {
+            throw new ExceptionInInitializerError(e);
         }
     }
 
+    public final ComponentInstanceId deploy(final DeploymentContext ctx,
+                                            final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
+            throws DeploymentException {
 
-    private final LcaRegistry currentRegistry;
-
-    private LifecycleClient() throws RegistrationException {
-        currentRegistry = RegistryFactory.createRegistry();
-    }
-
-
-    public final ComponentInstanceId deploy(String serverIp, final DeploymentContext ctx,
-        final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
-        throws DeploymentException {
         try {
-            LifecycleAgent agent = findLifecycleAgent(serverIp);
-
-            return deploy(agent, ctx, comp, os, containerType);
-
+            return lifecycleAgent.deployComponent(ctx, comp, os, containerType);
         } catch (RemoteException re) {
             throw new DeploymentException(handleRemoteException(re));
-        } catch (NotBoundException e) {
-            throw new DeploymentException(new RegistrationException("bad registry handling.", e));
         } catch (LcaException | ContainerException | RegistrationException e) {
             throw new DeploymentException(e);
         }
     }
 
     public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
-        throws DeploymentException {
+            throws DeploymentException {
         try {
             final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
             return lifecycleAgent.getComponentContainerStatus(cid);
@@ -117,41 +110,36 @@ public final class LifecycleClient {
         }
     }
 
-    public void waitForDeployment(ComponentInstanceId cid, String serverIp) {
+    public void waitForDeployment(ComponentInstanceId cid) {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
                 final ContainerStatus componentContainerStatus =
-                    lifecycleAgent.getComponentContainerStatus(cid);
+                        lifecycleAgent.getComponentContainerStatus(cid);
                 if (ContainerStatus.READY.equals(componentContainerStatus)) {
                     return;
                 }
                 if (ContainerStatus.errorStates().contains(componentContainerStatus)) {
                     throw new IllegalStateException(String
-                        .format("Container reached illegal state %s while waiting for state %s",
-                            componentContainerStatus, ContainerStatus.READY));
+                            .format("Container reached illegal state %s while waiting for state %s",
+                                    componentContainerStatus, ContainerStatus.READY));
                 }
                 Thread.sleep(10000);
             }
-        } catch (RemoteException | NotBoundException e) {
+        } catch (RemoteException e) {
             throw new RuntimeException(
-                String.format("Error while waiting for container %s to be ready.", cid), e);
+                    String.format("Error while waiting for container %s to be ready.", cid), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Got interrupted while waiting for container to be ready.");
         }
     }
 
-    public final boolean undeploy(String serverIp, ComponentInstanceId componentInstanceId,
-        ContainerType containerType) throws DeploymentException {
-
+    public final boolean undeploy(ComponentInstanceId componentInstanceId,
+                                  ContainerType containerType) throws DeploymentException {
         try {
-            LifecycleAgent agent = findLifecycleAgent(serverIp);
-            return undeploy(agent, containerType, componentInstanceId);
+            return lifecycleAgent.stopComponentInstance(containerType, componentInstanceId);
         } catch (RemoteException e) {
             throw new DeploymentException(handleRemoteException(e));
-        } catch (NotBoundException e) {
-            throw new DeploymentException(new RegistrationException("bad registry handling.", e));
         } catch (LcaException | ContainerException e) {
             throw new DeploymentException(e);
         }
@@ -170,36 +158,12 @@ public final class LifecycleClient {
     }
 
     private static LifecycleAgent findLifecycleAgent(String serverIp)
-        throws RemoteException, NotBoundException {
+            throws RemoteException, NotBoundException {
 
         Registry reg = LocateRegistry.getRegistry(serverIp);
         Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
         LifecycleAgent agent = (LifecycleAgent) o;
         return agent;
-    }
-
-    private static boolean undeploy(final LifecycleAgent agent, ContainerType containerType,
-        ComponentInstanceId componentInstanceId)
-        throws LcaException, RemoteException, ContainerException {
-        return agent.stopComponentInstance(containerType, componentInstanceId);
-    }
-
-    private static ComponentInstanceId deploy(final LifecycleAgent agent,
-        final DeploymentContext ctx, final DeployableComponent comp, final OperatingSystem os,
-        final ContainerType containerType)
-
-        throws RemoteException, LcaException, RegistrationException, ContainerException {
-    /*executor.submit(new Callable<ComponentInstanceId>() {
-
-			@Override
-			public ComponentInstanceId call() throws Exception {
-				return agent.deployComponent(ctx, comp, os);		
-			}
-		});*/
-
-        return agent.deployComponent(ctx, comp, os, containerType);
-
-        // catch(Throwable t) {t.printStackTrace();}
     }
 
     /**
@@ -210,27 +174,27 @@ public final class LifecycleClient {
      * @throws RegistrationException when an registration error occurs
      */
     public boolean registerApplicationInstance(ApplicationInstanceId myInstanceId,
-        ApplicationId lsyAppId) throws RegistrationException {
+                                               ApplicationId lsyAppId) throws RegistrationException {
         return currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, "<unknown name>");
     }
 
     public void registerApplicationInstance(ApplicationInstanceId myInstanceId,
-        ApplicationId lsyAppId, String name) throws RegistrationException {
+                                            ApplicationId lsyAppId, String name) throws RegistrationException {
         currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, name);
     }
 
     public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
-        ComponentId zookeeperComponentId) throws RegistrationException {
+                                                        ComponentId zookeeperComponentId) throws RegistrationException {
         currentRegistry.addComponent(myInstanceId, zookeeperComponentId, "<unknown name>");
     }
 
     public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
-        ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
+                                                        ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
         currentRegistry.addComponent(myInstanceId, zookeeperComponentId, componentName);
     }
 
     public DeploymentContext initDeploymentContext(ApplicationId appId,
-        ApplicationInstanceId appInstanceId) {
+                                                   ApplicationInstanceId appInstanceId) {
         return new DeploymentContext(appId, appInstanceId, currentRegistry);
     }
 }
