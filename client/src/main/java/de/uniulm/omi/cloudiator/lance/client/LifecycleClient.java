@@ -35,6 +35,7 @@
  */
 package de.uniulm.omi.cloudiator.lance.client;
 
+import com.google.common.collect.Maps;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -57,11 +58,37 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public final class LifecycleClient {
+
+    private static Map<String, CacheEntry> lifecycleAgentCache = Maps.newConcurrentMap();
+
+    private static class CacheEntry {
+        private final Registry registry;
+        private final LifecycleAgent lifecycleAgent;
+
+        private CacheEntry(Registry registry, LifecycleAgent lifecycleAgent) {
+
+            checkNotNull(registry, "registry is null.");
+            checkNotNull(lifecycleAgent, "lifecycleAgent is null");
+
+            this.registry = registry;
+            this.lifecycleAgent = lifecycleAgent;
+        }
+
+        public Registry registry() {
+            return registry;
+        }
+
+        public LifecycleAgent lifecycleAgent() {
+            return lifecycleAgent;
+        }
+    }
 
     public static LifecycleClient getClient(String serverIp) throws RemoteException, NotBoundException {
         checkNotNull(serverIp);
@@ -157,13 +184,16 @@ public final class LifecycleClient {
 
     }
 
-    private static LifecycleAgent findLifecycleAgent(String serverIp)
+    private static synchronized LifecycleAgent findLifecycleAgent(String serverIp)
             throws RemoteException, NotBoundException {
 
-        Registry reg = LocateRegistry.getRegistry(serverIp);
-        Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
-        LifecycleAgent agent = (LifecycleAgent) o;
-        return agent;
+        if (!lifecycleAgentCache.containsKey(serverIp)) {
+            Registry reg = LocateRegistry.getRegistry(serverIp);
+            Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
+            lifecycleAgentCache.put(serverIp, new CacheEntry(reg, (LifecycleAgent) o));
+        }
+        checkState(lifecycleAgentCache.containsKey(serverIp));
+        return lifecycleAgentCache.get(serverIp).lifecycleAgent();
     }
 
     /**
