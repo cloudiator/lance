@@ -155,6 +155,12 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     @Override public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid) {
         LOGGER.info("Resolving status of container " + cid);
-        return containers.getComponentContainerStatus(cid);
+        ContainerStatus ret = null;
+        try {
+            ret = containers.getComponentContainerStatus(cid);
+            return ret;
+        } finally {
+            LOGGER.info("Status of container " + cid + " is "  + ret);
+        }
     }
 }

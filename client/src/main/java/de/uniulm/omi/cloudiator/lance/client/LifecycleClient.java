@@ -116,7 +116,7 @@ public final class LifecycleClient {
 
                 @Override public Socket createSocket(String host, int port) throws IOException {
                     final Socket socket = delegate.createSocket(host, port);
-                    socket.setSoTimeout(30000);
+                    socket.setSoTimeout(60000);
                     socket.setKeepAlive(true);
                     return socket;
                 }
