@@ -64,13 +64,12 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RMISocketFactory;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 
 public final class LifecycleClient {
 
     private static Map<String, CacheEntry> lifecycleAgentCache = Maps.newConcurrentMap();
+
 
     private static class CacheEntry {
         private final Registry registry;
@@ -94,30 +93,40 @@ public final class LifecycleClient {
         }
     }
 
-    public static LifecycleClient getClient(String serverIp) throws RemoteException, NotBoundException {
+    public static LifecycleClient getClient(String serverIp)
+        throws RemoteException, NotBoundException {
         checkNotNull(serverIp);
         checkArgument(!serverIp.isEmpty());
-        return new LifecycleClient(serverIp);
+        return new LifecycleClient(serverIp, 0);
+    }
+
+    public static LifecycleClient getClient(String serverIp, int rmiTimeout)
+        throws RemoteException, NotBoundException {
+        checkNotNull(serverIp);
+        checkArgument(!serverIp.isEmpty());
+        checkArgument(rmiTimeout >= 0, "rmiTimeout must be larger or equal to 0");
+        return new LifecycleClient(serverIp, rmiTimeout);
     }
 
 
     private static final LcaRegistry currentRegistry;
     private final LifecycleAgent lifecycleAgent;
 
-    private LifecycleClient(String serverIp) throws RemoteException, NotBoundException {
+    private LifecycleClient(String serverIp, int rmiTimeout)
+        throws RemoteException, NotBoundException {
         this.lifecycleAgent = findLifecycleAgent(serverIp);
-    }
 
-    static {
         try {
             RMISocketFactory.setSocketFactory(new RMISocketFactory() {
 
-                private final RMISocketFactory delegate = RMISocketFactory.getDefaultSocketFactory();
+                private final RMISocketFactory delegate =
+                    RMISocketFactory.getDefaultSocketFactory();
 
                 @Override public Socket createSocket(String host, int port) throws IOException {
                     final Socket socket = delegate.createSocket(host, port);
-                    socket.setSoTimeout(60000);
-                    socket.setKeepAlive(true);
+                    if (rmiTimeout != 0) {
+                        socket.setSoTimeout(rmiTimeout);
+                    }
                     return socket;
                 }
 
@@ -126,8 +135,11 @@ public final class LifecycleClient {
                 }
             });
         } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
+            throw new IllegalStateException(e);
         }
+    }
+
+    static {
         try {
             currentRegistry = RegistryFactory.createRegistry();
         } catch (RegistrationException e) {
@@ -136,8 +148,8 @@ public final class LifecycleClient {
     }
 
     public final ComponentInstanceId deploy(final DeploymentContext ctx,
-                                            final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
-            throws DeploymentException {
+        final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
+        throws DeploymentException {
 
         try {
             return lifecycleAgent.deployComponent(ctx, comp, os, containerType);
@@ -149,7 +161,7 @@ public final class LifecycleClient {
     }
 
     public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
-            throws DeploymentException {
+        throws DeploymentException {
         try {
             final LifecycleAgent lifecycleAgent = findLifecycleAgent(serverIp);
             return lifecycleAgent.getComponentContainerStatus(cid);
@@ -164,20 +176,20 @@ public final class LifecycleClient {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 final ContainerStatus componentContainerStatus =
-                        lifecycleAgent.getComponentContainerStatus(cid);
+                    lifecycleAgent.getComponentContainerStatus(cid);
                 if (ContainerStatus.READY.equals(componentContainerStatus)) {
                     return;
                 }
                 if (ContainerStatus.errorStates().contains(componentContainerStatus)) {
                     throw new IllegalStateException(String
-                            .format("Container reached illegal state %s while waiting for state %s",
-                                    componentContainerStatus, ContainerStatus.READY));
+                        .format("Container reached illegal state %s while waiting for state %s",
+                            componentContainerStatus, ContainerStatus.READY));
                 }
                 Thread.sleep(10000);
             }
         } catch (RemoteException e) {
             throw new RuntimeException(
-                    String.format("Error while waiting for container %s to be ready.", cid), e);
+                String.format("Error while waiting for container %s to be ready.", cid), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Got interrupted while waiting for container to be ready.");
@@ -185,7 +197,7 @@ public final class LifecycleClient {
     }
 
     public final boolean undeploy(ComponentInstanceId componentInstanceId,
-                                  ContainerType containerType) throws DeploymentException {
+        ContainerType containerType) throws DeploymentException {
         try {
             return lifecycleAgent.stopComponentInstance(containerType, componentInstanceId);
         } catch (RemoteException e) {
@@ -208,7 +220,7 @@ public final class LifecycleClient {
     }
 
     private static synchronized LifecycleAgent findLifecycleAgent(String serverIp)
-            throws RemoteException, NotBoundException {
+        throws RemoteException, NotBoundException {
 
         if (!lifecycleAgentCache.containsKey(serverIp)) {
             Registry reg = LocateRegistry.getRegistry(serverIp);
@@ -227,27 +239,27 @@ public final class LifecycleClient {
      * @throws RegistrationException when an registration error occurs
      */
     public boolean registerApplicationInstance(ApplicationInstanceId myInstanceId,
-                                               ApplicationId lsyAppId) throws RegistrationException {
+        ApplicationId lsyAppId) throws RegistrationException {
         return currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, "<unknown name>");
     }
 
     public void registerApplicationInstance(ApplicationInstanceId myInstanceId,
-                                            ApplicationId lsyAppId, String name) throws RegistrationException {
+        ApplicationId lsyAppId, String name) throws RegistrationException {
         currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, name);
     }
 
     public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
-                                                        ComponentId zookeeperComponentId) throws RegistrationException {
+        ComponentId zookeeperComponentId) throws RegistrationException {
         currentRegistry.addComponent(myInstanceId, zookeeperComponentId, "<unknown name>");
     }
 
     public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
-                                                        ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
+        ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
         currentRegistry.addComponent(myInstanceId, zookeeperComponentId, componentName);
     }
 
     public DeploymentContext initDeploymentContext(ApplicationId appId,
-                                                   ApplicationInstanceId appInstanceId) {
+        ApplicationInstanceId appInstanceId) {
         return new DeploymentContext(appId, appInstanceId, currentRegistry);
     }
 }
