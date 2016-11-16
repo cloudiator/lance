@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 public final class ErrorAwareStateMachine<T extends Enum<?> & State> {
@@ -56,13 +57,17 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State> {
      *                  transition
      */
     public final void transit(T fromState, T toState, Object[] params) {
+    	final Future<?> f;
+    	final ErrorAwareStateTransition<T> transition; 
         synchronized (localState) {
             localState.cleanTransitionExceptions();
-
-            ErrorAwareStateTransition<T> transition = findTransition(fromState, toState);
+            transition = findTransition(fromState, toState);
+            // validation and triggering has to happen automatically
             localState.validateReadyForTransition(transition);
-            transition.executeTransition(localState, params, executor);
+            f = transition.triggerTransitionExecution(localState, params, executor);
         }
+        // now, postprocess the trigger //
+        transition.postprocessExecutionTrigger(f);
     }
 
     public final T getState() {

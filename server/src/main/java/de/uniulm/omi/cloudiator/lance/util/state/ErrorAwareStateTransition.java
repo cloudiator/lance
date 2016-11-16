@@ -69,27 +69,42 @@ public final class ErrorAwareStateTransition<T extends Enum<?> & State> {
         return status == from;
     }
 
-    void executeTransition(ErrorAwareTransitionState<T> state, Object[] params,
+    Future<?> triggerTransitionExecution(ErrorAwareTransitionState<T> state, Object[] params,
         ExecutorService executor) {
+    	Future<?> f;
+    	
         TransitionRunner runner = new TransitionRunner(params, state);
 
         if (isSynchronous()) {
             FutureTask<T> ft = new FutureTask<>(runner, null);
             runner.registerStartAtState(ft);
-            ft.run();
-            try {
-                ft.get();
-            } catch (InterruptedException e) {
-                LOGGER.error(String.format("%s got interrupted", ft), e);
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-                LOGGER.error(String.format("Exception during execution of %s", ft), e.getCause());
-            }
+            // attention: the transition action is not being executed here
+            f = ft;
         } else {
             Future<?> actual = executor.submit(runner);
             runner.registerStartAtState(actual);
+            f = actual;
         }
+        return f;
     }
+    
+    void postprocessExecutionTrigger(Future<?> f){
+    	if(isSynchronous()) {
+    		FutureTask<T> ft = (FutureTask) f;
+	    	ft.run();
+	        try {
+	            ft.get();
+	        } catch (InterruptedException e) {
+	            LOGGER.error(String.format("%s got interrupted", ft), e);
+	            Thread.currentThread().interrupt();
+	        } catch (ExecutionException e) {
+	            LOGGER.error(String.format("Exception during execution of %s", ft), e.getCause());
+	        }
+    	} else {
+    		// do nothing: transition is already running //
+    	}
+    }
+    
 
     private boolean isSynchronous() {
         return !isAsynchronous;
