@@ -114,8 +114,6 @@ public final class LifecycleClient {
 
     private LifecycleClient(String serverIp, int rmiTimeout)
         throws RemoteException, NotBoundException {
-        this.lifecycleAgent = findLifecycleAgent(serverIp);
-
         try {
             RMISocketFactory.setSocketFactory(new RMISocketFactory() {
 
@@ -135,8 +133,9 @@ public final class LifecycleClient {
                 }
             });
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            //ignored
         }
+        this.lifecycleAgent = findLifecycleAgent(serverIp);
     }
 
     static {
