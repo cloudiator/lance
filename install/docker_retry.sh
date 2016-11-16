@@ -8,7 +8,7 @@ docker_available() {
     fi
 }
 
-wget https://get.docker.com -O ./docker_install.sh
+wget https://raw.githubusercontent.com/cloudiator/lance/master/install/docker_install.sh -O ./docker_install.sh
 sudo chmod +x ./docker_install.sh
 ./docker_install.sh
 
