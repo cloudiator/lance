@@ -54,10 +54,14 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -105,6 +109,25 @@ public final class LifecycleClient {
     }
 
     static {
+        try {
+            RMISocketFactory.setSocketFactory(new RMISocketFactory() {
+
+                private final RMISocketFactory delegate = RMISocketFactory.getDefaultSocketFactory();
+
+                @Override public Socket createSocket(String host, int port) throws IOException {
+                    final Socket socket = delegate.createSocket(host, port);
+                    socket.setSoTimeout(60000);
+                    socket.setKeepAlive(true);
+                    return socket;
+                }
+
+                @Override public ServerSocket createServerSocket(int i) throws IOException {
+                    return delegate.createServerSocket(i);
+                }
+            });
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
         try {
             currentRegistry = RegistryFactory.createRegistry();
         } catch (RegistrationException e) {

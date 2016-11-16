@@ -66,6 +66,7 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State> {
     }
 
     public final T getState() {
+        LOGGER.debug("Resolving state. StateMachine: " + this + " local state: " + localState);
         synchronized (localState) {
             localState.cleanTransitionExceptions();
             return localState.getCurrentState();
