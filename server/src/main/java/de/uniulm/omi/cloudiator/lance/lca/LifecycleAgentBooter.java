@@ -28,8 +28,10 @@ public final class LifecycleAgentBooter {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentBooter.class);
     private final static Registrator<LifecycleAgent> reg = Registrator.create(LifecycleAgent.class);
-    private static volatile LifecycleAgentImpl lca = createAgentImplementation();
-    private static volatile LifecycleAgent stub = reg.export(lca, LcaConstants.AGENT_RMI_PORT);
+    private final static LifecycleAgentCore core = createAgentImplementation();
+    private static volatile LifecycleAgentRmiImpl lcaRmi = createAgentRmiImplementation();
+    private static volatile LifecycleAgentRestImpl lcaRest = createAgentRestImplementation();
+    private static volatile LifecycleAgent stub = reg.export(lcaRmi, LcaConstants.AGENT_RMI_PORT);
 
     public static void main(String[] args) {
         LOGGER
@@ -47,16 +49,35 @@ public final class LifecycleAgentBooter {
         }
     }
 
-    private static LifecycleAgentImpl createAgentImplementation() {
+
+    private static LifecycleAgentCore createAgentImplementation() {
         HostContext ctx = EnvContext.fromEnvironment();
         LOGGER.info("LifecycleAgentBooter: created host context: " + ctx);
-        LifecycleAgentImpl impl = new LifecycleAgentImpl(ctx);
-        impl.init();
-        return impl;
+        final LifecycleAgentCore lifecycleAgentCore = new LifecycleAgentCore(ctx);
+        lifecycleAgentCore.init();
+        return lifecycleAgentCore;
     }
 
-    public static void unregister(LifecycleAgentImpl lifecycleAgentImpl) {
-        reg.unregister(lifecycleAgentImpl);
+    private static LifecycleAgentRmiImpl createAgentRmiImplementation() {
+
+        LifecycleAgentRmiImpl rmiImpl = new LifecycleAgentRmiImpl(core);
+
+        return rmiImpl;
+    }
+
+    private static LifecycleAgentRestImpl createAgentRestImplementation() {
+
+        LifecycleAgentRestImpl restImpl = new LifecycleAgentRestImpl(core);
+
+        return restImpl;
+    }
+
+    public static void unregisterRmi(LifecycleAgentRmiImpl lifecycleAgentRmiImpl) {
+        reg.unregister(lifecycleAgentRmiImpl);
+    }
+
+    public static void unregisterRest(LifecycleAgentRestImpl lifecycleAgentRestImpl) {
+        // close REST server
     }
 
 

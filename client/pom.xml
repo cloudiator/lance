@@ -33,5 +33,10 @@
             <groupId>io.github.cloudiator.lance</groupId>
             <artifactId>common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
     </dependencies>
 </project>
