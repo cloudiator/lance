@@ -33,7 +33,6 @@ public class LifecycleAgentRestImpl implements LifecycleAgent {
   public LifecycleAgentRestImpl(LifecycleAgentCore core) {
     this.core = core;
 
-
     ExecutorService executorService = Executors.newCachedThreadPool();
     restServer = new RestServer(9088, "http://0.0.0.0", executorService, this);
   }

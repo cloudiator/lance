@@ -1,12 +1,10 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import com.ning.http.client.providers.grizzly.GrizzlyResponse;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import java.io.ByteArrayInputStream;
@@ -72,21 +70,33 @@ public class RestController {
     impl.terminate();
     return "ok";
   }
-
+  
+  private Object[] deserialise(byte[] restBodyDeployComponent) throws ClassNotFoundException, IOException {
+    ByteArrayInputStream in = new ByteArrayInputStream(restBodyDeployComponent);
+    ObjectInputStream is = new ObjectInputStream(in);
+    Object[] o = (Object[])is.readObject();
+    return o;
+  }
+  
+  private byte[] serialise(Object ... params) throws IOException {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ObjectOutputStream os2 = new ObjectOutputStream(out);
+    os2.writeObject(params);
+    return out.toByteArray();
+  }
+  
   @GET
   @Produces(MediaType.TEXT_PLAIN)
   @Path("/containers")
-  public byte[] listContainers() throws RemoteException {
+  public byte[] listContainers() throws RemoteException, LcaException {
     List<ComponentInstanceId> containers = impl.listContainers();
 
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
     try {
-      ObjectOutputStream os = new ObjectOutputStream(out);
-      os.writeObject(containers);
+      return serialise(containers);
     } catch (IOException e) {
       LOGGER.error("failed to output containers", e);
     }
-    return out.toByteArray();
+    throw new LcaException("cannot list containers.");
   }
 
   @POST
@@ -99,21 +109,13 @@ public class RestController {
     LOGGER.error("start to deploy component");
 
     try {
-      ByteArrayInputStream in = new ByteArrayInputStream(restBodyDeployComponent);
-      ObjectInputStream is = new ObjectInputStream(in);
-      Object[] o = (Object[])is.readObject();
-      DeploymentContext ctx = (DeploymentContext) o[0];
-      DeployableComponent component = (DeployableComponent) o[1];
-      OperatingSystem os = (OperatingSystem) o[2];
-      ContainerType containerType = (ContainerType) o[3];
-
+      Object[] o = deserialise(restBodyDeployComponent);
+      
       final ComponentInstanceId componentInstanceId = impl
-          .deployComponent(ctx, component, os, containerType);
+          .deployComponent((DeploymentContext) o[0], (DeployableComponent) o[1],
+              (OperatingSystem) o[2], (ContainerType) o[3]);
 
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      ObjectOutputStream os2 = new ObjectOutputStream(out);
-      os2.writeObject(componentInstanceId);
-      return out.toByteArray();
+      return serialise(componentInstanceId);
     } catch (IOException e) {
       LOGGER.error("failed to deploy component", e);
     }
@@ -126,13 +128,9 @@ public class RestController {
   public boolean stopComponentInstance(byte[] restBodyDeployComponent)
       throws RemoteException, LcaException, ContainerException {
 
-    ByteArrayInputStream in = new ByteArrayInputStream(restBodyDeployComponent);
     try {
-      ObjectInputStream is = new ObjectInputStream(in);
-      ContainerType containerType = (ContainerType) is.readObject();
-      ComponentInstanceId componentInstanceId = (ComponentInstanceId) is.readObject();
-
-      return impl.stopComponentInstance(containerType, componentInstanceId);
+      Object[] o = deserialise(restBodyDeployComponent);
+      return impl.stopComponentInstance((ContainerType)o[0], (ComponentInstanceId) o[1]);
     } catch (IOException e) {
       LOGGER.error("failed to read stopComponentInstance (1)", e);
     } catch (ClassNotFoundException e) {

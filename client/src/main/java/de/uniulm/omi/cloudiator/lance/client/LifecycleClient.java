@@ -35,7 +35,35 @@
  */
 package de.uniulm.omi.cloudiator.lance.client;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+
 import com.google.common.collect.Maps;
+
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -53,35 +81,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMISocketFactory;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-
-import static com.google.common.base.Preconditions.*;
 
 public final class LifecycleClient {
 
@@ -183,96 +182,77 @@ public final class LifecycleClient {
         }
     }
 
+    private <T extends HttpMethodBase> T invokeMethod(String server, int port, String path, T httpMethod) {
+      HostConfiguration hostConfiguration = new HostConfiguration();
+      hostConfiguration.setHost(server, port);
+      HttpClient httpClient = new HttpClient();
+      httpClient.setHostConfiguration(hostConfiguration);
+
+      String adaptationUrlPath = path;
+      httpMethod.setPath(adaptationUrlPath);
+
+      try {
+          httpClient.executeMethod(httpMethod);
+          return httpMethod;
+      } catch (IOException e) {
+          e.printStackTrace();
+          return null;
+      }
+    }
+    
+    private Object readResult(HttpMethodBase method) {
+      Object result = null;
+      if (method.getStatusCode() == HttpStatus.SC_OK ||
+          method.getStatusCode() == HttpStatus.SC_CREATED) {
+          try {
+              ByteArrayInputStream in = new ByteArrayInputStream(method.getResponseBody());
+              ObjectInputStream is = new ObjectInputStream(in);
+              result = is.readObject();
+          } catch (IOException e) {
+              e.printStackTrace();
+          } catch (ClassNotFoundException e) {
+              e.printStackTrace();
+          }
+      }
+      return result;
+    }
+    
+    private byte[] serialiseParameters(Object ... params) {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      try {
+          ObjectOutputStream objectOutputStream = new ObjectOutputStream(out);
+          objectOutputStream.writeObject(params);
+      } catch (IOException e) {
+        e.printStackTrace();
+        //LOGGER.error("failed to output containers", e);
+      }
+      return out.toByteArray();
+    }
+    
     public final List<ComponentInstanceId> listContainers_byRest() throws DeploymentException {
-
-        HostConfiguration hostConfiguration = new HostConfiguration();
-        hostConfiguration.setHost(this.getServerIp(), 9088 /*TODO*/);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setHostConfiguration(hostConfiguration);
-        GetMethod getMethod = new GetMethod();
-
-        String adaptationUrlPath = "/containers";
-        getMethod.setPath(adaptationUrlPath);
-
-        try {
-            httpClient.executeMethod(getMethod);
-        } catch (IOException e) {
-            //TODO
-            e.printStackTrace();
-        }
-
-        List<ComponentInstanceId> result = null;
-
-        if (getMethod.getStatusCode() == HttpStatus.SC_OK ||
-            getMethod.getStatusCode() == HttpStatus.SC_CREATED) {
-            try {
-                ByteArrayInputStream in = new ByteArrayInputStream(getMethod.getResponseBody());
-                ObjectInputStream is = null;
-                is = new ObjectInputStream(in);
-                result = (List<ComponentInstanceId>)is.readObject();
-            } catch (IOException e) {
-                //TODO
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                //TODO
-                e.printStackTrace();
-            }
-        }
-
-        return result;
+      List<ComponentInstanceId> result = null;
+      GetMethod getMethod = invokeMethod(this.getServerIp(), 9088 /*TODO*/, "/containers", new GetMethod());
+      if(getMethod != null) {
+        result = (List<ComponentInstanceId>) readResult(getMethod);
+      }
+      return result;
     }
 
     public final ComponentInstanceId deploy_byRest(final DeploymentContext ctx,
         final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
         throws DeploymentException {
 
-        HostConfiguration hostConfiguration = new HostConfiguration();
-        hostConfiguration.setHost(this.getServerIp(), 9088 /*TODO*/);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setHostConfiguration(hostConfiguration);
-        PostMethod postMethod = new PostMethod();
+      PostMethod postMethod = new PostMethod();
+      postMethod.setRequestEntity(
+          new ByteArrayRequestEntity(serialiseParameters(ctx, comp, os, containerType))
+      );
+      postMethod = invokeMethod(this.getServerIp(), 9088 /*TODO*/, "/deployComponent", postMethod);
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(out);
-            objectOutputStream.writeObject(new Object[] {ctx, comp, os, containerType});
-        } catch (IOException e) {
-            //LOGGER.error("failed to output containers", e);
-        }
-
-        String adaptationUrlPath = "/deployComponent";
-        postMethod.setPath(adaptationUrlPath);
-
-        postMethod.setRequestEntity(
-            new ByteArrayRequestEntity(out.toByteArray())
-        );
-
-        try {
-            httpClient.executeMethod(postMethod);
-        } catch (IOException e) {
-            //TODO
-            e.printStackTrace();
-        }
-
-        ComponentInstanceId result = null;
-
-        if (postMethod.getStatusCode() == HttpStatus.SC_OK ||
-            postMethod.getStatusCode() == HttpStatus.SC_CREATED) {
-            try {
-                ByteArrayInputStream in = new ByteArrayInputStream(postMethod.getResponseBody());
-                ObjectInputStream is = null;
-                is = new ObjectInputStream(in);
-                result = (ComponentInstanceId)is.readObject();
-            } catch (IOException e) {
-                //TODO
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                //TODO
-                e.printStackTrace();
-            }
-        }
-
-        return result;
+      ComponentInstanceId result = null;
+      if(postMethod != null) {
+        result = (ComponentInstanceId) readResult(postMethod);
+      }
+      return result;
     }
 
     public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
