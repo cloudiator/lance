@@ -18,7 +18,7 @@
 
 <configuration>
 
-  <property name="LOG_DIR" value=${user.home} />
+  <property name="LOG_DIR" value="${user.home}"/>
 
   <appender name="APPFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${LOG_DIR}/lance.out</file>
