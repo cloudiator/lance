@@ -18,37 +18,39 @@
 
 <configuration>
 
-    <appender name="APPFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.home}/lance.out</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- Daily rollover with compression -->
-            <fileNamePattern>${user.home}/lance-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
-            <!-- keep 30 days worth of history -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from %logger in %thread -
-                %message%n%xException
-            </pattern>
-        </encoder>
-    </appender>
+  <property name="LOG_DIR" value=${user.home} />
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- encoders are assigned the type
-             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
-        <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from %logger in %thread -
-                %message%n%xException
-            </pattern>
-        </encoder>
-    </appender>
+  <appender name="APPFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_DIR}/lance.out</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- Daily rollover with compression -->
+      <fileNamePattern>${LOG_DIR}/lance-log-%d{yyyy-MM-dd}.gz</fileNamePattern>
+      <!-- keep 30 days worth of history -->
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from %logger in %thread -
+        %message%n%xException
+      </pattern>
+    </encoder>
+  </appender>
 
-    <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- encoders are assigned the type
+         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%date{yyyy-MM-dd HH:mm:ss ZZZZ} [%level] from %logger in %thread -
+        %message%n%xException
+      </pattern>
+    </encoder>
+  </appender>
 
-    <logger name="sun.rmi" level="TRACE"/>
+  <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
 
-    <root level="WARN">
-        <appender-ref ref="APPFILE"/>
-    </root>
+  <logger name="sun.rmi" level="TRACE"/>
+
+  <root level="WARN">
+    <appender-ref ref="APPFILE"/>
+  </root>
 
 </configuration>
