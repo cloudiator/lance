@@ -37,14 +37,12 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
-import com.google.common.collect.Maps;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -70,7 +68,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMISocketFactory;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -81,31 +78,6 @@ public final class LifecycleClient {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleClient.class);
 
-  private static Map<String, CacheEntry> lifecycleAgentCache = Maps.newConcurrentMap();
-
-
-  private static class CacheEntry {
-
-    private final Registry registry;
-    private final LifecycleAgent lifecycleAgent;
-
-    private CacheEntry(Registry registry, LifecycleAgent lifecycleAgent) {
-
-      checkNotNull(registry, "registry is null.");
-      checkNotNull(lifecycleAgent, "lifecycleAgent is null");
-
-      this.registry = registry;
-      this.lifecycleAgent = lifecycleAgent;
-    }
-
-    public Registry registry() {
-      return registry;
-    }
-
-    public LifecycleAgent lifecycleAgent() {
-      return lifecycleAgent;
-    }
-  }
 
   public static LifecycleClient getClient(String serverIp)
       throws RemoteException, NotBoundException {
@@ -255,13 +227,10 @@ public final class LifecycleClient {
   private static synchronized LifecycleAgent findLifecycleAgent(String serverIp)
       throws RemoteException, NotBoundException {
 
-    if (!lifecycleAgentCache.containsKey(serverIp)) {
-      Registry reg = LocateRegistry.getRegistry(serverIp);
-      Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
-      lifecycleAgentCache.put(serverIp, new CacheEntry(reg, (LifecycleAgent) o));
-    }
-    checkState(lifecycleAgentCache.containsKey(serverIp));
-    return lifecycleAgentCache.get(serverIp).lifecycleAgent();
+    Registry reg = LocateRegistry.getRegistry(serverIp);
+    Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
+
+    return (LifecycleAgent) o;
   }
 
   /**
