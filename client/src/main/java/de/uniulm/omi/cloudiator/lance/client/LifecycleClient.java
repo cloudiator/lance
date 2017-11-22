@@ -39,6 +39,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.github.rholder.retry.RetryException;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.Maps;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -66,8 +71,15 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMISocketFactory;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class LifecycleClient {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleClient.class);
 
   private static Map<String, CacheEntry> lifecycleAgentCache = Maps.newConcurrentMap();
 
@@ -154,12 +166,27 @@ public final class LifecycleClient {
       final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
       throws DeploymentException {
 
+    Retryer<ComponentInstanceId> retryer = RetryerBuilder.<ComponentInstanceId>newBuilder()
+        .retryIfExceptionOfType(RemoteException.class).withWaitStrategy(
+            WaitStrategies.exponentialWait()).withStopStrategy(StopStrategies.stopAfterDelay(5,
+            TimeUnit.MINUTES)).build();
+
+    Callable<ComponentInstanceId> callable = () -> {
+      LOGGER.info("Trying to deploy component " + comp);
+      return lifecycleAgent
+          .deployComponent(ctx, comp, os, containerType);
+    };
+
     try {
-      return lifecycleAgent.deployComponent(ctx, comp, os, containerType);
-    } catch (RemoteException re) {
-      throw new DeploymentException(handleRemoteException(re));
-    } catch (LcaException | ContainerException | RegistrationException e) {
-      throw new DeploymentException(e);
+      return retryer.call(callable);
+    } catch (ExecutionException e) {
+      throw new DeploymentException(e.getCause());
+    } catch (RetryException e) {
+      if (e.getCause() instanceof RemoteException) {
+        throw new DeploymentException(handleRemoteException((RemoteException) e.getCause()));
+      } else {
+        throw new IllegalStateException(e);
+      }
     }
   }
 
