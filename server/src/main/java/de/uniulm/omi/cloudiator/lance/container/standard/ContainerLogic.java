@@ -27,6 +27,7 @@ public interface ContainerLogic {
 
     //void doCreate(OperatingSystem  o) ;
     void doCreate() throws ContainerException;
+    void doCreate(String name) throws ContainerException;
 
     void doInit(LifecycleStore store) throws ContainerException;
     
@@ -50,4 +51,6 @@ public interface ContainerLogic {
     String getLocalAddress() throws ContainerException;
 
     InportAccessor getPortMapper();
+
+    DeployableComponent getDeployableComponent();
 }
