@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -212,5 +213,9 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     		throw new ContainerConfigurationException("generic error state reached: " + stat, stateMachine.collectExceptions());
     	}
     	throw new UnexpectedContainerStateException("unexpected state reached: " + stat, stateMachine.collectExceptions());
+    }
+
+    public DeployableComponent getDeployableComponent() {
+        return logic.getDeployableComponent();
     }
 }

@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -26,6 +27,7 @@ public interface ContainerLogic {
 
     //void doCreate(OperatingSystem  o) ;
     void doCreate() throws ContainerException;
+    void doCreate(String name) throws ContainerException;
 
     void doInit(LifecycleStore store) throws ContainerException;
     
@@ -49,4 +51,6 @@ public interface ContainerLogic {
     String getLocalAddress() throws ContainerException;
 
     InportAccessor getPortMapper();
+
+    DeployableComponent getDeployableComponent();
 }
