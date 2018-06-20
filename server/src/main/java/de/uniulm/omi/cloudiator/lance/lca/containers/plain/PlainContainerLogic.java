@@ -89,6 +89,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
 
     @Override
+    public void doCreate(String name) throws ContainerException {
+       throw new ContainerException("Creating a plain container via a Container Name isn't implemented");
+    }
+
+    @Override
     public void doInit(LifecycleStore store) throws ContainerException {
         //probably not needed for plain container
 
@@ -130,6 +135,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
             clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
 
         });
+    }
+
+    @Override
+    public DeployableComponent getDeployableComponent() {
+        return deployableComponent;
     }
 
     @Override

@@ -97,7 +97,16 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
             throw new ContainerException("docker problems. cannot create container " + myId, de);
         }
     }
-    
+
+    @Override
+    public synchronized void doCreate(String name) throws ContainerException {
+        try {
+            executeCreation();
+        } catch(DockerException de) {
+            throw new ContainerException("docker problems. cannot create container " + myId, de);
+        }
+    }
+
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
         try {
@@ -244,5 +253,16 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
         //@SuppressWarnings("unused") String dockerId = 
         client.createContainer(target, myId, portsToSet);
+    }
+
+    private void executeCreation(String imageName) throws DockerException {
+        String target = imageHandler.doPullImages(myId, imageName);
+        Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+        //@SuppressWarnings("unused") String dockerId =
+        client.createContainer(target, myId, portsToSet);
+    }
+
+    public DeployableComponent getDeployableComponent() {
+        return myComponent;
     }
 }
