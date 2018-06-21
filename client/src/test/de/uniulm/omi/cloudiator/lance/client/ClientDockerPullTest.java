@@ -46,9 +46,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-//import de.uniulm.omi.cloudiator.lance.lifecycle.LifeCycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
-//import de.uniulm.omi.cloudiator.lance.lifecycle.LifeCycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
@@ -63,9 +61,10 @@ import java.rmi.NotBoundException;
 import java.lang.Exception;
 
 //Important: Java-re, docker daemon and Lance(Server) must be installed on the VM and related ports must be opened on the vm
+//Install etcd on the vm via install_etcd.sh which can be found in the pinned installation repository
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ClientRMTest {
+public class ClientDockerPullTest {
 
     private static ApplicationInstanceId appInstanceId;
     private static ApplicationId applicationId;
@@ -113,7 +112,7 @@ public class ClientRMTest {
         cassandraOutportName = "CASS_OUT";
         cassandraComponentId = ComponentId.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389e");
         defaultcassandraInport = defaultCassandraInternalInport = 9160;
-        kafkaComponent = "kafka";
+        kafkaComponent = "wurstmeister/kafka";
         kafkaInportName = "KAFK_INP";
         kafkaInternalInportName = "KAFK_INT_INP";
         kafkaOutportName = "KAFK_OUT";
@@ -123,11 +122,11 @@ public class ClientRMTest {
 
         System.setProperty("lca.client.config.registry", "etcdregistry");
         //adjust
-        System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+        System.setProperty("lca.client.config.registry.etcd.hosts",  "x.x.x.x:4001");
     }
 
-    private DeployableComponent buildDeployableComponent(LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs, List<OutportInfo> outInfs, Callable<LifecycleStore> createLifeCycleStore) {
-        DeployableComponentBuilder builder = DeployableComponentBuilder.createBuilder(compName, id);
+    private DeployableComponent buildDockerComponent(LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs, List<OutportInfo> outInfs, Callable<LifecycleStore> createLifeCycleStore) {
+        DockerComponentBuilder builder = DockerComponentBuilder.createBuilder(compName, id);
 
         for(int i=0; i<inInfs.size(); i++)
             builder.addInport(inInfs.get(i).inportName, inInfs.get(i).portType, inInfs.get(i).cardinality, inInfs.get(i).inPort);
@@ -141,7 +140,8 @@ public class ClientRMTest {
             System.err.println("Server not reachable");
         }
         builder.deploySequentially(true);
-        return builder.build();
+        DeployableComponent comp = builder.build();
+        return comp;
     }
 
     class InportInfo {
@@ -176,9 +176,10 @@ public class ClientRMTest {
         LifecycleStoreBuilder store = new LifecycleStoreBuilder();
         // pre-install handler //
         BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
+        //TODO: Extend possible OSes, e.g. alpine (openjdk:8-jre)
         builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-        builder_pre.addCommand("apt-get -y -q update");
-        builder_pre.addCommand("apt-get -y -q upgrade");
+        //builder_pre.addCommand("apt-get -y -q update");
+        //builder_pre.addCommand("apt-get -y -q upgrade");
         builder_pre.addCommand("export STARTED=\"true\"");
         store.setStartDetector(builder_pre.buildStartDetector());
         // add other commands
@@ -191,9 +192,10 @@ public class ClientRMTest {
         LifecycleStoreBuilder store = new LifecycleStoreBuilder();
         // pre-install handler //
         BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
+        //TODO: Extend possible OSes, e.g. debian:jessie-slim
         builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-        builder_pre.addCommand("apt-get -y -q update");
-        builder_pre.addCommand("apt-get -y -q upgrade");
+        //builder_pre.addCommand("apt-get -y -q update");
+        //builder_pre.addCommand("apt-get -y -q upgrade");
         builder_pre.addCommand("export STARTED=\"true\"");
         store.setStartDetector(builder_pre.buildStartDetector());
         // add other commands
@@ -206,9 +208,10 @@ public class ClientRMTest {
         LifecycleStoreBuilder store = new LifecycleStoreBuilder();
         // pre-install handler //
         BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
+        //TODO: Extend possible OSes, e.g. alpine (openjdk:8u151-jre)
         builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-        builder_pre.addCommand("apt-get -y -q update");
-        builder_pre.addCommand("apt-get -y -q upgrade");
+        //builder_pre.addCommand("apt-get -y -q update");
+        //builder_pre.addCommand("apt-get -y -q upgrade");
         builder_pre.addCommand("export STARTED=\"true\"");
         store.setStartDetector(builder_pre.buildStartDetector());
         // add other commands
@@ -246,17 +249,17 @@ public class ClientRMTest {
         InportInfo inInf = new InportInfo(zookeeperInternalInportName, PortProperties.PortType.INTERNAL_PORT, 2,3888);
         inInfs.add(inInf);
         List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
-            zookeeperOutportName,
-            DeploymentHelper.getEmptyPortUpdateHandler(),
-            1,
-            OutPort.NO_SINKS);
+        OutportInfo outInf =
+                new OutportInfo(
+                        zookeeperOutportName,
+                        DeploymentHelper.getEmptyPortUpdateHandler(),
+                        1,
+                        OutPort.NO_SINKS);
         outInfs.add(outInf);
-        buildDeployableComponent(client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
+        buildDockerComponent(client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
             public LifecycleStore call() {
-                                       return createZookeeperLifecycleStore();
-                                                                              }
+                return createZookeeperLifecycleStore();
+            }
         });
     }
 
@@ -268,10 +271,10 @@ public class ClientRMTest {
         List<OutportInfo> outInfs = new ArrayList<>();
         OutportInfo outInf = new OutportInfo(cassandraOutportName, DeploymentHelper.getEmptyPortUpdateHandler(),1, OutPort.NO_SINKS);
         outInfs.add(outInf);
-        buildDeployableComponent(client, cassandraComponent, cassandraComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
+        buildDockerComponent(client, cassandraComponent, cassandraComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
             public LifecycleStore call() {
-                                       return createCassandraLifecycleStore();
-                                                                              }
+                return createCassandraLifecycleStore();
+            }
         });
     }
 
@@ -283,10 +286,10 @@ public class ClientRMTest {
         List<OutportInfo> outInfs = new ArrayList<>();
         OutportInfo outInf = new OutportInfo(kafkaOutportName, DeploymentHelper.getEmptyPortUpdateHandler(),2, OutPort.NO_SINKS);
         outInfs.add(outInf);
-        buildDeployableComponent(client, kafkaComponent, kafkaComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
+        buildDockerComponent(client, kafkaComponent, kafkaComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
             public LifecycleStore call() {
-                                       return createKafkaLifecycleStore();
-                                                                          }
+                return createKafkaLifecycleStore();
+            }
         });
     }
 
@@ -343,7 +346,7 @@ public class ClientRMTest {
             List<OutportInfo> outInfs = new ArrayList<>();
             OutportInfo outInf = new OutportInfo(zookeeperOutportName, DeploymentHelper.getEmptyPortUpdateHandler(),1, OutPort.NO_SINKS);
             outInfs.add(outInf);
-            DeployableComponent zookComp = buildDeployableComponent(client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
+            DeployableComponent zookComp = buildDockerComponent(client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
                 public LifecycleStore call() {
                     return createZookeeperLifecycleStore();
                 }
@@ -364,7 +367,7 @@ public class ClientRMTest {
             List<OutportInfo> outInfs = new ArrayList<>();
             OutportInfo outInf = new OutportInfo(cassandraOutportName, DeploymentHelper.getEmptyPortUpdateHandler(),1, OutPort.NO_SINKS);
             outInfs.add(outInf);
-            DeployableComponent cassComp = buildDeployableComponent(client, cassandraComponent, cassandraComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
+            DeployableComponent cassComp = buildDockerComponent(client, cassandraComponent, cassandraComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
                 public LifecycleStore call() {
                     return createCassandraLifecycleStore();
                 }
@@ -385,7 +388,7 @@ public class ClientRMTest {
             List<OutportInfo> outInfs = new ArrayList<>();
             OutportInfo outInf = new OutportInfo(kafkaOutportName, DeploymentHelper.getEmptyPortUpdateHandler(),2, OutPort.NO_SINKS);
             outInfs.add(outInf);
-            DeployableComponent kafkaComp = buildDeployableComponent(client, kafkaComponent, kafkaComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
+            DeployableComponent kafkaComp = buildDockerComponent(client, kafkaComponent, kafkaComponentId, inInfs, outInfs, new Callable<LifecycleStore>() {
                 public LifecycleStore call() {
                     return createKafkaLifecycleStore();
                 }
@@ -393,7 +396,7 @@ public class ClientRMTest {
             DeploymentContext kafkaContext = createKafkaContext(client);
             kafkId = client.deploy(kafkaContext, kafkaComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
         } catch (DeploymentException ex) {
-        System.err.println("Couldn't deploy cassandra component");
+            System.err.println("Couldn't deploy cassandra component");
         }
     }
 

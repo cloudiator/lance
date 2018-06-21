@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import java.util.Map;
 
+import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
+
+import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
@@ -91,17 +94,14 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         
     @Override
     public synchronized void doCreate() throws ContainerException {
-        try { 
-            executeCreation(); 
-        } catch(DockerException de) {
-            throw new ContainerException("docker problems. cannot create container " + myId, de);
-        }
-    }
-
-    @Override
-    public synchronized void doCreate(String name) throws ContainerException {
         try {
-            executeCreation();
+            ComponentType type = myComponent.getType();
+            if (type == DOCKER) {
+                String imageName = myComponent.getName();
+                executeCreation(imageName);
+            }
+            else
+                executeCreation();
         } catch(DockerException de) {
             throw new ContainerException("docker problems. cannot create container " + myId, de);
         }
@@ -260,9 +260,5 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
         //@SuppressWarnings("unused") String dockerId =
         client.createContainer(target, myId, portsToSet);
-    }
-
-    public DeployableComponent getDeployableComponent() {
-        return myComponent;
     }
 }

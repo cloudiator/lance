@@ -101,8 +101,17 @@ final class DockerImageHandler {
 
     //TODO: Maybe allow several writings for the image name (e.g. "cassandra", "cassandra 12.2.2", "cassandra:12.2.2", "cassandra latest", "cassandra:latest") and resolve via regex check
     // to a correct image name
+    //TODO: Implement digest option
     private String imageFromComponentInstance(String imageName){
-        return imageName;
+        String[] split = imageName.split(":");
+        String imageNameUnTagged = split[0];
+        String tagNameTmp = "";
+        for (int i=1; i<split.length; ++i) {
+            tagNameTmp += split[i];
+        }
+        String tagName = tagNameTmp.length() == 0 ? "latest" : tagNameTmp;
+        String imageNameTagged = imageNameUnTagged + ":" + tagName;
+        return imageNameTagged;
     }
 
     private String doGetSingleImage(String key) throws DockerException {
