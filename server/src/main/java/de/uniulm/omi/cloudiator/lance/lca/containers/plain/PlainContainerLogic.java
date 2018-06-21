@@ -76,6 +76,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   public void doCreate() throws ContainerException {
     LOGGER.info("Creating shell for operating system: " + this.os.toString());
 
+<<<<<<< HEAD
     PlainShell plainShell = this.plainShellFactory.createAndinstallPlainShell(os);
     LOGGER.debug("Java System user.dir value: " + System.getProperty("user.home"));
     final String plainContainerFolder =
@@ -86,6 +87,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     LOGGER.info("Switching to plain container: " + plainContainerFolder);
     plainShell.setDirectory(plainContainerFolder);
+=======
+    @Override
+    public void doInit(LifecycleStore store) throws ContainerException {
+        //probably not needed for plain container
+>>>>>>> Implemented option to pull arbitrary images from standard hub. Built testing class for that
 
   }
 

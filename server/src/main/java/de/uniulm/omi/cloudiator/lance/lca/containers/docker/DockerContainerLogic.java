@@ -18,7 +18,15 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+<<<<<<< HEAD
 import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
+=======
+import java.util.Map;
+
+import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+>>>>>>> Implemented option to pull arbitrary images from standard hub. Built testing class for that
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
@@ -46,9 +54,72 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
+
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
+<<<<<<< HEAD
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
+=======
+        
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
+    
+    private final ComponentInstanceId myId;
+    private final DockerConnector client;
+    
+    private final DockerShellFactory shellFactory;
+    private final DeploymentContext deploymentContext;
+    
+    private final DockerImageHandler imageHandler;
+    private final NetworkHandler networkHandler;
+    
+    private final DeployableComponent myComponent;
+    
+    DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,  
+                            DeploymentContext ctx, OperatingSystem os, NetworkHandler network, 
+                            DockerShellFactory shellFactoryParam, DockerConfiguration dockerConfig) {
+        this(id, client, os, ctx, comp, network, shellFactoryParam, dockerConfig);
+    }
+    
+    private  DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam, OperatingSystem osParam,
+                                DeploymentContext ctx, DeployableComponent componentParam, 
+                                NetworkHandler networkParam, DockerShellFactory shellFactoryParam, 
+                                DockerConfiguration dockerConfigParam) {
+        
+        if(osParam == null) 
+            throw new NullPointerException("operating system has to be set.");
+        
+        myId = id;
+        client = clientParam;
+        imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(), clientParam, componentParam, dockerConfigParam);
+        deploymentContext = ctx;
+        shellFactory = shellFactoryParam;
+        myComponent = componentParam;
+        
+        networkHandler = networkParam;
+    }
+    
+
+	@Override
+	public ComponentInstanceId getComponentInstanceId() {
+		return myId;
+	}
+        
+    @Override
+    public synchronized void doCreate() throws ContainerException {
+        try {
+            ComponentType type = myComponent.getType();
+            if (type == DOCKER) {
+                String imageName = myComponent.getName();
+                executeCreation(imageName);
+            }
+            else
+                executeCreation();
+        } catch(DockerException de) {
+            throw new ContainerException("docker problems. cannot create container " + myId, de);
+        }
+    }
+>>>>>>> Implemented option to pull arbitrary images from standard hub. Built testing class for that
 
   private final ComponentInstanceId myId;
   private final DockerConnector client;

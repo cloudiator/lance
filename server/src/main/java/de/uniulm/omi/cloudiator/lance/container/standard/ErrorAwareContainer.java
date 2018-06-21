@@ -214,8 +214,4 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	}
     	throw new UnexpectedContainerStateException("unexpected state reached: " + stat, stateMachine.collectExceptions());
     }
-
-    public DeployableComponent getDeployableComponent() {
-        return logic.getDeployableComponent();
-    }
 }
