@@ -51,7 +51,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <configuration>
-                        <finalName>lance-server</finalName>
                         <archive>
                             <manifest>
                                 <mainClass>de.uniulm.omi.cloudiator.lance.lca.LifecycleAgentBooter
@@ -61,6 +60,7 @@
                         <descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
                         </descriptorRefs>
+                        <appendAssemblyId>false</appendAssemblyId>
                     </configuration>
                     <executions>
                         <execution>
