@@ -1,0 +1,17 @@
+{
+  "package": {
+    "name": "lance",
+    "repo": "cloudiator",
+    "subject": "cloudiator"
+  },
+  "version": {
+    "name": "TRAVIS_BUILD",
+    "released": "DATE",
+    "gpgSign": false
+  },
+  "files": [{
+    "includePattern": "server/target/(lance-server.*)",
+    "uploadPattern": "/$1"
+  }],
+  "publish": true
+}
