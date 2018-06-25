@@ -13,5 +13,6 @@
     "includePattern": "server/target/(lance-server.*)",
     "uploadPattern": "/$1"
   }],
-  "publish": true
+  "publish": true,
+  "override": true
 }
