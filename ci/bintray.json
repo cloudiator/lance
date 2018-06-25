@@ -18,7 +18,7 @@
   },
   "files": [
     {
-      "includePattern": "server/target/(lance-server.*)",
+      "includePattern": "server/target/(server.*)",
       "uploadPattern": "/$1",
       "matrixParams": {
         "override": 1
