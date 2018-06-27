@@ -98,7 +98,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     @Override
     public void completeInit() throws ContainerException {
 
-        this.plainShellFactory.closeShell();
+        //this.plainShellFactory.closeShell();
     }
 
     @Override
@@ -190,7 +190,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     @Override
     public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
-        plainShellFactory.closeShell();
+        //plainShellFactory.closeShell();
     }
 
     @Override
