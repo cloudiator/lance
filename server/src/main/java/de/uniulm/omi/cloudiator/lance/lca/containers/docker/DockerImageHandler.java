@@ -73,10 +73,22 @@ final class DockerImageHandler {
             throw new UnsupportedOperationException();
         default:
             throw new IllegalArgumentException();
-        }        
+        }
         return key;
     }
-    
+
+    private String buildImageTagName(ImageCreationType type, String componentInstallId, String imageName) {
+        final String key;
+        switch(type){
+            case COMPONENT_INSTANCE:
+                key = imageFromComponentInstance(imageName);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        return key;
+    }
+
     private String imageFromComponent(String componentInstallId){
         String tmpkey = componentInstallId; 
         String ostag = os.toString();
@@ -86,7 +98,22 @@ final class DockerImageHandler {
         	return tmp;
         return dockerConfig.prependRegistry(tmp);
     }
-    
+
+    //TODO: Maybe allow several writings for the image name (e.g. "cassandra", "cassandra 12.2.2", "cassandra:12.2.2", "cassandra latest", "cassandra:latest") and resolve via regex check
+    // to a correct image name
+    //TODO: Implement digest option
+    private String imageFromComponentInstance(String imageName){
+        String[] split = imageName.split(":");
+        String imageNameUnTagged = split[0];
+        String tagNameTmp = "";
+        for (int i=1; i<split.length; ++i) {
+            tagNameTmp += split[i];
+        }
+        String tagName = tagNameTmp.length() == 0 ? "latest" : tagNameTmp;
+        String imageNameTagged = imageNameUnTagged + ":" + tagName;
+        return imageNameTagged;
+    }
+
     private String doGetSingleImage(String key) throws DockerException {
         if(client.findImage(key) != null) {
             return key;
@@ -124,7 +151,17 @@ final class DockerImageHandler {
 
         throw new DockerException("cannot pull image: " + myId);
     }
-    
+
+    //TODO: Implement searching in generic repo and localCache
+    String doPullImages(ComponentInstanceId myId, String imageName) throws DockerException {
+        String result = getImageFromDefaultLocation(imageName);
+        if(result != null)
+            return result;
+
+        throw new DockerException("cannot pull image: " + myId);
+    }
+
+
     private String searchImageInLocalCache() {
         // currently not implemented; 
     	return null;
@@ -141,7 +178,8 @@ final class DockerImageHandler {
         }
         return null;
     }
-    
+
+    //
     private String getImageFromDefaultLocation() throws DockerException {
         String target = buildImageTagName(ImageCreationType.OPERATING_SYSTEM, null);
         String result = doGetSingleImage(target);
@@ -152,7 +190,18 @@ final class DockerImageHandler {
         }
         return null;
     }
-    
+
+    private String getImageFromDefaultLocation(String imageName) throws DockerException {
+        String target = buildImageTagName(ImageCreationType.COMPONENT_INSTANCE, null, imageName);
+        String result = doGetSingleImage(target);
+        if(result != null) {
+            LOGGER.info("pulled default image: " + result);
+            initSource = ImageCreationType.COMPONENT_INSTANCE;
+            return result;
+        }
+        return null;
+    }
+
     void runPostInstallAction(ComponentInstanceId myId) throws DockerException {
         if(initSource == ImageCreationType.OPERATING_SYSTEM) {
         	String componentInstallId = createComponentInstallId();

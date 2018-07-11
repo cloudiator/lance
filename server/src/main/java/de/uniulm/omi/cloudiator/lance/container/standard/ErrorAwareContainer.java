@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

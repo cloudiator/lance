@@ -32,11 +32,13 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
-public final class DeployableComponent implements Serializable {
+import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.LEGACY;
+
+public class DeployableComponent implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeployableComponent.class);
     private static final long serialVersionUID = 5544457717632275252L;
-    
+
     private final String name;
     private final ComponentId myId;
     private final LifecycleStore lifecycle;
@@ -98,5 +100,13 @@ public final class DeployableComponent implements Serializable {
             }
             visitor.visit(propertyName, o.toString());
         }
+    }
+
+    public ComponentType getType() {
+        return LEGACY;
+    }
+
+    public String getName() {
+        return name;
     }
 }

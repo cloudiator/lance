@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import java.util.Map;
 
+import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
+
+import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
         
@@ -91,13 +94,19 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         
     @Override
     public synchronized void doCreate() throws ContainerException {
-        try { 
-            executeCreation(); 
+        try {
+            ComponentType type = myComponent.getType();
+            if (type == DOCKER) {
+                String imageName = myComponent.getName();
+                executeCreation(imageName);
+            }
+            else
+                executeCreation();
         } catch(DockerException de) {
             throw new ContainerException("docker problems. cannot create container " + myId, de);
         }
     }
-    
+
     @Override
     public void doInit(LifecycleStore store) throws ContainerException {
         try {
@@ -243,6 +252,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         String target = imageHandler.doPullImages(myId);
         Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
         //@SuppressWarnings("unused") String dockerId = 
+        client.createContainer(target, myId, portsToSet);
+    }
+
+    private void executeCreation(String imageName) throws DockerException {
+        String target = imageHandler.doPullImages(myId, imageName);
+        Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+        //@SuppressWarnings("unused") String dockerId =
         client.createContainer(target, myId, portsToSet);
     }
 }

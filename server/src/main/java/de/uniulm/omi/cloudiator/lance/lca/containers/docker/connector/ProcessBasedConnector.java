@@ -87,7 +87,9 @@ final class ProcessBasedConnector implements DockerConnector {
     private static String doGetIpAddress(BufferedReader reader) throws DockerException, IOException {
         String line = reader.readLine();
         String next = null;
-        if(line == null) 
+        //remove ' char at start and end of IP address:
+        line = line.replaceAll("[']","");
+        if(line == null)
             throw new DockerException("could not find result");
         if((next = reader.readLine()) != null) 
             throw new DockerException("too many lines available: " + next);

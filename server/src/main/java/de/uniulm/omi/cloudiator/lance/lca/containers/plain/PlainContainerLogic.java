@@ -231,6 +231,4 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     public void preprocessDetector(DetectorType type) throws ContainerException {
         LOGGER.error("preprocessDetector is not implemented for plain container");
     }
-
-
 }
