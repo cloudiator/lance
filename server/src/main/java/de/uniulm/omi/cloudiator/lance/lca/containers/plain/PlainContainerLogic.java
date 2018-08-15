@@ -85,7 +85,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
         LOGGER.info("Switching to plain container: " + plainContainerFolder);
         plainShell.setDirectory(plainContainerFolder);
-
     }
 
     @Override
@@ -98,13 +97,21 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     @Override
     public void completeInit() throws ContainerException {
 
-        //this.plainShellFactory.closeShell();
+        this.plainShellFactory.closeShell();
+    }
+
+    @Override
+    public void completeShutDown() throws ContainerException {
+        this.plainShellFactory.closeShell();
     }
 
     @Override
     public void doDestroy(boolean forceShutdown) throws ContainerException {
         //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
-        LOGGER.warn("doDestroy not implemented!");
+        LOGGER.warn("doDestroy not fully implemented!");
+        LOGGER.info("Creating shell for operating system: " + this.os.toString());
+
+        this.plainShellFactory.createAndinstallPlainShell(os);
     }
 
     @Override
@@ -190,7 +197,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     @Override
     public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
-        //plainShellFactory.closeShell();
+        plainShellFactory.closeShell();
     }
 
     @Override
@@ -220,6 +227,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         }
 
 
+    }
+
+    @Override
+    public void preDestroy() {
+        this.plainShellFactory.createAndinstallPlainShell(os);
     }
 
     @Override

@@ -221,7 +221,9 @@ final class BashStartDetectorHandler implements StartDetector {
     @Override
     public DetectorState execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
-        ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());
+        //ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());
+        //dirty hack -> revert!
+        ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"true\"", ec.getShell());
         if(result.isSuccess()) {
         	if("true".equals(result.getOutput().trim())) {
         		return DetectorState.DETECTED;
