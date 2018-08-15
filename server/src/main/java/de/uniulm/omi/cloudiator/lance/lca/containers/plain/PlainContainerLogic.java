@@ -76,7 +76,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   public void doCreate() throws ContainerException {
     LOGGER.info("Creating shell for operating system: " + this.os.toString());
 
-<<<<<<< HEAD
     PlainShell plainShell = this.plainShellFactory.createAndinstallPlainShell(os);
     LOGGER.debug("Java System user.dir value: " + System.getProperty("user.home"));
     final String plainContainerFolder =
@@ -87,32 +86,29 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
     LOGGER.info("Switching to plain container: " + plainContainerFolder);
     plainShell.setDirectory(plainContainerFolder);
-=======
-    @Override
-    public void doInit(LifecycleStore store) throws ContainerException {
-        //probably not needed for plain container
->>>>>>> Implemented option to pull arbitrary images from standard hub. Built testing class for that
 
   }
 
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
     //probably not needed for plain container
-
   }
-
 
   @Override
   public void completeInit() throws ContainerException {
+        this.plainShellFactory.closeShell();
+    }
 
-    //this.plainShellFactory.closeShell();
-  }
+    @Override
+    public void completeShutDown() throws ContainerException {
+        this.plainShellFactory.closeShell();
+    }
 
-  @Override
-  public void doDestroy(boolean forceShutdown) throws ContainerException {
-    //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
-    LOGGER.warn("doDestroy not implemented!");
-  }
+    @Override
+    public void doDestroy(boolean forceShutdown) throws ContainerException {
+        //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
+        LOGGER.warn("doDestroy not fully implemented!");
+    }
 
   @Override
   public String getLocalAddress() throws ContainerException {
@@ -202,7 +198,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   @Override
   public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
-    //plainShellFactory.closeShell();
+    plainShellFactory.closeShell();
   }
 
   @Override
@@ -233,6 +229,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
 
   }
+
+    @Override
+    public void preDestroy() {
+        this.plainShellFactory.createAndinstallPlainShell(os);
+    }
 
   @Override
   public void postprocessDetector(DetectorType type) {

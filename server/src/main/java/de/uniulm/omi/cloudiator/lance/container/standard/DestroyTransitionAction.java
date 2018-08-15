@@ -21,6 +21,7 @@ final class DestroyTransitionAction implements TransitionAction {
         try {
             boolean forceShutdown = false;
             try {
+				theContainer.logic.preDestroy();
             	theContainer.preDestroyAction();
             } catch (Exception ex) {
             	ErrorAwareContainer.getLogger().error("could not shut down component; trying to force shut down of container", ex);
@@ -41,6 +42,11 @@ final class DestroyTransitionAction implements TransitionAction {
             	theContainer.network.publishLocalData(theContainer.containerId);
             } catch (ContainerException e) {
                 ErrorAwareContainer.getLogger().error("could not publish local data", e);
+            }
+			try {
+                theContainer.logic.completeShutDown();
+			} catch (ContainerException e) {
+                ErrorAwareContainer.getLogger().error("could not shutdown container;", e);
             }
         }
     }

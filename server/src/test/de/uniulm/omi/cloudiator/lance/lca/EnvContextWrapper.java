@@ -2,6 +2,10 @@ package de.uniulm.omi.cloudiator.lance.lca;
 
 public class EnvContextWrapper {
 
+	private static String cloudIp = "127.0.0.1";
+	private static String publicIp = "129.0.0.1";
+	private static String containerIp = "128.0.0.1";
+
 	public static HostContext create() {
 		System.setProperty("host.ip.public", getPublicIp());
 		System.setProperty("host.ip.private", getCloudIp());
@@ -12,15 +16,27 @@ public class EnvContextWrapper {
 		return EnvContext.fromEnvironment();
 	}
 
+	public static void setCloudIp(String cIp) {
+		cloudIp = cIp;
+	}
+
+	public static void setPublicIp(String pIp) {
+		publicIp = pIp;
+	}
+
+	public static void setContainerIp(String cIp) {
+		containerIp = cIp;
+	}
+
 	public static String getCloudIp() {
-		return "127.0.0.1";
+		return cloudIp;
 	}
 	
 	public static String getPublicIp() {
-		return "129.0.0.1";
+		return publicIp;
 	}
 
 	public static String getContainerIp() {
-		return "128.0.0.1";
+		return containerIp;
 	}
 }
