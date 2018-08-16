@@ -110,8 +110,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
         LOGGER.warn("doDestroy not fully implemented!");
         LOGGER.info("Creating shell for operating system: " + this.os.toString());
-
-        this.plainShellFactory.createAndinstallPlainShell(os);
     }
 
     @Override

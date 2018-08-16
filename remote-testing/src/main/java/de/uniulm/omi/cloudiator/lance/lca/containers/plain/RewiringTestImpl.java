@@ -40,6 +40,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponentB
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
 import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRewiring;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
@@ -414,8 +415,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
         builder_start.addCommand("sudo nohup ~/kafka/bin/kafka-server-start.sh ~/kafka/config/server.properties > ~/kafka/kafka.log 2>&1 &");
         BashBasedHandlerBuilder builder_start_det = new BashBasedHandlerBuilder();
         builder_start_det.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-        builder_start_det.addCommand("export STARTED=\"true\"");
-        store.setStartDetector(builder_start_det.buildStartDetector());
+        store.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
         store.setHandler(builder_start.build(LifecycleHandlerType.START), LifecycleHandlerType.START);
 
         /**
@@ -504,8 +504,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
         builder_start.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
         builder_start.addCommand("sudo chmod 750 /var/run/cassandra");
         builder_start.addCommand("sudo service cassandra start");
-        builder_start.addCommand("export STARTED=\"true\"");
-        store.setStartDetector(builder_start.buildStartDetector());
+        store.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
         store.setHandler(builder_start.build(LifecycleHandlerType.START), LifecycleHandlerType.START);
         /**
          * may be used to register service instances with a load balancer
