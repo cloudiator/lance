@@ -237,7 +237,7 @@ public class RewiringClientTest {
                             TimeUnit.MINUTES)).build();
 
             Callable<ApplicationInstanceId> callable = () -> {
-                return testAgent.testNewTopology(arch, publicIp);
+                return testAgent.testNewTopology(arch, publicIp, currentRegistry);
             };
 
             try {

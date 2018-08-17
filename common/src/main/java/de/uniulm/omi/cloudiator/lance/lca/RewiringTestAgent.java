@@ -14,11 +14,11 @@ import java.rmi.RemoteException;
 
 public interface RewiringTestAgent extends Remote {
 
-    public ApplicationInstanceId testNewTopology(AppArchitecture arch, String publicIp) throws ContainerException, RemoteException;
-    public void testSMTraversingBeforeLccSM() throws ContainerException, RemoteException;
-    public void testSMsTraversingBeforeStop() throws ContainerException, RemoteException;
-    public void testSMsStopTransition() throws ContainerException, RemoteException;
-    public void testPortUpdater() throws ContainerException, RemoteException;
+    ApplicationInstanceId testNewTopology(AppArchitecture arch, String publicIp, LcaRegistry reg) throws ContainerException, RemoteException;
+    void testSMTraversingBeforeLccSM() throws ContainerException, RemoteException;
+    void testSMsTraversingBeforeStop() throws ContainerException, RemoteException;
+    void testSMsStopTransition() throws ContainerException, RemoteException;
+    void testPortUpdater() throws ContainerException, RemoteException;
     void stop() throws RemoteException;
     void terminate() throws RemoteException;
 }
