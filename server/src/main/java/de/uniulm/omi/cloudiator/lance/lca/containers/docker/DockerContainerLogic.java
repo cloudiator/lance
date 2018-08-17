@@ -157,7 +157,8 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
     @Override
     public void completeShutDown() throws ContainerException {
-        shellFactory.closeShell();
+        //todo: mb implement
+        //shellFactory.closeShell();
     }
 
     @Override
