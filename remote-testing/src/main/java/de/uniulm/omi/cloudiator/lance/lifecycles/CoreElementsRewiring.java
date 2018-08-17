@@ -11,7 +11,6 @@ import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lca.registry.dummy.DummyRegistry;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 
 public class CoreElementsRewiring {
@@ -24,8 +23,8 @@ public class CoreElementsRewiring {
     public volatile DeploymentContext ctx;
     public volatile LcaRegistry reg;
 
-    public CoreElementsRewiring() {
-        reg = new DummyRegistry();
+    public CoreElementsRewiring(LcaRegistry reg) {
+        this.reg = reg;
         ctx = new DeploymentContext(arch.getApplicationId(), arch.getAppInstanceId(), reg);
         //todo: extend, so that multiple outports can be required by this inport -> Map<Integer,List<InportInfo> requiredPortsMap & adjust @2nd inner loop below
         Map<Integer,ComponentId> requiredComponentsMap = new HashMap<>();

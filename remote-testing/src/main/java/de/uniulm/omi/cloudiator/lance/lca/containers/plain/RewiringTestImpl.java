@@ -60,11 +60,11 @@ public class RewiringTestImpl implements RewiringTestAgent {
     public RewiringTestImpl() {}
 
     @Override
-    public ApplicationInstanceId testNewTopology(AppArchitecture arch, String publicIp) throws ContainerException, RemoteException {
+    public ApplicationInstanceId testNewTopology(AppArchitecture arch, String publicIp, LcaRegistry reg) throws ContainerException, RemoteException {
         //assertNotNull(CoreElements.context);
         CoreElementsRewiring.arch = arch;
         CoreElementsRewiring.initHostContext(publicIp);
-        core = new CoreElementsRewiring();
+        core = new CoreElementsRewiring(reg);
 
         try {
             core.setUpRegistry();
