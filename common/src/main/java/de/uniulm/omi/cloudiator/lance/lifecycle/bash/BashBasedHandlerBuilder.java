@@ -221,6 +221,7 @@ final class BashStartDetectorHandler implements StartDetector {
     @Override
     public DetectorState execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
+        //TODO: In case, a plain-shell is used: "export STARTED=true" doesn't work out -> refactor PlainShellImpl, so that the variable gets exported into the following shell context
         ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());
         if(result.isSuccess()) {
         	if("true".equals(result.getOutput().trim())) {

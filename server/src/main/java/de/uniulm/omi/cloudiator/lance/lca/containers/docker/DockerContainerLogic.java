@@ -130,6 +130,12 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
 
     @Override
+    public void preDestroy() {
+        //todo: mb implement
+        //shellFactory.installDockerShell(shell);
+    }
+
+    @Override
     public InportAccessor getPortMapper() {
         return ( (portName, clientState) -> {
             try {
@@ -162,7 +168,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 	public void completeInit() throws ContainerException {
 		shellFactory.closeShell();
 	}
-    
+
+    @Override
+    public void completeShutDown() throws ContainerException {
+        //todo: mb implement
+        //shellFactory.closeShell();
+    }
+
     @Override
     public void prepare(HandlerType type) throws ContainerException {
         if(type == LifecycleHandlerType.INSTALL) {
