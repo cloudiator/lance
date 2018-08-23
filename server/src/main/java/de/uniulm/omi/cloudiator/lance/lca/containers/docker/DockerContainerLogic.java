@@ -52,17 +52,17 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
         
-    private final ComponentInstanceId myId;
-    private final DockerConnector client;
-    
-    private final DockerShellFactory shellFactory;
-    private final DeploymentContext deploymentContext;
-    
-    private final DockerImageHandler imageHandler;
-    private final NetworkHandler networkHandler;
-    
-    private final DeployableComponent myComponent;
-    private final HostContext hostContext;
+  private final ComponentInstanceId myId;
+  private final DockerConnector client;
+
+  private final DockerShellFactory shellFactory;
+  private final DeploymentContext deploymentContext;
+
+  private final DockerImageHandler imageHandler;
+  private final NetworkHandler networkHandler;
+
+  private final DeployableComponent myComponent;
+  private final HostContext hostContext;
 
   DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,
       DeploymentContext ctx, OperatingSystem os, NetworkHandler network,
@@ -84,7 +84,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     myId = id;
     client = clientParam;
     imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(),
-        clientParam, componentParam, dockerConfigParam);
+    clientParam, componentParam, dockerConfigParam);
     deploymentContext = ctx;
     shellFactory = shellFactoryParam;
     myComponent = componentParam;
@@ -98,56 +98,56 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 		return myId;
 	}
         
-    @Override
-    public synchronized void doCreate() throws ContainerException {
-        try {
-            ComponentType type = myComponent.getType();
-            if (type == DOCKER) {
-                String imageName = myComponent.getName();
-                executeCreation(imageName);
-            }
-            else
-                executeCreation();
-        } catch(DockerException de) {
-            throw new ContainerException("docker problems. cannot create container " + myId, de);
-        }
-    }
+  @Override
+  public synchronized void doCreate() throws ContainerException {
+      try {
+          ComponentType type = myComponent.getType();
+          if (type == DOCKER) {
+              String imageName = myComponent.getName();
+              executeCreation(imageName);
+          }
+          else
+              executeCreation();
+      } catch(DockerException de) {
+          throw new ContainerException("docker problems. cannot create container " + myId, de);
+      }
+  }
 
-    @Override
-    public void preDestroy() {
-        //todo: mb implement
-        //shellFactory.installDockerShell(shell);
-    }
+  @Override
+  public void preDestroy() {
+      //todo: mb implement
+      //shellFactory.installDockerShell(shell);
+  }
 
-    @Override
-    public InportAccessor getPortMapper() {
-        return ( (portName, clientState) -> {
-            try {
-                Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
-                int mapped = client.getPortMapping(myId, portNumber);
-                Integer i = Integer.valueOf(mapped);
-                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
-                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
-                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
-            } catch(DockerException de) {
-                throw new ContainerException("coulnd not register all port mappings", de);
-            }
-        });
-    }
+  @Override
+  public InportAccessor getPortMapper() {
+      return ( (portName, clientState) -> {
+          try {
+              Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
+              int mapped = client.getPortMapping(myId, portNumber);
+              Integer i = Integer.valueOf(mapped);
+              clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
+              clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
+              clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
+          } catch(DockerException de) {
+              throw new ContainerException("coulnd not register all port mappings", de);
+          }
+      });
+  }
 
-    @Override
-    public String getLocalAddress() {
-        try {
-            return client.getContainerIp(myId);
-        } catch(DockerException de) {
-            // this means that that the container is not
-            // up and running; hence, no IP address is
-            // available. it is up to the caller to figure
-            // out the semantics of this state 
-        }
-        return null;
-    }
-    
+  @Override
+  public String getLocalAddress() {
+      try {
+          return client.getContainerIp(myId);
+      } catch(DockerException de) {
+          // this means that that the container is not
+          // up and running; hence, no IP address is
+          // available. it is up to the caller to figure
+          // out the semantics of this state
+      }
+      return null;
+  }
+
 	@Override
 	public void completeInit() throws ContainerException {
 		shellFactory.closeShell();
