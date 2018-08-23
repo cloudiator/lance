@@ -24,18 +24,20 @@ import java.util.concurrent.ScheduledFuture;
 
 public interface HostContext {
 
-    String getPublicIp();
+  String getPublicIp();
 
-    String getInternalIp();
+  String getInternalIp();
 
-    String getCloudIdentifier();
+  String getCloudIdentifier();
 
-    void close() throws InterruptedException;
+  String getVMIdentifier();
 
-    Future<?> run(Runnable runner);
+  void close() throws InterruptedException;
 
-    <T> Future<T> run(Callable<T> callable);
+  Future<?> run(Runnable runner);
 
-    ScheduledFuture<?> scheduleAction(Runnable runner);
+  <T> Future<T> run(Callable<T> callable);
+
+  ScheduledFuture<?> scheduleAction(Runnable runner);
 
 }

@@ -20,97 +20,115 @@ package de.uniulm.omi.cloudiator.lance.lca;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import de.uniulm.omi.cloudiator.lance.util.execution.LoggingScheduledThreadPoolExecutor;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.*;
-
 final class EnvContext implements HostContext {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
+  private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
 
-    public static final String PUBLIC_IP_KEY = "host.ip.public";
-    public static final String PRIVATE_IP_KEY = "host.ip.private";
-    // public static final String HOST_OS_KEY = "host.os";
-    public static final String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
-    public static final String VM_ID_KEY = "host.vm.id";
-    public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
-    //public static final String CONTAINER_TYPE = "host.container.type";
+  public static final String PUBLIC_IP_KEY = "host.ip.public";
+  public static final String PRIVATE_IP_KEY = "host.ip.private";
+  // public static final String HOST_OS_KEY = "host.os";
+  public static final String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
+  public static final String VM_ID_KEY = "host.vm.id";
+  public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
+  //public static final String CONTAINER_TYPE = "host.container.type";
 
-    private static final String[] VALUES =
-        new String[] {PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY/*, CONTAINER_TYPE*/};
+  private static final String[] VALUES =
+      new String[]{PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY
+/*, CONTAINER_TYPE*/};
 
-    private final Map<String, String> hostContext;
-    private final ScheduledExecutorService executorService;
+  private final Map<String, String> hostContext;
+  private final ScheduledExecutorService executorService;
 
-    EnvContext(Map<String, String> ctxParam) {
-        hostContext = ctxParam;
-        final ThreadFactory threadFactory =
-            new ThreadFactoryBuilder().setNameFormat("EnvContextExecutor-%d").build();
-        this.executorService = new LoggingScheduledThreadPoolExecutor(4, threadFactory);
+  EnvContext(Map<String, String> ctxParam) {
+    hostContext = ctxParam;
+    final ThreadFactory threadFactory =
+        new ThreadFactoryBuilder().setNameFormat("EnvContextExecutor-%d").build();
+    this.executorService = new LoggingScheduledThreadPoolExecutor(4, threadFactory);
+  }
+
+  private void registerRmiAddress() {
+    LOGGER.info("setting RMI server hostname to: " + getPublicIp());
+    System.setProperty("java.rmi.server.hostname", getPublicIp());
+  }
+
+  static HostContext fromEnvironment() {
+    Map<String, String> values = new HashMap<>();
+    for (String key : VALUES) {
+      String s = System.getProperty(key);
+      if (s == null || s.isEmpty()) {
+        // s = "<unknown>";
+        throw new IllegalStateException(
+            "property " + key + " needs to be set before LCA can start.");
+      }
+      values.put(key, s);
     }
+    EnvContext ctx = new EnvContext(values);
+    ctx.registerRmiAddress();
+    return ctx;
+  }
 
-    private void registerRmiAddress() {
-        LOGGER.info("setting RMI server hostname to: " + getPublicIp());
-        System.setProperty("java.rmi.server.hostname", getPublicIp());
+  @Override
+  public String getPublicIp() {
+    return hostContext.get(PUBLIC_IP_KEY);
+  }
+
+  @Override
+  public String getInternalIp() {
+    return hostContext.get(PRIVATE_IP_KEY);
+  }
+
+
+  @Override
+  public String toString() {
+    return "HostContext: " + hostContext;
+  }
+
+  @Override
+  public ScheduledFuture<?> scheduleAction(Runnable runner) {
+    ScheduledFuture<?> sf =
+        executorService.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
+    return sf;
+  }
+
+  @Override
+  public Future<?> run(Runnable runnable) {
+    return executorService.submit(runnable);
+  }
+
+  @Override
+  public <T> Future<T> run(Callable<T> callable) {
+    return executorService.submit(callable);
+  }
+
+  @Override
+  public void close() throws InterruptedException {
+    executorService.shutdownNow();
+    while (true) {
+      executorService.awaitTermination(10, TimeUnit.SECONDS);
+      if (executorService.isTerminated()) {
+        return;
+      }
     }
+  }
 
-    static HostContext fromEnvironment() {
-        Map<String, String> values = new HashMap<>();
-        for (String key : VALUES) {
-            String s = System.getProperty(key);
-            if (s == null || s.isEmpty()) {
-                // s = "<unknown>";
-                throw new IllegalStateException(
-                    "property " + key + " needs to be set before LCA can start.");
-            }
-            values.put(key, s);
-        }
-        EnvContext ctx = new EnvContext(values);
-        ctx.registerRmiAddress();
-        return ctx;
-    }
+  @Override
+  public String getCloudIdentifier() {
+    return hostContext.get(CLOUD_ID_KEY);
+  }
 
-    @Override public String getPublicIp() {
-        return hostContext.get(PUBLIC_IP_KEY);
-    }
-
-    @Override public String getInternalIp() {
-        return hostContext.get(PRIVATE_IP_KEY);
-    }
-
-
-    @Override public String toString() {
-        return "HostContext: " + hostContext;
-    }
-
-    @Override public ScheduledFuture<?> scheduleAction(Runnable runner) {
-        ScheduledFuture<?> sf =
-            executorService.scheduleWithFixedDelay(runner, 30L, 60L, TimeUnit.SECONDS);
-        return sf;
-    }
-
-    @Override public Future<?> run(Runnable runnable) {
-        return executorService.submit(runnable);
-    }
-
-    @Override public <T> Future<T> run(Callable<T> callable) {
-        return executorService.submit(callable);
-    }
-
-    @Override public void close() throws InterruptedException {
-        executorService.shutdownNow();
-        while (true) {
-            executorService.awaitTermination(10, TimeUnit.SECONDS);
-            if (executorService.isTerminated()) {
-                return;
-            }
-        }
-    }
-
-    @Override public String getCloudIdentifier() {
-        return hostContext.get(CLOUD_ID_KEY);
-    }
+  @Override
+  public String getVMIdentifier() {
+    return hostContext.get(VM_ID_KEY);
+  }
 }

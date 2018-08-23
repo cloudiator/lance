@@ -18,19 +18,17 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import java.util.Map;
-
-import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
@@ -44,221 +42,232 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
-
-import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
-        
-    private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
-    
-    private final ComponentInstanceId myId;
-    private final DockerConnector client;
-    
-    private final DockerShellFactory shellFactory;
-    private final DeploymentContext deploymentContext;
-    
-    private final DockerImageHandler imageHandler;
-    private final NetworkHandler networkHandler;
-    
-    private final DeployableComponent myComponent;
-    
-    DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,  
-                            DeploymentContext ctx, OperatingSystem os, NetworkHandler network, 
-                            DockerShellFactory shellFactoryParam, DockerConfiguration dockerConfig) {
-        this(id, client, os, ctx, comp, network, shellFactoryParam, dockerConfig);
-    }
-    
-    private  DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam, OperatingSystem osParam,
-                                DeploymentContext ctx, DeployableComponent componentParam, 
-                                NetworkHandler networkParam, DockerShellFactory shellFactoryParam, 
-                                DockerConfiguration dockerConfigParam) {
-        
-        if(osParam == null) 
-            throw new NullPointerException("operating system has to be set.");
-        
-        myId = id;
-        client = clientParam;
-        imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(), clientParam, componentParam, dockerConfigParam);
-        deploymentContext = ctx;
-        shellFactory = shellFactoryParam;
-        myComponent = componentParam;
-        
-        networkHandler = networkParam;
-    }
-    
 
-	@Override
-	public ComponentInstanceId getComponentInstanceId() {
-		return myId;
-	}
-        
-    @Override
-    public synchronized void doCreate() throws ContainerException {
-        try {
-            ComponentType type = myComponent.getType();
-            if (type == DOCKER) {
-                String imageName = myComponent.getName();
-                executeCreation(imageName);
-            }
-            else
-                executeCreation();
-        } catch(DockerException de) {
-            throw new ContainerException("docker problems. cannot create container " + myId, de);
-        }
+  private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
+
+  private final ComponentInstanceId myId;
+  private final DockerConnector client;
+
+  private final DockerShellFactory shellFactory;
+  private final DeploymentContext deploymentContext;
+
+  private final DockerImageHandler imageHandler;
+  private final NetworkHandler networkHandler;
+
+  private final DeployableComponent myComponent;
+
+  private final HostContext hostContext;
+
+  DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,
+      DeploymentContext ctx, OperatingSystem os, NetworkHandler network,
+      DockerShellFactory shellFactoryParam, DockerConfiguration dockerConfig,
+      HostContext hostContext) {
+    this(id, client, os, ctx, comp, network, shellFactoryParam, dockerConfig, hostContext);
+  }
+
+  private DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam,
+      OperatingSystem osParam,
+      DeploymentContext ctx, DeployableComponent componentParam,
+      NetworkHandler networkParam, DockerShellFactory shellFactoryParam,
+      DockerConfiguration dockerConfigParam, HostContext hostContext) {
+
+    if (osParam == null) {
+      throw new NullPointerException("operating system has to be set.");
     }
 
-    @Override
-    public void doInit(LifecycleStore store) throws ContainerException {
-        try {
-            DockerShell shell = doStartContainer();
-            shellFactory.installDockerShell(shell);
-        } catch(ContainerException ce) {
-            throw ce;
-        }  catch(Exception ex) {
-            throw new ContainerException(ex);
-        } 
-    }
+    myId = id;
+    client = clientParam;
+    imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(),
+        clientParam, componentParam, dockerConfigParam);
+    deploymentContext = ctx;
+    shellFactory = shellFactoryParam;
+    myComponent = componentParam;
 
-    @Override
-    public void doDestroy(boolean force) throws ContainerException {
-    	/* currently docker ignores the flag */
-    	try {
-    		client.stopContainer(myId);
-    	} catch(DockerException de) {
-    		throw new ContainerException(de);
-    	}
-    }
+    networkHandler = networkParam;
+    this.hostContext = hostContext;
+  }
 
-    @Override
-    public InportAccessor getPortMapper() {
-        return ( (portName, clientState) -> {
-            try {
-                Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
-                int mapped = client.getPortMapping(myId, portNumber);
-                Integer i = Integer.valueOf(mapped);
-                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
-                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
-                clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
-            } catch(DockerException de) {
-                throw new ContainerException("coulnd not register all port mappings", de);
-            }
-        });
-    }
 
-    @Override
-    public String getLocalAddress() {
-        try {
-            return client.getContainerIp(myId);
-        } catch(DockerException de) {
-            // this means that that the container is not
-            // up and running; hence, no IP address is
-            // available. it is up to the caller to figure
-            // out the semantics of this state 
-        }
-        return null;
-    }
-    
-	@Override
-	public void completeInit() throws ContainerException {
-		shellFactory.closeShell();
-	}
-    
-    @Override
-    public void prepare(HandlerType type) throws ContainerException {
-        if(type == LifecycleHandlerType.INSTALL) {
-            preInstallAction();
-        }
-    }
+  @Override
+  public ComponentInstanceId getComponentInstanceId() {
+    return myId;
+  }
 
-    @Override
-    public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
-    	try {
-    		DockerShell shell = client.getSideShell(myId);
-    		prepareEnvironment(shell, diffSet);
-    		shellFactory.installDockerShell(shell);
-    	} catch(DockerException de) {
-    		throw new ContainerException("cannot create shell for port updates.", de);
-    	}
+  @Override
+  public synchronized void doCreate() throws ContainerException {
+    try {
+      ComponentType type = myComponent.getType();
+      if (type == DOCKER) {
+        String imageName = myComponent.getName();
+        executeCreation(imageName);
+      } else {
+        executeCreation();
+      }
+    } catch (DockerException de) {
+      throw new ContainerException("docker problems. cannot create container " + myId, de);
     }
-    
-    @Override
-    public void postprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) {
-    	shellFactory.closeShell();
-    }
-    
-    @Override
-    public void postprocess(HandlerType type) {
-        if(type == LifecycleHandlerType.PRE_INSTALL) {
-            postPreInstall();
-        } else if(type == LifecycleHandlerType.POST_INSTALL) {
-            // TODO: do we have to make a snapshot after this? //
-        } 
-    }
-    
-	@Override
-	public void preprocessDetector(DetectorType type) throws ContainerException {
-		// nothing special to do; just create a shell and prepare an environment //
-		try {
-    		DockerShell shell = client.getSideShell(myId);
-    		prepareEnvironment(shell);
-    		shellFactory.installDockerShell(shell);
-    	} catch(DockerException de) {
-    		throw new ContainerException("cannot create shell for " + type + " detector.", de);
-    	}
-	}
-    
-	@Override
-	public void postprocessDetector(DetectorType type) {
-		// nothing special to do; just create a shell //
-		shellFactory.closeShell();
-	}
-    
-    private DockerShell doStartContainer() throws ContainerException {
-        final DockerShell dshell;
-        try { 
-            dshell = client.startContainer(myId); 
-        } catch(DockerException de) {
-            throw new ContainerException("cannot start container: " + myId, de);
-        }
-        shellFactory.installDockerShell(dshell);
-        return dshell;
-    }
+  }
 
-    private void preInstallAction() {
-        DockerShellWrapper w = shellFactory.createShell();
-        prepareEnvironment(w.shell);
+  @Override
+  public void doInit(LifecycleStore store) throws ContainerException {
+    try {
+      DockerShell shell = doStartContainer();
+      shellFactory.installDockerShell(shell);
+    } catch (ContainerException ce) {
+      throw ce;
+    } catch (Exception ex) {
+      throw new ContainerException(ex);
     }
-    
-    private void postPreInstall() {
-        try {
-            imageHandler.runPostInstallAction(myId);
-        } catch (DockerException de) {
-            LOGGER.warn("could not update finalise image handling.", de);
-        }
-    }
-    
-    private void prepareEnvironment(DockerShell dshell) {
-    	prepareEnvironment(dshell, null);
-    }
-    
-    private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
-        BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
-        visitor.addEnvironmentVariable("TERM", "dumb");
-        networkHandler.accept(visitor, diff);
-        myComponent.accept(deploymentContext, visitor);
-    }
-    
-    private void executeCreation() throws DockerException {
-        String target = imageHandler.doPullImages(myId);
-        Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-        //@SuppressWarnings("unused") String dockerId = 
-        client.createContainer(target, myId, portsToSet);
-    }
+  }
 
-    private void executeCreation(String imageName) throws DockerException {
-        String target = imageHandler.doPullImages(myId, imageName);
-        Map<Integer,Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-        //@SuppressWarnings("unused") String dockerId =
-        client.createContainer(target, myId, portsToSet);
+  @Override
+  public void doDestroy(boolean force) throws ContainerException {
+    /* currently docker ignores the flag */
+    try {
+      client.stopContainer(myId);
+    } catch (DockerException de) {
+      throw new ContainerException(de);
     }
+  }
+
+  @Override
+  public InportAccessor getPortMapper() {
+    return ((portName, clientState) -> {
+      try {
+        Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
+        int mapped = client.getPortMapping(myId, portNumber);
+        Integer i = Integer.valueOf(mapped);
+        clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
+        clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
+        clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
+      } catch (DockerException de) {
+        throw new ContainerException("coulnd not register all port mappings", de);
+      }
+    });
+  }
+
+  @Override
+  public String getLocalAddress() {
+    try {
+      return client.getContainerIp(myId);
+    } catch (DockerException de) {
+      // this means that that the container is not
+      // up and running; hence, no IP address is
+      // available. it is up to the caller to figure
+      // out the semantics of this state
+    }
+    return null;
+  }
+
+  @Override
+  public void completeInit() throws ContainerException {
+    shellFactory.closeShell();
+  }
+
+  @Override
+  public void prepare(HandlerType type) throws ContainerException {
+    if (type == LifecycleHandlerType.INSTALL) {
+      preInstallAction();
+    }
+  }
+
+  @Override
+  public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
+    try {
+      DockerShell shell = client.getSideShell(myId);
+      prepareEnvironment(shell, diffSet);
+      shellFactory.installDockerShell(shell);
+    } catch (DockerException de) {
+      throw new ContainerException("cannot create shell for port updates.", de);
+    }
+  }
+
+  @Override
+  public void postprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) {
+    shellFactory.closeShell();
+  }
+
+  @Override
+  public void postprocess(HandlerType type) {
+    if (type == LifecycleHandlerType.PRE_INSTALL) {
+      postPreInstall();
+    } else if (type == LifecycleHandlerType.POST_INSTALL) {
+      // TODO: do we have to make a snapshot after this? //
+    }
+  }
+
+  @Override
+  public void preprocessDetector(DetectorType type) throws ContainerException {
+    // nothing special to do; just create a shell and prepare an environment //
+    try {
+      DockerShell shell = client.getSideShell(myId);
+      prepareEnvironment(shell);
+      shellFactory.installDockerShell(shell);
+    } catch (DockerException de) {
+      throw new ContainerException("cannot create shell for " + type + " detector.", de);
+    }
+  }
+
+  @Override
+  public void postprocessDetector(DetectorType type) {
+    // nothing special to do; just create a shell //
+    shellFactory.closeShell();
+  }
+
+  private DockerShell doStartContainer() throws ContainerException {
+    final DockerShell dshell;
+    try {
+      dshell = client.startContainer(myId);
+    } catch (DockerException de) {
+      throw new ContainerException("cannot start container: " + myId, de);
+    }
+    shellFactory.installDockerShell(dshell);
+    return dshell;
+  }
+
+  private void preInstallAction() {
+    DockerShellWrapper w = shellFactory.createShell();
+    prepareEnvironment(w.shell);
+  }
+
+  private void postPreInstall() {
+    try {
+      imageHandler.runPostInstallAction(myId);
+    } catch (DockerException de) {
+      LOGGER.warn("could not update finalise image handling.", de);
+    }
+  }
+
+  private void prepareEnvironment(DockerShell dshell) {
+    prepareEnvironment(dshell, null);
+  }
+
+  private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
+    BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
+    visitor.visit("TERM", "dumb");
+    visitor.visit("VM_ID", hostContext.getVMIdentifier());
+    visitor.visit("INSTANCE_ID", myId.toString());
+
+    networkHandler.accept(visitor, diff);
+    myComponent.accept(deploymentContext, visitor);
+  }
+
+  private void executeCreation() throws DockerException {
+    String target = imageHandler.doPullImages(myId);
+    Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+    //@SuppressWarnings("unused") String dockerId =
+    client.createContainer(target, myId, portsToSet);
+  }
+
+  private void executeCreation(String imageName) throws DockerException {
+    String target = imageHandler.doPullImages(myId, imageName);
+    Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+    //@SuppressWarnings("unused") String dockerId =
+    client.createContainer(target, myId, portsToSet);
+  }
 }

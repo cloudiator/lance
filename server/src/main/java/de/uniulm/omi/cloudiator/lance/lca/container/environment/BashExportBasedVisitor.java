@@ -39,7 +39,7 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
         interfce = ifc;
     }
     
-    public void addEnvironmentVariable(String name, String value) {
+    private void addEnvironmentVariable(String name, String value) {
         interfce.setEnvironmentVariable(name, value);
     }
 
