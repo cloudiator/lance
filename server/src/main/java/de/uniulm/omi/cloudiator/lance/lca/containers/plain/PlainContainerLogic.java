@@ -159,7 +159,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      visitor.visit("VM_ID", hostContext.getVMIdentifier());
+      visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
       visitor.visit("INSTANCE_ID", myId.toString());
 
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
@@ -169,7 +169,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       //visitor.addEnvironmentVariable();
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      visitor.visit("VM_ID", hostContext.getVMIdentifier());
+      visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
       visitor.visit("INSTANCE_ID", myId.toString());
 
     } else {

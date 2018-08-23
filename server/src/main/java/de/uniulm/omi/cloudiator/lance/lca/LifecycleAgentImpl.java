@@ -150,7 +150,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         StringBuilder builder = new StringBuilder();
         builder.append("PUBLIC_IP_KEY=" + hostContext.getPublicIp() + "\n");
         builder.append("PRIVATE_IP_KEY=" + hostContext.getInternalIp() + "\n");
-        builder.append("VM_ID_KEY=" + hostContext.getCloudIdentifier());
+        builder.append("VM_ID_KEY=" + hostContext.getVMIdentifier());
         return builder.toString();
     }
 

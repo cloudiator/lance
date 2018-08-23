@@ -52,8 +52,6 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
         
-    private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
-    
     private final ComponentInstanceId myId;
     private final DockerConnector client;
     
@@ -161,11 +159,12 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         //shellFactory.closeShell();
     }
 
-    @Override
-    public void prepare(HandlerType type) throws ContainerException {
-        if(type == LifecycleHandlerType.INSTALL) {
-            preInstallAction();
-        }
+  @Override
+  public void prepare(HandlerType type) throws ContainerException {
+    if (type == LifecycleHandlerType.INSTALL) {
+      preInstallAction();
+    }
+  }
 
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
@@ -263,7 +262,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
     visitor.visit("TERM", "dumb");
-    visitor.visit("VM_ID", hostContext.getVMIdentifier());
+    visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
     visitor.visit("INSTANCE_ID", myId.toString());
 
     networkHandler.accept(visitor, diff);
