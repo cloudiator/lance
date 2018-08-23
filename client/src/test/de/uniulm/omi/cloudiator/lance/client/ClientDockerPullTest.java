@@ -93,7 +93,7 @@ public class ClientDockerPullTest {
   private static ComponentId kafkaComponentId;
   private static int defaultInternalInport;
   // adjust
-  private static String publicIp = "134.60.64.95";
+  private static String publicIp = "x.x.x.x";
   private static LifecycleClient client;
   private static ComponentInstanceId zookId, cassId, kafkId;
 
@@ -124,7 +124,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
   private DeployableComponent buildDockerComponent(
