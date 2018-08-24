@@ -53,6 +53,11 @@ public class DockerSnapshottingTest {
 		}
 
 		@Override
+		public String getVMIdentifier() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public void close() throws InterruptedException {
 			throw new UnsupportedOperationException();
 		}
@@ -99,7 +104,7 @@ public class DockerSnapshottingTest {
 		DockerShellFactory shellFactory = new DockerShellFactory();
 		DockerContainerLogic logic = new DockerContainerLogic(core.componentInstanceId, 
 									client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
-									core.networkHandler, shellFactory, dockerConfig);
+									core.networkHandler, shellFactory, dockerConfig, new FakeHostContext());
 		logic.doCreate();
 		logic.doDestroy(true);
 	}
@@ -113,7 +118,7 @@ public class DockerSnapshottingTest {
 		DockerShellFactory shellFactory = new DockerShellFactory();
 		DockerContainerLogic logic = new DockerContainerLogic(core.componentInstanceId, 
 									client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
-									core.networkHandler, shellFactory, dockerConfig);
+									core.networkHandler, shellFactory, dockerConfig, new FakeHostContext());
 		logic.doCreate();
 		logic.prepare(LifecycleHandlerType.PRE_INSTALL);
 		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
@@ -121,6 +126,6 @@ public class DockerSnapshottingTest {
 		
 		logic = new DockerContainerLogic(core.componentInstanceId, 
 				client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
-				core.networkHandler, shellFactory, dockerConfig);
+				core.networkHandler, shellFactory, dockerConfig, new FakeHostContext());
 	}
 }
