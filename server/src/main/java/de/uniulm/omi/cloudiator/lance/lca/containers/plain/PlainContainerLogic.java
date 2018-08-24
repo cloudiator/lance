@@ -92,21 +92,23 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
     //probably not needed for plain container
-
   }
-
 
   @Override
   public void completeInit() throws ContainerException {
+        this.plainShellFactory.closeShell();
+    }
 
-    //this.plainShellFactory.closeShell();
-  }
+    @Override
+    public void completeShutDown() throws ContainerException {
+        this.plainShellFactory.closeShell();
+    }
 
-  @Override
-  public void doDestroy(boolean forceShutdown) throws ContainerException {
-    //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
-    LOGGER.warn("doDestroy not implemented!");
-  }
+    @Override
+    public void doDestroy(boolean forceShutdown) throws ContainerException {
+        //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
+        LOGGER.warn("doDestroy not fully implemented!");
+    }
 
   @Override
   public String getLocalAddress() throws ContainerException {
@@ -157,7 +159,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      visitor.visit("VM_ID", hostContext.getVMIdentifier());
+      visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
       visitor.visit("INSTANCE_ID", myId.toString());
 
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
@@ -167,7 +169,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       //visitor.addEnvironmentVariable();
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      visitor.visit("VM_ID", hostContext.getVMIdentifier());
+      visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
       visitor.visit("INSTANCE_ID", myId.toString());
 
     } else {
@@ -196,7 +198,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   @Override
   public void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) {
-    //plainShellFactory.closeShell();
+    plainShellFactory.closeShell();
   }
 
   @Override
@@ -227,6 +229,11 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
 
   }
+
+    @Override
+    public void preDestroy() {
+        this.plainShellFactory.createAndinstallPlainShell(os);
+    }
 
   @Override
   public void postprocessDetector(DetectorType type) {

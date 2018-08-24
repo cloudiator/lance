@@ -3,6 +3,8 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import static org.junit.Assert.*;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
 import org.junit.Before;
@@ -56,8 +58,13 @@ public class DockerSnapshottingTest {
 		}
 
 		@Override
-		public void run(Runnable runner) {
-			throw new UnsupportedOperationException();
+		public Future<?> run(Runnable runner) {
+			return null;
+		}
+
+		@Override
+		public <T> Future<T> run(Callable<T> callable) {
+			return null;
 		}
 
 		@Override
