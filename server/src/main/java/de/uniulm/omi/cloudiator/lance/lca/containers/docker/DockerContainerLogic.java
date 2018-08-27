@@ -262,7 +262,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
     visitor.visit("TERM", "dumb");
-    visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
+    visitor.visit("VM_ID", hostContext.getVMIdentifier());
     visitor.visit("INSTANCE_ID", myId.toString());
 
     networkHandler.accept(visitor, diff);
