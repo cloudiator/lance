@@ -34,8 +34,7 @@ public interface InstallHandler extends LifecycleHandler {
 
 final class InstallDeploymentHandler implements InstallHandler {
 
-    private static final long serialVersionUID = 1L;
-
+    private static final long serialVersionUID = 61710496022872382L;
     private final Deployment d;
     
     InstallDeploymentHandler(Deployment deploymentParam) {

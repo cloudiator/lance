@@ -5,6 +5,8 @@ import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
 import java.io.Serializable;
 
 public class InportInfo implements Serializable {
+
+    private static final long serialVersionUID = 9167263731953331611L;
     private final String inportName;
     private final transient PortProperties.PortType portType;
     private final int inPort;

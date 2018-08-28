@@ -35,8 +35,7 @@ public interface PreStopHandler extends LifecycleHandler {
 
 final class PreStopDeploymentHandler implements PreStopHandler {
 
-    private static final long serialVersionUID = 1L;
-
+    private static final long serialVersionUID = -1489319395602029591L;
     private final Deployment d;
     
     PreStopDeploymentHandler(Deployment deploymentParam) {

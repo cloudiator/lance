@@ -9,43 +9,45 @@ import java.io.Serializable;
 import java.util.Set;
 
 public class ComponentInfo implements Serializable {
-        private final String componentName;
-        private final ComponentId componentId;
-        private final ComponentInstanceId componentInstanceId;
-        private final Set<InportInfo> inportInfos;
-        private final Set<OutportInfo> outportInfos;
-        private final OperatingSystem os;
 
-    public String getComponentName() {
+  private static final long serialVersionUID = 8703011548496301301L;
+  private final String componentName;
+  private final ComponentId componentId;
+  private final ComponentInstanceId componentInstanceId;
+  private final Set<InportInfo> inportInfos;
+  private final Set<OutportInfo> outportInfos;
+  private final OperatingSystem os;
+
+  public String getComponentName() {
         return componentName;
     }
 
-    public ComponentId getComponentId() {
+  public ComponentId getComponentId() {
         return componentId;
     }
 
-    public ComponentInstanceId getComponentInstanceId() {
+  public ComponentInstanceId getComponentInstanceId() {
         return componentInstanceId;
     }
 
-    public Set<InportInfo> getInportInfos() {
+  public Set<InportInfo> getInportInfos() {
         return inportInfos;
     }
 
-    public Set<OutportInfo> getOutportInfos() {
+  public Set<OutportInfo> getOutportInfos() {
         return outportInfos;
     }
 
-    public OperatingSystem getOs() {
+  public OperatingSystem getOs() {
         return os;
     }
 
-    public ComponentInfo(String componentName, ComponentId componentId, ComponentInstanceId componentInstanceId, Set<InportInfo> inportInfos, Set<OutportInfo> outportInfos, OperatingSystem os) {
-            this.componentName = componentName;
-            this.componentId = componentId;
-            this.componentInstanceId = componentInstanceId;
-            this.inportInfos = inportInfos;
-            this.outportInfos = outportInfos;
-            this.os = os;
-        }
+  public ComponentInfo(String componentName, ComponentId componentId, ComponentInstanceId componentInstanceId, Set<InportInfo> inportInfos, Set<OutportInfo> outportInfos, OperatingSystem os) {
+    this.componentName = componentName;
+    this.componentId = componentId;
+    this.componentInstanceId = componentInstanceId;
+    this.inportInfos = inportInfos;
+    this.outportInfos = outportInfos;
+    this.os = os;
+  }
 }

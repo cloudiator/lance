@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public final class ApplicationInstanceId implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 4619178731984756742L;
     private final UUID uuid;
     
     public ApplicationInstanceId(){
