@@ -145,14 +145,6 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     throw new LcaException("cannot proceed: application instance is not known.");
   }
-  @Override
-  public String getEnv() throws RemoteException {
-    StringBuilder builder = new StringBuilder();
-    builder.append("PUBLIC_IP_KEY=" + hostContext.getPublicIp() + "\n");
-    builder.append("PRIVATE_IP_KEY=" + hostContext.getInternalIp() + "\n");
-    builder.append("VM_ID_KEY=" + hostContext.getVMIdentifier());
-    return builder.toString();
-  }
 
   //todo: print whole environment
   @Override
