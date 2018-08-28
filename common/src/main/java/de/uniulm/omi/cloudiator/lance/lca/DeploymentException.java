@@ -23,7 +23,8 @@ package de.uniulm.omi.cloudiator.lance.lca;
  */
 public class DeploymentException extends Exception {
 
-    private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = -671081742968251613L;
 
     public DeploymentException() {
     }

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 public class ComponentInfo implements Serializable {
+<<<<<<< HEAD
 
   private static final long serialVersionUID = 8703011548496301301L;
   private final String componentName;

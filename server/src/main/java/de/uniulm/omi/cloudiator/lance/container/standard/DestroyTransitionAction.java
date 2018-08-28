@@ -18,38 +18,38 @@ final class DestroyTransitionAction implements TransitionAction {
 	@Override
 	public void transit(Object[] params) throws TransitionException {
 		theContainer.network.stopPortUpdaters();
-        try {
-            boolean forceShutdown = false;
-        try {
-            theContainer.logic.preDestroy();
-            theContainer.preDestroyAction();
+    try {
+      boolean forceShutdown = false;
+      try {
+        theContainer.logic.preDestroy();
+        theContainer.preDestroyAction();
         } catch (Exception ex) {
-            ErrorAwareContainer.getLogger().error("could not shut down component; trying to force shut down of container", ex);
-            forceShutdown = true;
+          ErrorAwareContainer.getLogger().error("could not shut down component; trying to force shut down of container", ex);
+          forceShutdown = true;
         }
-            theContainer.logic.doDestroy(forceShutdown);
-            theContainer.registerStatus(ContainerStatus.DESTROYED);
-        } catch (ContainerException | RegistrationException ce) {
-            ErrorAwareContainer.getLogger().error("could not shut down container;", ce);
-            throw new TransitionException(ce);
-        } finally {
-            try {
-                theContainer.setNetworking();
-            } catch (ContainerException e) {
-                ErrorAwareContainer.getLogger().error("could not update networking", e);
-            }
-            try {
-                theContainer.network.publishLocalData(theContainer.containerId);
-            } catch (ContainerException e) {
-                ErrorAwareContainer.getLogger().error("could not publish local data", e);
-            }
-            try {
-                theContainer.logic.completeShutDown();
-            } catch (ContainerException e) {
-                ErrorAwareContainer.getLogger().error("could not shutdown container;", e);
-            }
+        theContainer.logic.doDestroy(forceShutdown);
+        theContainer.registerStatus(ContainerStatus.DESTROYED);
+    } catch (ContainerException | RegistrationException ce) {
+      ErrorAwareContainer.getLogger().error("could not shut down container;", ce);
+        throw new TransitionException(ce);
+    } finally {
+        try {
+          theContainer.setNetworking();
+        } catch (ContainerException e) {
+          ErrorAwareContainer.getLogger().error("could not update networking", e);
         }
+        try {
+          theContainer.network.publishLocalData(theContainer.containerId);
+        } catch (ContainerException e) {
+            ErrorAwareContainer.getLogger().error("could not publish local data", e);
+        }
+    try {
+        theContainer.logic.completeShutDown();
+			} catch (ContainerException e) {
+        ErrorAwareContainer.getLogger().error("could not shutdown container;", e);
+      }
     }
+  }
 
 	static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
 			ErrorAwareContainer<?> container) {
@@ -57,11 +57,11 @@ final class DestroyTransitionAction implements TransitionAction {
 		DestroyTransitionAction action = new DestroyTransitionAction(container);
 		// FIXME: add error handler //
 		transitionBuilder.setStartState(ContainerStatus.READY).
-        setIntermediateState(ContainerStatus.SHUTTING_DOWN, false).
-        setEndState(ContainerStatus.DESTROYED).
-        setErrorState(ContainerStatus.UNKNOWN).
-        addTransitionAction(action);
-		
+    setIntermediateState(ContainerStatus.SHUTTING_DOWN, false).
+    setEndState(ContainerStatus.DESTROYED).
+    setErrorState(ContainerStatus.UNKNOWN).
+    addTransitionAction(action);
+
 		transitionBuilder.buildAndRegister();
 	}
 

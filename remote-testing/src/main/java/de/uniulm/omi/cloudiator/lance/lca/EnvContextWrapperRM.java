@@ -8,6 +8,7 @@ public class EnvContextWrapperRM {
   private static String containerIp = "128.0.0.1";
 
   public static HostContext create() {
+<<<<<<< HEAD
     System.setProperty("host.ip.public", getPublicIp());
     System.setProperty("host.ip.private", getCloudIp());
     System.setProperty("host.vm.cloud.tenant.id", "tenant: 33033");
