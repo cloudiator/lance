@@ -37,7 +37,7 @@ import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType
 public class DeployableComponent implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeployableComponent.class);
-    private static final long serialVersionUID = 5544457717632275252L;
+    private static final long serialVersionUID = -8008479179768130524L;
 
     private final String name;
     private final ComponentId myId;

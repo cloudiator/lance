@@ -51,29 +51,29 @@ public final class BashBasedHandlerBuilder {
     public LifecycleHandler build(LifecycleHandlerType type) {
     	LifecycleHandler retVal = null;
          switch(type) {
-         case PRE_INSTALL:
+            case PRE_INSTALL:
              retVal = new BashPreInstallHandler(os, commands);
              break;
-         case INSTALL:
-        	 retVal = new BashInstallHandler(os, commands);
-        	 break;
-         case POST_INSTALL:
-        	 retVal = new BashPostInstallHandler(os, commands);
-        	 break;
-         case START:
-        	 retVal = new BashStartHandler(os, commands);
-        	 break;
-         case PRE_STOP:
+            case INSTALL:
+             retVal = new BashInstallHandler(os, commands);
+             break;
+            case POST_INSTALL:
+             retVal = new BashPostInstallHandler(os, commands);
+             break;
+            case START:
+             retVal = new BashStartHandler(os, commands);
+             break;
+            case PRE_STOP:
              retVal = new BashPreStopHandler(os, commands);
              break;
-         case STOP:
+            case STOP:
              retVal = new BashStopHandler(os, commands);
              break;
-         case INIT:
-         default:
+            case INIT:
+            default:
              throw new UnsupportedOperationException();
-         }
-         return retVal;
+            }
+            return retVal;
     }
 
     public BashBasedHandlerBuilder setOperatingSystem(OperatingSystem osParam) {
@@ -88,7 +88,7 @@ public final class BashBasedHandlerBuilder {
 
 final class BashPreInstallHandler implements PreInstallHandler {
 
-    private static final long serialVersionUID = 6252852219310892573L;
+    private static final long serialVersionUID = 7232719469227703730L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -105,7 +105,7 @@ final class BashPreInstallHandler implements PreInstallHandler {
 
 final class BashInstallHandler implements InstallHandler {
 
-    private static final long serialVersionUID = 7579233877994910327L;
+    private static final long serialVersionUID = -2546167412074322307L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -122,7 +122,7 @@ final class BashInstallHandler implements InstallHandler {
 
 final class BashPostInstallHandler implements PostInstallHandler {
 
-    private static final long serialVersionUID = -5666019177853948866L;
+    private static final long serialVersionUID = 1169280018441041612L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -139,7 +139,7 @@ final class BashPostInstallHandler implements PostInstallHandler {
 
 final class BashStartHandler implements StartHandler {
 
-    private static final long serialVersionUID = -5666019177853948866L;
+    private static final long serialVersionUID = 1905532285239985777L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
@@ -156,7 +156,7 @@ final class BashStartHandler implements StartHandler {
 
 final class BashStopHandler implements StopHandler {
 
-    private static final long serialVersionUID = -5666019177853948866L;
+    private static final long serialVersionUID = -5705492165282492295L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
@@ -173,7 +173,7 @@ final class BashStopHandler implements StopHandler {
 
 final class BashPreStopHandler implements PreStopHandler {
 
-    private static final long serialVersionUID = -5666019177853948866L;
+    private static final long serialVersionUID = 3138983756438002674L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
@@ -190,8 +190,7 @@ final class BashPreStopHandler implements PreStopHandler {
 
 final class BashPortUpdateHandler implements PortUpdateHandler {
 
-    private static final long serialVersionUID = -7036692445701185053L;
-    
+    private static final long serialVersionUID = 1095927280515962263L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -208,8 +207,7 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
 
 final class BashStartDetectorHandler implements StartDetector {
 
-    private static final long serialVersionUID = -7036692445701185053L;
-    
+    private static final long serialVersionUID = 1123459320914315021L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     

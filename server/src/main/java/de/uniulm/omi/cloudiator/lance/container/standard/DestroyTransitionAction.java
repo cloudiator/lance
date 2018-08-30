@@ -55,14 +55,13 @@ final class DestroyTransitionAction implements TransitionAction {
 			ErrorAwareContainer<?> container) {
 		
 		DestroyTransitionAction action = new DestroyTransitionAction(container);
-		
 		// FIXME: add error handler //
 		transitionBuilder.setStartState(ContainerStatus.READY).
     setIntermediateState(ContainerStatus.SHUTTING_DOWN, false).
     setEndState(ContainerStatus.DESTROYED).
     setErrorState(ContainerStatus.UNKNOWN).
     addTransitionAction(action);
-		
+
 		transitionBuilder.buildAndRegister();
 	}
 

@@ -23,12 +23,11 @@ import java.util.UUID;
 
 public final class ComponentInstanceId implements Serializable {
 
-    private static final long serialVersionUID = 2L;
-    
     // FIXME: set fixed value!
     public static final ComponentInstanceId ERROR_ID = new ComponentInstanceId();
     public static final ComponentInstanceId SYSTEM_ID = new ComponentInstanceId();
-    
+    private static final long serialVersionUID = -6741646835252735882L;
+
     private final UUID uuid;
     
     public ComponentInstanceId(){

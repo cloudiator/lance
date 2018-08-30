@@ -21,10 +21,8 @@ package de.uniulm.omi.cloudiator.lance.container.spec.os;
 import java.io.Serializable;
 
 public abstract class OSVersionFormat implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
+
     public static final OSVersionFormat UBUNTU_VERSION_FORMAT = new OSVersionFormat() {
-        private static final long serialVersionUID = 1L;
 
         @Override public boolean hasCorrectFormat(String format) {
             if(format == null || format.length() != 5) {
@@ -35,7 +33,6 @@ public abstract class OSVersionFormat implements Serializable {
     };
     
     public static final OSVersionFormat WINDOWS_VERSION_FORMAT = new OSVersionFormat() {
-        private static final long serialVersionUID = 1L;
         private final String[] versions = {"95", "98", "2000", "ME", "Vista", "7", "8", "8.1" };
         
         @Override public boolean hasCorrectFormat(String format) {
@@ -49,12 +46,12 @@ public abstract class OSVersionFormat implements Serializable {
     };
     
     public static final OSVersionFormat UNKNOWN_VERSION_FORMAT = new OSVersionFormat() {
-        private static final long serialVersionUID = 1L;
         @Override public boolean hasCorrectFormat(String format) {
             return false;
         }
     };
-    
+    private static final long serialVersionUID = -7624377333732191799L;
+
     public abstract boolean hasCorrectFormat(String format);
     
     OSVersionFormat() {

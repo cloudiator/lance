@@ -23,9 +23,8 @@ import java.io.Serializable;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
 
 public final class InPort implements Serializable {
-    
-    private static final long serialVersionUID = -6375556080278116537L;
-    
+
+    private static final long serialVersionUID = 7569338309917031805L;
     private final String name;
     private final PortType type;
     // private final int cardinality;

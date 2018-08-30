@@ -6,6 +6,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import java.io.Serializable;
 
 public class OutportInfo implements Serializable {
+
+    private static final long serialVersionUID = -4836138962934247464L;
     private final String outportName;
     private final transient PortUpdateHandler puHandler;
     private final int providedPortNumber;

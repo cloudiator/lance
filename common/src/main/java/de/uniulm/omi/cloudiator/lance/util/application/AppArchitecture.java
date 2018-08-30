@@ -13,6 +13,7 @@ import java.util.Set;
 
 public class AppArchitecture implements Serializable {
 
+    private static final long serialVersionUID = 626605105815925644L;
     private final String applicationName;
     private final ApplicationId applicationId;
     private final ApplicationInstanceId appInstanceId;
