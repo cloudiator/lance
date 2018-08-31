@@ -49,6 +49,10 @@ final class DockerOperatingSystemTranslator {
         }
     }
     
+     private static String translateOtherLinux(@SuppressWarnings("unused") OperatingSystem os) {
+        // we assume that there is a account called pasage-uc on docker.hub from where we can pull images from.
+        return "paasage-uc/" + os.getType() + ":" + os.getVersion();
+    }
     private static String translateOther(@SuppressWarnings("unused") OperatingSystem os) {
         throw new IllegalArgumentException("os not supported: ");
     }
