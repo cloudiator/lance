@@ -28,7 +28,7 @@ public final class ComponentId implements Serializable {
   // FIXME: set fixed value!
   public static final ComponentId ERROR_ID = new ComponentId();
   public static final ComponentId SYSTEM_ID = new ComponentId();
-  private static final long serialVersionUID = 4750738467522891916L;
+  private static final long serialVersionUID = 1L;
 
   private final String id;
 

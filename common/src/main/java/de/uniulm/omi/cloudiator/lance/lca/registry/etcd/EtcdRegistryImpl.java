@@ -38,7 +38,7 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
 final class EtcdRegistryImpl implements LcaRegistry {
 
-    private static final long serialVersionUID = -7017922645290003357L;
+    private static final long serialVersionUID = 1L;
     private static String DESCRIPTION = "Description";
     private static String NAME = "Name";
     private static String MAIN_DESCRIPTION = "main directory for cloudiator's life cylce agent";

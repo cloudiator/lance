@@ -28,7 +28,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public final class Deployment implements Serializable {
 
-    private static final long serialVersionUID = 3145255536775313153L;
+    private static final long serialVersionUID = 4353942659952970587L;
     private final List<CommandSequence> sequences;
     
     Deployment(ArrayList<CommandSequence> seqs) {

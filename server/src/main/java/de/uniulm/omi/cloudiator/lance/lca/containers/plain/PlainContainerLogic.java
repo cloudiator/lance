@@ -40,6 +40,9 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +61,18 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   private final PlainShellFactory plainShellFactory;
   private final HostContext hostContext;
   private boolean stopped = false;
+
+  private static final Map<String, String> envVars;
+
+  static {
+    Map<String, String> tMap = new HashMap<>();
+    tMap.put("pub_ip", "PUBLIC_IP");
+    tMap.put("cloud_ip", "CLOUD_IP");
+    tMap.put("cont_ip", "CONTAINER_IP");
+    tMap.put("vm_id", "VM_ID");
+    tMap.put("inst_id", "INSTANCE_ID");
+    envVars = Collections.unmodifiableMap(tMap);
+  }
 
   PlainContainerLogic(ComponentInstanceId id, DeployableComponent deployableComponent,
       DeploymentContext deploymentContext, OperatingSystem os, NetworkHandler networkHandler,
@@ -159,8 +174,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      visitor.visit("VM_ID_KEY", hostContext.getVMIdentifier());
-      visitor.visit("INSTANCE_ID", myId.toString());
+      visitor.visit(envVars.get("vm_id"), hostContext.getVMIdentifier());
+      visitor.visit(envVars.get("inst_id"), myId.toString());
 
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
       BashExportBasedVisitor visitor =
@@ -169,8 +184,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       //visitor.addEnvironmentVariable();
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      visitor.visit("VM_ID", hostContext.getVMIdentifier());
-      visitor.visit("INSTANCE_ID", myId.toString());
+      visitor.visit(envVars.get("vm_id"), hostContext.getVMIdentifier());
+      visitor.visit(envVars.get("inst_id"), myId.toString());
 
     } else {
       throw new RuntimeException("Unsupported Operating System: " + this.os.toString());

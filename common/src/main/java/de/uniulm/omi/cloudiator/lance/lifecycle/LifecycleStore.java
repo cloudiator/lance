@@ -29,7 +29,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
 public class LifecycleStore implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
-    private static final long serialVersionUID = 1189996149693456690L;
+    private static final long serialVersionUID = 1L;
 
     private final LifecycleHandler[] handlers;
     private final StartDetector startDetector;
