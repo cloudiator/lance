@@ -61,7 +61,7 @@ final class DestroyTransitionAction implements TransitionAction {
     addTransitionAction(action);
 
     transitionBuilder.buildAndRegister();
-	}
+  }
 
 	public static boolean isKnownErrorState(ContainerStatus stat) {
 		return stat == ContainerStatus.UNKNOWN;
