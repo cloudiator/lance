@@ -42,6 +42,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +65,19 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
   private final DeployableComponent myComponent;
   private final HostContext hostContext;
+
+  private static final Map<String, String> envVars;
+
+  static {
+    Map<String, String> tMap = new HashMap<>();
+    tMap.put("pub_ip", "PUBLIC_IP");
+    tMap.put("cloud_ip", "CLOUD_IP");
+    tMap.put("cont_ip", "CONTAINER_IP");
+    tMap.put("vm_id", "VM_ID");
+    tMap.put("inst_id", "INSTANCE_ID");
+    tMap.put("term", "TERM");
+    envVars = Collections.unmodifiableMap(tMap);
+  }
 
   DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,
     DeploymentContext ctx, OperatingSystem os, NetworkHandler network,
@@ -261,9 +276,9 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
   private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
-    visitor.visit("TERM", "dumb");
-    visitor.visit("VM_ID", hostContext.getVMIdentifier());
-    visitor.visit("INSTANCE_ID", myId.toString());
+    visitor.visit(envVars.get("term"), "dumb");
+    visitor.visit(envVars.get("vm_id"), hostContext.getVMIdentifier());
+    visitor.visit(envVars.get("inst_id"), myId.toString());
 
     networkHandler.accept(visitor, diff);
     myComponent.accept(deploymentContext, visitor);

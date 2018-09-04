@@ -36,6 +36,8 @@ final class EnvContext implements HostContext {
   private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
 
   public static final String PUBLIC_IP_KEY = "host.ip.public";
+  public static final String CLOUD_IP_KEY = "host.ip.cloud";
+  public static final String CONTAINER_IP_KEY = "host.ip.container";
   public static final String PRIVATE_IP_KEY = "host.ip.private";
   // public static final String HOST_OS_KEY = "host.os";
   public static final String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
@@ -44,8 +46,8 @@ final class EnvContext implements HostContext {
   //public static final String CONTAINER_TYPE = "host.container.type";
 
   private static final String[] VALUES =
-      new String[]{PUBLIC_IP_KEY, PRIVATE_IP_KEY, /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY
-/*, CONTAINER_TYPE*/};
+      new String[]{PUBLIC_IP_KEY , CLOUD_IP_KEY , /*HOST_OS_KEY, */ CONTAINER_IP_KEY , PRIVATE_IP_KEY
+/*, CONTAINER_TYPE*/, TENANT_ID_KEY, VM_ID_KEY, CLOUD_ID_KEY};
 
   private final Map<String, String> hostContext;
   private final ScheduledExecutorService executorService;
@@ -76,11 +78,6 @@ final class EnvContext implements HostContext {
     EnvContext ctx = new EnvContext(values);
     ctx.registerRmiAddress();
     return ctx;
-  }
-
-  @Override
-  public String getPublicIp() {
-    return hostContext.get(PUBLIC_IP_KEY);
   }
 
   @Override
@@ -125,6 +122,31 @@ final class EnvContext implements HostContext {
   @Override
   public String getCloudIdentifier() {
     return hostContext.get(CLOUD_ID_KEY);
+  }
+
+  @Override
+  public String getPublicIp() {
+    return hostContext.get(PUBLIC_IP_KEY);
+  }
+
+  @Override
+  public String getCloudIp() {
+    return hostContext.get(CLOUD_IP_KEY);
+  }
+
+  @Override
+  public String getContainerIp() {
+    return hostContext.get(CONTAINER_IP_KEY);
+  }
+
+  @Override
+  public String getPrivateIp() {
+    return hostContext.get(PRIVATE_IP_KEY);
+  }
+
+  @Override
+  public String getTenantId() {
+    return hostContext.get(TENANT_ID_KEY);
   }
 
   @Override
