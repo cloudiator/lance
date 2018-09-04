@@ -33,7 +33,7 @@ public interface PreInstallHandler extends LifecycleHandler {
 
 final class PreInstallDeploymentHandler implements PreInstallHandler {
 
-    private static final long serialVersionUID = 6919555061386179348L;
+    private static final long serialVersionUID = 1L;
     private final Deployment d;
     
     PreInstallDeploymentHandler(Deployment deploymentParam) {

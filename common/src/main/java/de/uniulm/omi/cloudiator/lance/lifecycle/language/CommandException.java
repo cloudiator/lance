@@ -22,7 +22,7 @@ import java.net.URISyntaxException;
 
 public class CommandException extends RuntimeException {
 
-    private static final long serialVersionUID = 2764293944632232142L;
+    private static final long serialVersionUID = 1L;
 
     public CommandException(String string, URISyntaxException e) {
         super(string, e);

@@ -20,7 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 public final class DockerException extends Exception {
 
-    private static final long serialVersionUID = -3429601636521620300L;
+    private static final long serialVersionUID = 1L;
 
     public DockerException() {
         super();

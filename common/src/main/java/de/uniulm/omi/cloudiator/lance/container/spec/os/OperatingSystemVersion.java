@@ -23,7 +23,7 @@ import java.util.Calendar;
 
 public final class OperatingSystemVersion implements Serializable {
 
-    private static final long serialVersionUID = 1066645702254395280L;
+    private static final long serialVersionUID = 1L;
     private final String version;
     
     public OperatingSystemVersion(String s) {

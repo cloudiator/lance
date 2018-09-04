@@ -25,7 +25,7 @@ import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 
 public final class DeploymentContext implements Serializable {
 
-    private static final long serialVersionUID = 4924998330675206170L;
+    private static final long serialVersionUID = 1L;
     private final ApplicationId myAppId;
     private final ApplicationInstanceId myInstanceId;
     private final LcaRegistry registry;
