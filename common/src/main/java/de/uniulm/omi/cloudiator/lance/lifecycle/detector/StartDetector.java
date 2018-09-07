@@ -35,7 +35,7 @@ public interface StartDetector extends Detector {
 
 final class StartDetectorHandler implements StartDetector {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -7979324437072690746L;
     private final Deployment d;
     
     StartDetectorHandler(Deployment deploymentParam) {

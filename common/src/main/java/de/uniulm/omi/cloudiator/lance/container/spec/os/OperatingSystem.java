@@ -28,7 +28,7 @@ public final class OperatingSystem implements Serializable {
     
     public static final OperatingSystem WINDOWS_7 = new OperatingSystem(OperatingSystemType.WINDOWS,
                                                             OperatingSystemVersion.getWindowsVersion(WindowsVersion.WIN_7));
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 3848019659106600145L;
 
     private final OperatingSystemType type;
     private final OperatingSystemVersion version;

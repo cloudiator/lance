@@ -26,7 +26,7 @@ public final class OutPort implements Serializable {
     
     public static final int INFINITE_SINKS = -1;
     public static final int NO_SINKS = -2;
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -3946943099972136410L;
 
     private final PortUpdateHandler handler;
     private final String name;

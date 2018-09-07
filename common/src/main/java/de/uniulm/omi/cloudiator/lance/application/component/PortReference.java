@@ -24,7 +24,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortL
 
 public final class PortReference implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1119797058263056373L;
     private final ComponentId compId;
     private final String propertyName;
     // private final PortLinkage linkage;

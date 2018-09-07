@@ -307,5 +307,6 @@ public class RewiringClientTest {
       return new LcaException("downstream exception occurred.", re);
     }
   }
+
 }
 

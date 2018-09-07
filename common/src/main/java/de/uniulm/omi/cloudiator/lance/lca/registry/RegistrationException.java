@@ -21,7 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.registry;
 public class RegistrationException extends Exception {
 
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -5059220607057764163L;
 
     public RegistrationException() {
         super();

@@ -35,8 +35,6 @@ public final class DefaultDetectorHandlers {
     
     public static final StartDetector DEFAULT_START_DETECTOR = new StartDetector() {
 
-    private static final long serialVersionUID = 1L;
-
 		@Override
 		public DetectorState execute(ExecutionContext ec) {
 			getLogger().info("DEFAULT StopHandler doing nothing");

@@ -18,8 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -28,7 +26,7 @@ public final class ComponentId implements Serializable {
   // FIXME: set fixed value!
   public static final ComponentId ERROR_ID = new ComponentId();
   public static final ComponentId SYSTEM_ID = new ComponentId();
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 4750738467522891916L;
 
   private final String id;
 
@@ -37,7 +35,7 @@ public final class ComponentId implements Serializable {
   }
 
   private ComponentId(String s) {
-    this.id = s;
+    id = s;
   }
 
   @Override
@@ -57,11 +55,10 @@ public final class ComponentId implements Serializable {
 
   @Override
   public String toString() {
-    return id;
+    return id.toString();
   }
 
   public static ComponentId fromString(String s) {
-    checkNotNull(s, "s is null");
     return new ComponentId(s);
   }
 }
