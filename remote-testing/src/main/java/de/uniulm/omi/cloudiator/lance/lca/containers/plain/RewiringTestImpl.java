@@ -44,7 +44,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
 import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRewiring;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import java.rmi.RemoteException;
 
 //modified LcAImplementation.java
 public class RewiringTestImpl implements RewiringTestAgent {
@@ -561,12 +560,12 @@ public class RewiringTestImpl implements RewiringTestAgent {
 
     @Override
     public void stop() throws RemoteException {
-        RewiringTestBooter.unregister(this);
+        TestBooter.unregister(this);
     }
 
     @Override
     public void terminate() throws RemoteException {
-        RewiringTestBooter.unregister(this);
+        TestBooter.unregister(this);
         try {
             core.context.close();
         } catch (InterruptedException ie) {
@@ -574,7 +573,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
         }
     }
 
-    class FullComponent {
+    static class FullComponent {
 
         FullComponent(DeployableComponent comp, GlobalRegistryAccessor accessor, NetworkHandler networkHandler, ComponentId cId, ComponentInstanceId cInstId, ExecutionContext exCtx, boolean stopIt, ErrorAwareContainer<PlainContainerLogic> container, LifecycleController lcc) {
             this.comp = comp;

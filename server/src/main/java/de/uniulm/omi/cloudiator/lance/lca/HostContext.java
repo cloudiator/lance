@@ -22,7 +22,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
-public interface HostContext {
+public interface HostContext extends StaticEnvVars {
 
   String getPublicIp();
 

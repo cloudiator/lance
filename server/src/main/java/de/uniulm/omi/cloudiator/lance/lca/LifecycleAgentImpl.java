@@ -30,7 +30,9 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,12 +150,18 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
   //todo: print whole environment
   @Override
-  public String getEnv() throws RemoteException {
-    StringBuilder builder = new StringBuilder();
-    builder.append("PUBLIC_IP_KEY=" + hostContext.getPublicIp() + "\n");
-    builder.append("PRIVATE_IP_KEY=" + hostContext.getInternalIp() + "\n");
-    builder.append("VM_ID=" + hostContext.getVMIdentifier());
-    return builder.toString();
+  public String getHostEnv() throws RemoteException {
+    List<ComponentInstanceId> ids = listContainers();
+
+    Map<String,String > envVarsStatic = new HashMap<String, String>(hostContext.getEnvVars());
+
+    for(ComponentInstanceId id : ids) {
+      for (Map.Entry<String, String> kv : id.getEnvVars().entrySet()) {
+        envVarsStatic.put(kv.getKey(), kv.getValue());
+      }
+    }
+
+    return envVarsStatic.toString();
   }
 
   private static void componentPartOfApplication(DeploymentContext ctx,

@@ -24,7 +24,7 @@ import de.uniulm.omi.cloudiator.lance.util.Registrator;
 import de.uniulm.omi.cloudiator.lance.util.Version;
 
 //modified LcABooter.java
-public class RewiringTestBooter {
+public class TestBooter {
 
     public final static String REWT_REGISTRY_KEY = "RewiringTestAgent";
     private final static Registrator<RewiringTestAgent> reg = Registrator.create(RewiringTestAgent.class);

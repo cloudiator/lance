@@ -27,9 +27,11 @@ import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
+import de.uniulm.omi.cloudiator.lance.lca.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
@@ -45,11 +47,15 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
-
+//todo: install/close shell after each "atomic" action (e.g. also in each lifecycle transition or pre/postprocessDetector)
+//sofar:  install shell in doInit, close shell in completeInit
+//        install shell in preDestroy, close shell in completeShutDown
+//        install shell in preprocessDetector, close shell in postProcessDetector
+//        install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
 public class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
@@ -66,17 +72,19 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   private final DeployableComponent myComponent;
   private final HostContext hostContext;
 
-  private static final Map<String, String> envVars;
+  private final StaticEnvVars instVars;
+  private final StaticEnvVars hostVars;
 
+  private final Map<String, String> envVarsStatic;
+  private final Map<String, String> envVarsDynamic;
+
+  //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+  private static final Map<String, String> translateMap;
   static {
-    Map<String, String> tMap = new HashMap<>();
-    tMap.put("pub_ip", "PUBLIC_IP");
-    tMap.put("cloud_ip", "CLOUD_IP");
-    tMap.put("cont_ip", "CONTAINER_IP");
-    tMap.put("vm_id", "VM_ID");
-    tMap.put("inst_id", "INSTANCE_ID");
-    tMap.put("term", "TERM");
-    envVars = Collections.unmodifiableMap(tMap);
+    Map<String, String> tmpMap = new HashMap<>();
+    tmpMap.put("host.vm.id", "VM_ID");
+    tmpMap.put("INSTANCE_ID", "INSTANCE_ID");
+    translateMap = Collections.unmodifiableMap(tmpMap);
   }
 
   DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,
@@ -97,15 +105,24 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     }
 
     myId = id;
+    instVars = this.myId;
     client = clientParam;
     imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(),
     clientParam, componentParam, dockerConfigParam);
     deploymentContext = ctx;
     shellFactory = shellFactoryParam;
     myComponent = componentParam;
-
     networkHandler = networkParam;
     this.hostContext = hostContext;
+    hostVars = this.hostContext;
+    envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
+
+    for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
+      envVarsStatic.put(kv.getKey(),kv.getValue());
+    }
+
+    envVarsDynamic = new HashMap<>();
+    //todo: fill dynamic map with appropriate env-vars
   }
 
 	@Override
@@ -126,12 +143,13 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     } catch(DockerException de) {
         throw new ContainerException("docker problems. cannot create container " + myId, de);
     }
-}
+  }
 
   @Override
-  public void preDestroy() {
-    //todo: mb implement
-    //shellFactory.installDockerShell(shell);
+  public void preDestroy() throws ContainerException {
+    if(!setStaticEnvironment(false)) {
+      throw new ContainerException("cannot create shell for setting the environment vars in preDestroy");
+    }
   }
 
   @Override
@@ -148,6 +166,44 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
         throw new ContainerException("coulnd not register all port mappings", de);
       }
     });
+  }
+
+  @Override
+  public boolean setStaticEnvironment(boolean useExistingShell) {
+    DockerShell shell;
+
+    if(!useExistingShell) {
+      try {
+        shell = client.getSideShell(myId);
+        shellFactory.installDockerShell(shell);
+      } catch(DockerException de) {
+        //hack...
+        return false;
+      }
+    } else {
+      DockerShellWrapper w = shellFactory.createShell();
+      shell = w.shell;
+    }
+
+    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
+    visitor.visit("TERM", "DUMB");
+
+    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+
+      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+      if(!translateMap.containsKey(entry.getKey()))
+        continue;
+
+      visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
+    }
+
+    return true;
+  }
+
+  @Override
+  public boolean setDynamicEnvironment(boolean useExistingShell) {
+    //todo: implement
+    return true;
   }
 
   @Override
@@ -170,12 +226,16 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
 
   @Override
   public void completeShutDown() throws ContainerException {
-    //todo: mb implement
-    //shellFactory.closeShell();
+    shellFactory.closeShell();
   }
 
   @Override
   public void prepare(HandlerType type) throws ContainerException {
+    //if following method calls in this function call prepareEnvironment (e.g. preInstallAction)
+    //the setStaticEnvironment is called twice
+    if(!setStaticEnvironment(true)) {
+      throw new ContainerException("cannot create shell for " + type + " in prepare method ");
+    }
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
     }
@@ -186,6 +246,9 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     try {
       DockerShell shell = doStartContainer();
       shellFactory.installDockerShell(shell);
+      if(!setStaticEnvironment(true)) {
+        throw new ContainerException("cannot create shell for setting the environment vars in doInit");
+      }
     } catch (ContainerException ce) {
       throw ce;
     } catch (Exception ex) {
@@ -196,6 +259,9 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   @Override
   public void doDestroy(boolean force) throws ContainerException {
     /* currently docker ignores the flag */
+    if(!setStaticEnvironment(true)) {
+      throw new ContainerException("cannot create shell for setting the environment vars in doDestroy");
+    }
     try {
       client.stopContainer(myId);
     } catch (DockerException de) {
@@ -207,8 +273,10 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
     try {
       DockerShell shell = client.getSideShell(myId);
-      prepareEnvironment(shell, diffSet);
       shellFactory.installDockerShell(shell);
+      if(!prepareEnvironment(shell, diffSet)) {
+        throw new DockerException();
+      }
     } catch (DockerException de) {
       throw new ContainerException("cannot create shell for port updates.", de);
     }
@@ -219,8 +287,12 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     shellFactory.closeShell();
   }
 
+  //todo: make this method throwable with ContainerException
   @Override
-  public void postprocess(HandlerType type) {
+  public void postprocess(HandlerType type) throws ContainerException {
+    if(!setStaticEnvironment(true)) {
+      throw new ContainerException("cannot create shell for " + type + " in prepare method ");
+    }
     if (type == LifecycleHandlerType.PRE_INSTALL) {
       postPreInstall();
     } else if (type == LifecycleHandlerType.POST_INSTALL) {
@@ -232,9 +304,12 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   public void preprocessDetector(DetectorType type) throws ContainerException {
     // nothing special to do; just create a shell and prepare an environment //
     try {
-      DockerShell shell = client.getSideShell(myId);
-      prepareEnvironment(shell);
-      shellFactory.installDockerShell(shell);
+      //DockerShell shell = client.getSideShell(myId);
+      //shellFactory.installDockerShell(shell);
+      DockerShellWrapper w = shellFactory.createShell();
+      if(!prepareEnvironment(w.shell)) {
+        throw new DockerException();
+      }
     } catch (DockerException de) {
       throw new ContainerException("cannot create shell for " + type + " detector.", de);
     }
@@ -243,7 +318,7 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
   @Override
   public void postprocessDetector(DetectorType type) {
     // nothing special to do; just create a shell //
-    shellFactory.closeShell();
+    // shellFactory.closeShell();
   }
 
   private DockerShell doStartContainer() throws ContainerException {
@@ -253,35 +328,40 @@ public class DockerContainerLogic implements ContainerLogic, LifecycleActionInte
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
     }
-    shellFactory.installDockerShell(dshell);
     return dshell;
   }
 
-  private void preInstallAction() {
+  private void preInstallAction() throws ContainerException {
     DockerShellWrapper w = shellFactory.createShell();
     prepareEnvironment(w.shell);
   }
 
   private void postPreInstall() {
     try {
+      DockerShellWrapper w = shellFactory.createShell();
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(w.shell);
+      visitor.visit("TERM", "DUMB");
       imageHandler.runPostInstallAction(myId);
     } catch (DockerException de) {
       LOGGER.warn("could not update finalise image handling.", de);
     }
   }
 
-  private void prepareEnvironment(DockerShell dshell) {
-    prepareEnvironment(dshell, null);
+  private boolean prepareEnvironment(DockerShell dshell) {
+    return prepareEnvironment(dshell, null);
   }
 
-  private void prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
+  private boolean prepareEnvironment(DockerShell dshell, PortDiff<DownstreamAddress> diff) {
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
-    visitor.visit(envVars.get("term"), "dumb");
-    visitor.visit(envVars.get("vm_id"), hostContext.getVMIdentifier());
-    visitor.visit(envVars.get("inst_id"), myId.toString());
+
+    if(!setStaticEnvironment(true)) {
+      return false;
+    }
 
     networkHandler.accept(visitor, diff);
     myComponent.accept(deploymentContext, visitor);
+
+    return true;
   }
 
   private void executeCreation() throws DockerException {

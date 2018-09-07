@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.util.execution.LoggingScheduledThreadPoolExecutor;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,19 +36,23 @@ final class EnvContext implements HostContext {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
 
+  // public static final String PUBLIC_IP_KEY = "PUBLIC_IP";
   public static final String PUBLIC_IP_KEY = "host.ip.public";
-  public static final String CLOUD_IP_KEY = "host.ip.cloud";
-  public static final String CONTAINER_IP_KEY = "host.ip.container";
   public static final String PRIVATE_IP_KEY = "host.ip.private";
+  // public static final String CLOUD_IP_KEY = "CLOUD_IP";
+  // public static final String CLOUD_IP_KEY = "host.ip.cloud";
+  // public static final String CONTAINER_IP_KEY = "CONTAINER_IP";
+  // public static final String CONTAINER_IP_KEY = "host.ip.container";
   // public static final String HOST_OS_KEY = "host.os";
   public static final String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
+  //public static final String VM_ID_KEY = "VM_ID";
   public static final String VM_ID_KEY = "host.vm.id";
   public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
   //public static final String CONTAINER_TYPE = "host.container.type";
 
   private static final String[] VALUES =
-      new String[]{PUBLIC_IP_KEY , CLOUD_IP_KEY , /*HOST_OS_KEY, */ CONTAINER_IP_KEY , PRIVATE_IP_KEY
-/*, CONTAINER_TYPE*/, TENANT_ID_KEY, VM_ID_KEY, CLOUD_ID_KEY};
+       new String[]{PUBLIC_IP_KEY , PRIVATE_IP_KEY , /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY
+  /*, CONTAINER_TYPE*/, CLOUD_ID_KEY};
 
   private final Map<String, String> hostContext;
   private final ScheduledExecutorService executorService;
@@ -131,12 +136,12 @@ final class EnvContext implements HostContext {
 
   @Override
   public String getCloudIp() {
-    return hostContext.get(CLOUD_IP_KEY);
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public String getContainerIp() {
-    return hostContext.get(CONTAINER_IP_KEY);
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -152,5 +157,16 @@ final class EnvContext implements HostContext {
   @Override
   public String getVMIdentifier() {
     return hostContext.get(VM_ID_KEY);
+  }
+
+  @Override
+  public Map<String, String> getEnvVars() {
+    final Map<String,String> vals = new HashMap<>();
+    vals.put(PUBLIC_IP_KEY,getPublicIp());
+    vals.put(PRIVATE_IP_KEY ,getPrivateIp());
+    vals.put(TENANT_ID_KEY ,getTenantId());
+    vals.put(VM_ID_KEY ,getVMIdentifier());
+    vals.put(CLOUD_ID_KEY ,getCloudIdentifier());
+    return vals;
   }
 }

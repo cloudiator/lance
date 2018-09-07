@@ -67,7 +67,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>de.uniulm.omi.cloudiator.lance.lca.containers.plain.RewiringTestBooter
+                                <mainClass>de.uniulm.omi.cloudiator.lance.lca.containers.plain.TestBooter
                                 </mainClass>
                             </manifest>
                         </archive>

@@ -20,6 +20,8 @@ package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -50,9 +52,13 @@ public interface ContainerLogic {
      * @throws ContainerException when a container-specific exception occurs
      */
 
-    void preDestroy();
+    void preDestroy() throws ContainerException;
 
     String getLocalAddress() throws ContainerException;
 
     InportAccessor getPortMapper();
+
+    boolean setStaticEnvironment(boolean useExistingShell);
+
+    boolean setDynamicEnvironment(boolean useExistingshell);
 }

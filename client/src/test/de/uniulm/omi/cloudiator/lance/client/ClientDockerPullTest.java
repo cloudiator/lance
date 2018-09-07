@@ -93,7 +93,7 @@ public class ClientDockerPullTest {
   private static ComponentId kafkaComponentId;
   private static int defaultInternalInport;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static LifecycleClient client;
   private static ComponentInstanceId zookId, cassId, kafkId;
 
@@ -124,7 +124,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
   }
 
   private DeployableComponent buildDockerComponent(
@@ -478,7 +478,7 @@ public class ClientDockerPullTest {
 
   @Test
   public void testKKafkDeploy() {
-/*    try {
+    try {
       List<InportInfo> inInfs = new ArrayList<>();
       InportInfo inInf =
           new InportInfo(kafkaInportName, PortProperties.PortType.PUBLIC_PORT, 1, 9092);
@@ -506,7 +506,7 @@ public class ClientDockerPullTest {
               kafkaContext, kafkaComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
-    }*/
+    }
   }
 
   @Test
@@ -517,21 +517,32 @@ public class ClientDockerPullTest {
       try {
         zookStatus = client.getComponentContainerStatus(zookId, publicIp);
         cassStatus = client.getComponentContainerStatus(cassId, publicIp);
-        //kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
+        kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
         System.out.println("ZOOKEEPER STATUS:" + zookStatus);
         System.out.println("CASSANDRA STATUS:" + cassStatus);
-        //System.out.println("KAFKA STATUS:" + kafkStatus);
+        System.out.println("KAFKA STATUS:" + kafkStatus);
         sleep(5000);
       } catch (DeploymentException ex) {
         System.err.println("Exception during deployment!");
       } catch (InterruptedException ex) {
         System.err.println("Interrupted!");
       }
-    } while (zookStatus != READY || cassStatus != READY); //|| kafkStatus != READY);
+    } while (zookStatus != READY || cassStatus != READY || kafkStatus != READY);
   }
 
   @Test
-  public void testMHostEnvironment() {
+  public void testMStopContainers() {
+    try {
+      client.undeploy(zookId, ContainerType.DOCKER);
+      client.undeploy(cassId, ContainerType.DOCKER);
+      //client.undeploy(kafkId, ContainerType.DOCKER);
+    } catch (DeploymentException ex) {
+      System.err.println("Exception during deployment!");
+    }
+  }
+
+  @Test
+  public void testNHostEnvironment() {
     try {
       System.out.println(client.getHostEnv());
     } catch (DeploymentException ex) {

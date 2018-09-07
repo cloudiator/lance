@@ -43,6 +43,26 @@ public class DockerSnapshottingTest {
 		}
 
 		@Override
+		public String getCloudIp() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String getContainerIp() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String getPrivateIp() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String getTenantId() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
 		public String getInternalIp() {
 			throw new UnsupportedOperationException();
 		}
@@ -54,6 +74,11 @@ public class DockerSnapshottingTest {
 
 		@Override
 		public String getVMIdentifier() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Map<String,String> getEnvVars() {
 			throw new UnsupportedOperationException();
 		}
 
