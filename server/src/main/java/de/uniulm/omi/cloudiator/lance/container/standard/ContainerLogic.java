@@ -33,7 +33,7 @@ public interface ContainerLogic {
 
     void doInit(LifecycleStore store) throws ContainerException;
     
-    void completeInit() throws ContainerException;
+    void preInit() throws ContainerException;
     void completeShutDown() throws ContainerException;
 
     /**
@@ -58,7 +58,7 @@ public interface ContainerLogic {
 
     InportAccessor getPortMapper();
 
-    boolean setStaticEnvironment(boolean useExistingShell);
+    void setStaticEnvironment() throws ContainerException;
 
-    boolean setDynamicEnvironment(boolean useExistingshell);
+    void setDynamicEnvironment() throws ContainerException;
 }

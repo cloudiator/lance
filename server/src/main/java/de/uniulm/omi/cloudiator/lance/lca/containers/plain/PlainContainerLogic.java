@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//todo f.held: refactor redundant code
 /**
  * Created by Daniel Seybold on 10.08.2015.
  */
@@ -117,17 +118,16 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     LOGGER.info("Switching to plain container: " + plainContainerFolder);
     plainShell.setDirectory(plainContainerFolder);
 
-    this.plainShellFactory.closeShell();
+    setStaticEnvironment(plainShell);
   }
 
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
     //probably not needed for plain container, except setting the environment
-    setStaticEnvironment(false);
   }
 
   @Override
-  public void completeInit() throws ContainerException {
+  public void preInit() throws ContainerException {
     this.plainShellFactory.closeShell();
   }
 
@@ -140,7 +140,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   public void doDestroy(boolean forceShutdown) throws ContainerException {
     //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
     LOGGER.warn("doDestroy not fully implemented!");
-    setStaticEnvironment(true);
   }
 
   @Override
@@ -170,9 +169,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   //todo: where to throw exception
   @Override
-  public boolean setStaticEnvironment(boolean useExistingShell) {
-    if(!useExistingShell)
-      this.plainShellFactory.createAndinstallPlainShell(this.os);
+  public void setStaticEnvironment()  throws ContainerException {
+    this.plainShellFactory.createAndinstallPlainShell(this.os);
 
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
@@ -195,21 +193,40 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
         visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
       }
     }
-    return true;
+  }
+
+  private void setStaticEnvironment(PlainShell plainShell)  throws ContainerException {
+
+    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+      PowershellExportBasedVisitor visitor =
+          new PowershellExportBasedVisitor(plainShell);
+
+      for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+        visitor.visit(entry.getKey(), entry.getValue());
+      }
+    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShell);
+
+      for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+
+        //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+        if(!translateMap.containsKey(entry.getKey()))
+          continue;
+
+        visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
+      }
+    }
   }
 
   @Override
-  public boolean setDynamicEnvironment(boolean useExistingshell) {
+  public void setDynamicEnvironment() throws ContainerException {
     //todo: implement
-    return true;
+
   }
 
   @Override
   public void prepare(HandlerType type) throws ContainerException {
-
-    if(!setStaticEnvironment(false)) {
-      throw new ContainerException("cannot create shell for " + type + " in prepare method ");
-    }
+    setStaticEnvironment();
 
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
@@ -280,22 +297,21 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
       networkHandler.accept(visitor, diff);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      setStaticEnvironment(true);
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
       BashExportBasedVisitor visitor =
           new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
       networkHandler.accept(visitor, diff);
       this.deployableComponent.accept(this.deploymentContext, visitor);
-      setStaticEnvironment(true);
     } else {
       throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
     }
+    setStaticEnvironment(plainShellWrapper.plainShell);
   }
 
   @Override
   public void preDestroy() throws ContainerException {
-    setStaticEnvironment(false);
+    setStaticEnvironment();
   }
 
   @Override

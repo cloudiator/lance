@@ -13,7 +13,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 
-public class CoreElementsRewiring {
+public class CoreElementsRemote {
 
     private final static String cloudIp = "127.0.0.1";
 
@@ -23,7 +23,7 @@ public class CoreElementsRewiring {
     public volatile DeploymentContext ctx;
     public volatile LcaRegistry reg;
 
-    public CoreElementsRewiring(LcaRegistry reg) {
+    public CoreElementsRemote(LcaRegistry reg) {
         this.reg = reg;
         ctx = new DeploymentContext(arch.getApplicationId(), arch.getAppInstanceId(), reg);
         //todo: extend, so that multiple outports can be required by this inport -> Map<Integer,List<InportInfo> requiredPortsMap & adjust @2nd inner loop below

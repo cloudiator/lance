@@ -10,6 +10,7 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 final class DestroyTransitionAction implements TransitionAction {
 
 	private final ErrorAwareContainer<?> theContainer;
+
 	private DestroyTransitionAction(ErrorAwareContainer<?> container) {
 		theContainer = container;
 	}

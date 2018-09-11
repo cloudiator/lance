@@ -16,15 +16,6 @@
  * under the License.
  */
 
-/*
-Idee: Setze hier alle Infos zu den zwei Komponenten, i.e. ComponentInstance-Id etc.
-Mache remote Procedure call: buildStartTopology
-Mache remote Procedure calls: Laufe beide SMs durch (ErrorAwareContainer, LifecycleController) bis hin zu den den genannten states
-Mache remote Procedure calls: Stoppe container (mit lifecycle-scripts? Wie SM-Übergänge rufen?). Wird port-update automatisch gerufen oder muss man das per
-Hand machen? Wird Änderung (stop/port-updates) in registry propagiert? Was ändern, damit ich shell wieder schliessen kann und wann/wie kann man die shell wieder öffnen?
-Springt SM nach Stop/port-updates wieder in den Zustand start?
-*/
-
 package de.uniulm.omi.cloudiator.lance.client;
 
 import static org.junit.Assert.*;
@@ -69,11 +60,10 @@ import java.util.concurrent.TimeUnit;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RewiringClientTest {
 
-  public final static String REWT_REGISTRY_KEY = "RewiringTestAgent";
   private static AppArchitecture arch;
   //adjust
   private static String publicIp = "134.60.64.95";
-  private static ServerDelegate del;
+  private static RewiringServerDelegate del;
 
   @BeforeClass
   public static void configureAppContext() {
@@ -104,7 +94,7 @@ public class RewiringClientTest {
   @Test
   public void testADelegateGetter() {
     try {
-      del = ServerDelegate.getDelegate();
+      del = RewiringServerDelegate.getDelegate(publicIp );
     } catch (RemoteException e) {
       e.printStackTrace();
     } catch (NotBoundException e) {
@@ -115,7 +105,7 @@ public class RewiringClientTest {
   @Test
   public void testBRegisterApp() {
     try {
-      del.registerApp();
+      del.registerApp(arch);
     } catch (RegistrationException e) {
       e.printStackTrace();
     }
@@ -167,89 +157,45 @@ public class RewiringClientTest {
     }
   }
 
-  static class ServerDelegate {
-    private static volatile ServerDelegate instance;
+  static class RewiringServerDelegate extends ServerDelegate<ApplicationInstanceId> {
 
-    private static final LcaRegistry currentRegistry;
+    private static volatile RewiringServerDelegate instance;
     private static volatile RewiringTestAgent testAgent;
+    private static volatile String publicIp;
 
-    static {
-      try {
-        currentRegistry = RegistryFactory.createRegistry();
-      } catch (RegistrationException e) {
-        throw new ExceptionInInitializerError(e);
-      }
-    }
+    private RewiringServerDelegate() {};
 
-    private ServerDelegate() {};
-
-    public static ServerDelegate getDelegate() throws RemoteException, NotBoundException {
-      if(instance == null) {
-        instance = new ServerDelegate();
+    public static RewiringServerDelegate getDelegate(String pIp) throws RemoteException, NotBoundException {
+      if (instance == null) {
+        instance = new RewiringServerDelegate();
+        publicIp = pIp;
         try {
-          RMISocketFactory.setSocketFactory(new RMISocketFactory() {
-
-            private final RMISocketFactory delegate =
-                      RMISocketFactory.getDefaultSocketFactory();
-
-            @Override
-            public Socket createSocket(String host, int port) throws IOException {
-              final Socket socket = delegate.createSocket(host, port);
-              return socket;
-            }
-
-            @Override
-            public ServerSocket createServerSocket(int i) throws IOException {
-              return delegate.createServerSocket(i);
-            }
-          });
-          Registry reg = LocateRegistry.getRegistry(publicIp);
-          Object o = reg.lookup(REWT_REGISTRY_KEY);
-          testAgent = (RewiringTestAgent) o;
-      } catch (IOException e) {
-         //ignored
+          setTType(TestType.REWIRINGTEST);
+          setPublicIp(publicIp);
+          setRemoteAgent();
+          testAgent = rwTestAgent;
+        } catch (IOException e) {
+          // ignored
+        }
       }
-    }
       return instance;
-  }
-
-    public void registerApp() throws RegistrationException {
-      String appName = arch.getApplicationName();
-      ApplicationId appId = arch.getApplicationId();
-      ApplicationInstanceId appInstId = arch.getAppInstanceId();
-      currentRegistry.addApplicationInstance(appInstId, appId, appName);
-
-      for (ComponentInfo cInfo : arch.getComponents()) {
-        String cName = cInfo.getComponentName();
-        ComponentId cId = cInfo.getComponentId();
-        ComponentInstanceId cInstId = cInfo.getComponentInstanceId();
-        currentRegistry.addComponent(appInstId, cId, cName);
-        currentRegistry.addComponentInstance(appInstId, cId, cInstId);
-      }
-  }
+    }
 
     public ApplicationInstanceId testNewTopology() throws DeploymentException {
 
-      Retryer<ApplicationInstanceId> retryer = RetryerBuilder.<ApplicationInstanceId>newBuilder()
-              .retryIfExceptionOfType(RemoteException.class).withWaitStrategy(
-                      WaitStrategies.exponentialWait()).withStopStrategy(StopStrategies.stopAfterDelay(5,
-                      TimeUnit.MINUTES)).build();
+      Retryer<ApplicationInstanceId> retryer =
+          RetryerBuilder.<ApplicationInstanceId>newBuilder()
+              .retryIfExceptionOfType(RemoteException.class)
+              .withWaitStrategy(WaitStrategies.exponentialWait())
+              .withStopStrategy(StopStrategies.stopAfterDelay(5, TimeUnit.MINUTES))
+              .build();
 
-      Callable<ApplicationInstanceId> callable = () -> {
-        return testAgent.testNewTopology(arch, publicIp, currentRegistry);
-      };
+      Callable<ApplicationInstanceId> callable =
+          () -> {
+            return testAgent.testNewTopology(arch, publicIp, currentRegistry);
+          };
 
-      try {
-        return retryer.call(callable);
-      } catch (ExecutionException e) {
-        throw new DeploymentException(e.getCause());
-      } catch (RetryException e) {
-        if (e.getCause() instanceof RemoteException) {
-          throw new DeploymentException(handleRemoteException((RemoteException) e.getCause()));
-        } else {
-          throw new IllegalStateException(e);
-        }
-      }
+        return instance.makeRetryerCall(retryer, callable);
     }
 
     public void testTraverseBeforeLcc() throws DeploymentException {
@@ -291,22 +237,6 @@ public class RewiringClientTest {
         e.printStackTrace();
       }
     }
-
-    private static Exception handleRemoteException(RemoteException re) {
-      Throwable t = re.getCause();
-      if (t == null) {
-        return new LcaException("network exception occurred", re);
-      }
-      if (t instanceof LcaException) {
-        return (LcaException) t;
-      }
-      if (t instanceof RegistrationException) {
-      return (RegistrationException) t;
-      }
-
-      return new LcaException("downstream exception occurred.", re);
-    }
   }
-
 }
 

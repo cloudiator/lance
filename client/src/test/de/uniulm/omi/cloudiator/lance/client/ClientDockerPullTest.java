@@ -160,7 +160,7 @@ public class ClientDockerPullTest {
     return comp;
   }
 
-  class InportInfo {
+  static class InportInfo {
     public final String inportName;
     public final PortProperties.PortType portType;
     public final int cardinality;
@@ -174,7 +174,7 @@ public class ClientDockerPullTest {
     }
   }
 
-  class OutportInfo {
+  static class OutportInfo {
     public final String outportName;
     public final PortUpdateHandler puHandler;
     public final int cardinality;
@@ -517,17 +517,17 @@ public class ClientDockerPullTest {
       try {
         zookStatus = client.getComponentContainerStatus(zookId, publicIp);
         cassStatus = client.getComponentContainerStatus(cassId, publicIp);
-        kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
+        //kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
         System.out.println("ZOOKEEPER STATUS:" + zookStatus);
         System.out.println("CASSANDRA STATUS:" + cassStatus);
-        System.out.println("KAFKA STATUS:" + kafkStatus);
+        //System.out.println("KAFKA STATUS:" + kafkStatus);
         sleep(5000);
       } catch (DeploymentException ex) {
         System.err.println("Exception during deployment!");
       } catch (InterruptedException ex) {
         System.err.println("Interrupted!");
       }
-    } while (zookStatus != READY || cassStatus != READY || kafkStatus != READY);
+    } while (zookStatus != READY || cassStatus != READY);// || kafkStatus != READY);
   }
 
   @Test

@@ -39,13 +39,13 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
  *   
  * @author Joerg Domaschka
  */
-final class ProcessBasedConnector implements DockerConnector {
+public final class ProcessBasedConnector implements DockerConnector {
 
     private static final Logger LOGGER = Logger.getLogger(ProcessBasedConnector.class.getName());
     // never access this field directly except through the connect method
     // private ProcessWrapper dockerClient;
     
-    ProcessBasedConnector(@SuppressWarnings("unused") String hostname) {
+    public ProcessBasedConnector(@SuppressWarnings("unused") String hostname) {
         // no values to set //
     }
     

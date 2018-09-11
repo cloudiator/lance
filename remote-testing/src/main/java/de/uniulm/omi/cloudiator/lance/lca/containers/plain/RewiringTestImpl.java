@@ -22,6 +22,8 @@ import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapperRM;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
 
+import de.uniulm.omi.cloudiator.lance.lca.containers.TestImpl;
+import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRemote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,15 +43,13 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
-import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRewiring;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 
 //modified LcAImplementation.java
-public class RewiringTestImpl implements RewiringTestAgent {
+public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
 
     private volatile List<FullComponent> fullComponents;
-    private volatile CoreElementsRewiring core;
 
     private static final int DEFAULT_PROPERTIES = 5;
     private static final String INITIAL_LOCAL_ADDRESS = "<unknown>";
@@ -60,18 +60,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
 
     @Override
     public ApplicationInstanceId testNewTopology(AppArchitecture arch, String publicIp, LcaRegistry reg) throws ContainerException, RemoteException {
-        //assertNotNull(CoreElements.context);
-        CoreElementsRewiring.arch = arch;
-        CoreElementsRewiring.initHostContext(publicIp);
-        core = new CoreElementsRewiring(reg);
-
-        try {
-            core.setUpRegistry();
-        } catch (RegistrationException e) {
-            e.printStackTrace();
-        }
-
-        init(arch);
+        ApplicationInstanceId id = setupApp(arch, publicIp, reg);
 
         for(FullComponent fullComp: fullComponents) {
             try {
@@ -82,7 +71,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             fullComp.addContainer(createNewContainer(fullComp));
         }
 
-        return arch.getAppInstanceId();
+        return id;
     }
 
     @Override
@@ -276,7 +265,8 @@ public class RewiringTestImpl implements RewiringTestAgent {
         }
     }
 
-    private void init(AppArchitecture arch) throws ContainerException {
+    @Override
+    protected void init(AppArchitecture arch) throws ContainerException {
         dumb = null;
         fullComponents = new ArrayList<FullComponent>(arch.getComponents().size());
 
@@ -310,7 +300,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             DeployableComponent comp = builder.build();
             GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(core.ctx, comp, cInfo.getComponentInstanceId());
             final LcaRegistry reg = core.ctx.getRegistry();
-            NetworkHandler networkHandler = new NetworkHandler(accessor, comp, CoreElementsRewiring.context);
+            NetworkHandler networkHandler = new NetworkHandler(accessor, comp, CoreElementsRemote.context);
             ExecutionContext exCtx = new ExecutionContext(cInfo.getOs(),null);
 
             fullComponents.add(new FullComponent(comp, accessor, networkHandler, comp.getComponentId(), cInfo.getComponentInstanceId(), exCtx, stopIt));
@@ -560,12 +550,12 @@ public class RewiringTestImpl implements RewiringTestAgent {
 
     @Override
     public void stop() throws RemoteException {
-        TestBooter.unregister(this);
+        RewiringTestBooter.unregister(this);
     }
 
     @Override
     public void terminate() throws RemoteException {
-        TestBooter.unregister(this);
+        RewiringTestBooter.unregister(this);
         try {
             core.context.close();
         } catch (InterruptedException ie) {

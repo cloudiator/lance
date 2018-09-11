@@ -21,8 +21,8 @@ final class InitTransitionAction implements TransitionAction {
         // FIXME: add code for starting from snapshot (skip init and install steps)
 		// probably has to be realised at a different place 
         try {
+            theContainer.logic.preInit();
             theContainer.preInitAction();
-            theContainer.logic.completeInit();
             theContainer.postInitAction();
             theContainer.registerStatus(ContainerStatus.READY);
         } catch (ContainerException | LifecycleException | RegistrationException ce) {
