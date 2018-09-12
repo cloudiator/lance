@@ -90,7 +90,10 @@ public class DockerContainerManager implements ContainerManager {
         GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, comp, hostContext);
-        DockerContainerLogic logic = new DockerContainerLogic(id, client, comp, ctx, os, networkHandler, shellFactory, dockerConfig, hostContext);
+        DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+        //split for better readability
+        builder = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os);
+        DockerContainerLogic logic = builder.nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
         // DockerLifecycleInterceptor interceptor = new DockerLifecycleInterceptor(accessor, id, networkHandler, comp, shellFactory);
         ExecutionContext ec = new ExecutionContext(os, shellFactory);
         LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec, hostContext);

@@ -51,8 +51,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//todo: install/close shell after each "atomic" action (e.g. also in each lifecycle transition or pre/postprocessDetector)
-//sofar:  install shell in doInit, close shell in completeInit
+//sofar:  install shell in doInit (todo: rename to doBootstrap as it is called in BootstrapTransitionAction), close shell in preInit
+//        install shell before every LifeCycleTransition, close shell after eacgy LifeCycleTransition
 //        install shell in preDestroy, close shell in completeShutDown
 //        install shell in preprocessDetector, close shell in postProcessDetector
 //        install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
@@ -87,34 +87,23 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
     translateMap = Collections.unmodifiableMap(tmpMap);
   }
 
-  DockerContainerLogic(ComponentInstanceId id, DockerConnector client, DeployableComponent comp,
-    DeploymentContext ctx, OperatingSystem os, NetworkHandler network,
-    DockerShellFactory shellFactoryParam, DockerConfiguration dockerConfig,
-    HostContext hostContext) {
-    this(id, client, os, ctx, comp, network, shellFactoryParam, dockerConfig, hostContext);
-  }
+  private DockerContainerLogic(Builder builder) {
 
-  private DockerContainerLogic(ComponentInstanceId id, DockerConnector clientParam,
-    OperatingSystem osParam,
-    DeploymentContext ctx, DeployableComponent componentParam,
-    NetworkHandler networkParam, DockerShellFactory shellFactoryParam,
-    DockerConfiguration dockerConfigParam, HostContext hostContext) {
-
-    if (osParam == null) {
+    if (builder.osParam == null) {
       throw new NullPointerException("operating system has to be set.");
     }
 
-    myId = id;
-    instVars = this.myId;
-    client = clientParam;
-    imageHandler = new DockerImageHandler(osParam, new DockerOperatingSystemTranslator(),
-    clientParam, componentParam, dockerConfigParam);
-    deploymentContext = ctx;
-    shellFactory = shellFactoryParam;
-    myComponent = componentParam;
-    networkHandler = networkParam;
-    this.hostContext = hostContext;
-    hostVars = this.hostContext;
+    this.myId = builder.myId;
+    this.instVars = this.myId;
+    this.client = builder.client;
+    this.imageHandler = new DockerImageHandler(builder.osParam, new DockerOperatingSystemTranslator(),
+    builder.client, builder.myComponent, builder.dockerConfig);
+    this.deploymentContext = builder.deploymentContext;
+    this.shellFactory = builder.shellFactory;
+    this.myComponent = builder.myComponent;
+    this.networkHandler = builder.networkHandler;
+    this.hostContext = builder.hostContext;
+    this.hostVars = this.hostContext;
     envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
     for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
@@ -233,7 +222,7 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
     try {
-      //Environment still set (in logic.doCreate call in BootstrapTransitionAction)
+      //Environment still set (in logic.doInit call in BootstrapTransitionAction)
       //could return a shell
       doStartContainer();
     } catch (ContainerException ce) {
@@ -346,5 +335,72 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
 
   private void closeShell() {
     shellFactory.closeShell();
+  }
+
+  public static class Builder {
+    private ComponentInstanceId myId;
+    private DockerConnector client;
+
+    private OperatingSystem osParam;
+    private DockerShellFactory shellFactory;
+
+    private DeploymentContext deploymentContext;
+    private NetworkHandler networkHandler;
+
+    private DeployableComponent myComponent;
+    private DockerConfiguration dockerConfig;
+
+    private HostContext hostContext;
+
+    public Builder() {}
+
+    public Builder cInstId(ComponentInstanceId myId) {
+      this.myId = myId;
+      return this;
+    }
+
+    public Builder dockerConnector(DockerConnector connector) {
+      this.client = connector;
+      return this;
+    }
+
+    public Builder osParam(OperatingSystem os) {
+      this.osParam = os;
+      return this;
+    }
+
+    public Builder dockerShellFac(DockerShellFactory fac) {
+      this.shellFactory = shellFactory;
+      return this;
+    }
+
+    public Builder deplContext(DeploymentContext dContext) {
+      this.deploymentContext = dContext;
+      return this;
+    }
+
+    public Builder nwHandler(NetworkHandler nwHandler) {
+      this.networkHandler = nwHandler;
+      return this;
+    }
+
+    public Builder deplComp(DeployableComponent comp) {
+      this.myComponent = comp;
+      return this;
+    }
+
+    public Builder dockerConfig(DockerConfiguration config) {
+      this.dockerConfig = config;
+      return this;
+    }
+
+    public Builder hostContext(HostContext hostContext) {
+      this.hostContext = hostContext;
+      return this;
+    }
+
+    public DockerContainerLogic build() {
+      return new DockerContainerLogic(this);
+    }
   }
 }

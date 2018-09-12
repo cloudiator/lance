@@ -26,24 +26,37 @@ public class CoreElementsRemote {
     public CoreElementsRemote(LcaRegistry reg) {
         this.reg = reg;
         ctx = new DeploymentContext(arch.getApplicationId(), arch.getAppInstanceId(), reg);
+        setPortInfoContext();
+    }
+
+    private void setPortInfoContext() {
         //todo: extend, so that multiple outports can be required by this inport -> Map<Integer,List<InportInfo> requiredPortsMap & adjust @2nd inner loop below
         Map<Integer,ComponentId> requiredComponentsMap = new HashMap<>();
         Map<Integer,InportInfo> requiredPortsMap = new HashMap<>();
 
         for (ComponentInfo cInf : arch.getComponents()) {
-            for (InportInfo inInf: cInf.getInportInfos()) {
-                ctx.setProperty(inInf.getInportName(), (Object) inInf.getInPort(), InPort.class);
-                requiredComponentsMap.put(inInf.getRequiredPortNumber(),cInf.getComponentId());
-                requiredPortsMap.put(inInf.getRequiredPortNumber(),inInf);
-            }
+            setInportInfoContext(cInf, requiredComponentsMap, requiredPortsMap);
         }
         for (ComponentInfo cInf : arch.getComponents()) {
-            for (OutportInfo outInf : cInf.getOutportInfos()) {
-                if (outInf.getMin() != OutPort.NO_SINKS && requiredPortsMap.get(outInf.getProvidedPortNumber()) != null) {
-                    ComponentId compId = requiredComponentsMap.get(outInf.getProvidedPortNumber());
-                    InportInfo portRefInfo = requiredPortsMap.get(outInf.getProvidedPortNumber());
-                    ctx.setProperty(outInf.getOutportName(), (Object) new PortReference(compId, portRefInfo.getInportName(), PortProperties.PortLinkage.ALL), OutPort.class);
-                }
+            setOutportInfoContext(cInf, requiredComponentsMap, requiredPortsMap);
+        }
+    }
+
+    private void setInportInfoContext(ComponentInfo cInf, Map<Integer,ComponentId> requiredComponentsMap, Map<Integer,InportInfo> requiredPortsMap) {
+        for (InportInfo inInf: cInf.getInportInfos()) {
+            ctx.setProperty(inInf.getInportName(), (Object) inInf.getInPort(), InPort.class);
+            requiredComponentsMap.put(inInf.getRequiredPortNumber(),cInf.getComponentId());
+            requiredPortsMap.put(inInf.getRequiredPortNumber(),inInf);
+        }
+    }
+
+    //call this method after setInportInfoContext
+    private void setOutportInfoContext(ComponentInfo cInf, Map<Integer,ComponentId> requiredComponentsMap, Map<Integer,InportInfo> requiredPortsMap) {
+        for (OutportInfo outInf : cInf.getOutportInfos()) {
+            if (outInf.getMin() != OutPort.NO_SINKS && requiredPortsMap.get(outInf.getProvidedPortNumber()) != null) {
+                ComponentId compId = requiredComponentsMap.get(outInf.getProvidedPortNumber());
+                InportInfo portRefInfo = requiredPortsMap.get(outInf.getProvidedPortNumber());
+                ctx.setProperty(outInf.getOutportName(), (Object) new PortReference(compId, portRefInfo.getInportName(), PortProperties.PortLinkage.ALL), OutPort.class);
             }
         }
     }

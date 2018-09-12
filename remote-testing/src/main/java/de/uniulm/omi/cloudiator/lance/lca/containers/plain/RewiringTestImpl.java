@@ -312,9 +312,10 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
 
         PlainShellFactory plainShellFactory = new PlainShellFactoryImpl();
 
-        PlainContainerLogic containerLogic =
-                new PlainContainerLogic(fullComp.cInstId, fullComp.comp, core.ctx, fullComp.exCtx.getOperatingSystem(), fullComp.networkHandler,
-                        plainShellFactory, core.context);
+        PlainContainerLogic.Builder builder = new PlainContainerLogic.Builder();
+        //split for better readability
+        builder = builder.cInstId(fullComp.cInstId).deplComp(fullComp.comp).deplContext(core.ctx).operatingSys(fullComp.exCtx.getOperatingSystem());
+        PlainContainerLogic containerLogic = builder.nwHandler(fullComp.networkHandler).plShellFac(plainShellFactory).hostContext(core.context).build();
 
         ExecutionContext executionContext = new ExecutionContext(fullComp.exCtx.getOperatingSystem(), plainShellFactory);
         LifecycleController lifecycleController =

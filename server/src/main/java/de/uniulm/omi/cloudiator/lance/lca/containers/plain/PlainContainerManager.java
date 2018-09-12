@@ -27,6 +27,7 @@ import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.*;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.registry.ContainerRegistry;
+import de.uniulm.omi.cloudiator.lance.lca.containers.plain.PlainContainerLogic.Builder;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
@@ -67,9 +68,10 @@ public class PlainContainerManager implements ContainerManager {
             new GlobalRegistryAccessor(ctx, component, componentInstanceId);
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, component, this.hostContext);
-        PlainContainerLogic plainContainerLogic =
-            new PlainContainerLogic(componentInstanceId, component, ctx, os, networkHandler,
-                plainShellFactory, this.hostContext);
+        PlainContainerLogic.Builder builder = new PlainContainerLogic.Builder();
+        //split for better readability
+        builder = builder.cInstId(componentInstanceId).deplComp(component).deplContext(ctx).operatingSys(os);
+        PlainContainerLogic plainContainerLogic = builder.nwHandler(networkHandler).plShellFac(plainShellFactory).hostContext(this.hostContext).build();
 
         ExecutionContext executionContext = new ExecutionContext(os, plainShellFactory);
         LifecycleController lifecycleController =

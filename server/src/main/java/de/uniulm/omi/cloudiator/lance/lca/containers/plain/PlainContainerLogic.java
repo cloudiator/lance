@@ -80,18 +80,16 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     translateMap = Collections.unmodifiableMap(tmpMap);
   }
 
-  PlainContainerLogic(ComponentInstanceId id, DeployableComponent deployableComponent,
-      DeploymentContext deploymentContext, OperatingSystem os, NetworkHandler networkHandler,
-      PlainShellFactory plainShellFactory, HostContext hostContext) {
+  private PlainContainerLogic(Builder builder) {
 
-    this.myId = id;
+    this.myId = builder.myId;
     this.instVars = this.myId;
-    this.deployableComponent = deployableComponent;
-    this.deploymentContext = deploymentContext;
-    this.os = os;
-    this.networkHandler = networkHandler;
-    this.plainShellFactory = plainShellFactory;
-    this.hostContext = hostContext;
+    this.deployableComponent = builder.deployableComponent;
+    this.deploymentContext = builder.deploymentContext;
+    this.os = builder.os;
+    this.networkHandler = builder.networkHandler;
+    this.plainShellFactory = builder.plainShellFactory;
+    this.hostContext = builder.hostContext;
     this.hostVars = this.hostContext;
     this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
@@ -175,46 +173,42 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
     if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-      PowershellExportBasedVisitor visitor =
-          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-
-      for(Entry<String, String> entry: envVarsStatic.entrySet()) {
-        visitor.visit(entry.getKey(), entry.getValue());
-      }
+      setStaticWindowsEnvironment(plainShellWrapper.plainShell);
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShellWrapper.plainShell);
-
-      for(Entry<String, String> entry: envVarsStatic.entrySet()) {
-
-        //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
-        if(!translateMap.containsKey(entry.getKey()))
-          continue;
-
-        visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
-      }
+      setStaticLinuxEnvironment(plainShellWrapper.plainShell);
     }
   }
 
   private void setStaticEnvironment(PlainShell plainShell)  throws ContainerException {
-
     if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-      PowershellExportBasedVisitor visitor =
-          new PowershellExportBasedVisitor(plainShell);
-
-      for(Entry<String, String> entry: envVarsStatic.entrySet()) {
-        visitor.visit(entry.getKey(), entry.getValue());
-      }
+      setStaticWindowsEnvironment(plainShell);
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShell);
+      setStaticLinuxEnvironment(plainShell);
+    }
+  }
 
-      for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+  private void setStaticWindowsEnvironment(PlainShell plainShell) {
+    PowershellExportBasedVisitor visitor =
+        new PowershellExportBasedVisitor(plainShell);
 
-        //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
-        if(!translateMap.containsKey(entry.getKey()))
-          continue;
+    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+      if(!translateMap.containsKey(entry.getKey()))
+        continue;
 
-        visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
-      }
+      visitor.visit(entry.getKey(), entry.getValue());
+    }
+  }
+
+  private void setStaticLinuxEnvironment(PlainShell plainShell) {
+    BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShell);
+
+    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+      if(!translateMap.containsKey(entry.getKey()))
+        continue;
+
+      visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
   }
 
@@ -322,5 +316,56 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preprocessDetector(DetectorType type) throws ContainerException {
     LOGGER.error("preprocessDetector is not implemented for plain container");
+  }
+
+  public static class Builder {
+    private ComponentInstanceId myId;
+    private DeployableComponent deployableComponent;
+    private DeploymentContext deploymentContext;
+    private OperatingSystem os;
+    private NetworkHandler networkHandler;
+    private PlainShellFactory plainShellFactory;
+    private HostContext hostContext;
+
+    public Builder() {}
+
+    public Builder cInstId(ComponentInstanceId myId) {
+      this.myId = myId;
+      return this;
+    }
+
+    public Builder deplComp(DeployableComponent comp) {
+      this.deployableComponent = comp;
+      return this;
+    }
+
+    public Builder deplContext(DeploymentContext dContext) {
+      this.deploymentContext = dContext;
+      return this;
+    }
+
+    public Builder operatingSys(OperatingSystem os) {
+      this.os = os;
+      return this;
+    }
+
+    public Builder nwHandler(NetworkHandler nwHandler) {
+      this.networkHandler = nwHandler;
+      return this;
+    }
+
+    public Builder plShellFac(PlainShellFactory plShellFac) {
+      this.plainShellFactory = plShellFac;
+      return this;
+    }
+
+    public Builder hostContext(HostContext hostContext) {
+      this.hostContext = hostContext;
+      return this;
+    }
+
+    public PlainContainerLogic build() {
+      return new PlainContainerLogic(this);
+    }
   }
 }

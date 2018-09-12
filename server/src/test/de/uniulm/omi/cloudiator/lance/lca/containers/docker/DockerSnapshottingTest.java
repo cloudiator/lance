@@ -127,9 +127,10 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		DockerContainerLogic logic = new DockerContainerLogic(core.componentInstanceId, 
-									client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
-									core.networkHandler, shellFactory, dockerConfig, new FakeHostContext());
+		DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+		//split for better readability
+		builder = builder.cInstId(core.componentInstanceId).dockerConnector(client).deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04);
+		DockerContainerLogic logic = builder.nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(new FakeHostContext()).build();
 		logic.doCreate();
 		logic.doDestroy(true);
 	}
@@ -141,16 +142,16 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		DockerContainerLogic logic = new DockerContainerLogic(core.componentInstanceId, 
-									client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
-									core.networkHandler, shellFactory, dockerConfig, new FakeHostContext());
+		DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+		//split for better readability
+		builder = builder.cInstId(core.componentInstanceId).dockerConnector(client).deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04);
+		DockerContainerLogic logic = builder.nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(new FakeHostContext()).build();
 		logic.doCreate();
 		logic.prepare(LifecycleHandlerType.PRE_INSTALL);
 		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
 		logic.doDestroy(true);
-		
-		logic = new DockerContainerLogic(core.componentInstanceId, 
-				client, core.comp, core.ctx, OperatingSystem.UBUNTU_14_04, 
-				core.networkHandler, shellFactory, dockerConfig, new FakeHostContext());
+
+		builder = builder.cInstId(core.componentInstanceId).dockerConnector(client).deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04);
+		logic = builder.nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(new FakeHostContext()).build();
 	}
 }
