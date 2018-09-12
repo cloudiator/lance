@@ -3,7 +3,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DockerComponentBuilder;
+import de.uniulm.omi.cloudiator.lance.application.component.ComponentBuilder;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.DockerShellTestAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
@@ -128,8 +128,7 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
   protected void init(AppArchitecture arch) throws ContainerException {
     if (info == null) throw new ContainerException("ComponentInfo not set");
 
-    DockerComponentBuilder builder =
-        DockerComponentBuilder.createBuilder(arch.getApplicationName(), info.getComponentId());
+    ComponentBuilder<DockerComponent> builder = new ComponentBuilder(DockerComponent.class, arch.getApplicationName(), info.getComponentId());
 
     switch (info.getComponentName()) {
       case "zookeeper":
@@ -140,7 +139,7 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
     }
 
     builder.deploySequentially(true);
-    comp = builder.build();
+    comp = builder.build(DockerComponent.class);
   }
 
   private LifecycleStore createZookeeperLifecleStore() {

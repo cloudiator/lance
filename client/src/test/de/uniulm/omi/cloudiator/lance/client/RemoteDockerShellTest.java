@@ -70,50 +70,6 @@ public class RemoteDockerShellTest {
     System.setProperty("lca.client.config.registry.etcd.hosts",  "134.60.64.95:4001");
   }
 
-  /*private DeployableComponent buildDockerComponent(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      Callable<LifecycleStore> createLifeCycleStore) {
-
-    DockerComponentBuilder builder = DockerComponentBuilder.createBuilder(compName, id);
-
-    for (int i = 0; i < inInfs.size(); i++)
-      builder.addInport(
-          inInfs.get(i).getInportName(),
-          inInfs.get(i).getPortType(),
-          inInfs.get(i).getCardinality(),
-          inInfs.get(i).getInPort());
-
-    for (int i = 0; i < outInfs.size(); i++)
-      builder.addOutport(
-          outInfs.get(i).getOutportName(),
-          outInfs.get(i).getPuHandler(),
-          outInfs.get(i).getCardinality(),
-          outInfs.get(i).getMin());
-
-    try {
-      builder.addLifecycleStore(createLifeCycleStore.call());
-    } catch (Exception ex) {
-      System.err.println("Server not reachable");
-    }
-    builder.deploySequentially(true);
-    DeployableComponent comp = builder.build();
-    return comp;
-  }*/
-
-  /*private LifecycleStore createZookeeperLifecycleStore() {
-    LifecycleStoreBuilder store = new LifecycleStoreBuilder();
-    BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
-    builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    store.setStartDetector(builder_pre.buildStartDetector());
-    store.setHandler(
-        builder_pre.build(LifecycleHandlerType.PRE_INSTALL), LifecycleHandlerType.PRE_INSTALL);
-    return store.build();
-  }*/
-
   @Test
   public void testADelegateGetter() {
     try {
@@ -154,26 +110,6 @@ public class RemoteDockerShellTest {
     startContainer();
   }
 
-  /*@Test
-  public void testFOpenAndInstallShell() {
-    openAndInstallShell();
-  }
-
-  @Test
-  public void testGSetEnvironment1() {
-    setEnvironment();
-  }
-
-  @Test
-  public void testGSetEnvironment2() {
-    setEnvironment();
-  }
-
-  @Test
-  public void testHCloseShell() {
-    closeShell();
-  }*/
-
   @Test
   public void testIStopContainer() {
     stopContainer();
@@ -183,11 +119,6 @@ public class RemoteDockerShellTest {
   public void testJStartContainer() {
     startContainer();
   }
-
-  /*@Test
-  public void testKCloseShell() {
-    closeShell();
-  }*/
 
   @Test
   public void testLOpenAndInstallShell() {
@@ -311,20 +242,6 @@ public class RemoteDockerShellTest {
       e.printStackTrace();
     }
   }
-
-  /*private static void dockerPull(String imageName) {
-
-    final String[] dockerCommandArr =
-        new String[]{, , , , };
-  }
-
-  private static void dockerStart(String containerId) {
-
-  }
-
-  private static void dockerExec(String containerId) {
-
-  }*/
 
   static class DockerShellServerDelegate extends ServerDelegate<ApplicationInstanceId> {
 

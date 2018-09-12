@@ -69,9 +69,9 @@ public class PlainContainerManager implements ContainerManager {
 
         NetworkHandler networkHandler = new NetworkHandler(accessor, component, this.hostContext);
         PlainContainerLogic.Builder builder = new PlainContainerLogic.Builder();
-        //split for better readability
-        builder = builder.cInstId(componentInstanceId).deplComp(component).deplContext(ctx).operatingSys(os);
-        PlainContainerLogic plainContainerLogic = builder.nwHandler(networkHandler).plShellFac(plainShellFactory).hostContext(this.hostContext).build();
+        PlainContainerLogic plainContainerLogic = builder.cInstId(componentInstanceId).deplComp(component)
+            .deplContext(ctx).operatingSys(os).nwHandler(networkHandler).plShellFac(plainShellFactory)
+            .hostContext(this.hostContext).build();
 
         ExecutionContext executionContext = new ExecutionContext(os, plainShellFactory);
         LifecycleController lifecycleController =

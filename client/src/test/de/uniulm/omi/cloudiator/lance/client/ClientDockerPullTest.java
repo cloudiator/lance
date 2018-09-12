@@ -134,7 +134,7 @@ public class ClientDockerPullTest {
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
       Callable<LifecycleStore> createLifeCycleStore) {
-    DockerComponentBuilder builder = DockerComponentBuilder.createBuilder(compName, id);
+    ComponentBuilder<DockerComponent> builder = new ComponentBuilder(DockerComponent.class, compName, id);
 
     for (int i = 0; i < inInfs.size(); i++)
       builder.addInport(
@@ -156,7 +156,7 @@ public class ClientDockerPullTest {
       System.err.println("Server not reachable");
     }
     builder.deploySequentially(true);
-    DeployableComponent comp = builder.build();
+    DeployableComponent comp = builder.build(DockerComponent.class);
     return comp;
   }
 
@@ -194,8 +194,8 @@ public class ClientDockerPullTest {
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. alpine (openjdk:8-jre)
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    // builder_pre.addCommand("apt-get -y -q update");
-    // builder_pre.addCommand("apt-get -y -q upgrade");
+    builder_pre.addCommand("apt-get -y -q update");
+    builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
     store.setStartDetector(builder_pre.buildStartDetector());
     // add other commands
@@ -211,8 +211,8 @@ public class ClientDockerPullTest {
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. debian:jessie-slim
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    // builder_pre.addCommand("apt-get -y -q update");
-    // builder_pre.addCommand("apt-get -y -q upgrade");
+    builder_pre.addCommand("apt-get -y -q update");
+    builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
     store.setStartDetector(builder_pre.buildStartDetector());
     // add other commands
@@ -228,8 +228,8 @@ public class ClientDockerPullTest {
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. alpine (openjdk:8u151-jre)
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    // builder_pre.addCommand("apt-get -y -q update");
-    // builder_pre.addCommand("apt-get -y -q upgrade");
+    builder_pre.addCommand("apt-get -y -q update");
+    builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
     store.setStartDetector(builder_pre.buildStartDetector());
     // add other commands

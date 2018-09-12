@@ -99,24 +99,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             container.awaitBootstrap();
 
             assertRightState(ContainerStatus.BOOTSTRAPPED, container);
-
-            //todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-            assert dumb != null;
-
-            checkForDumbElements(
-                    new String[] {"HOST_CONTAINER_IP", "Instance_Number", "HOST_PUBLIC_IP", "HOST_CLOUD_IP", "Container_Status"},
-                    DEFAULT_PROPERTIES, fullComp.cInstId);
-
-            Map<String,String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -143,24 +126,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             container.awaitInitialisation();
 
             assertRightState(ContainerStatus.READY, container);
-
-            //todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-            assert dumb != null;
-
-            checkForDumbElements(
-                    new String[] {"HOST_CONTAINER_IP", "Instance_Number", "HOST_PUBLIC_IP", "HOST_CLOUD_IP", "Container_Status"},
-                    DEFAULT_PROPERTIES, fullComp.cInstId);
-
-            Map<String,String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -188,32 +154,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             container.awaitDestruction();
 
             assertRightState(ContainerStatus.DESTROYED, container);
-
-            // todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-
-            assert dumb != null;
-
-            checkForDumbElements(
-              new String[] {
-                "HOST_CONTAINER_IP",
-                "Instance_Number",
-                "HOST_PUBLIC_IP",
-                "HOST_CLOUD_IP",
-                "Container_Status"
-              },
-              DEFAULT_PROPERTIES,
-              fullComp.cInstId);
-
-            Map<String, String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -235,33 +176,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             //Call lcc.blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) somewhere
             */
             fullComp.networkHandler.startPortUpdaters(lcc);
-
-            // todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-            //important, check when startPortUpdaters() is called here
-
-            assert dumb != null;
-
-            checkForDumbElements(
-                    new String[] {
-                            "HOST_CONTAINER_IP",
-                            "Instance_Number",
-                            "HOST_PUBLIC_IP",
-                            "HOST_CLOUD_IP",
-                            "Container_Status"
-                    },
-                    DEFAULT_PROPERTIES,
-                    fullComp.cInstId);
-
-            Map<String, String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -562,6 +477,34 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }
+    }
+
+    void doChecks(FullComponent fullComponent) {
+        // todo: adjust, if multiple component-instances of same component
+        try {
+            checkBasicRegistryValue(1, fullComponent.cId);
+        } catch (RegistrationException e) {
+            e.printStackTrace();
+        }
+
+        assert dumb != null;
+
+        checkForDumbElements(
+            new String[] {
+                "HOST_CONTAINER_IP",
+                "Instance_Number",
+                "HOST_PUBLIC_IP",
+                "HOST_CLOUD_IP",
+                "Container_Status"
+            },
+            DEFAULT_PROPERTIES,
+            fullComponent.cInstId);
+
+        Map<String, String> cids = dumb.get(fullComponent.cId);
+        assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
+        assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
+        assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
+        assert "1" == cids.get("Instance_Number");
     }
 
     static class FullComponent {

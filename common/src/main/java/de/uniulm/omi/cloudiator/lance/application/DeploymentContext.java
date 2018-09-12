@@ -69,6 +69,4 @@ public final class DeploymentContext implements Serializable {
     public String toString() {
         return "Context: " + myAppId + "/" + myInstanceId + ":" + properties;
     }
-    
-    //public ComponentId getComponentId() { return myComponent; }
 }

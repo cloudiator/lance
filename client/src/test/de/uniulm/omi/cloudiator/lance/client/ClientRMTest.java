@@ -20,43 +20,33 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.component.*;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
-import de.uniulm.omi.cloudiator.lance.client.LifecycleClient;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-//import de.uniulm.omi.cloudiator.lance.lifecycle.LifeCycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
-//import de.uniulm.omi.cloudiator.lance.lifecycle.LifeCycleHandlerFactory;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortLinkage;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
-import de.uniulm.omi.cloudiator.lance.client.DeploymentHelper;
 import java.util.concurrent.Callable;
 import java.rmi.RemoteException;
 import java.rmi.NotBoundException;
