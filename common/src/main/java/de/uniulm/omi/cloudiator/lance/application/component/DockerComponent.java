@@ -17,6 +17,11 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
         super(nameParam, idParam, lifecycleStoreParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }
 
+    //needed temporarily to make ComponentBuilder class work, as long as DockerComponent and LifeCycleComponent inherit from DeployableComponent
+    public DockerComponent() {
+        super();
+    }
+
     @Override
     public ComponentType getType() {
         return DOCKER;

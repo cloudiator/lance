@@ -39,13 +39,13 @@ public class DeployableComponent implements Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeployableComponent.class);
     private static final long serialVersionUID = -8008479179768130524L;
 
-    private final String name;
-    private final ComponentId myId;
-    private final LifecycleStore lifecycle;
-    private final List<InPort> inPorts;
-    private final List<OutPort> outPorts;
-    private final HashMap<String, Class<?>> properties;
-    private final HashMap<String, ? extends Serializable> defaultValues;
+    private String name;
+    private ComponentId myId;
+    private LifecycleStore lifecycle;
+    private List<InPort> inPorts;
+    private List<OutPort> outPorts;
+    private HashMap<String, Class<?>> properties;
+    private HashMap<String, ? extends Serializable> defaultValues;
 
     DeployableComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam, 
             List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam, 
@@ -57,6 +57,11 @@ public class DeployableComponent implements Serializable {
         outPorts = new ArrayList<>(outPortsParam);
         properties = new HashMap<>(propertiesParam);
         defaultValues = propertyValuesParam;
+    }
+
+    //Needed for legacy reasons, to make the ComponentBuilder class work before only the DockerComponent and LifecycleComponent classes are used in Cloudiator v2
+    public DeployableComponent() {
+       LOGGER.warn("Default Constructor call of DeployableComponent is needed for legacy reasons as long as this class is used along with LifeCycleComponent and DockerComponent");
     }
 
     public LifecycleStore getLifecycleStore() {

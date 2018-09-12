@@ -369,7 +369,7 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
       return this;
     }
 
-    public Builder dockerShellFac(DockerShellFactory fac) {
+    public Builder dockerShellFac(DockerShellFactory shellFactory) {
       this.shellFactory = shellFactory;
       return this;
     }
