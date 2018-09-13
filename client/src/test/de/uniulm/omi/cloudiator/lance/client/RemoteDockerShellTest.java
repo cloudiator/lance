@@ -56,7 +56,7 @@ public class RemoteDockerShellTest {
   private static AppArchitecture arch;
   private static LifecycleClient client;
   //adjust
-  private final static String publicIp = "134.60.64.95";
+  private final static String publicIp = "x.x.x.x";
   private static DockerShellServerDelegate del;
 
   @BeforeClass
@@ -67,7 +67,7 @@ public class RemoteDockerShellTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     //adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts",  "134.60.64.95:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts",  "x.x.x.x:4001");
   }
 
   @Test
