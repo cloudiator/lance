@@ -51,11 +51,11 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//sofar:  install shell in doInit (todo: rename to doBootstrap as it is called in BootstrapTransitionAction), close shell in preInit
-//        install shell before every LifeCycleTransition, close shell after eacgy LifeCycleTransition
-//        install shell in preDestroy, close shell in completeShutDown
-//        install shell in preprocessDetector, close shell in postProcessDetector
-//        install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
+//install shell in doInit (todo: rename to doBootstrap as it is called in BootstrapTransitionAction), close shell in preInit
+//install shell before every LifeCycleTransition, close shell after eacgy LifeCycleTransition
+//install shell in preDestroy, close shell in completeShutDown
+//install shell in preprocessDetector, close shell in postProcessDetector
+//install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
 class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
