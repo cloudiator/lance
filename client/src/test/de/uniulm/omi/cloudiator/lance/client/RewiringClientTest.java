@@ -62,7 +62,7 @@ public class RewiringClientTest {
 
   private static AppArchitecture arch;
   //adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static RewiringServerDelegate del;
 
   @BeforeClass
@@ -88,7 +88,7 @@ public class RewiringClientTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     //adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts",  "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts",  "134.60.64.95:4001");
   }
 
   @Test

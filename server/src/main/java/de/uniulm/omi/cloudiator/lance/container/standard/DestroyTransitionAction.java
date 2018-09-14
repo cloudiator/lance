@@ -21,12 +21,12 @@ final class DestroyTransitionAction implements TransitionAction {
     try {
       boolean forceShutdown = false;
       try {
-        theContainer.logic.preDestroy();
         theContainer.preDestroyAction();
       } catch (Exception ex) {
         ErrorAwareContainer.getLogger().error("could not shut down component; trying to force shut down of container", ex);
         forceShutdown = true;
       }
+      theContainer.logic.preDestroy();
       theContainer.logic.doDestroy(forceShutdown);
       theContainer.registerStatus(ContainerStatus.DESTROYED);
     } catch (ContainerException | RegistrationException ce) {
@@ -46,7 +46,7 @@ final class DestroyTransitionAction implements TransitionAction {
       try {
         theContainer.logic.completeShutDown();
       } catch (ContainerException e) {
-        ErrorAwareContainer.getLogger().error("could not shutdown container;", e);
+        ErrorAwareContainer.getLogger().error("could not shutdown shell;", e);
       }
     }
   }
