@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +54,9 @@ final class ContainerContainment implements BasicContainer {
   }
 
 	//Returns reference to DockerContainerManager object
-  public ContainerManager getDockerContainerManager(HostContext context) {
-		return getContainerManager(context, ContainerType.DOCKER);
+  public DockerContainerManager getDockerContainerManager(HostContext context) {
+		//todo: refactor
+		return (DockerContainerManager) getContainerManager(context, ContainerType.DOCKER);
 	}
 
 	private ContainerManager getContainerManager(HostContext contex, ContainerType containerType) {

@@ -118,7 +118,6 @@ public class DockerContainerManager implements ContainerManager {
     }
 
     //used by deployDockerComponent
-    @Override
     public ContainerController createNewDockerContainer(DeploymentContext ctx,
         DockerComponent comp) throws ContainerException {
 

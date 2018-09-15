@@ -30,6 +30,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import java.rmi.RemoteException;
 import java.util.HashMap;
@@ -94,7 +95,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     LOGGER.info(String
         .format("Creating new container using context %s, os %s and containerType %s.",
             hostContext, os, containerType));
-    ContainerController cc = manager.createNewLifecycleContainer(ctx, component, os);
+    ContainerController cc = manager.createNewContainer(ctx, component, os);
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s to execution handler.", cc));
@@ -137,8 +138,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
       throws RemoteException, LcaException, RegistrationException, ContainerException {
     componentConsistentlyRegistered(ctx, component);
     // Same "Manager-class" as in deploy(Lifecycle)Component with ContainerType==DOCKER. Method call for
-    // containerType==DOCKER_REMOTE  -> inster ContainerType as parameter
-    ContainerManager manager = containers.getDockerContainerManager(hostContext);
+    // containerType==DOCKER_REMOTE  -> instert ContainerType as parameter
+    DockerContainerManager manager = containers.getDockerContainerManager(hostContext);
 
     //dito for DOCKER-REMOTE
     LOGGER.info(String
@@ -146,7 +147,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
             hostContext, ContainerType.DOCKER));
     ContainerController cc = manager.createNewDockerContainer(ctx, component);
 
-    hier
+    //hier
     return null;
   }
 

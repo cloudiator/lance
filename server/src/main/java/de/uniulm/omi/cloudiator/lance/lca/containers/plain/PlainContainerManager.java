@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
@@ -92,6 +93,12 @@ public class PlainContainerManager implements ContainerManager {
         this.registry.addContainer(containerController);
         containerController.create();
         return containerController;
+    }
+
+    @Override
+    public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
+        LifecycleComponent component, OperatingSystem os) throws ContainerException {
+        return createNewContainer(ctx, component, os);
     }
 
     @Override public void terminate() {

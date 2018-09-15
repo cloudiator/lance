@@ -41,5 +41,4 @@ public interface ContainerManager extends BasicContainer {
 
     ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException;
     ContainerController createNewLifecycleContainer(DeploymentContext ctx, LifecycleComponent component, OperatingSystem os) throws ContainerException;
-    ContainerController createNewDockerContainer(DeploymentContext ctx, DockerComponent component) throws ContainerException;
 }
