@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -45,7 +47,12 @@ public interface LifecycleAgent extends Remote {
 
     ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, 
                 OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
-    
+
+    ComponentInstanceId deployLifecycleComponent(DeploymentContext ctx, LifecycleComponent component,
+        OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
+
+    ComponentInstanceId deployDockerComponent(DeploymentContext ctx, DockerComponent component, DockerTransitionOptionsWrapper transitionOptionsWrapper) throws RemoteException, LcaException, RegistrationException, ContainerException;
+
     boolean stopComponentInstance(ContainerType containerType, ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
 
     public String getHostEnv() throws RemoteException;

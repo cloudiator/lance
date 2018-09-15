@@ -44,19 +44,29 @@ final class ContainerContainment implements BasicContainer {
 		return result;
 	}
 
-    public ContainerManager getContainerManager(HostContext contex, OperatingSystem operatingSystem, ContainerType containerType) throws LcaException{
-    	if(containerType.supportsOsFamily(operatingSystem.getFamily())) {
-    		synchronized(managers) {
-    			ContainerManager mng = managers.get(containerType);
-    			if(mng == null) {
-					mng = ContainerManagerFactory.createContainerManager(contex, containerType);
-    				managers.put(containerType, mng);
-        		}
-    			return mng;
-    		}
-    	} 
-        throw new LcaException("Operating System and container do not match: " + operatingSystem.toString());
+	//Returns reference to DockerContainerManager object if ContainerType==DOCKER/DOCKER-REMOTE else to PlainContainerManager object
+  public ContainerManager getLifecycleContainerManager(HostContext context, OperatingSystem operatingSystem, ContainerType containerType) throws LcaException{
+    if(containerType.supportsOsFamily(operatingSystem.getFamily())) {
+      return getContainerManager(context, containerType);
     }
+    throw new LcaException("Operating System and container do not match: " + operatingSystem.toString());
+  }
+
+	//Returns reference to DockerContainerManager object
+  public ContainerManager getDockerContainerManager(HostContext context) {
+		return getContainerManager(context, ContainerType.DOCKER);
+	}
+
+	private ContainerManager getContainerManager(HostContext contex, ContainerType containerType) {
+    synchronized(managers) {
+      ContainerManager mng = managers.get(containerType);
+      if(mng == null) {
+        mng = ContainerManagerFactory.createContainerManager(contex, containerType);
+        managers.put(containerType, mng);
+      }
+      return mng;
+    }
+	}
 
 	@Override
 	public void terminate() {

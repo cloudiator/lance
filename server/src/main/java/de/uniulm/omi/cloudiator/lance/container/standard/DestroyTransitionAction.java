@@ -9,14 +9,14 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 
 final class DestroyTransitionAction implements TransitionAction {
 
-	private final ErrorAwareContainer<?> theContainer;
+  private final ErrorAwareContainer<?> theContainer;
 
-	private DestroyTransitionAction(ErrorAwareContainer<?> container) {
-		theContainer = container;
-	}
-	
+  private DestroyTransitionAction(ErrorAwareContainer<?> container) {
+    theContainer = container;
+  }
+
   @Override
-	public void transit(Object[] params) throws TransitionException {
+  public void transit(Object[] params) throws TransitionException {
 		theContainer.network.stopPortUpdaters();
     try {
       boolean forceShutdown = false;

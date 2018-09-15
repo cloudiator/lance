@@ -18,7 +18,14 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import java.util.List; 
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemVersion;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +51,7 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 
+//used by both deploy(Lifecycle)Component with ContainerType==DOCKER and deployDockerComponent
 public class DockerContainerManager implements ContainerManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ContainerManager.class);
@@ -83,30 +91,51 @@ public class DockerContainerManager implements ContainerManager {
         return ContainerType.DOCKER;
     }
 
+    //used by deploy(Lifecycle)Component with ContainerType==DOCKER
+    //todo: Replace calls to this method in time when DeployableComponent isn't needed anymore
     @Override
-    public ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent comp, OperatingSystem os) throws ContainerException {
-        ComponentInstanceId id = new ComponentInstanceId();
-        DockerShellFactory shellFactory = new DockerShellFactory();
-        GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(ctx, comp, id);
+    public ContainerController createNewContainer(DeploymentContext ctx,
+        DeployableComponent comp, OperatingSystem os) throws ContainerException {
 
-        NetworkHandler networkHandler = new NetworkHandler(accessor, comp, hostContext);
-        DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
-        DockerContainerLogic logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
-            nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
-        // DockerLifecycleInterceptor interceptor = new DockerLifecycleInterceptor(accessor, id, networkHandler, comp, shellFactory);
-        ExecutionContext ec = new ExecutionContext(os, shellFactory);
-        LifecycleController controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec, hostContext);
-        
-        try { 
-            accessor.init(id); 
-        } catch(RegistrationException re) { 
-            throw new ContainerException("cannot start container, because registry not available", re); 
-        }
-        
-        ContainerController dc = new ErrorAwareContainer<>(id, logic, networkHandler, controller, accessor);
+      ContainerComponents cComponents = new ContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
+      accessorInit(cComponents.accessor, cComponents.id);
+        ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
         registry.addContainer(dc);
         dc.create();
         return dc;
+    }
+
+    @Override
+    public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
+        LifecycleComponent comp, OperatingSystem os) throws ContainerException {
+
+      LifecycleContainerComponents cComponents = new LifecycleContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
+      accessorInit(cComponents.accessor, cComponents.id);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      registry.addContainer(dc);
+      dc.create();
+      return dc;
+    }
+
+    //used by deployDockerComponent
+    @Override
+    public ContainerController createNewDockerContainer(DeploymentContext ctx,
+        DockerComponent comp) throws ContainerException {
+
+      DockerContainerComponents cComponents = new DockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
+      accessorInit(cComponents.accessor, cComponents.id);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      registry.addContainer(dc);
+      dc.create();
+      return dc;
+    }
+
+    private static void accessorInit(GlobalRegistryAccessor acc, ComponentInstanceId cId) throws ContainerException {
+      try {
+        acc.init(cId);
+      } catch(RegistrationException re) {
+        throw new ContainerException("cannot start container, because registry not available", re);
+      }
     }
 
     @Override
@@ -125,4 +154,87 @@ public class DockerContainerManager implements ContainerManager {
         ContainerController dc = registry.getContainer(cid);
         return dc.getState();
     }
+
+  private static class DefaultContainerComponents {
+    protected final ComponentInstanceId id;
+    protected final DockerShellFactory shellFactory;
+
+    DefaultContainerComponents() {
+      this.id = new ComponentInstanceId();
+      this. shellFactory = new DockerShellFactory();
+
+    }
+  }
+
+  //todo: keep this as long as legacy DeployableComponent exists
+  private static class ContainerComponents extends DefaultContainerComponents {
+    private final NetworkHandler networkHandler;
+    private final LifecycleController controller;
+    private final GlobalRegistryAccessor accessor;
+    private final DockerContainerLogic logic;
+
+    ContainerComponents(DeployableComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
+      super();
+
+      this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
+      this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
+      DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
+          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
+
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
+      this.controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec, hostContext);
+    }
+  }
+
+
+  private static class LifecycleContainerComponents extends DefaultContainerComponents {
+    private final NetworkHandler networkHandler;
+    private final LifecycleController controller;
+    private final GlobalRegistryAccessor accessor;
+    private final DockerContainerLogic logic;
+
+    LifecycleContainerComponents(LifecycleComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
+      super();
+
+      this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
+      this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
+      DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
+          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
+
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
+      this.controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec, hostContext);
+    }
+  }
+
+  private static class DockerContainerComponents extends DefaultContainerComponents {
+    private final NetworkHandler networkHandler;
+    //todo: kick LCC member-var
+    private final LifecycleController controller;
+    private final GlobalRegistryAccessor accessor;
+    private final DockerContainerLogic logic;
+
+    DockerContainerComponents(DockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+      super();
+
+      this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
+      this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
+      DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+      //todo: kick os parameter
+      OperatingSystem os = OperatingSystem.UBUNTU_14_04;
+      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
+          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
+      //todo: kick LCS parameter
+      LifecycleStoreBuilder lsBuilder = new LifecycleStoreBuilder();
+      lsBuilder.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
+      LifecycleStore store = lsBuilder.build();
+      //todo: kick ExecutionContext parameter
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
+      //todo: kick LCC member-var
+      this.controller =
+          new LifecycleController(lsBuilder.build(), this.logic, this.accessor,
+              ec, hostContext);
+    }
+  }
 }

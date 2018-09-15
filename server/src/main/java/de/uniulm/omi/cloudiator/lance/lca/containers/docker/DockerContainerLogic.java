@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
 //install shell in preDestroy, close shell in completeShutDown
 //install shell in preprocessDetector, close shell in postProcessDetector
 //install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
+
+//used by both deploy(Lifecycle)Component with ContainerType==DOCKER and deployDockerComponent
 class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);

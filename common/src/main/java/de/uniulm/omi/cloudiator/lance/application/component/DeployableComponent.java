@@ -61,7 +61,7 @@ public class DeployableComponent implements Serializable {
 
     //Needed for legacy reasons, to make the ComponentBuilder class work before only the DockerComponent and LifecycleComponent classes are used in Cloudiator v2
     public DeployableComponent() {
-       LOGGER.warn("Default Constructor call of DeployableComponent is needed for legacy reasons as long as this class is used along with LifeCycleComponent and DockerComponent");
+       LOGGER.warn("Default Constructor call of DeployableComponent is needed for legacy reasons as long as this class is used along with LifecycleComponent and DockerComponent");
     }
 
     public LifecycleStore getLifecycleStore() {
