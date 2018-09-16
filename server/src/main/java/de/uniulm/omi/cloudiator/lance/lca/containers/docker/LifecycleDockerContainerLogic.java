@@ -1,8 +1,5 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
-
-import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
@@ -23,16 +20,8 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
 
   @Override
   public void doCreate() throws ContainerException {
-    String target;
     try {
-      ComponentType type = myComponent.getType();
-      if (type == DOCKER) {
-        String imageName = myComponent.getName();
-        target = imageHandler.doPullImages(myId, imageName);
-      }
-      else
-        target = imageHandler.doPullImages(myId);
-
+      String target = imageHandler.doPullImages(myId);
       executeCreation(target);
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);

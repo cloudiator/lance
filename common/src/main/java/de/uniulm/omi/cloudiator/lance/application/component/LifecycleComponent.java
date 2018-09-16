@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.LIFECYCLE;
-
 //TODO: Implement. DeployableComponent should among other things not depend on LifeCycleStore but LifecycleComponent should
 public class LifecycleComponent extends DeployableComponent{
     LifecycleComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam,
@@ -23,8 +21,4 @@ public class LifecycleComponent extends DeployableComponent{
     super();
   }
 
-  @Override
-  public ComponentType getType() {
-    return LIFECYCLE;
-  }
 }

@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
-
 //TODO: Implement. DeployableComponent should among other things not depend on LifeCycleStore but LifecycleComponent should
 public class DockerComponent extends DeployableComponent implements ComponentFactory<DockerComponent> {
     DockerComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam,
@@ -20,11 +18,6 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
     //needed temporarily to make ComponentBuilder class work, as long as DockerComponent and LifecycleComponent inherit from DeployableComponent
     public DockerComponent() {
         super();
-    }
-
-    @Override
-    public ComponentType getType() {
-        return DOCKER;
     }
 
     @Override
