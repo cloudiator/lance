@@ -535,7 +535,7 @@ public class ClientDockerPullTest {
     try {
       client.undeploy(zookId, ContainerType.DOCKER);
       client.undeploy(cassId, ContainerType.DOCKER);
-      client.undeploy(kafkId, ContainerType.DOCKER);
+      //client.undeploy(kafkId, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     }
