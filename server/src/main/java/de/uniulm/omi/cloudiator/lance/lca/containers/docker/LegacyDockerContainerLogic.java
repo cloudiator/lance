@@ -1,17 +1,17 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 
-public class DockerContainerLogic extends AbstractDockerContainerLogic {
-  private final DockerComponent myComponent;
+public class LegacyDockerContainerLogic extends AbstractDockerContainerLogic {
+  private final DeployableComponent myComponent;
   private final DockerImageHandler imageHandler;
 
-  private DockerContainerLogic(Builder builder) {
+  private LegacyDockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
     this.imageHandler = new DockerImageHandler(builder.osParam, new DockerOperatingSystemTranslator(),
@@ -21,8 +21,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      String imageName = myComponent.getName();
-      String target = imageHandler.doPullImages(myId, imageName);
+      String target = imageHandler.doPullImages(myId);
       executeCreation(target);
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
@@ -44,13 +43,13 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
-  static class Builder extends AbstractBuilder<DockerComponent> {
+  static class Builder extends AbstractBuilder<DeployableComponent> {
 
     public Builder(){}
 
     @Override
     public AbstractDockerContainerLogic build() {
-      return new DockerContainerLogic(this);
+      return new LegacyDockerContainerLogic(this);
     }
   }
 }

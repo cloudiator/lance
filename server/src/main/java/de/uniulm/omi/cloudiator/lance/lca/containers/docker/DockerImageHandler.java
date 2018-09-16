@@ -29,7 +29,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerExce
 
 final class DockerImageHandler {
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerLogic.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDockerContainerLogic.class);
     
     private final DockerOperatingSystemTranslator translator;
     private final OperatingSystem os;

@@ -20,8 +20,6 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemVersion;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
@@ -170,14 +168,14 @@ public class DockerContainerManager implements ContainerManager {
     private final NetworkHandler networkHandler;
     private final LifecycleController controller;
     private final GlobalRegistryAccessor accessor;
-    private final DockerContainerLogic logic;
+    private final AbstractDockerContainerLogic logic;
 
     ContainerComponents(DeployableComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
       this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
-      DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+      LegacyDockerContainerLogic.Builder builder = new LegacyDockerContainerLogic.Builder();
       this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
           nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
 
@@ -191,14 +189,14 @@ public class DockerContainerManager implements ContainerManager {
     private final NetworkHandler networkHandler;
     private final LifecycleController controller;
     private final GlobalRegistryAccessor accessor;
-    private final DockerContainerLogic logic;
+    private final AbstractDockerContainerLogic logic;
 
     LifecycleContainerComponents(LifecycleComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
       this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
-      DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+      LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder();
       this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
           nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
 
@@ -212,7 +210,7 @@ public class DockerContainerManager implements ContainerManager {
     //todo: kick LCC member-var
     private final LifecycleController controller;
     private final GlobalRegistryAccessor accessor;
-    private final DockerContainerLogic logic;
+    private final AbstractDockerContainerLogic logic;
 
     DockerContainerComponents(DockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super();
