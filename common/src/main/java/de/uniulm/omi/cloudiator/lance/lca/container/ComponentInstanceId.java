@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-import de.uniulm.omi.cloudiator.lance.lca.StaticEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

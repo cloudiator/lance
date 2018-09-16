@@ -18,16 +18,13 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import static de.uniulm.omi.cloudiator.lance.application.component.ComponentType.DOCKER;
-
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.ComponentType;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
-import de.uniulm.omi.cloudiator.lance.lca.StaticEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;

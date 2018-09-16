@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
