@@ -10,7 +10,7 @@ import java.util.Set;
 
 //todo: build DockerCommandException
 public enum DockerCommands {
-  CREATE(new Option[]{Option.NAME, Option.PORT, Option.RESTART, Option.INTERACTIVE, Option.NETWORK, Option.TTY}, new Command[]{Command.BASH}),
+  CREATE(new Option[]{Option.NAME, Option.PORT, Option.RESTART, Option.INTERACTIVE, Option.ENVIRONMENT, Option.TTY}, new Command[]{Command.BASH}),
   START(new Option[]{Option.INTERACTIVE, Option.NETWORK}, new Command[]{}),
   STOP(new Option[]{}, new Command[]{});
 
@@ -30,7 +30,7 @@ public enum DockerCommands {
   }
 
   public static enum Option {
-    NAME, PORT, RESTART, INTERACTIVE, NETWORK, TTY;
+    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY;
   }
 
   public static enum Command {
@@ -91,6 +91,8 @@ public enum DockerCommands {
         return "--interactive";
       case NETWORK:
         return "--network";
+      case ENVIRONMENT:
+        return "--env";
       default:
         return "";
     }

@@ -32,6 +32,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommands;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;
@@ -134,7 +135,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   //todo: Do we need to distinguish between the ContainerType(s) DOCKER and DOCKER_REMOTE?
   @Override
   public ComponentInstanceId deployDockerComponent(DeploymentContext ctx,
-      DockerComponent component, DockerTransitionOptionsWrapper transitionOptionsWrapper)
+      DockerComponent component, DockerCommands usedCommands)
       throws RemoteException, LcaException, RegistrationException, ContainerException {
     componentConsistentlyRegistered(ctx, component);
     // Same "Manager-class" as in deploy(Lifecycle)Component with ContainerType==DOCKER. Method call for
