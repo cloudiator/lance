@@ -20,26 +20,24 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
-import static org.junit.Assert.*;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.component.*;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
-import de.uniulm.omi.cloudiator.lance.client.LifecycleClient;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -53,8 +51,6 @@ import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortLinkage;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
-import de.uniulm.omi.cloudiator.lance.client.DeploymentHelper;
 import java.util.concurrent.Callable;
 import java.rmi.RemoteException;
 import java.rmi.NotBoundException;
@@ -93,7 +89,7 @@ public class ClientDockerPullTest {
   private static ComponentId kafkaComponentId;
   private static int defaultInternalInport;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static LifecycleClient client;
   private static ComponentInstanceId zookId, cassId, kafkId;
 
@@ -124,10 +120,10 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
   }
 
-  private DeployableComponent buildDockerComponent(
+  private DockerComponent buildDockerComponent(
       LifecycleClient client,
       String compName,
       ComponentId id,
@@ -156,7 +152,7 @@ public class ClientDockerPullTest {
       System.err.println("Server not reachable");
     }
     builder.deploySequentially(true);
-    DeployableComponent comp = builder.build(DockerComponent.class);
+    DockerComponent comp = builder.build(DockerComponent.class);
     return comp;
   }
 
@@ -389,6 +385,38 @@ public class ClientDockerPullTest {
     return kafka_context;
   }
 
+  EntireDockerCommands buildEntireDockerCommands() {
+    EntireDockerCommands cmds = new EntireDockerCommands();
+
+    try {
+      cmds.setOption(DockerCommand.CREATE, Option.ENVIRONMENT, "foo=bar");
+      cmds.setOption(DockerCommand.CREATE, Option.ENVIRONMENT, "john=doe");
+      cmds.setOption(DockerCommand.CREATE, Option.NAME, "comp");
+      cmds.setOption(DockerCommand.CREATE, Option.PORT, "9090:9090");
+      cmds.setOsCommand(DockerCommand.CREATE, OsCommand.BASH);
+      cmds.setArg(DockerCommand.CREATE, "--noediting");
+      cmds.setOption(DockerCommand.START, Option.INTERACTIVE, "");
+    } catch (Exception e) {
+      System.err.println("Error in creating docker command");
+    }
+
+    return cmds;
+  }
+
+  private void printCommandParts(EntireDockerCommands cmds) {
+    System.out.println(cmds.getSetOptionsString(DockerCommand.CREATE));
+    System.out.println(cmds.getSetOsCommandString(DockerCommand.CREATE));
+    System.out.println(cmds.getSetArgsString(DockerCommand.CREATE));
+    System.out.println("\n");
+    System.out.println(cmds.getSetOptionsString(DockerCommand.START));
+    System.out.println(cmds.getSetOsCommandString(DockerCommand.START));
+    System.out.println(cmds.getSetArgsString(DockerCommand.START));
+    System.out.println("\n");
+    System.out.println(cmds.getSetOptionsString(DockerCommand.STOP));
+    System.out.println(cmds.getSetOsCommandString(DockerCommand.STOP));
+    System.out.println(cmds.getSetArgsString(DockerCommand.STOP));
+  }
+
   @Test
   public void testFZookeeperDeploymentContext() {
     createZookeperContext(client);
@@ -420,7 +448,7 @@ public class ClientDockerPullTest {
               1,
               OutPort.NO_SINKS);
       outInfs.add(outInf);
-      DeployableComponent zookComp =
+      DockerComponent zookComp =
           buildDockerComponent(
               client,
               zookeeperComponent,
@@ -433,8 +461,10 @@ public class ClientDockerPullTest {
                 }
               });
       DeploymentContext zookContext = createZookeperContext(client);
+      EntireDockerCommands cmds = buildEntireDockerCommands();
+      printCommandParts(cmds);
       zookId =
-          client.deploy(zookContext, zookComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
+          client.deploy(zookContext, zookComp, cmds);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy zookeeper component");
     }
@@ -456,7 +486,7 @@ public class ClientDockerPullTest {
               1,
               OutPort.NO_SINKS);
       outInfs.add(outInf);
-      DeployableComponent cassComp =
+      DockerComponent cassComp =
           buildDockerComponent(
               client,
               cassandraComponent,
@@ -469,8 +499,10 @@ public class ClientDockerPullTest {
                 }
               });
       DeploymentContext cassContext = createCassandraContext(client);
+      EntireDockerCommands cmds = buildEntireDockerCommands();
+      printCommandParts(cmds);
       cassId =
-          client.deploy(cassContext, cassComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
+          client.deploy(cassContext, cassComp, cmds);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
     }
@@ -488,7 +520,7 @@ public class ClientDockerPullTest {
           new OutportInfo(
               kafkaOutportName, DeploymentHelper.getEmptyPortUpdateHandler(), 2, OutPort.NO_SINKS);
       outInfs.add(outInf);
-      DeployableComponent kafkaComp =
+      DockerComponent kafkaComp =
           buildDockerComponent(
               client,
               kafkaComponent,
@@ -501,9 +533,11 @@ public class ClientDockerPullTest {
                 }
               });
       DeploymentContext kafkaContext = createKafkaContext(client);
+      EntireDockerCommands cmds = buildEntireDockerCommands();
+      printCommandParts(cmds);
       kafkId =
           client.deploy(
-              kafkaContext, kafkaComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
+              kafkaContext, kafkaComp, cmds);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
     }

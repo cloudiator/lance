@@ -49,6 +49,7 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
@@ -60,6 +61,8 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -138,10 +141,7 @@ public final class LifecycleClient {
       final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
       throws DeploymentException {
 
-    Retryer<ComponentInstanceId> retryer = RetryerBuilder.<ComponentInstanceId>newBuilder()
-        .retryIfExceptionOfType(RemoteException.class).withWaitStrategy(
-            WaitStrategies.exponentialWait()).withStopStrategy(StopStrategies.stopAfterDelay(5,
-            TimeUnit.MINUTES)).build();
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
 
     Callable<ComponentInstanceId> callable = () -> {
       LOGGER.info("Trying to deploy component " + comp);
@@ -149,6 +149,34 @@ public final class LifecycleClient {
           .deployComponent(ctx, comp, os, containerType);
     };
 
+    return doRetryerCall(retryer, callable);
+ }
+
+  public final ComponentInstanceId deploy(final DeploymentContext ctx,
+      final DockerComponent comp, EntireDockerCommands usedCommands)
+      throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable = () -> {
+      LOGGER.info("Trying to deploy Docker component " + comp);
+      return lifecycleAgent
+          .deployDockerComponent(ctx, comp, usedCommands);
+    };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  private static Retryer<ComponentInstanceId> buildRetryerComponent() {
+    Retryer<ComponentInstanceId> retryer = RetryerBuilder.<ComponentInstanceId>newBuilder()
+        .retryIfExceptionOfType(RemoteException.class).withWaitStrategy(
+            WaitStrategies.exponentialWait()).withStopStrategy(StopStrategies.stopAfterDelay(5,
+            TimeUnit.MINUTES)).build();
+
+    return retryer;
+  }
+
+  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer, Callable<ComponentInstanceId> callable) throws DeploymentException {
     try {
       return retryer.call(callable);
     } catch (ExecutionException e) {

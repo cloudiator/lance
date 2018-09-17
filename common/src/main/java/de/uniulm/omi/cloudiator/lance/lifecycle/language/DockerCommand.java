@@ -1,5 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language;
 
+import static de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand.EMPTY;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,23 +11,24 @@ import java.util.Map;
 import java.util.Set;
 
 //todo: build DockerCommandException
-public enum DockerCommands {
-  CREATE(new Option[]{Option.NAME, Option.PORT, Option.RESTART, Option.INTERACTIVE, Option.ENVIRONMENT, Option.TTY}, new Command[]{Command.BASH}),
-  START(new Option[]{Option.INTERACTIVE, Option.NETWORK}, new Command[]{}),
-  STOP(new Option[]{}, new Command[]{});
+public enum DockerCommand {
+  CREATE(new Option[]{Option.NAME, Option.PORT, Option.RESTART, Option.INTERACTIVE, Option.ENVIRONMENT, Option.TTY}, new OsCommand[]{OsCommand.BASH}),
+  START(new Option[]{Option.INTERACTIVE, Option.NETWORK}, new OsCommand[]{}),
+  STOP(new Option[]{}, new OsCommand[]{});
 
   private final Set<Option> possibleOptions;
-  private final Set<Command> possibleCommands;
+  private final Set<OsCommand> possibleCommands;
 
   private Map<Option, String> setOptions;
-  private Command setCommand;
+  private OsCommand setCommand;
   private List<String> setArgs;
 
-  private DockerCommands(Option[] opts, Command[] commands) {
+  private DockerCommand(Option[] opts, OsCommand[] commands) {
     possibleOptions = new HashSet<>(Arrays.asList(opts));
     possibleCommands = new HashSet<>(Arrays.asList(commands));
 
     setOptions = new HashMap<>();
+    setCommand = EMPTY;
     setArgs = new ArrayList<>();
   }
 
@@ -33,11 +36,11 @@ public enum DockerCommands {
     NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY;
   }
 
-  public static enum Command {
-    BASH
+  public static enum OsCommand {
+    EMPTY, BASH
   }
 
-  //todo: include Enum-name (DockerCommands) and Enum-name(Option) in Exception String
+  //todo: include Enum-name (DockerCommand) and Enum-name(Option) in Exception String
   public void setOption(Option opt, String arg) throws Exception {
     if(!possibleOptions.contains(opt))
       throw new Exception("Option does not exist for this DockerCommand");
@@ -45,8 +48,8 @@ public enum DockerCommands {
     setOptions.put(opt,arg);
   }
 
-  //todo: include Enum-name (DockerCommands) and Enum-name(Command) in Exception String
-  public void setCommand(Command cmd) throws Exception {
+  //todo: include Enum-name (DockerCommand) and Enum-name(Command) in Exception String
+  public void setOsCommand(OsCommand cmd) throws Exception {
     if(!possibleCommands.contains(cmd))
       throw new Exception("Command does not exist for this DockerCommand");
 
@@ -66,8 +69,8 @@ public enum DockerCommands {
     return builder.toString();
   }
 
-  public String getSetCommandString() {
-    return getCommandString(setCommand);
+  public String getSetOsCommandString() {
+    return getOsCommandString(setCommand);
   }
 
   public String getSetArgsString() {
@@ -98,7 +101,7 @@ public enum DockerCommands {
     }
   }
 
-  private String getCommandString(Command cmd) {
+  private String getOsCommandString(OsCommand cmd) {
     switch (cmd) {
       case BASH:
         return "bash";
