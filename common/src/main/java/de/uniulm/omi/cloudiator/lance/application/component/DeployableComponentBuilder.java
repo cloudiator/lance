@@ -35,7 +35,7 @@ public final class DeployableComponentBuilder {
     private final List<OutPort> outports = new ArrayList<>();
     private volatile LifecycleStore store;
     // private volatile boolean deploySequentially = false;
-    
+
     private final HashMap<String, Class<?>> properties = new HashMap<>();
     private final HashMap<String, Serializable> propertyValues = new HashMap<>();
     

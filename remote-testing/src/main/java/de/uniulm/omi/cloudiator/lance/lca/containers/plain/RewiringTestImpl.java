@@ -22,6 +22,8 @@ import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapperRM;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
 
+import de.uniulm.omi.cloudiator.lance.lca.containers.TestImpl;
+import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRemote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,16 +43,13 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
-import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRewiring;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import java.rmi.RemoteException;
 
 //modified LcAImplementation.java
-public class RewiringTestImpl implements RewiringTestAgent {
+public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
 
     private volatile List<FullComponent> fullComponents;
-    private volatile CoreElementsRewiring core;
 
     private static final int DEFAULT_PROPERTIES = 5;
     private static final String INITIAL_LOCAL_ADDRESS = "<unknown>";
@@ -61,18 +60,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
 
     @Override
     public ApplicationInstanceId testNewTopology(AppArchitecture arch, String publicIp, LcaRegistry reg) throws ContainerException, RemoteException {
-        //assertNotNull(CoreElements.context);
-        CoreElementsRewiring.arch = arch;
-        CoreElementsRewiring.initHostContext(publicIp);
-        core = new CoreElementsRewiring(reg);
-
-        try {
-            core.setUpRegistry();
-        } catch (RegistrationException e) {
-            e.printStackTrace();
-        }
-
-        init(arch);
+        ApplicationInstanceId id = setupApp(arch, publicIp, reg);
 
         for(FullComponent fullComp: fullComponents) {
             try {
@@ -83,7 +71,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             fullComp.addContainer(createNewContainer(fullComp));
         }
 
-        return arch.getAppInstanceId();
+        return id;
     }
 
     @Override
@@ -111,24 +99,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             container.awaitBootstrap();
 
             assertRightState(ContainerStatus.BOOTSTRAPPED, container);
-
-            //todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-            assert dumb != null;
-
-            checkForDumbElements(
-                    new String[] {"HOST_CONTAINER_IP", "Instance_Number", "HOST_PUBLIC_IP", "HOST_CLOUD_IP", "Container_Status"},
-                    DEFAULT_PROPERTIES, fullComp.cInstId);
-
-            Map<String,String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -155,24 +126,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             container.awaitInitialisation();
 
             assertRightState(ContainerStatus.READY, container);
-
-            //todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-            assert dumb != null;
-
-            checkForDumbElements(
-                    new String[] {"HOST_CONTAINER_IP", "Instance_Number", "HOST_PUBLIC_IP", "HOST_CLOUD_IP", "Container_Status"},
-                    DEFAULT_PROPERTIES, fullComp.cInstId);
-
-            Map<String,String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -200,32 +154,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             container.awaitDestruction();
 
             assertRightState(ContainerStatus.DESTROYED, container);
-
-            // todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-
-            assert dumb != null;
-
-            checkForDumbElements(
-              new String[] {
-                "HOST_CONTAINER_IP",
-                "Instance_Number",
-                "HOST_PUBLIC_IP",
-                "HOST_CLOUD_IP",
-                "Container_Status"
-              },
-              DEFAULT_PROPERTIES,
-              fullComp.cInstId);
-
-            Map<String, String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
@@ -247,37 +176,12 @@ public class RewiringTestImpl implements RewiringTestAgent {
             //Call lcc.blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) somewhere
             */
             fullComp.networkHandler.startPortUpdaters(lcc);
-
-            // todo: adjust, if multiple component-instances of same component
-            try {
-                checkBasicRegistryValue(1, fullComp.cId);
-            } catch (RegistrationException e) {
-                e.printStackTrace();
-            }
-            //important, check when startPortUpdaters() is called here
-
-            assert dumb != null;
-
-            checkForDumbElements(
-                    new String[] {
-                            "HOST_CONTAINER_IP",
-                            "Instance_Number",
-                            "HOST_PUBLIC_IP",
-                            "HOST_CLOUD_IP",
-                            "Container_Status"
-                    },
-                    DEFAULT_PROPERTIES,
-                    fullComp.cInstId);
-
-            Map<String, String> cids = dumb.get(fullComp.cId);
-            assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
-            assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
-            assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
-            assert "1" == cids.get("Instance_Number");
+            doChecks(fullComp);
         }
     }
 
-    private void init(AppArchitecture arch) throws ContainerException {
+    @Override
+    protected void init(AppArchitecture arch) throws ContainerException {
         dumb = null;
         fullComponents = new ArrayList<FullComponent>(arch.getComponents().size());
 
@@ -311,7 +215,7 @@ public class RewiringTestImpl implements RewiringTestAgent {
             DeployableComponent comp = builder.build();
             GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(core.ctx, comp, cInfo.getComponentInstanceId());
             final LcaRegistry reg = core.ctx.getRegistry();
-            NetworkHandler networkHandler = new NetworkHandler(accessor, comp, CoreElementsRewiring.context);
+            NetworkHandler networkHandler = new NetworkHandler(accessor, comp, CoreElementsRemote.context);
             ExecutionContext exCtx = new ExecutionContext(cInfo.getOs(),null);
 
             fullComponents.add(new FullComponent(comp, accessor, networkHandler, comp.getComponentId(), cInfo.getComponentInstanceId(), exCtx, stopIt));
@@ -323,9 +227,10 @@ public class RewiringTestImpl implements RewiringTestAgent {
 
         PlainShellFactory plainShellFactory = new PlainShellFactoryImpl();
 
-        PlainContainerLogic containerLogic =
-                new PlainContainerLogic(fullComp.cInstId, fullComp.comp, core.ctx, fullComp.exCtx.getOperatingSystem(), fullComp.networkHandler,
-                        plainShellFactory, core.context);
+        PlainContainerLogic.Builder builder = new PlainContainerLogic.Builder();
+        //split for better readability
+        builder = builder.cInstId(fullComp.cInstId).deplComp(fullComp.comp).deplContext(core.ctx).operatingSys(fullComp.exCtx.getOperatingSystem());
+        PlainContainerLogic containerLogic = builder.nwHandler(fullComp.networkHandler).plShellFac(plainShellFactory).hostContext(core.context).build();
 
         ExecutionContext executionContext = new ExecutionContext(fullComp.exCtx.getOperatingSystem(), plainShellFactory);
         LifecycleController lifecycleController =
@@ -574,7 +479,35 @@ public class RewiringTestImpl implements RewiringTestAgent {
         }
     }
 
-    class FullComponent {
+    void doChecks(FullComponent fullComponent) {
+        // todo: adjust, if multiple component-instances of same component
+        try {
+            checkBasicRegistryValue(1, fullComponent.cId);
+        } catch (RegistrationException e) {
+            e.printStackTrace();
+        }
+
+        assert dumb != null;
+
+        checkForDumbElements(
+            new String[] {
+                "HOST_CONTAINER_IP",
+                "Instance_Number",
+                "HOST_PUBLIC_IP",
+                "HOST_CLOUD_IP",
+                "Container_Status"
+            },
+            DEFAULT_PROPERTIES,
+            fullComponent.cInstId);
+
+        Map<String, String> cids = dumb.get(fullComponent.cId);
+        assert INITIAL_LOCAL_ADDRESS == cids.get("HOST_CONTAINER_IP");
+        assert EnvContextWrapperRM.getPublicIp() == cids.get("HOST_PUBLIC_IP");
+        assert EnvContextWrapperRM.getCloudIp() == cids.get("HOST_CLOUD_IP");
+        assert "1" == cids.get("Instance_Number");
+    }
+
+    static class FullComponent {
 
         FullComponent(DeployableComponent comp, GlobalRegistryAccessor accessor, NetworkHandler networkHandler, ComponentId cId, ComponentInstanceId cInstId, ExecutionContext exCtx, boolean stopIt, ErrorAwareContainer<PlainContainerLogic> container, LifecycleController lcc) {
             this.comp = comp;

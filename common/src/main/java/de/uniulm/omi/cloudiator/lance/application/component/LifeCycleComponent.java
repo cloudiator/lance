@@ -17,8 +17,14 @@ public class LifeCycleComponent extends DeployableComponent{
         super(nameParam, idParam, lifecycleStoreParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }
 
-     @Override
-    public ComponentType getType() {
-        return LIFECYCLE;
-     }
+  // needed temporarily to make ComponentBuilder class work, as long as DockerComponent and
+  // LifeCycleComponent inherit from DeployableComponent
+  public LifeCycleComponent() {
+    super();
+  }
+
+  @Override
+  public ComponentType getType() {
+    return LIFECYCLE;
+  }
 }

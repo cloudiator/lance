@@ -48,5 +48,5 @@ public interface LifecycleAgent extends Remote {
     
     boolean stopComponentInstance(ContainerType containerType, ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
 
-    public String getEnv() throws RemoteException;
+    public String getHostEnv() throws RemoteException;
 }

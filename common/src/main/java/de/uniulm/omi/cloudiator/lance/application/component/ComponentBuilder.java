@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
-import de.uniulm.omi.cloudiator.lance.application.component.LifeCycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
@@ -27,22 +27,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-//TODO: Implement. Should this inherit from DeployableComponentBuilder?
-public class LifeCycleComponentBuilder {
+public class ComponentBuilder<T extends DeployableComponent & ComponentFactory> {
 
+    private T instance;
     private final String name;
     private final ComponentId componentId;
     private final List<InPort> inports = new ArrayList<>();
     private final List<OutPort> outports = new ArrayList<>();
     private volatile LifecycleStore store;
-    // private volatile boolean deploySequentially = false;
 
     private final HashMap<String, Class<?>> properties = new HashMap<>();
     private final HashMap<String, Serializable> propertyValues = new HashMap<>();
 
-    private LifeCycleComponentBuilder(String nameParam, ComponentId idParam) {
+    public ComponentBuilder(Class<T> clazz, String nameParam, ComponentId idParam) {
         name = nameParam;
         componentId = idParam;
+        try {
+            instance = clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     public final void addInport(String portname, PortProperties.PortType type, int cardinality) {
@@ -73,10 +77,6 @@ public class LifeCycleComponentBuilder {
         addProperty(portname, OutPort.class);
     }
 
-    public static LifeCycleComponentBuilder createBuilder(String name, ComponentId componentId) {
-        return new LifeCycleComponentBuilder(name, componentId);
-    }
-
     public void addLifecycleStore(LifecycleStore lifecycleStore) {
         store = lifecycleStore;
     }
@@ -90,8 +90,9 @@ public class LifeCycleComponentBuilder {
         properties.put(propertyName, propertyType);
     }
 
-    public LifeCycleComponent build() {
-        return new LifeCycleComponent(name, componentId, store, inports, outports, properties, propertyValues);
+    public T build(Class<T> clazz) {
+
+        return (T) clazz.cast(instance).newObject(name, componentId, store, inports, outports, properties, propertyValues);
     }
 
     @SuppressWarnings("static-method")
