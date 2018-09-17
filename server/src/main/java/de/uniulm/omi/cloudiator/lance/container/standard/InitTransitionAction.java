@@ -19,10 +19,10 @@ final class InitTransitionAction implements TransitionAction {
 	@Override
 	public void transit(Object[] params) throws TransitionException {
         // FIXME: add code for starting from snapshot (skip init and install steps)
-		// probably has to be realised at a different place 
+        // probably has to be realised at a different place
         try {
+            theContainer.logic.preInit();
             theContainer.preInitAction();
-            theContainer.logic.completeInit();
             theContainer.postInitAction();
             theContainer.registerStatus(ContainerStatus.READY);
         } catch (ContainerException | LifecycleException | RegistrationException ce) {

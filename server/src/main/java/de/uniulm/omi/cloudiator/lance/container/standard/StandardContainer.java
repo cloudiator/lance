@@ -220,8 +220,8 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                     public void transit(Object[] params) {
                         //TODO: add code for starting from snapshot (skip init and install steps)
                         try {
+                            logic.preInit();
                             preInitAction();
-                            logic.completeInit();
                             postInitAction();
                             registerStatus(ContainerStatus.READY);
                         } catch (ContainerException | LifecycleException | RegistrationException ce) {

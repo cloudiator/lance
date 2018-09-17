@@ -134,7 +134,7 @@ public class ClientDockerPullTest {
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
       Callable<LifecycleStore> createLifeCycleStore) {
-    DockerComponentBuilder builder = DockerComponentBuilder.createBuilder(compName, id);
+    ComponentBuilder<DockerComponent> builder = new ComponentBuilder(DockerComponent.class, compName, id);
 
     for (int i = 0; i < inInfs.size(); i++)
       builder.addInport(
@@ -156,11 +156,11 @@ public class ClientDockerPullTest {
       System.err.println("Server not reachable");
     }
     builder.deploySequentially(true);
-    DeployableComponent comp = builder.build();
+    DeployableComponent comp = builder.build(DockerComponent.class);
     return comp;
   }
 
-  class InportInfo {
+  static class InportInfo {
     public final String inportName;
     public final PortProperties.PortType portType;
     public final int cardinality;
@@ -174,7 +174,7 @@ public class ClientDockerPullTest {
     }
   }
 
-  class OutportInfo {
+  static class OutportInfo {
     public final String outportName;
     public final PortUpdateHandler puHandler;
     public final int cardinality;
@@ -194,8 +194,8 @@ public class ClientDockerPullTest {
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. alpine (openjdk:8-jre)
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    // builder_pre.addCommand("apt-get -y -q update");
-    // builder_pre.addCommand("apt-get -y -q upgrade");
+    builder_pre.addCommand("apt-get -y -q update");
+    builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
     store.setStartDetector(builder_pre.buildStartDetector());
     // add other commands
@@ -211,8 +211,8 @@ public class ClientDockerPullTest {
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. debian:jessie-slim
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    // builder_pre.addCommand("apt-get -y -q update");
-    // builder_pre.addCommand("apt-get -y -q upgrade");
+    builder_pre.addCommand("apt-get -y -q update");
+    builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
     store.setStartDetector(builder_pre.buildStartDetector());
     // add other commands
@@ -228,8 +228,8 @@ public class ClientDockerPullTest {
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. alpine (openjdk:8u151-jre)
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    // builder_pre.addCommand("apt-get -y -q update");
-    // builder_pre.addCommand("apt-get -y -q upgrade");
+    builder_pre.addCommand("apt-get -y -q update");
+    builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
     store.setStartDetector(builder_pre.buildStartDetector());
     // add other commands
@@ -478,7 +478,7 @@ public class ClientDockerPullTest {
 
   @Test
   public void testKKafkDeploy() {
-/*    try {
+    try {
       List<InportInfo> inInfs = new ArrayList<>();
       InportInfo inInf =
           new InportInfo(kafkaInportName, PortProperties.PortType.PUBLIC_PORT, 1, 9092);
@@ -506,7 +506,7 @@ public class ClientDockerPullTest {
               kafkaContext, kafkaComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
-    }*/
+    }
   }
 
   @Test
@@ -527,11 +527,22 @@ public class ClientDockerPullTest {
       } catch (InterruptedException ex) {
         System.err.println("Interrupted!");
       }
-    } while (zookStatus != READY || cassStatus != READY); //|| kafkStatus != READY);
+    } while (zookStatus != READY || cassStatus != READY);// || kafkStatus != READY);
   }
 
   @Test
-  public void testMHostEnvironment() {
+  public void testMStopContainers() {
+    try {
+      client.undeploy(zookId, ContainerType.DOCKER);
+      client.undeploy(cassId, ContainerType.DOCKER);
+      client.undeploy(kafkId, ContainerType.DOCKER);
+    } catch (DeploymentException ex) {
+      System.err.println("Exception during deployment!");
+    }
+  }
+
+  @Test
+  public void testNHostEnvironment() {
     try {
       System.out.println(client.getHostEnv());
     } catch (DeploymentException ex) {

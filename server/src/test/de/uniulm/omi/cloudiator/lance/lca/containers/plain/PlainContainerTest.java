@@ -50,9 +50,10 @@ public class PlainContainerTest {
                 new GlobalRegistryAccessor(core.ctx, core.comp, CoreElements.componentInstanceId);
 
             NetworkHandler networkHandler = core.networkHandler;
-            containerLogic =
-                new PlainContainerLogic(CoreElements.componentInstanceId, core.comp, core.ctx, ctx.getOperatingSystem(), networkHandler,
-                    plainShellFactory, CoreElements.context);
+            PlainContainerLogic.Builder builder = new PlainContainerLogic.Builder();
+            //split for better readability
+            builder = builder.cInstId(CoreElements.componentInstanceId).deplComp(core.comp).deplContext(core.ctx).operatingSys(ctx.getOperatingSystem());
+            containerLogic = builder.nwHandler(networkHandler).plShellFac(plainShellFactory).hostContext(CoreElements.context).build();
 
             ExecutionContext executionContext = new ExecutionContext(ctx.getOperatingSystem(), plainShellFactory);
             LifecycleController lifecycleController =

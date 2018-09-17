@@ -18,15 +18,20 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
+import de.uniulm.omi.cloudiator.lance.lca.StaticEnvVars;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-public final class ComponentInstanceId implements Serializable {
+public final class ComponentInstanceId implements Serializable, StaticEnvVars {
 
     // FIXME: set fixed value!
     public static final ComponentInstanceId ERROR_ID = new ComponentInstanceId();
     public static final ComponentInstanceId SYSTEM_ID = new ComponentInstanceId();
-    private static final long serialVersionUID = -6741646835252735882L;
+
+    private static final long serialVersionUID = -6741646835252735882L;;
+    public static final String INSTANCE_ID_KEY = "INSTANCE_ID";
 
     private final UUID uuid;
     
@@ -59,5 +64,12 @@ public final class ComponentInstanceId implements Serializable {
     
     public static ComponentInstanceId fromString(String s){
         return new ComponentInstanceId(s);
+    }
+
+    @Override
+    public Map<String,String> getEnvVars() {
+        final Map<String,String> vars = new HashMap<String,String>();
+        vars.put(INSTANCE_ID_KEY,toString());
+        return vars;
     }
 }

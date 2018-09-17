@@ -87,6 +87,7 @@ class Inprogress implements DockerShell {
         return builder.toString();
     }
 
+    @Override
     public boolean processStillRunning() {
         try {
             proc.exitValue();

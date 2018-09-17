@@ -20,9 +20,11 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
+import de.uniulm.omi.cloudiator.lance.lca.containers.plain.RewiringTestImpl;
 import de.uniulm.omi.cloudiator.lance.util.Registrator;
 import de.uniulm.omi.cloudiator.lance.util.Version;
 
+//todo: get a base class out of it
 //modified LcABooter.java
 public class RewiringTestBooter {
 
@@ -72,6 +74,4 @@ public class RewiringTestBooter {
             }
         }
     }
-
-
 }
