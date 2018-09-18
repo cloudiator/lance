@@ -101,26 +101,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s to execution handler.", cc));
-    hostContext.run(() -> {
-      try {
-        LOGGER.info(String.format("Awaiting creation of %s.", cc));
-        cc.awaitCreation();
-        LOGGER.info(String.format("Bootstrapping %s.", cc));
-        cc.bootstrap();
-        LOGGER.info(String.format("Awaiting Bootstrapping %s.", cc));
-        cc.awaitBootstrap();
-        LOGGER
-            .info(String.format("Initiating lifecycle store of component %s.", component));
-        cc.init(component.getLifecycleStore());
-        LOGGER.info(String.format("Awaiting Initialisation of %s.", cc));
-        cc.awaitInitialisation();
-      } catch (ContainerException e) {
-        LOGGER.error("Error occurred in container controller " + cc, e);
-      } catch (Exception e) {
-        LOGGER.error("Unexpected exception occured in container controller " + cc, e);
-      }
-    });
-
+    doRunContainer(cc, hostContext, component);
     LOGGER.info(String.format("Returning ID %s of %s", cc.getId(), cc));
     return cc.getId();
   }
@@ -136,8 +117,9 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   //todo: Do we need to distinguish between the ContainerType(s) DOCKER and DOCKER_REMOTE?
   @Override
   public ComponentInstanceId deployDockerComponent(DeploymentContext ctx,
-      DockerComponent component, EntireDockerCommands usedCommands)
+      DockerComponent component)
       throws RemoteException, LcaException, RegistrationException, ContainerException {
+
     componentConsistentlyRegistered(ctx, component);
     // Same "Manager-class" as in deploy(Lifecycle)Component with ContainerType==DOCKER. Method call for
     // containerType==DOCKER_REMOTE  -> instert ContainerType as parameter
@@ -149,8 +131,11 @@ public class LifecycleAgentImpl implements LifecycleAgent {
             hostContext, ContainerType.DOCKER));
     ContainerController cc = manager.createNewDockerContainer(ctx, component);
 
-    //hier
-    return null;
+    LOGGER.info(String
+        .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));
+    doRunContainer(cc, hostContext, component);
+    LOGGER.info(String.format("Returning ID %s of %s", cc.getId(), cc));
+    return cc.getId();
   }
 
   @Override
@@ -185,6 +170,28 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     }
 
     throw new LcaException("cannot proceed: application instance is not known.");
+  }
+
+  private static void doRunContainer(ContainerController cc, HostContext hostContext_, DeployableComponent component_) {
+    hostContext_.run(() -> {
+      try {
+        LOGGER.info(String.format("Awaiting creation of %s.", cc));
+        cc.awaitCreation();
+        LOGGER.info(String.format("Bootstrapping %s.", cc));
+        cc.bootstrap();
+        LOGGER.info(String.format("Awaiting Bootstrapping %s.", cc));
+        cc.awaitBootstrap();
+        LOGGER
+            .info(String.format("Initiating lifecycle store of component %s.", component_));
+        cc.init(component_.getLifecycleStore());
+        LOGGER.info(String.format("Awaiting Initialisation of %s.", cc));
+        cc.awaitInitialisation();
+      } catch (ContainerException e) {
+        LOGGER.error("Error occurred in container controller " + cc, e);
+      } catch (Exception e) {
+        LOGGER.error("Unexpected exception occured in container controller " + cc, e);
+      }
+    });
   }
 
   //todo: print whole environment

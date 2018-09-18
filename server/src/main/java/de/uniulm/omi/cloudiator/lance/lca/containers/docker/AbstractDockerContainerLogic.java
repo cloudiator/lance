@@ -202,28 +202,10 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   }
 
   @Override
-  public void doInit(LifecycleStore store) throws ContainerException {
-    try {
-      //Environment still set (in logic.doInit call in BootstrapTransitionAction)
-      //could return a shell
-      doStartContainer();
-    } catch (ContainerException ce) {
-      throw ce;
-    } catch (Exception ex) {
-      throw new ContainerException(ex);
-    }
-  }
+  public abstract void doInit(LifecycleStore store) throws ContainerException;
 
   @Override
-  public void doDestroy(boolean force) throws ContainerException {
-    /* currently docker ignores the flag */
-    try {
-      //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
-      client.stopContainer(myId);
-    } catch (DockerException de) {
-      throw new ContainerException(de);
-    }
-  }
+  public abstract void doDestroy(boolean force) throws ContainerException;
 
   @Override
   public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
@@ -257,7 +239,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     closeShell();
   }
 
-  private void doStartContainer() throws ContainerException {
+  protected void doStartContainer() throws ContainerException {
     final DockerShell dshell;
     try {
       dshell = client.startContainer(myId);
@@ -286,13 +268,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     //@SuppressWarnings("unused") String dockerId =
     client.createContainer(target, myId, portsToSet);
   }
-
-  /*private void executeCreation(String imageName) throws DockerException {
-    String target = imageHandler.doPullImages(myId, imageName);
-    Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-    //@SuppressWarnings("unused") String dockerId =
-    client.createContainer(target, myId, portsToSet);
-  }*/
 
   //used for setting the environment
   private DockerShell getShell() throws ContainerException {

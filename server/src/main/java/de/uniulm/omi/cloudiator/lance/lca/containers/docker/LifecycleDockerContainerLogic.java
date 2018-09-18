@@ -6,6 +6,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedV
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic {
   private final LifecycleComponent myComponent;
@@ -32,6 +33,30 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   void setCompleteStaticEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
     BashExportBasedVisitor visitor = setupCompleteStaticEnvironment(diff);
     myComponent.accept(deploymentContext, visitor);
+  }
+
+  @Override
+  public void doInit(LifecycleStore store) throws ContainerException {
+      try {
+        //Environment still set (in logic.doInit call in BootstrapTransitionAction)
+        //could return a shell
+        doStartContainer();
+      } catch (ContainerException ce) {
+        throw ce;
+      } catch (Exception ex) {
+        throw new ContainerException(ex);
+      }
+  }
+
+  @Override
+  public void doDestroy(boolean force) throws ContainerException {
+    /* currently docker ignores the flag */
+    try {
+      //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
+      client.stopContainer(myId);
+    } catch (DockerException de) {
+      throw new ContainerException(de);
+    }
   }
 
   @Override

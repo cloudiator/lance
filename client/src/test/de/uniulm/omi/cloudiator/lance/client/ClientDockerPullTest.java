@@ -26,6 +26,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.application.component.*;
@@ -33,6 +34,8 @@ import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import java.util.Map;
+import java.util.Random;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -89,7 +92,7 @@ public class ClientDockerPullTest {
   private static ComponentId kafkaComponentId;
   private static int defaultInternalInport;
   // adjust
-  private static String publicIp = "134.60.64.95";
+  private static String publicIp = "x.x.x.x";
   private static LifecycleClient client;
   private static ComponentInstanceId zookId, cassId, kafkId;
 
@@ -120,7 +123,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
   private DockerComponent buildDockerComponent(
@@ -385,36 +388,55 @@ public class ClientDockerPullTest {
     return kafka_context;
   }
 
-  EntireDockerCommands buildEntireDockerCommands() {
-    EntireDockerCommands cmds = new EntireDockerCommands();
-
+  EntireDockerCommands buildEntireDockerCommands(String name) {
+    Random rand = new Random();
+    DockerCommand.Builder createBuilder = new DockerCommand.Builder(DockerCommand.CREATE);
+    DockerCommand.Builder startBuilder = new DockerCommand.Builder(DockerCommand.START);
+    DockerCommand.Builder stopBuilder = new DockerCommand.Builder(DockerCommand.STOP);
     try {
-      cmds.setOption(DockerCommand.CREATE, Option.ENVIRONMENT, "foo=bar");
-      cmds.setOption(DockerCommand.CREATE, Option.ENVIRONMENT, "john=doe");
-      cmds.setOption(DockerCommand.CREATE, Option.NAME, "comp");
-      cmds.setOption(DockerCommand.CREATE, Option.PORT, "9090:9090");
-      cmds.setOsCommand(DockerCommand.CREATE, OsCommand.BASH);
-      cmds.setArg(DockerCommand.CREATE, "--noediting");
-      cmds.setOption(DockerCommand.START, Option.INTERACTIVE, "");
+      Map<Option,String> createOptionMap = new HashMap<>();
+      createOptionMap.put(Option.ENVIRONMENT, "foo=bar");
+      createOptionMap.put(Option.ENVIRONMENT, "john=doe");
+      String  n = Integer.toString(rand.nextInt(1000) + 1);
+      createOptionMap.put(Option.PORT, n);
+      createOptionMap.put(Option.RESTART, "no");
+      createOptionMap.put(Option.INTERACTIVE, "");
+      List<OsCommand> createOsCommandList = new ArrayList<>();
+      createOsCommandList.add(OsCommand.BASH);
+      List<String> createArgsList = new ArrayList<>();
+      createArgsList.add("--noediting");
+      Map<Option,String> startOptionMap = new HashMap<>();
+      startOptionMap.put(Option.INTERACTIVE, "");
+
+      createBuilder.setOptions(createOptionMap);
+      createBuilder.setCommand(createOsCommandList);
+      createBuilder.setArgs(createArgsList);
+
+      startBuilder.setOptions(startOptionMap);
     } catch (Exception e) {
       System.err.println("Error in creating docker command");
     }
 
+    EntireDockerCommands cmds = new EntireDockerCommands(createBuilder.build(), startBuilder.build(), stopBuilder.build());
     return cmds;
   }
 
   private void printCommandParts(EntireDockerCommands cmds) {
-    System.out.println(cmds.getSetOptionsString(DockerCommand.CREATE));
-    System.out.println(cmds.getSetOsCommandString(DockerCommand.CREATE));
-    System.out.println(cmds.getSetArgsString(DockerCommand.CREATE));
-    System.out.println("\n");
-    System.out.println(cmds.getSetOptionsString(DockerCommand.START));
-    System.out.println(cmds.getSetOsCommandString(DockerCommand.START));
-    System.out.println(cmds.getSetArgsString(DockerCommand.START));
-    System.out.println("\n");
-    System.out.println(cmds.getSetOptionsString(DockerCommand.STOP));
-    System.out.println(cmds.getSetOsCommandString(DockerCommand.STOP));
-    System.out.println(cmds.getSetArgsString(DockerCommand.STOP));
+    try {
+      System.out.println(cmds.getSetOptionsString(DockerCommand.CREATE));
+      System.out.println(cmds.getSetOsCommandString(DockerCommand.CREATE));
+      System.out.println(cmds.getSetArgsString(DockerCommand.CREATE));
+      System.out.println("\n");
+      System.out.println(cmds.getSetOptionsString(DockerCommand.START));
+      System.out.println(cmds.getSetOsCommandString(DockerCommand.START));
+      System.out.println(cmds.getSetArgsString(DockerCommand.START));
+      System.out.println("\n");
+      System.out.println(cmds.getSetOptionsString(DockerCommand.STOP));
+      System.out.println(cmds.getSetOsCommandString(DockerCommand.STOP));
+      System.out.println(cmds.getSetArgsString(DockerCommand.STOP));
+    } catch (Exception e) {
+      System.err.println("Error in printing docker command strings");
+    }
   }
 
   @Test
@@ -461,10 +483,12 @@ public class ClientDockerPullTest {
                 }
               });
       DeploymentContext zookContext = createZookeperContext(client);
-      EntireDockerCommands cmds = buildEntireDockerCommands();
-      printCommandParts(cmds);
+      EntireDockerCommands cmds = buildEntireDockerCommands("zook");
+      zookComp.setEntireDockerCommands(cmds);
+      zookComp.setImageName("zookeeper");
+      zookComp.setTag("3.4.12");
       zookId =
-          client.deploy(zookContext, zookComp, cmds);
+          client.deploy(zookContext, zookComp);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy zookeeper component");
     }
@@ -499,10 +523,11 @@ public class ClientDockerPullTest {
                 }
               });
       DeploymentContext cassContext = createCassandraContext(client);
-      EntireDockerCommands cmds = buildEntireDockerCommands();
-      printCommandParts(cmds);
+      EntireDockerCommands cmds = buildEntireDockerCommands("cass");
+      cassComp.setEntireDockerCommands(cmds);
+      cassComp.setImageName("cassandra");
       cassId =
-          client.deploy(cassContext, cassComp, cmds);
+          client.deploy(cassContext, cassComp);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
     }
@@ -533,11 +558,11 @@ public class ClientDockerPullTest {
                 }
               });
       DeploymentContext kafkaContext = createKafkaContext(client);
-      EntireDockerCommands cmds = buildEntireDockerCommands();
-      printCommandParts(cmds);
-      kafkId =
-          client.deploy(
-              kafkaContext, kafkaComp, cmds);
+      EntireDockerCommands cmds = buildEntireDockerCommands("kafk");
+      kafkaComp.setEntireDockerCommands(cmds);
+      kafkaComp.setImageFolder("wurstmeister");
+      kafkaComp.setImageName("kafka");
+      kafkId = client.deploy(kafkaContext, kafkaComp);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
     }
@@ -551,17 +576,17 @@ public class ClientDockerPullTest {
       try {
         zookStatus = client.getComponentContainerStatus(zookId, publicIp);
         cassStatus = client.getComponentContainerStatus(cassId, publicIp);
-        //kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
+        kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
         System.out.println("ZOOKEEPER STATUS:" + zookStatus);
         System.out.println("CASSANDRA STATUS:" + cassStatus);
-        //System.out.println("KAFKA STATUS:" + kafkStatus);
+        System.out.println("KAFKA STATUS:" + kafkStatus);
         sleep(5000);
       } catch (DeploymentException ex) {
         System.err.println("Exception during deployment!");
       } catch (InterruptedException ex) {
         System.err.println("Interrupted!");
       }
-    } while (zookStatus != READY || cassStatus != READY);// || kafkStatus != READY);
+    } while (zookStatus != READY || cassStatus != READY || kafkStatus != READY);
   }
 
   @Test
@@ -569,7 +594,7 @@ public class ClientDockerPullTest {
     try {
       client.undeploy(zookId, ContainerType.DOCKER);
       client.undeploy(cassId, ContainerType.DOCKER);
-      //client.undeploy(kafkId, ContainerType.DOCKER);
+      client.undeploy(kafkId, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     }

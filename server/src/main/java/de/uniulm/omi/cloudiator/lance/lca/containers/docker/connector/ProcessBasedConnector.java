@@ -241,4 +241,26 @@ public final class ProcessBasedConnector implements DockerConnector {
             return -1;
         }
     }
+
+    @Override
+    public String executeSingleDockerCommand(String fullDockerCommand) throws DockerException {
+
+        ExecResult result = ProcessWrapper.singleDockerCommand(fullDockerCommand.split("\\s+"));
+        if(result.isSuccess()) {
+            return result.getOutput().trim();
+        }
+        throw new DockerException(result.getError());
+    }
+
+    @Override
+    public DockerShell executeProgressingDockerCommand(String fullDockerCommand) throws DockerException {
+        Inprogress pw = ProcessWrapper.progressingDockerCommand(fullDockerCommand.split("\\s+"));
+
+        if(pw.processStillRunning()) {
+            return pw;
+        }
+        ExecResult result = pw.toExecutionResult();
+        //todo: Insert here the instance-id
+        throw new DockerException("cannot start Docker container; return value: " + result.exitCode() + "; " + result.getError() + ";" + result.getOutput());
+    }
 }

@@ -81,7 +81,6 @@ public final class LifecycleClient {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleClient.class);
 
-
   public static LifecycleClient getClient(String serverIp)
       throws RemoteException, NotBoundException {
     checkNotNull(serverIp);
@@ -153,7 +152,7 @@ public final class LifecycleClient {
  }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DockerComponent comp, EntireDockerCommands usedCommands)
+      final DockerComponent comp)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
@@ -161,7 +160,7 @@ public final class LifecycleClient {
     Callable<ComponentInstanceId> callable = () -> {
       LOGGER.info("Trying to deploy Docker component " + comp);
       return lifecycleAgent
-          .deployDockerComponent(ctx, comp, usedCommands);
+          .deployDockerComponent(ctx, comp);
     };
 
     return doRetryerCall(retryer, callable);
