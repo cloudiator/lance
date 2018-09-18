@@ -65,11 +65,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   private final PlainShellFactory plainShellFactory;
   private final HostContext hostContext;
   private boolean stopped = false;
-  private final StaticEnvVars instVars;
-  private final StaticEnvVars hostVars;
 
   private final Map<String, String> envVarsStatic;
-  private final Map<String, String> envVarsDynamic;
 
   //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
   private static final Map<String, String> translateMap;
@@ -83,22 +80,19 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   private PlainContainerLogic(Builder builder) {
 
     this.myId = builder.myId;
-    this.instVars = this.myId;
+    final StaticEnvVars instVars = this.myId;
     this.deployableComponent = builder.deployableComponent;
     this.deploymentContext = builder.deploymentContext;
     this.os = builder.os;
     this.networkHandler = builder.networkHandler;
     this.plainShellFactory = builder.plainShellFactory;
     this.hostContext = builder.hostContext;
-    this.hostVars = this.hostContext;
+    final StaticEnvVars hostVars = this.hostContext;
     this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
     for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
       envVarsStatic.put(kv.getKey(),kv.getValue());
     }
-
-    this.envVarsDynamic = new HashMap<>();
-    //todo: fill dynamic map with appropriate env-vars
   }
 
   @Override
@@ -210,12 +204,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
       visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
-  }
-
-  @Override
-  public void setDynamicEnvironment() throws ContainerException {
-    //todo: implement
-
   }
 
   @Override

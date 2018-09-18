@@ -37,6 +37,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
 
 public final class NetworkHandler {
 
@@ -54,7 +55,8 @@ public final class NetworkHandler {
     private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<>();
     
     private final OutPortHandler outPorts;
-    
+    private Map<String, String> envVarsDynamic;
+
     public NetworkHandler(GlobalRegistryAccessor accessorParam, DeployableComponent myComponentParam, HostContext hostContextParam) {
         
         portHierarchy = PortRegistryTranslator.PORT_HIERARCHY;
@@ -63,6 +65,14 @@ public final class NetworkHandler {
         portAccessor = new PortRegistryTranslator(accessorParam, hostContext);
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
+    }
+
+    private void injectDynamicEnvVars(DynamicEnvVars vars) {
+        this.envVarsDynamic.putAll(vars.getEnvVars());
+    }
+
+    private void removeDynamicEnvVars(DynamicEnvVars vars) {
+        this.envVarsDynamic.remove(vars.getEnvVars().keySet());
     }
 
     public void initPorts(String address) throws RegistrationException {

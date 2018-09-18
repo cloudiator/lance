@@ -59,6 +59,4 @@ public interface ContainerLogic {
     InportAccessor getPortMapper();
 
     void setStaticEnvironment() throws ContainerException;
-
-    void setDynamicEnvironment() throws ContainerException;
 }

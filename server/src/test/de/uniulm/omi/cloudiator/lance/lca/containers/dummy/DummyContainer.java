@@ -13,7 +13,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycles.ResponseHistory;
 
-public class DummyContainer implements ContainerLogic {
+public abstract class DummyContainer implements ContainerLogic {
 
 	private volatile int invocationCounter = 0;
 	private final EnumMap<ContainerCalls, ResponseHistory<?>> calls = new EnumMap<>(ContainerCalls.class);
@@ -43,7 +43,7 @@ public class DummyContainer implements ContainerLogic {
 	}
 
 	@Override
-	public void completeInit() throws ContainerException {
+	public void preInit() throws ContainerException {
 		invocationCounter++;
 		callStack.add(ContainerCalls.COMPLETE_INIT);
 		calls.get(ContainerCalls.COMPLETE_INIT).getNext();

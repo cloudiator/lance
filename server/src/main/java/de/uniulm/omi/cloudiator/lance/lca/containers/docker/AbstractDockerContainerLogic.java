@@ -66,11 +66,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   protected final HostContext hostContext;
 
-  protected final StaticEnvVars instVars;
-  protected final StaticEnvVars hostVars;
-
   protected final Map<String, String> envVarsStatic;
-  protected final Map<String, String> envVarsDynamic;
 
   //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
   protected static final Map<String, String> translateMap;
@@ -88,21 +84,18 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     }
 
     this.myId = builder.myId;
-    this.instVars = this.myId;
+    final StaticEnvVars instVars = this.myId;
     this.client = builder.client;
     this.deploymentContext = builder.deploymentContext;
     this.shellFactory = builder.shellFactory;
     this.networkHandler = builder.networkHandler;
     this.hostContext = builder.hostContext;
-    this.hostVars = this.hostContext;
-    envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
+    final StaticEnvVars hostVars = this.hostContext;
+    this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
     for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
       envVarsStatic.put(kv.getKey(),kv.getValue());
     }
-
-    envVarsDynamic = new HashMap<>();
-    //todo: fill dynamic map with appropriate env-vars
   }
 
 	@Override
@@ -162,11 +155,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
       visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
-  }
-
-  @Override
-  public void setDynamicEnvironment() throws ContainerException {
-    //todo: implement
   }
 
   @Override
