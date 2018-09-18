@@ -20,5 +20,4 @@ public class LifecycleComponent extends DeployableComponent{
   public LifecycleComponent() {
     super();
   }
-
 }
