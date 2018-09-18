@@ -32,8 +32,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.List;

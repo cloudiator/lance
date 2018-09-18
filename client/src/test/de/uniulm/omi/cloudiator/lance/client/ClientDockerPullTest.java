@@ -24,6 +24,7 @@ import static java.lang.Thread.sleep;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -413,8 +414,8 @@ public class ClientDockerPullTest {
       createBuilder.setArgs(createArgsList);
 
       startBuilder.setOptions(startOptionMap);
-    } catch (Exception e) {
-      System.err.println("Error in creating docker command");
+    } catch (DockerCommandException ce) {
+      System.err.println("Error in creating docker commands");
     }
 
     EntireDockerCommands cmds = new EntireDockerCommands(createBuilder.build(), startBuilder.build(), stopBuilder.build());
@@ -434,7 +435,7 @@ public class ClientDockerPullTest {
       System.out.println(cmds.getSetOptionsString(DockerCommand.STOP));
       System.out.println(cmds.getSetOsCommandString(DockerCommand.STOP));
       System.out.println(cmds.getSetArgsString(DockerCommand.STOP));
-    } catch (Exception e) {
+    } catch (DockerCommandException e) {
       System.err.println("Error in printing docker command strings");
     }
   }

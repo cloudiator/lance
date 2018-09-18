@@ -5,6 +5,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -105,28 +106,19 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
     return this.digestSHA256;
   }
 
-  public String getFullDockerCommand(DockerCommand cmd) throws IllegalArgumentException {
+  public String getFullDockerCommand(DockerCommand cmd) throws DockerCommandException {
     StringBuilder builder = new StringBuilder();
     builder.append(mapCommandToString(cmd) + " ");
-    try {
-      builder.append(entireDockerCommands.getSetOptionsString(cmd) + " ");
-      builder.append(getFullIdentifier(cmd) + " ");
-      builder.append(entireDockerCommands.getSetOsCommandString(cmd) + " ");
-      builder.append(entireDockerCommands.getSetArgsString(cmd));
-    } catch (Exception e) {
-      throw new IllegalStateException(e);
-    }
+    builder.append(entireDockerCommands.getSetOptionsString(cmd) + " ");
+    builder.append(getFullIdentifier(cmd) + " ");
+    builder.append(entireDockerCommands.getSetOsCommandString(cmd) + " ");
+    builder.append(entireDockerCommands.getSetArgsString(cmd));
 
     return builder.toString();
   }
 
-  public void setContainerName(ComponentInstanceId id) {
-      try {
-        entireDockerCommands.setOption(DockerCommand.CREATE, Option.NAME, buildNameOptionFromId(id));
-      //todo: handle exceptions more thoroughly, e.g. specify message
-      } catch(Exception e) {
-        LOGGER.warn("Cannot set name option for Docker Container");
-      }
+  public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
+    entireDockerCommands.setOption(DockerCommand.CREATE, Option.NAME, buildNameOptionFromId(id));
   }
 
   private static String buildNameOptionFromId(ComponentInstanceId id) {
@@ -134,7 +126,8 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
   }
 
   public String getFullIdentifier(DockerCommand cmd) throws IllegalArgumentException {
-    if (cmd == DockerCommand.CREATE) return getFullImageName();
+    if (cmd == DockerCommand.CREATE)
+      return getFullImageName();
     else {
       try {
         return entireDockerCommands.getContainerName(DockerCommand.CREATE);

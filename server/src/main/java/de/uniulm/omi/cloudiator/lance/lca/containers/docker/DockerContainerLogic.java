@@ -8,7 +8,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
-import java.util.Map;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
@@ -19,7 +19,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     this.myComponent = builder.myComponent;
     this.imageHandler = new DockerImageHandler(builder.osParam, new DockerOperatingSystemTranslator(),
         builder.client, builder.myComponent, builder.dockerConfig);
-    myComponent.setContainerName(this.myId);
+    try {
+      myComponent.setContainerName(this.myId);
+    } catch (DockerCommandException ce) {
+      LOGGER.error("Cannot set name for Docker container for component:" + myId, ce);
+    }
   }
 
   @Override
@@ -30,6 +34,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.CREATE));
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
+    } catch(DockerCommandException ce) {
+      throw new ContainerException(ce);
     }
   }
 
@@ -60,6 +66,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.STOP));
     } catch (DockerException de) {
       throw new ContainerException(de);
+    } catch(DockerCommandException ce) {
+      throw new ContainerException(ce);
     }
   }
 
@@ -79,6 +87,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       setStaticEnvironment();
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
+    } catch(DockerCommandException ce) {
+      throw new ContainerException(ce);
     }
 
     return dshell;

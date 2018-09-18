@@ -11,24 +11,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-//todo: build DockerCommandException
 public class DockerCommand implements Serializable{
+  private final static String createCommandName = "docker create";
+  private final static String startCommandName = "docker start";
+  private final static String stopCommandName = "docker stop";
+
   public final static DockerCommand CREATE = new DockerCommand(new Option[]{Option.NAME, Option.PORT, Option.RESTART,
-      Option.INTERACTIVE, Option.ENVIRONMENT, Option.NETWORK, Option.TTY}, new OsCommand[]{OsCommand.BASH});
-  public final static DockerCommand START = new DockerCommand(new Option[]{Option.INTERACTIVE}, new OsCommand[]{});
-  public final static DockerCommand STOP = new DockerCommand(new Option[]{}, new OsCommand[]{});
+      Option.INTERACTIVE, Option.ENVIRONMENT, Option.NETWORK, Option.TTY}, new OsCommand[]{OsCommand.BASH}, createCommandName);
+  public final static DockerCommand START = new DockerCommand(new Option[]{Option.INTERACTIVE}, new OsCommand[]{}, startCommandName);
+  public final static DockerCommand STOP = new DockerCommand(new Option[]{}, new OsCommand[]{}, stopCommandName);
   private static final long serialVersionUID = 1509736151696237288L;
 
   private final Set<Option> possibleOptions;
   private final Set<OsCommand> possibleCommands;
+  private final String dockerCommandName;
 
   private final Map<Option, String> setOptions;
   private final List<OsCommand> setCommand;
   private final List<String> setArgs;
 
-  private DockerCommand(Option[] opts, OsCommand[] commands) {
+  private DockerCommand(Option[] opts, OsCommand[] commands, String cName) {
     possibleOptions = new HashSet<>(Arrays.asList(opts));
     possibleCommands = new HashSet<>(Arrays.asList(commands));
+    dockerCommandName = cName;
 
     setOptions = new HashMap<>();
     setCommand = new ArrayList<>();
@@ -38,6 +43,7 @@ public class DockerCommand implements Serializable{
   private DockerCommand(Builder builder) {
     possibleOptions = builder.possibleOptions;
     possibleCommands = builder.possibleCommands;
+    dockerCommandName = builder.dockerCommandName;
 
     setOptions = builder.setOptions;
     setCommand = builder.setCommand;
@@ -53,18 +59,16 @@ public class DockerCommand implements Serializable{
     EMPTY, BASH
   }
 
-  //todo: include Enum-name (DockerCommand) and Enum-name(Option) in Exception String
-  public void setOption(Option opt, String arg) throws Exception {
+  public void setOption(Option opt, String arg) throws DockerCommandException {
     if(!possibleOptions.contains(opt))
-      throw new Exception("Option does not exist for this DockerCommand");
+      throw new DockerCommandException("Option " + opt.name() + " does not exist for '" + dockerCommandName + "' command");
 
     setOptions.put(opt,arg);
   }
 
-  //todo: include Enum-name (DockerCommand) and Enum-name(Command) in Exception String
-  public void setOsCommand(OsCommand cmd) throws Exception {
+  public void setOsCommand(OsCommand cmd) throws DockerCommandException {
     if(!possibleCommands.contains(cmd))
-      throw new Exception("Command does not exist for this DockerCommand");
+      throw new DockerCommandException("Command " + cmd.name() + " does not exist for '" + dockerCommandName + "' command");
 
     //only one OsCommand allowed
     if(setCommand.size()>0)
@@ -73,10 +77,9 @@ public class DockerCommand implements Serializable{
     setCommand.add(cmd);
   }
 
-  //todo: include Enum-name (DockerCommand) in Exception String
-  public void setArg(String arg) throws Exception {
+  public void setArg(String arg) throws DockerCommandException {
     if(!argsAllowed())
-      throw new Exception("Cannot set args for this DockeOsCommand");
+      throw new DockerCommandException("Arg " + arg + " not allowed for '" + dockerCommandName + "' command");
 
     setArgs.add(arg);
   }
@@ -142,9 +145,9 @@ public class DockerCommand implements Serializable{
   }
 
   //"helper-method" to get the Name for commands: START, STOP
-  String getContainerName() throws IllegalStateException {
+  String getContainerName() throws DockerCommandException {
     if(!this.setOptions.containsKey(Option.NAME))
-      throw new IllegalStateException("NAME option not settable for this Command");
+      throw new DockerCommandException("NAME option not set for '" + dockerCommandName + "' command");
 
     return this.setOptions.get(Option.NAME);
   }
@@ -152,6 +155,7 @@ public class DockerCommand implements Serializable{
   public static class Builder {
     private final Set<Option> possibleOptions;
     private final Set<OsCommand> possibleCommands;
+    private final String dockerCommandName;
 
     private Map<Option, String> setOptions;
     private List<OsCommand> setCommand;
@@ -161,32 +165,37 @@ public class DockerCommand implements Serializable{
       possibleOptions = new HashSet<>(cmd.possibleOptions);
       possibleCommands = new HashSet<>(cmd.possibleCommands);
 
+      if(cmd.equals(CREATE))
+        dockerCommandName = "docker create";
+      else if(cmd.equals(START))
+        dockerCommandName = "docker start";
+      else if(cmd.equals(STOP))
+        dockerCommandName = "docker stop";
+      else
+        dockerCommandName = "docker <unknown>";
+
       setOptions = new HashMap<>(cmd.setOptions);
       setCommand = new ArrayList<>(cmd.setCommand);
       setArgs = new ArrayList<>(cmd.setArgs);
     }
 
-    public Builder setOptions(Map<Option,String> opts) throws Exception {
-      if(!checkMapKeysinSet(opts, possibleOptions))
-        throw new Exception("Option does not exist for this DockerCommand");
-
+    public Builder setOptions(Map<Option,String> opts) throws DockerCommandException  {
+      checkMapKeysInSet(opts, possibleOptions);
       setOptions = new HashMap<>(opts);
       return this;
     }
 
-    public Builder setCommand(List<OsCommand> cmd) throws Exception {
-      if(!isSubset(possibleCommands,cmd))
-        throw new Exception("Command does not exist for this DockerCommand");
-
+    public Builder setCommand(List<OsCommand> cmd) throws DockerCommandException {
+      isSubset(possibleCommands,cmd);
       //only zero/one OsCommand allowed
       if(cmd.size()>1)
-        throw new Exception("Only one Command allowed for this DockerCommand");
+        throw new DockerCommandException("Only one Command allowed for '" + dockerCommandName + "' command");
 
       setCommand = new ArrayList<>(cmd);
       return this;
     }
 
-    public Builder setArgs(List<String> args) throws Exception {
+    public Builder setArgs(List<String> args) throws DockerCommandException {
       //todo: check if args allowed within this DockerCommand
       setArgs = new ArrayList<>(args);
       return this;
@@ -195,23 +204,19 @@ public class DockerCommand implements Serializable{
     public DockerCommand build() {
       return new DockerCommand(this);
     }
-  }
 
-  static boolean checkMapKeysinSet(Map<Option,String> map, Set<Option> set) {
-    for (Map.Entry<Option, String> kv : map.entrySet()) {
-      if(!set.contains(kv.getKey()))
-        return false;
+    void checkMapKeysInSet(Map<Option,String> map, Set<Option> set) throws DockerCommandException {
+      for (Map.Entry<Option, String> kv : map.entrySet()) {
+        if(!set.contains(kv.getKey()))
+          throw new DockerCommandException("Option " + kv.getKey().name() + " does not exist for '" + dockerCommandName + "' command");
+      }
     }
 
-    return true;
-  }
-
-  static boolean isSubset(Set<OsCommand> origSet, List<OsCommand> possibleSubSet) {
-    for (OsCommand osCmd: possibleSubSet) {
-      if(!origSet.contains(osCmd))
-        return false;
+    void isSubset(Set<OsCommand> origSet, List<OsCommand> possibleSubSet) throws DockerCommandException {
+      for (OsCommand osCmd: possibleSubSet) {
+        if(!origSet.contains(osCmd))
+          throw new DockerCommandException("Command " + osCmd.name() + " does not exist for '" + dockerCommandName + "' command");
+      }
     }
-
-    return true;
   }
 }

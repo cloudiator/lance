@@ -61,8 +61,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
