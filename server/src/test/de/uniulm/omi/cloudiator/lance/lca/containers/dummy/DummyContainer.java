@@ -13,7 +13,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycles.ResponseHistory;
 
-public abstract class DummyContainer implements ContainerLogic {
+public class DummyContainer implements ContainerLogic {
 
 	private volatile int invocationCounter = 0;
 	private final EnumMap<ContainerCalls, ResponseHistory<?>> calls = new EnumMap<>(ContainerCalls.class);
@@ -50,10 +50,20 @@ public abstract class DummyContainer implements ContainerLogic {
 	}
 
 	@Override
+	public void completeShutDown() throws ContainerException {
+
+	}
+
+	@Override
 	public void doDestroy(boolean forceShutdown) throws ContainerException {
 		invocationCounter++;
 		callStack.add(ContainerCalls.OTHER);
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void preDestroy() throws ContainerException {
+
 	}
 
 	@Override
@@ -76,7 +86,12 @@ public abstract class DummyContainer implements ContainerLogic {
         	clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, mapping[2]);
         });
 	}
-	
+
+	@Override
+	public void setStaticEnvironment() throws ContainerException {
+
+	}
+
 	/* validation methods */
 	
 	public enum ContainerCalls {
