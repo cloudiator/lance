@@ -30,9 +30,12 @@ public class LegacyDockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   @Override
-  void setCompleteStaticEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
-    BashExportBasedVisitor visitor = setupCompleteStaticEnvironment(diff);
-    myComponent.accept(deploymentContext, visitor);
+  void setDynamicEnvironment(BashExportBasedVisitor visitor,
+      PortDiff<DownstreamAddress> diff) throws ContainerException {
+    this.myComponent.injectDeploymentContext(this.deploymentContext);
+    networkHandler.accept(visitor, diff);
+    this.myComponent.accept(visitor);
+    collectDynamicEnvVars();
   }
 
   @Override
@@ -66,6 +69,12 @@ public class LegacyDockerContainerLogic extends AbstractDockerContainerLogic {
     } catch (DockerException de) {
       LOGGER.warn("could not update finalise image handling.", de);
     }
+  }
+
+  @Override
+  void collectDynamicEnvVars() {
+    envVarsDynamic.putAll(myComponent.getEnvVars());
+    envVarsDynamic.putAll(networkHandler.getEnvVars());
   }
 
   static class Builder extends AbstractBuilder<DeployableComponent> {

@@ -22,9 +22,7 @@ import java.util.List;
 
 public interface NetworkVisitor {
 
-    void visitNetworkAddress(PortHierarchyLevel level, String address);
-    void visitInPort(String portName, PortHierarchyLevel level, Integer portNr);
-    void visitOutPort(String portName, PortHierarchyLevel level,
-            List<DownstreamAddress> sinks);
-
+    void visitNetworkAddress(String name, String address);
+    void visitInPort(String fullPortName, String portNr);
+    void visitOutPort(String name,String sinkValues);
 }

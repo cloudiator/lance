@@ -40,9 +40,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   @Override
-  void setCompleteStaticEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
-    BashExportBasedVisitor visitor = setupCompleteStaticEnvironment(diff);
-    myComponent.accept(deploymentContext, visitor);
+  void setDynamicEnvironment(BashExportBasedVisitor visitor, PortDiff<DownstreamAddress> diff) throws ContainerException {
+    this.myComponent.injectDeploymentContext(this.deploymentContext);
+    networkHandler.accept(visitor, diff);
+    this.myComponent.accept(visitor);
+    collectDynamicEnvVars();
   }
 
   @Override
@@ -80,11 +82,18 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
+  @Override
+  void collectDynamicEnvVars() {
+    envVarsDynamic.putAll(myComponent.getEnvVars());
+    envVarsDynamic.putAll(networkHandler.getEnvVars());
+  }
+
   private DockerShell executeGenericStart() throws ContainerException {
     final DockerShell dshell;
     try {
       dshell = client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.START));
-      setStaticEnvironment();
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
+      setStaticEnvironment(dshell, visitor);
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
     } catch(DockerCommandException ce) {

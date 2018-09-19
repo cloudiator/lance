@@ -48,10 +48,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 //install shell in doInit (todo: rename to doBootstrap as it is called in BootstrapTransitionAction), close shell in preInit
-//install shell before every LifeCycleTransition, close shell after eacgy LifeCycleTransition
+//install shell before every LifeCycleTransition, close shell after each LifeCycleTransition
 //install shell in preDestroy, close shell in completeShutDown
 //install shell in preprocessDetector, close shell in postProcessDetector
 //install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
+//todo: set dynamic env after it has first been set and along with all settings of the static environment
 abstract class AbstractDockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
@@ -63,10 +64,10 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   protected final DeploymentContext deploymentContext;
 
   protected final NetworkHandler networkHandler;
-
   protected final HostContext hostContext;
 
   protected final Map<String, String> envVarsStatic;
+  protected Map<String, String> envVarsDynamic;
 
   //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
   protected static final Map<String, String> translateMap;
@@ -96,6 +97,8 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
       envVarsStatic.put(kv.getKey(),kv.getValue());
     }
+
+    envVarsDynamic = new HashMap<>();
   }
 
 	@Override
@@ -108,7 +111,9 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   @Override
   public void preDestroy() throws ContainerException{
-    setStaticEnvironment();
+    DockerShell shell = getShell();
+    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
+    setStaticEnvironment(shell,visitor);
   }
 
   @Override
@@ -127,25 +132,13 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     });
   }
 
-  @Override
-  public void setStaticEnvironment() throws ContainerException {
-    DockerShell shell = getShell();
-    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
-    doVisit(shell,visitor);
+  void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
+    doVisit(visitor,shell);
   }
 
-  protected BashExportBasedVisitor setupCompleteStaticEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
-    DockerShell shell = getShell();
-    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
-    doVisit(shell,visitor);
-    networkHandler.accept(visitor, diff);
+  abstract void setDynamicEnvironment(BashExportBasedVisitor visitor, PortDiff<DownstreamAddress> diff) throws ContainerException;
 
-    return visitor;
-  }
-
-  abstract void setCompleteStaticEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException;
-
-  private void doVisit(DockerShell shell, BashExportBasedVisitor visitor) {
+  private void doVisit(BashExportBasedVisitor visitor,DockerShell shell) {
     visitor.visit("TERM", "DUMB");
 
     for(Entry<String, String> entry: envVarsStatic.entrySet()) {
@@ -183,7 +176,9 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   @Override
   public void prepare(HandlerType type) throws ContainerException {
-    setStaticEnvironment();
+    DockerShell shell = getShell();
+    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
+    setStaticEnvironment(shell, visitor);
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
     }
@@ -231,7 +226,8 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     final DockerShell dshell;
     try {
       dshell = client.startContainer(myId);
-      setStaticEnvironment();
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
+      setStaticEnvironment(dshell,visitor);
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
     }
@@ -248,7 +244,10 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   }
 
   private void prepareEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
-    setCompleteStaticEnvironment(diff);
+    DockerShell shell = getShell();
+    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
+    setStaticEnvironment(shell,visitor);
+    setDynamicEnvironment(visitor, diff);
   }
 
   protected void executeCreation(String target) throws DockerException {
@@ -275,6 +274,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     shellFactory.closeShell();
   }
 
+  abstract void collectDynamicEnvVars();
 
   abstract static class AbstractBuilder<T extends DeployableComponent> {
     protected ComponentInstanceId myId;

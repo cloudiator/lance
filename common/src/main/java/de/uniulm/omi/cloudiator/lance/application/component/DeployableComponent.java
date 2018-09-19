@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
-public class DeployableComponent implements Serializable {
+public class DeployableComponent implements Serializable, DynamicEnvVars {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeployableComponent.class);
     private static final long serialVersionUID = -8008479179768130524L;
@@ -44,6 +45,7 @@ public class DeployableComponent implements Serializable {
     private List<OutPort> outPorts;
     private HashMap<String, Class<?>> properties;
     private HashMap<String, ? extends Serializable> defaultValues;
+    private DeploymentContext ctx;
 
     DeployableComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam, 
             List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam, 
@@ -87,11 +89,36 @@ public class DeployableComponent implements Serializable {
         return new ArrayList<>(outPorts); 
     }
     
-    public void accept(DeploymentContext ctx, PropertyVisitor visitor) {        
+    public void accept(PropertyVisitor visitor) {
+        final Map<String,String> vals = getMatchingValsFromDContext();
+
+        for(Entry<String, String> entry : vals.entrySet()) {
+            String propertyName = entry.getKey();
+            String propertyVal = entry.getValue();
+            visitor.visit(propertyName, propertyVal);
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Map<String, String> getEnvVars() {
+        return getMatchingValsFromDContext();
+    }
+
+    public void injectDeploymentContext(DeploymentContext ctx) {
+        this.ctx = ctx;
+    }
+
+    private Map<String,String> getMatchingValsFromDContext() {
+        final Map<String,String> vals = new HashMap<>();
+
         for(Entry<String, Class<?>> entry : properties.entrySet()) {
             String propertyName = entry.getKey();
             Class<?> type = entry.getValue();
-            if(type == OutPort.class) 
+            if(type == OutPort.class)
                 continue;
             Object o = ctx.getProperty(propertyName, type);
             if(o == null) {
@@ -101,11 +128,9 @@ public class DeployableComponent implements Serializable {
                 LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
                 continue;
             }
-            visitor.visit(propertyName, o.toString());
+            vals.put(propertyName, o.toString());
         }
-    }
 
-    public String getName() {
-        return name;
+        return vals;
     }
 }

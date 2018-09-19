@@ -38,8 +38,9 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
 
-public final class NetworkHandler {
+public final class NetworkHandler implements DynamicEnvVars {
 
 	public static final String UNKNOWN_ADDRESS = "<unknown>";
 	
@@ -55,7 +56,7 @@ public final class NetworkHandler {
     private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<>();
     
     private final OutPortHandler outPorts;
-    private Map<String, String> envVarsDynamic;
+    private Map<String, String> currentEnvVarsDynamic;
 
     public NetworkHandler(GlobalRegistryAccessor accessorParam, DeployableComponent myComponentParam, HostContext hostContextParam) {
         
@@ -65,14 +66,15 @@ public final class NetworkHandler {
         portAccessor = new PortRegistryTranslator(accessorParam, hostContext);
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
+        currentEnvVarsDynamic = new HashMap<>();
     }
 
     private void injectDynamicEnvVars(DynamicEnvVars vars) {
-        this.envVarsDynamic.putAll(vars.getEnvVars());
+        this.currentEnvVarsDynamic.putAll(vars.getEnvVars());
     }
 
     private void removeDynamicEnvVars(DynamicEnvVars vars) {
-        this.envVarsDynamic.remove(vars.getEnvVars().keySet());
+        this.currentEnvVarsDynamic.remove(vars.getEnvVars().keySet());
     }
 
     public void initPorts(String address) throws RegistrationException {
@@ -210,14 +212,24 @@ public final class NetworkHandler {
 
     public void accept(NetworkVisitor visitor, PortDiff<DownstreamAddress> diffSet) {
         for(PortHierarchyLevel level : ipAddresses) {
-            visitor.visitNetworkAddress(level, ipAddresses.valueAtLevel(level));
+            String name = level.getName().toUpperCase() + "_IP";
+            String address = ipAddresses.valueAtLevel(level);
+            DynamicEnvVarsImpl addrVar = DynamicEnvVarsImpl.NETWORK_ADDR;
+            addrVar.setEnvVars(buildSingleElementMap(name,address));
+            injectDynamicEnvVars(addrVar);
+            visitor.visitNetworkAddress(name, address);
         }
         
         for(Entry<String, HierarchyLevelState<Integer>> entry : inPorts.entrySet()) {
             String portName = entry.getKey();
             HierarchyLevelState<Integer> state = entry.getValue();
             for(PortHierarchyLevel level : state) {
-                visitor.visitInPort(portName, level, state.valueAtLevel(level));
+                String fullPortName = level.getName().toUpperCase() + "_" + portName.toUpperCase();
+                String portNumber = state.valueAtLevel(level).toString();
+                DynamicEnvVarsImpl portVar = DynamicEnvVarsImpl.NETWORK_PORT;
+                portVar.setEnvVars(buildSingleElementMap(fullPortName,portNumber));
+                injectDynamicEnvVars(portVar);
+                visitor.visitInPort(fullPortName, portNumber);
             }    
         }
         
@@ -226,5 +238,22 @@ public final class NetworkHandler {
 
     public void updateAddress(PortHierarchyLevel level2Param, String containerIp) {
         registerAddress(level2Param, containerIp);
+    }
+
+    private static Map<String,String> buildSingleElementMap(String key, String value) {
+        Map<String,String> map = new HashMap<>();
+        map.put(key,value);
+
+        return map;
+    }
+
+    //OutPortHandler vars included
+    //copies and not the originals of currentEnvVarsDynamic of NWHandler and outports are returned
+    @Override
+    public Map<String, String> getEnvVars() {
+        Map<String,String> completeDynamicEnvVars = new HashMap<>(currentEnvVarsDynamic);
+        Map<String,String> outPDynVars = new HashMap<>(outPorts.getEnvVars());
+        completeDynamicEnvVars.putAll(outPDynVars);
+        return completeDynamicEnvVars;
     }
 }
