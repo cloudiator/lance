@@ -50,9 +50,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//todo f.held: refactor redundant code
 /**
- * Created by Daniel Seybold on 10.08.2015.
+ * Created by Daniel Seybold on 10.08.2015. Refactored by fh 20.09.2018
  */
 //todo: set dynamic env after it has first been set and along with all settings of the static environment
 public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
@@ -239,6 +238,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void prepare(HandlerType type) throws ContainerException {
     setStaticEnvironment();
+    setDynamicEnvironment(null);
 
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
@@ -289,6 +289,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preDestroy() throws ContainerException {
     setStaticEnvironment();
+    setDynamicEnvironment(null);
   }
 
   @Override
@@ -299,6 +300,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preprocessDetector(DetectorType type) throws ContainerException {
     LOGGER.error("preprocessDetector is not implemented for plain container");
+    setDynamicEnvironment(null);
   }
 
   public static class Builder {

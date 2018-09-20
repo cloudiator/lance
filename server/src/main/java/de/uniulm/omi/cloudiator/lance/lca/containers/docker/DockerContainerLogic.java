@@ -94,6 +94,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       dshell = client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.START));
       BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
       setStaticEnvironment(dshell, visitor);
+      //Setting Dynamic-Envvars here fails, because pub-ip would be set to <unknown> which is invalid bash syntax
+      //setDynamicEnvironment(visitor, null);
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
     } catch(DockerCommandException ce) {

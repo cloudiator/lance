@@ -114,6 +114,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     DockerShell shell = getShell();
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
     setStaticEnvironment(shell,visitor);
+    setDynamicEnvironment(visitor, null);
   }
 
   @Override
@@ -176,12 +177,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   @Override
   public void prepare(HandlerType type) throws ContainerException {
-    DockerShell shell = getShell();
-    BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
-    setStaticEnvironment(shell, visitor);
-    if (type == LifecycleHandlerType.INSTALL) {
-      preInstallAction();
-    }
+    prepareEnvironment();
   }
 
   @Override

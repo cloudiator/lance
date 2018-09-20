@@ -12,6 +12,9 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
   NETWORK_ADDR((String str) ->
     {
       try {
+        if(str.equals("<unknown>"))
+          return true;
+
         InetAddresses.forString(str);
         return true;
       } catch (IllegalArgumentException ex) {
