@@ -26,6 +26,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,59 +70,65 @@ import java.lang.Exception;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClientDockerPullTest {
 
-  private static ApplicationInstanceId appInstanceId;
+  private enum version {LIFECYCLE, DOCKER_DEPL};
+
   private static ApplicationId applicationId;
-  private static String zookeeperComponent;
-  private static String zookeeperInportName;
-  private static String zookeeperInternalInportName;
-  private static String zookeeperOutportName;
-  private static ComponentId zookeeperComponentId;
-  private static int defaultzookeeperInport;
-  private static int defaultZookeeperInternalInport;
-  private static String cassandraComponent;
-  private static String cassandraInportName;
-  private static String cassandraInternalInportName;
-  private static String cassandraOutportName;
-  private static ComponentId cassandraComponentId;
-  private static int defaultcassandraInport;
-  private static int defaultCassandraInternalInport;
-  private static String kafkaComponent;
-  private static String kafkaInportName;
-  private static String kafkaInternalInportName;
-  private static String kafkaOutportName;
-  private static int defaultkafkaInport;
-  private static int defaultKafkaInternalInport;
-  private static ComponentId kafkaComponentId;
-  private static int defaultInternalInport;
+  private static ApplicationInstanceId appInstanceId;
+
+  private static String zookeeperComponent, cassandraComponent, kafkaComponent;
+  private static String zookeeperComponent_lifecycle, cassandraComponent_lifecycle, kafkaComponent_lifecycle;
+  private static String zookeeperInternalInportName, cassandraInternalInportName, kafkaInternalInportName;
+  private static String zookeeperInternalInportName_lifecycle, cassandraInternalInportName_lifecycle, kafkaInternalInportName_lifecycle;
+  private static String zookeeperOutportName, cassandraOutportName, kafkaOutportName;
+  private static String zookeeperOutportName_lifecycle, cassandraOutportName_lifecycle, kafkaOutportName_lifecycle;
+  private static ComponentId zookeeperComponentId, cassandraComponentId, kafkaComponentId;
+  private static ComponentId zookeeperComponentId_lifecycle, cassandraComponentId_lifecycle, kafkaComponentId_lifecycle;
+  private static int defaultZookeeperInternalInport, defaultCassandraInternalInport, defaultKafkaInternalInport;
+  private static int defaultZookeeperInternalInport_lifecycle, defaultCassandraInternalInport_lifecycle, defaultKafkaInternalInport_lifecycle;
+  private static ComponentInstanceId zookId, cassId, kafkId;
+  private static ComponentInstanceId zookId_lifecycle, cassId_lifecycle, kafkId_lifecycle;
   // adjust
   private static String publicIp = "x.x.x.x";
   private static LifecycleClient client;
-  private static ComponentInstanceId zookId, cassId, kafkId;
 
   @BeforeClass
   public static void configureAppContext() {
-    // führe installer aus
-    appInstanceId = ApplicationInstanceId.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389b");
-    applicationId = ApplicationId.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389c");
+    applicationId = new ApplicationId();
+    appInstanceId = new ApplicationInstanceId();
+
+    Random rand = new Random();
     zookeeperComponent = "zookeeper";
-    zookeeperInportName = "ZOOK_INP";
+    zookeeperComponent_lifecycle = "zookeeper_lifecycle";
     zookeeperInternalInportName = "ZOOK_INT_INP";
+    zookeeperInternalInportName_lifecycle = "ZOOK_INT_INP_LIFECYCLE";
     zookeeperOutportName = "ZOOK_OUT";
-    zookeeperComponentId = ComponentId.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389d");
-    defaultzookeeperInport = defaultZookeeperInternalInport = 3888;
+    zookeeperOutportName_lifecycle = "ZOOK_OUT_LIFECYCLE";
+    zookeeperComponentId = new ComponentId();
+    zookeeperComponentId_lifecycle = new ComponentId();
+    defaultZookeeperInternalInport = 3888;
+    defaultZookeeperInternalInport_lifecycle = (rand.nextInt(65563) + 1);
+
     cassandraComponent = "cassandra";
-    cassandraInportName = "CASS_INP";
+    cassandraComponent_lifecycle = "cassandra_lifecycle";
     cassandraInternalInportName = "CASS_INT_INP";
+    cassandraInternalInportName_lifecycle = "CASS_INT_INP_LIFECYCLE";
     cassandraOutportName = "CASS_OUT";
-    cassandraComponentId = ComponentId.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389e");
-    defaultcassandraInport = defaultCassandraInternalInport = 9160;
-    kafkaComponent = "wurstmeister/kafka";
-    kafkaInportName = "KAFK_INP";
+    cassandraOutportName_lifecycle = "CASS_OUT_LIFECYCLE";
+    cassandraComponentId = new ComponentId();
+    cassandraComponentId_lifecycle = new ComponentId();
+    defaultCassandraInternalInport = 9160;
+    defaultCassandraInternalInport_lifecycle = defaultCassandraInternalInport;
+
+    kafkaComponent = "kafka";
+    kafkaComponent_lifecycle = "kafka_lifecycle";
     kafkaInternalInportName = "KAFK_INT_INP";
+    kafkaInternalInportName_lifecycle = "KAFK_INT_INP_LIFECYCLE";
     kafkaOutportName = "KAFK_OUT";
-    kafkaComponentId = ComponentId.fromString("0f14d0ab-9605-4a62-a9e4-5ed26688389f");
-    defaultkafkaInport = defaultKafkaInternalInport = 9092;
-    defaultInternalInport = 7;
+    kafkaOutportName_lifecycle = "KAFK_OUT_LIFECYCLE";
+    kafkaComponentId = new ComponentId();
+    kafkaComponentId_lifecycle = new ComponentId();
+    defaultKafkaInternalInport = 9092;
+    defaultKafkaInternalInport_lifecycle = defaultKafkaInternalInport;
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
@@ -160,6 +168,39 @@ public class ClientDockerPullTest {
     return comp;
   }
 
+  private DeployableComponent buildDeployableComponent(
+      LifecycleClient client,
+      String compName,
+      ComponentId id,
+      List<InportInfo> inInfs,
+      List<OutportInfo> outInfs,
+      Callable<LifecycleStore> createLifeCycleStore) {
+    DeployableComponentBuilder builder = DeployableComponentBuilder.createBuilder(compName,id);
+
+    for (int i = 0; i < inInfs.size(); i++)
+      builder.addInport(
+          inInfs.get(i).inportName,
+          inInfs.get(i).portType,
+          inInfs.get(i).cardinality,
+          inInfs.get(i).inPort);
+
+    for (int i = 0; i < outInfs.size(); i++)
+      builder.addOutport(
+          outInfs.get(i).outportName,
+          outInfs.get(i).puHandler,
+          outInfs.get(i).cardinality,
+          outInfs.get(i).min);
+
+    try {
+      builder.addLifecycleStore(createLifeCycleStore.call());
+    } catch (Exception ex) {
+      System.err.println("Server not reachable");
+    }
+    builder.deploySequentially(true);
+    DeployableComponent comp = builder.build();
+    return comp;
+  }
+
   static class InportInfo {
     public final String inportName;
     public final PortProperties.PortType portType;
@@ -188,45 +229,11 @@ public class ClientDockerPullTest {
     }
   }
 
-  private LifecycleStore createZookeeperLifecycleStore() {
+  private LifecycleStore createDefaultLifecycleStore() {
     LifecycleStoreBuilder store = new LifecycleStoreBuilder();
     // pre-install handler //
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. alpine (openjdk:8-jre)
-    builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    builder_pre.addCommand("apt-get -y -q update");
-    builder_pre.addCommand("apt-get -y -q upgrade");
-    builder_pre.addCommand("export STARTED=\"true\"");
-    store.setStartDetector(builder_pre.buildStartDetector());
-    // add other commands
-    store.setHandler(
-        builder_pre.build(LifecycleHandlerType.PRE_INSTALL), LifecycleHandlerType.PRE_INSTALL);
-    // weitere handler? //
-    return store.build();
-  }
-
-  private LifecycleStore createCassandraLifecycleStore() {
-    LifecycleStoreBuilder store = new LifecycleStoreBuilder();
-    // pre-install handler //
-    BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
-    // TODO: Extend possible OSes, e.g. debian:jessie-slim
-    builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    builder_pre.addCommand("apt-get -y -q update");
-    builder_pre.addCommand("apt-get -y -q upgrade");
-    builder_pre.addCommand("export STARTED=\"true\"");
-    store.setStartDetector(builder_pre.buildStartDetector());
-    // add other commands
-    store.setHandler(
-        builder_pre.build(LifecycleHandlerType.PRE_INSTALL), LifecycleHandlerType.PRE_INSTALL);
-    // weitere handler? //
-    return store.build();
-  }
-
-  private LifecycleStore createKafkaLifecycleStore() {
-    LifecycleStoreBuilder store = new LifecycleStoreBuilder();
-    // pre-install handler //
-    BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
-    // TODO: Extend possible OSes, e.g. alpine (openjdk:8u151-jre)
     builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
     builder_pre.addCommand("apt-get -y -q update");
     builder_pre.addCommand("apt-get -y -q upgrade");
@@ -255,8 +262,11 @@ public class ClientDockerPullTest {
     try {
       client.registerApplicationInstance(appInstanceId, applicationId);
       client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId);
+      client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId_lifecycle);
       client.registerComponentForApplicationInstance(appInstanceId, cassandraComponentId);
+      client.registerComponentForApplicationInstance(appInstanceId, cassandraComponentId_lifecycle);
       client.registerComponentForApplicationInstance(appInstanceId, kafkaComponentId);
+      client.registerComponentForApplicationInstance(appInstanceId, kafkaComponentId_lifecycle);
     } catch (RegistrationException ex) {
       System.err.println("Exception during registration");
     }
@@ -264,19 +274,9 @@ public class ClientDockerPullTest {
 
   @Test
   public void testCZookCompDescriptions() {
-    List<InportInfo> inInfs = new ArrayList<>();
-    InportInfo inInf =
-        new InportInfo(zookeeperInternalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
-    inInfs.add(inInf);
-    List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
-            zookeeperOutportName,
-            DeploymentHelper.getEmptyPortUpdateHandler(),
-            1,
-            OutPort.NO_SINKS);
-    outInfs.add(outInf);
-    buildDockerComponent(
+    List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
+    List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
+    buildDeployableComponent(
         client,
         zookeeperComponent,
         zookeeperComponentId,
@@ -284,26 +284,55 @@ public class ClientDockerPullTest {
         outInfs,
         new Callable<LifecycleStore>() {
           public LifecycleStore call() {
-            return createZookeeperLifecycleStore();
+            return createDefaultLifecycleStore();
           }
         });
   }
 
   @Test
-  public void testDCassCompDescriptions() {
+  public void testCZookCompDescriptions_lifecycle() {
+    List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
+    List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
+    buildDeployableComponent(
+        client,
+        zookeeperComponent_lifecycle,
+        zookeeperComponentId_lifecycle,
+        inInfs,
+        outInfs,
+        new Callable<LifecycleStore>() {
+          public LifecycleStore call() {
+            return createDefaultLifecycleStore();
+          }
+        });
+  }
+
+  private static List<InportInfo> getInPortInfos(String internalInportName) {
     List<InportInfo> inInfs = new ArrayList<>();
     InportInfo inInf =
-        new InportInfo(cassandraInternalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 9160);
+        new InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
     inInfs.add(inInf);
+
+    return inInfs;
+  }
+
+  private static List<OutportInfo> getOutPortInfos(String outPortName) {
     List<OutportInfo> outInfs = new ArrayList<>();
     OutportInfo outInf =
         new OutportInfo(
-            cassandraOutportName,
+            outPortName,
             DeploymentHelper.getEmptyPortUpdateHandler(),
             1,
             OutPort.NO_SINKS);
     outInfs.add(outInf);
-    buildDockerComponent(
+
+    return outInfs;
+  }
+
+  @Test
+  public void testDCassCompDescriptions() {
+    List<InportInfo> inInfs = getInPortInfos(cassandraInternalInportName);
+    List<OutportInfo> outInfs = getOutPortInfos(cassandraOutportName);
+    buildDeployableComponent(
         client,
         cassandraComponent,
         cassandraComponentId,
@@ -311,23 +340,33 @@ public class ClientDockerPullTest {
         outInfs,
         new Callable<LifecycleStore>() {
           public LifecycleStore call() {
-            return createCassandraLifecycleStore();
+            return createDefaultLifecycleStore();
+          }
+        });
+  }
+
+  @Test
+  public void testDCassCompDescriptions_lifecycle() {
+    List<InportInfo> inInfs = getInPortInfos(cassandraInternalInportName_lifecycle);
+    List<OutportInfo> outInfs = getOutPortInfos(cassandraOutportName_lifecycle);
+    buildDeployableComponent(
+        client,
+        cassandraComponent_lifecycle,
+        cassandraComponentId_lifecycle,
+        inInfs,
+        outInfs,
+        new Callable<LifecycleStore>() {
+          public LifecycleStore call() {
+            return createDefaultLifecycleStore();
           }
         });
   }
 
   @Test
   public void testEKafkaCompDescriptions() {
-    List<InportInfo> inInfs = new ArrayList<>();
-    InportInfo inInf =
-        new InportInfo(kafkaInportName, PortProperties.PortType.PUBLIC_PORT, 1, 9092);
-    inInfs.add(inInf);
-    List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
-            kafkaOutportName, DeploymentHelper.getEmptyPortUpdateHandler(), 2, OutPort.NO_SINKS);
-    outInfs.add(outInf);
-    buildDockerComponent(
+    List<InportInfo> inInfs = getInPortInfos(kafkaInternalInportName);
+    List<OutportInfo> outInfs = getOutPortInfos(kafkaOutportName);
+    buildDeployableComponent(
         client,
         kafkaComponent,
         kafkaComponentId,
@@ -335,56 +374,136 @@ public class ClientDockerPullTest {
         outInfs,
         new Callable<LifecycleStore>() {
           public LifecycleStore call() {
-            return createKafkaLifecycleStore();
+            return createDefaultLifecycleStore();
           }
         });
   }
 
-  public DeploymentContext createZookeperContext(LifecycleClient client) {
+  @Test
+  public void testEKafkaCompDescriptions_lifecycle() {
+    List<InportInfo> inInfs = getInPortInfos(kafkaInternalInportName_lifecycle);
+    List<OutportInfo> outInfs = getOutPortInfos(kafkaOutportName_lifecycle);
+    buildDeployableComponent(
+        client,
+        kafkaComponent_lifecycle,
+        kafkaComponentId_lifecycle,
+        inInfs,
+        outInfs,
+        new Callable<LifecycleStore>() {
+          public LifecycleStore call() {
+            return createDefaultLifecycleStore();
+          }
+        });
+  }
+
+  private static DeploymentContext createZookeperContext(LifecycleClient client, version v) {
+    String internalInportName;
+    int defaultInternalInport;
+    String outportName;
+    ComponentId cassComponentId;
+    String cassInternalInportName;
+
+    if(v == version.DOCKER_DEPL) {
+      internalInportName = zookeeperInternalInportName;
+      defaultInternalInport = defaultZookeeperInternalInport;
+      outportName = zookeeperOutportName;
+      cassComponentId = cassandraComponentId;
+      cassInternalInportName = cassandraInternalInportName;
+    } else {
+      internalInportName = zookeeperInternalInportName_lifecycle;
+      defaultInternalInport = defaultZookeeperInternalInport_lifecycle;
+      outportName = zookeeperOutportName_lifecycle;
+      cassComponentId = cassandraComponentId_lifecycle;
+      cassInternalInportName = cassandraInternalInportName_lifecycle;
+    }
+
     DeploymentContext zookeeper_context =
         client.initDeploymentContext(applicationId, appInstanceId);
     // saying that we want to use the default port as the actual port number //
     zookeeper_context.setProperty(
-        zookeeperInternalInportName, (Object) defaultZookeeperInternalInport, InPort.class);
+        internalInportName ,(Object) defaultInternalInport, InPort.class);
     // saying that we wire this outgoing port to the incoming ports of CASSANDRA //
     zookeeper_context.setProperty(
-        zookeeperOutportName,
+        outportName ,
         (Object)
-            new PortReference(cassandraComponentId, cassandraInternalInportName, PortLinkage.ALL),
+            new PortReference(cassComponentId, cassInternalInportName , PortLinkage.ALL),
         OutPort.class);
     return zookeeper_context;
   }
 
-  public DeploymentContext createCassandraContext(LifecycleClient client) {
+  private static DeploymentContext createCassandraContext(LifecycleClient client, version v) {
+    String internalInportName;
+    int defaultInternalInport;
+    String outportName;
+    ComponentId zookComponentId;
+    String zookInternalInportName;
+
+    if(v == version.DOCKER_DEPL) {
+      internalInportName = cassandraInternalInportName;
+      defaultInternalInport = defaultCassandraInternalInport;
+      outportName = cassandraOutportName;
+      zookComponentId = zookeeperComponentId;
+      zookInternalInportName = zookeeperInternalInportName;
+    } else {
+      internalInportName = cassandraInternalInportName_lifecycle;
+      defaultInternalInport = defaultCassandraInternalInport_lifecycle;
+      outportName = cassandraOutportName_lifecycle;
+      zookComponentId = zookeeperComponentId_lifecycle;
+      zookInternalInportName = zookeeperInternalInportName_lifecycle;
+    }
+
     DeploymentContext cassandra_context =
         client.initDeploymentContext(applicationId, appInstanceId);
     // saying that we want to use the default port as the actual port number //
     cassandra_context.setProperty(
-        cassandraInternalInportName, (Object) defaultCassandraInternalInport, InPort.class);
-    // saying that we wire this outgoing port to the incoming ports of ZOOKEEPER //
+        internalInportName ,(Object) defaultInternalInport, InPort.class);
+    // saying that we wire this outgoing port to the incoming ports of CASSANDRA //
     cassandra_context.setProperty(
-        cassandraOutportName,
+        outportName ,
         (Object)
-            new PortReference(zookeeperComponentId, zookeeperInternalInportName, PortLinkage.ALL),
+            new PortReference(zookComponentId, zookInternalInportName , PortLinkage.ALL),
         OutPort.class);
     return cassandra_context;
   }
 
-  public DeploymentContext createKafkaContext(LifecycleClient client) {
-    DeploymentContext kafka_context = client.initDeploymentContext(applicationId, appInstanceId);
+  private static DeploymentContext createKafkaContext(LifecycleClient client, version v) {
+    String internalInportName;
+    int defaultInternalInport;
+    String outportName;
+    ComponentId zookComponentId, cassComponentId;
+    String zookInternalInportName, cassInternalInportName;
+
+    if(v == version.DOCKER_DEPL) {
+      internalInportName = kafkaInternalInportName;
+      defaultInternalInport = defaultCassandraInternalInport;
+      outportName = kafkaOutportName;
+      zookComponentId = zookeeperComponentId;
+      zookInternalInportName = zookeeperInternalInportName;
+      cassComponentId = cassandraComponentId;
+      cassInternalInportName = cassandraInternalInportName;
+    } else {
+      internalInportName = kafkaInternalInportName_lifecycle;
+      defaultInternalInport = defaultCassandraInternalInport_lifecycle;
+      outportName = kafkaOutportName_lifecycle;
+      zookComponentId = zookeeperComponentId_lifecycle;
+      zookInternalInportName = zookeeperInternalInportName_lifecycle;
+      cassComponentId = cassandraComponentId_lifecycle;
+      cassInternalInportName = cassandraInternalInportName_lifecycle;
+    }
+
+    DeploymentContext kafka_context =
+        client.initDeploymentContext(applicationId, appInstanceId);
     // saying that we want to use the default port as the actual port number //
-    kafka_context.setProperty(kafkaInportName, (Object) defaultkafkaInport, InPort.class);
-    // saying that we wire this outgoing port to the incoming ports of ZOOKEEPER //
     kafka_context.setProperty(
-        kafkaOutportName,
-        (Object)
-            new PortReference(zookeeperComponentId, zookeeperInternalInportName, PortLinkage.ALL),
-        OutPort.class);
+        internalInportName ,(Object) defaultInternalInport, InPort.class);
     // saying that we wire this outgoing port to the incoming ports of CASSANDRA //
     kafka_context.setProperty(
-        kafkaOutportName,
-        (Object)
-            new PortReference(cassandraComponentId, cassandraInternalInportName, PortLinkage.ALL),
+        outportName ,
+        (Object) new PortReference(zookComponentId, zookInternalInportName , PortLinkage.ALL),
+        OutPort.class);
+    kafka_context.setProperty(
+        outportName ,
+        (Object) new PortReference(cassComponentId, cassInternalInportName , PortLinkage.ALL),
         OutPort.class);
     return kafka_context;
   }
@@ -398,7 +517,7 @@ public class ClientDockerPullTest {
       Map<Option,String> createOptionMap = new HashMap<>();
       createOptionMap.put(Option.ENVIRONMENT, "foo=bar");
       createOptionMap.put(Option.ENVIRONMENT, "john=doe");
-      String  n = Integer.toString(rand.nextInt(1000) + 1);
+      String  n = Integer.toString(rand.nextInt(65536) + 1);
       createOptionMap.put(Option.PORT, n);
       createOptionMap.put(Option.RESTART, "no");
       createOptionMap.put(Option.INTERACTIVE, "");
@@ -442,48 +561,50 @@ public class ClientDockerPullTest {
 
   @Test
   public void testFZookeeperDeploymentContext() {
-    createZookeperContext(client);
+    createZookeperContext(client,version.DOCKER_DEPL);
+  }
+
+  @Test
+  public void testFZookeeperDeploymentContext_lifecycle() {
+    createZookeperContext(client,version.LIFECYCLE);
   }
 
   @Test
   public void testGCassandraDeploymentContext() {
-    createCassandraContext(client);
+    createCassandraContext(client,version.DOCKER_DEPL);
+  }
+
+  @Test
+  public void testGCassandraDeploymentContext_lifecycle() {
+    createCassandraContext(client,version.LIFECYCLE);
   }
 
   @Test
   public void testHKafkaDeploymentContext() {
-    createKafkaContext(client);
+    createKafkaContext(client,version.DOCKER_DEPL);
+  }
+
+  @Test
+  public void testHKafkaDeploymentContext_lifecycle() {
+    createKafkaContext(client,version.LIFECYCLE);
   }
 
   @Test
   public void testIZookDeploy() {
     try {
-      List<InportInfo> inInfs = new ArrayList<>();
-      InportInfo inInf =
-          new InportInfo(
-              zookeeperInternalInportName, PortProperties.PortType.INTERNAL_PORT, 1, 3888);
-      inInfs.add(inInf);
-      List<OutportInfo> outInfs = new ArrayList<>();
-      OutportInfo outInf =
-          new OutportInfo(
-              zookeeperOutportName,
-              DeploymentHelper.getEmptyPortUpdateHandler(),
-              1,
-              OutPort.NO_SINKS);
-      outInfs.add(outInf);
-      DockerComponent zookComp =
-          buildDockerComponent(
-              client,
-              zookeeperComponent,
-              zookeeperComponentId,
-              inInfs,
-              outInfs,
-              new Callable<LifecycleStore>() {
-                public LifecycleStore call() {
-                  return createZookeeperLifecycleStore();
-                }
-              });
-      DeploymentContext zookContext = createZookeperContext(client);
+      List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
+      List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
+      DockerComponent zookComp = buildDockerComponent(
+      client,
+      zookeeperComponent , zookeeperComponentId,
+      inInfs,
+      outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext zookContext = createZookeperContext(client,version.DOCKER_DEPL);
       EntireDockerCommands cmds = buildEntireDockerCommands("zook");
       zookComp.setEntireDockerCommands(cmds);
       zookComp.setImageName("zookeeper");
@@ -496,37 +617,54 @@ public class ClientDockerPullTest {
   }
 
   @Test
+  public void testIZookDeploy_lifecycle() {
+    try {
+      List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
+      List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
+      DeployableComponent zookComp = buildDeployableComponent(
+          client,
+          zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
+          inInfs,
+          outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext zookContext = createZookeperContext(client,version.LIFECYCLE);
+      zookId_lifecycle =
+          client.deploy(zookContext, zookComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy zookeeper component");
+    }
+  }
+
+  @Test
   public void testJCassDeploy() {
     try {
-      List<InportInfo> inInfs = new ArrayList<>();
-      InportInfo inInf =
-          new InportInfo(
-              cassandraInternalInportName, PortProperties.PortType.INTERNAL_PORT, 1, 9160);
-      inInfs.add(inInf);
-      List<OutportInfo> outInfs = new ArrayList<>();
-      OutportInfo outInf =
-          new OutportInfo(
-              cassandraOutportName,
-              DeploymentHelper.getEmptyPortUpdateHandler(),
-              1,
-              OutPort.NO_SINKS);
-      outInfs.add(outInf);
-      DockerComponent cassComp =
-          buildDockerComponent(
-              client,
-              cassandraComponent,
-              cassandraComponentId,
-              inInfs,
-              outInfs,
-              new Callable<LifecycleStore>() {
-                public LifecycleStore call() {
-                  return createCassandraLifecycleStore();
-                }
-              });
-      DeploymentContext cassContext = createCassandraContext(client);
+      List<InportInfo> inInfs = getInPortInfos(cassandraInternalInportName);
+      List<OutportInfo> outInfs = getOutPortInfos(cassandraOutportName);
+      DockerComponent cassComp = buildDockerComponent(
+          client,
+          cassandraComponent , cassandraComponentId,
+          inInfs,
+          outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext cassContext = createCassandraContext(client,version.DOCKER_DEPL);
       EntireDockerCommands cmds = buildEntireDockerCommands("cass");
       cassComp.setEntireDockerCommands(cmds);
       cassComp.setImageName("cassandra");
+      try {
+        cassComp.setDigestSHA256("7d6e2350f48133c7bdd3b6b3fba75e019e00466ef06dbb949de8e0f3f8e57750");
+      } catch(NoSuchAlgorithmException nae) {
+        System.err.println("Wrong algorithm for encoding the digest");
+      } catch(UnsupportedEncodingException uee) {
+         System.err.println("Wrong encoding used for encoding the digest");
+      }
       cassId =
           client.deploy(cassContext, cassComp);
     } catch (DeploymentException ex) {
@@ -535,59 +673,106 @@ public class ClientDockerPullTest {
   }
 
   @Test
-  public void testKKafkDeploy() {
+  public void testJCassDeploy_lifecycle() {
     try {
-      List<InportInfo> inInfs = new ArrayList<>();
-      InportInfo inInf =
-          new InportInfo(kafkaInportName, PortProperties.PortType.PUBLIC_PORT, 1, 9092);
-      inInfs.add(inInf);
-      List<OutportInfo> outInfs = new ArrayList<>();
-      OutportInfo outInf =
-          new OutportInfo(
-              kafkaOutportName, DeploymentHelper.getEmptyPortUpdateHandler(), 2, OutPort.NO_SINKS);
-      outInfs.add(outInf);
-      DockerComponent kafkaComp =
-          buildDockerComponent(
-              client,
-              kafkaComponent,
-              kafkaComponentId,
-              inInfs,
-              outInfs,
-              new Callable<LifecycleStore>() {
-                public LifecycleStore call() {
-                  return createKafkaLifecycleStore();
-                }
-              });
-      DeploymentContext kafkaContext = createKafkaContext(client);
-      EntireDockerCommands cmds = buildEntireDockerCommands("kafk");
-      kafkaComp.setEntireDockerCommands(cmds);
-      kafkaComp.setImageFolder("wurstmeister");
-      kafkaComp.setImageName("kafka");
-      kafkId = client.deploy(kafkaContext, kafkaComp);
+      List<InportInfo> inInfs = getInPortInfos(cassandraInternalInportName_lifecycle);
+      List<OutportInfo> outInfs = getOutPortInfos(cassandraOutportName_lifecycle);
+      DeployableComponent cassComp = buildDeployableComponent(
+          client,
+          cassandraComponent_lifecycle, cassandraComponentId_lifecycle,
+          inInfs,
+          outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext cassContext = createCassandraContext(client,version.LIFECYCLE);
+      cassId_lifecycle =
+          client.deploy(cassContext, cassComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
     }
   }
 
   @Test
+  public void testKKafkDeploy() {
+    try {
+      List<InportInfo> inInfs = getInPortInfos(kafkaInternalInportName);
+      List<OutportInfo> outInfs = getOutPortInfos(kafkaOutportName);
+      DockerComponent kafkComp = buildDockerComponent(
+          client,
+          kafkaComponent , kafkaComponentId,
+          inInfs,
+          outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext kafkContext = createKafkaContext(client,version.DOCKER_DEPL);
+      EntireDockerCommands cmds = buildEntireDockerCommands("kafk");
+      kafkComp.setEntireDockerCommands(cmds);
+      kafkComp.setImageFolder("wurstmeister");
+      kafkComp.setImageName("kafka");
+      kafkId =
+          client.deploy(kafkContext, kafkComp);
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy kafka component");
+    }
+  }
+
+  @Test
+  public void testKKafkDeploy_lifecycle() {
+    try {
+      List<InportInfo> inInfs = getInPortInfos(kafkaInternalInportName_lifecycle);
+      List<OutportInfo> outInfs = getOutPortInfos(kafkaOutportName_lifecycle);
+      DeployableComponent kafkComp = buildDeployableComponent(
+          client,
+          kafkaComponent_lifecycle, kafkaComponentId_lifecycle,
+          inInfs,
+          outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext kafkContext = createKafkaContext(client,version.LIFECYCLE);
+      kafkId_lifecycle =
+          client.deploy(kafkContext, kafkComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy kafka component");
+    }
+  }
+
+  @Test
   public void testLComponentStatus() {
     ContainerStatus zookStatus, cassStatus, kafkStatus;
+    ContainerStatus zookStatus_lifecycle, cassStatus_lifecycle, kafkStatus_lifecycle;
     zookStatus = cassStatus = kafkStatus = UNKNOWN;
+    zookStatus_lifecycle = cassStatus_lifecycle  = kafkStatus_lifecycle  = UNKNOWN;
     do {
       try {
         zookStatus = client.getComponentContainerStatus(zookId, publicIp);
         cassStatus = client.getComponentContainerStatus(cassId, publicIp);
         kafkStatus = client.getComponentContainerStatus(kafkId, publicIp);
+        zookStatus_lifecycle  = client.getComponentContainerStatus(zookId_lifecycle , publicIp);
+        cassStatus_lifecycle  = client.getComponentContainerStatus(cassId_lifecycle , publicIp);
+        kafkStatus_lifecycle  = client.getComponentContainerStatus(kafkId_lifecycle , publicIp);
         System.out.println("ZOOKEEPER STATUS:" + zookStatus);
         System.out.println("CASSANDRA STATUS:" + cassStatus);
         System.out.println("KAFKA STATUS:" + kafkStatus);
+        System.out.println("ZOOKEEPER STATUS (LIFECYCLE):" + zookStatus_lifecycle );
+        System.out.println("CASSANDRA STATUS (LIFECYCLE):" + cassStatus_lifecycle );
+        System.out.println("KAFKA STATUS(LIFECYCLE):" + kafkStatus_lifecycle );
         sleep(5000);
       } catch (DeploymentException ex) {
         System.err.println("Exception during deployment!");
       } catch (InterruptedException ex) {
         System.err.println("Interrupted!");
       }
-    } while (zookStatus != READY || cassStatus != READY || kafkStatus != READY);
+    } while (zookStatus != READY || cassStatus != READY || kafkStatus != READY ||
+        zookStatus_lifecycle != READY || cassStatus_lifecycle != READY || kafkStatus_lifecycle != READY);
   }
 
   @Test
@@ -596,6 +781,9 @@ public class ClientDockerPullTest {
       client.undeploy(zookId, ContainerType.DOCKER);
       client.undeploy(cassId, ContainerType.DOCKER);
       client.undeploy(kafkId, ContainerType.DOCKER);
+      client.undeploy(zookId_lifecycle, ContainerType.DOCKER);
+      client.undeploy(cassId_lifecycle, ContainerType.DOCKER);
+      client.undeploy(kafkId_lifecycle, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     }

@@ -223,6 +223,7 @@ public final class LifecycleClient {
     }
   }
 
+  //todo: overload with Method for Docker-Deployment
   public final boolean undeploy(ComponentInstanceId componentInstanceId,
       ContainerType containerType) throws DeploymentException {
     try {

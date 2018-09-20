@@ -96,10 +96,11 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
     MessageDigest crypt = MessageDigest.getInstance("SHA-256");
     crypt.reset();
     //Java uses UTF-16 for the internal text representation
-    crypt.update(sha256.getBytes("UTF-8"));
+    crypt.update(sha256.getBytes("UTF-16"));
 
     if(crypt.getDigestLength() != 32)
       throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
+    digestSHA256 = sha256;
   }
 
   public String getDigestSHA256 () {

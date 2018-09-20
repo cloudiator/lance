@@ -136,6 +136,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     return cc.getId();
   }
 
+  //todo: overload with Method for Docker-Deployment
   @Override
   public boolean stopComponentInstance(ContainerType containerType,
       ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException {
