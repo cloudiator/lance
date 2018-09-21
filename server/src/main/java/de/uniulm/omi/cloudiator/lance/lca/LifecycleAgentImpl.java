@@ -193,22 +193,6 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     });
   }
 
-  //todo: print whole environment
-  @Override
-  public String getHostEnv() throws RemoteException {
-    List<ComponentInstanceId> ids = listContainers();
-
-    Map<String,String > envVarsStatic = new HashMap<String, String>(hostContext.getEnvVars());
-
-    for(ComponentInstanceId id : ids) {
-      for (Map.Entry<String, String> kv : id.getEnvVars().entrySet()) {
-        envVarsStatic.put(kv.getKey(), kv.getValue());
-      }
-    }
-
-    return envVarsStatic.toString();
-  }
-
   private static void componentPartOfApplication(DeploymentContext ctx,
       DeployableComponent component) throws RegistrationException, LcaException {
     LcaRegistry reg = ctx.getRegistry();

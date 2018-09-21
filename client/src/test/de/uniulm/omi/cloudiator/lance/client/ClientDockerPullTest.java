@@ -788,13 +788,4 @@ public class ClientDockerPullTest {
       System.err.println("Exception during deployment!");
     }
   }
-
-  @Test
-  public void testNHostEnvironment() {
-    try {
-      System.out.println(client.getHostEnv());
-    } catch (DeploymentException ex) {
-      System.err.println("Exception during deployment!");
-    }
-  }
 }

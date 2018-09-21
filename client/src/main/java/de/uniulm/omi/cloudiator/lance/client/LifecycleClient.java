@@ -235,14 +235,6 @@ public final class LifecycleClient {
     }
   }
 
-  public final String getHostEnv() throws DeploymentException {
-      try {
-        return lifecycleAgent.getHostEnv();
-      } catch (RemoteException e) {
-        throw new DeploymentException(handleRemoteException(e));
-      }
-  }
-
   private static Exception handleRemoteException(RemoteException re) {
     Throwable t = re.getCause();
     if (t == null) {
