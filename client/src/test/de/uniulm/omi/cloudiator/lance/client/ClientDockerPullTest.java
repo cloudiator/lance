@@ -29,6 +29,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -88,7 +89,7 @@ public class ClientDockerPullTest {
   private static ComponentInstanceId zookId, cassId, kafkId;
   private static ComponentInstanceId zookId_lifecycle, cassId_lifecycle, kafkId_lifecycle;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static LifecycleClient client;
 
   @BeforeClass
@@ -132,7 +133,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
   }
 
   private DockerComponent buildDockerComponent(
@@ -514,19 +515,18 @@ public class ClientDockerPullTest {
     DockerCommand.Builder startBuilder = new DockerCommand.Builder(DockerCommand.START);
     DockerCommand.Builder stopBuilder = new DockerCommand.Builder(DockerCommand.STOP);
     try {
-      Map<Option,String> createOptionMap = new HashMap<>();
-      createOptionMap.put(Option.ENVIRONMENT, "foo=bar");
-      createOptionMap.put(Option.ENVIRONMENT, "john=doe");
+      Map<Option,List<String>> createOptionMap = new HashMap<>();
+      createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
       String  n = Integer.toString(rand.nextInt(65536) + 1);
-      createOptionMap.put(Option.PORT, n);
-      createOptionMap.put(Option.RESTART, "no");
-      createOptionMap.put(Option.INTERACTIVE, "");
+      createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n)));
+      createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
+      createOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
       List<OsCommand> createOsCommandList = new ArrayList<>();
       createOsCommandList.add(OsCommand.BASH);
       List<String> createArgsList = new ArrayList<>();
       createArgsList.add("--noediting");
-      Map<Option,String> startOptionMap = new HashMap<>();
-      startOptionMap.put(Option.INTERACTIVE, "");
+      Map<Option,List<String>> startOptionMap = new HashMap<>();
+      startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
 
       createBuilder.setOptions(createOptionMap);
       createBuilder.setCommand(createOsCommandList);

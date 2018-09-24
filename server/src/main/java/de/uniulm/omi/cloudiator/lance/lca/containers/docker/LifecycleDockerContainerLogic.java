@@ -33,9 +33,11 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   void setDynamicEnvironment(BashExportBasedVisitor visitor,
       PortDiff<DownstreamAddress> diff) throws ContainerException {
     this.myComponent.injectDeploymentContext(this.deploymentContext);
-    networkHandler.accept(visitor, diff);
-    this.myComponent.accept(visitor);
+    networkHandler.generateDynamicEnvVars(diff);
+    this.myComponent.generateDynamicEnvVars();
     collectDynamicEnvVars();
+    networkHandler.accept(visitor);
+    this.myComponent.accept(visitor);
   }
 
   @Override

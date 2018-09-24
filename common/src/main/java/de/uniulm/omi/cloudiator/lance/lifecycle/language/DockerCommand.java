@@ -26,7 +26,7 @@ public class DockerCommand implements Serializable{
   private final Set<OsCommand> possibleCommands;
   private final String dockerCommandName;
 
-  private final Map<Option, String> setOptions;
+  private final Map<Option, List<String>> setOptions;
   private final List<OsCommand> setCommand;
   private final List<String> setArgs;
 
@@ -63,7 +63,14 @@ public class DockerCommand implements Serializable{
     if(!possibleOptions.contains(opt))
       throw new DockerCommandException("Option " + opt.name() + " does not exist for '" + dockerCommandName + "' command");
 
-    setOptions.put(opt,arg);
+    List<String> lst = setOptions.get(opt);
+
+    if(lst == null) {
+      lst = new ArrayList<>();
+    }
+
+    lst.add(arg);
+    setOptions.put(opt,lst);
   }
 
   public void setOsCommand(OsCommand cmd) throws DockerCommandException {
@@ -87,8 +94,10 @@ public class DockerCommand implements Serializable{
   public String getSetOptionsString() {
     StringBuilder builder = new StringBuilder();
 
-    for (Map.Entry<Option, String> kv : setOptions.entrySet()) {
-      builder.append(getOptionString(kv.getKey()) + " " + kv.getValue() + " ");
+    for (Map.Entry<Option, List<String>> kv : setOptions.entrySet()) {
+      for (String str : kv.getValue()) {
+        builder.append(getOptionString(kv.getKey()) + " " + str + " ");
+      }
     }
     return builder.toString();
   }
@@ -149,7 +158,7 @@ public class DockerCommand implements Serializable{
     if(!this.setOptions.containsKey(Option.NAME))
       throw new DockerCommandException("NAME option not set for '" + dockerCommandName + "' command");
 
-    return this.setOptions.get(Option.NAME);
+    return this.setOptions.get(Option.NAME).get(0);
   }
 
   public static class Builder {
@@ -157,7 +166,7 @@ public class DockerCommand implements Serializable{
     private final Set<OsCommand> possibleCommands;
     private final String dockerCommandName;
 
-    private Map<Option, String> setOptions;
+    private Map<Option, List<String>> setOptions;
     private List<OsCommand> setCommand;
     private List<String> setArgs;
 
@@ -179,7 +188,7 @@ public class DockerCommand implements Serializable{
       setArgs = new ArrayList<>(cmd.setArgs);
     }
 
-    public Builder setOptions(Map<Option,String> opts) throws DockerCommandException  {
+    public Builder setOptions(Map<Option,List<String>> opts) throws DockerCommandException  {
       checkMapKeysInSet(opts, possibleOptions);
       setOptions = new HashMap<>(opts);
       return this;
@@ -205,8 +214,8 @@ public class DockerCommand implements Serializable{
       return new DockerCommand(this);
     }
 
-    void checkMapKeysInSet(Map<Option,String> map, Set<Option> set) throws DockerCommandException {
-      for (Map.Entry<Option, String> kv : map.entrySet()) {
+    void checkMapKeysInSet(Map<Option,List<String>> map, Set<Option> set) throws DockerCommandException {
+      for (Map.Entry<Option, List<String>> kv : map.entrySet()) {
         if(!set.contains(kv.getKey()))
           throw new DockerCommandException("Option " + kv.getKey().name() + " does not exist for '" + dockerCommandName + "' command");
       }

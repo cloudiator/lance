@@ -164,6 +164,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   PlainShell setDynamicEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
     this.deployableComponent.injectDeploymentContext(this.deploymentContext);
+    networkHandler.generateDynamicEnvVars(diff);
+    this.deployableComponent.generateDynamicEnvVars();
+    collectDynamicEnvVars();
 
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
@@ -172,20 +175,19 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
       PowershellExportBasedVisitor visitor =
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-      networkHandler.accept(visitor, diff);
+      networkHandler.accept(visitor);
       this.deployableComponent.accept(visitor);
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
       BashExportBasedVisitor visitor =
           new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
       //visitor.addEnvironmentVariable();
-      networkHandler.accept(visitor, diff);
+      networkHandler.accept(visitor);
       this.deployableComponent.accept(visitor);
     } else {
       throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
     }
 
-    collectDynamicEnvVars();
     return plainShellWrapper.plainShell;
   }
 

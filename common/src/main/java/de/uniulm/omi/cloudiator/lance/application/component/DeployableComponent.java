@@ -18,7 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ public class DeployableComponent implements Serializable, DynamicEnvVars {
     private HashMap<String, Class<?>> properties;
     private HashMap<String, ? extends Serializable> defaultValues;
     private DeploymentContext ctx;
+    private DynamicEnvVarsImpl currentEnvVarsDynamic;
 
     DeployableComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam, 
             List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam, 
@@ -90,12 +93,8 @@ public class DeployableComponent implements Serializable, DynamicEnvVars {
     }
     
     public void accept(PropertyVisitor visitor) {
-        final Map<String,String> vals = getMatchingValsFromDContext();
-
-        for(Entry<String, String> entry : vals.entrySet()) {
-            String propertyName = entry.getKey();
-            String propertyVal = entry.getValue();
-            visitor.visit(propertyName, propertyVal);
+        for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
+            visitor.visit(entry.getKey(), entry.getValue());
         }
     }
 
@@ -132,5 +131,29 @@ public class DeployableComponent implements Serializable, DynamicEnvVars {
         }
 
         return vals;
+    }
+
+    @Override
+  public void generateDynamicEnvVars() {
+      final Map<String,String> vals = getMatchingValsFromDContext();
+      DynamicEnvVarsImpl impl = DynamicEnvVarsImpl.DEPL_COMPONENT;
+      impl.setEnvVars(vals);
+      currentEnvVarsDynamic = impl;
+  }
+
+    //todo: exception handling if wrong enum type
+    @Override
+    public void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException {
+        this.currentEnvVarsDynamic = vars;
+    }
+
+    //todo: exception handling if wrong enum type
+    @Override
+    public void removeDynamicEnvVars(DynamicEnvVars vars) throws ContainerException {
+        if(!currentEnvVarsDynamic.equals(vars))
+            LOGGER.error("Cannot remove vars " + vars + " as they are not currently available.");
+
+        //todo: Check if vars Map in DynamicEnvVarsImpl is reset
+        this.currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
     }
 }

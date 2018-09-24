@@ -18,16 +18,19 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,19 +55,25 @@ final class OutPortHandler implements DynamicEnvVars {
     private final List<OutPortState> portStates = new ArrayList<>();
     private final DeployableComponent myComponent;
 
-    private Map<String, String> currentEnvVarsDynamic;
+    private DynamicEnvVarsImpl currentEnvVarsDynamic;
 
     public OutPortHandler(DeployableComponent myComponentParam) {
         myComponent = myComponentParam;
-        currentEnvVarsDynamic = new HashMap<>();
+        currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
     }
 
-    private void injectDynamicEnvVars(DynamicEnvVars vars) {
-        this.currentEnvVarsDynamic.putAll(vars.getEnvVars());
+    //todo: exception handling if wrong enum type
+    public void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException {
+        this.currentEnvVarsDynamic = vars;
     }
 
-    private void removeDynamicEnvVars(DynamicEnvVars vars) {
-        this.currentEnvVarsDynamic.remove(vars.getEnvVars().keySet());
+    //todo: exception handling if wrong enum type
+    public void removeDynamicEnvVars(DynamicEnvVars vars) throws ContainerException {
+        if(!currentEnvVarsDynamic.equals(vars))
+            LOGGER.error("Cannot remove vars " + vars + " as they are not currently available.");
+
+        //todo: Check if vars Map in DynamicEnvVarsImpl is reset
+        this.currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
     }
 
 
@@ -138,19 +147,10 @@ final class OutPortHandler implements DynamicEnvVars {
         return retVal;
     }
 
-    void accept(NetworkVisitor visitor, PortDiff<DownstreamAddress> diffSet) {
-        for(OutPortState out : portStates) {
-        	Map<PortHierarchyLevel, List<DownstreamAddress>> elements = null;
-        	if(diffSet != null && out.matchesPort(diffSet.getPort())) {
-        		elements = OutPortState.orderSinksByHierarchyLevel(diffSet.getCurrentSinkSet());
-        	} else {
-        		elements = out.sinksByHierarchyLevel();
-        	}
-            
-            Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit = elements.isEmpty() ? 
-                    doCollect(out, EMPTY_VISIT_MAP) : doCollect(out, elements);        
-            doVisit(visitor, out, toVisit);
-        }
+    void accept(NetworkVisitor visitor) {
+            for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
+                visitor.visitOutPort(entry.getKey() , entry.getValue());
+            }
     }
     
     private static Map<PortHierarchyLevel, List<DownstreamAddress>> doCollect(OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> elements) {
@@ -171,19 +171,6 @@ final class OutPortHandler implements DynamicEnvVars {
             }
         }
         return toVisit;
-    }
-    
-    private void doVisit(NetworkVisitor visitor, OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit) {
-        for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : toVisit.entrySet()) {
-            PortHierarchyLevel level = entry.getKey();
-            List<DownstreamAddress> sinks = entry.getValue();
-            String name = level.getName().toUpperCase() + "_" + out.getPortName();
-            String sinkValues = buildSinkValues(sinks);
-            DynamicEnvVarsImpl portsVar = DynamicEnvVarsImpl.NETWORK_PORTS;
-            portsVar.setEnvVars(buildSingleElementMap(name,sinkValues));
-            injectDynamicEnvVars(portsVar);
-            visitor.visitOutPort(name , sinkValues);
-        }
     }
 
 	void manifestChangeset(PortDiff<DownstreamAddress> diff) {
@@ -217,7 +204,44 @@ final class OutPortHandler implements DynamicEnvVars {
 
     @Override
     public Map<String, String> getEnvVars() {
-        return currentEnvVarsDynamic;
+        return currentEnvVarsDynamic.getEnvVars();
+    }
+
+    @Override
+    public void generateDynamicEnvVars() {
+       generateDynamicEnvVars(null);
+    }
+
+    public void generateDynamicEnvVars(PortDiff<DownstreamAddress> diffSet) {
+        for(OutPortState out : portStates) {
+            Map<PortHierarchyLevel, List<DownstreamAddress>> elements = null;
+            if(diffSet != null && out.matchesPort(diffSet.getPort())) {
+                elements = OutPortState.orderSinksByHierarchyLevel(diffSet.getCurrentSinkSet());
+            } else {
+                elements = out.sinksByHierarchyLevel();
+            }
+
+            Map<PortHierarchyLevel, List<DownstreamAddress>> toGenerate = elements.isEmpty() ?
+                doCollect(out, EMPTY_VISIT_MAP) : doCollect(out, elements);
+            doGenerateDynamicEnvVars(out, toGenerate);
+        }
+    }
+
+    private void doGenerateDynamicEnvVars(OutPortState out,
+        Map<PortHierarchyLevel, List<DownstreamAddress>> toGenerate) {
+        for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : toGenerate.entrySet()) {
+            PortHierarchyLevel level = entry.getKey();
+            List<DownstreamAddress> sinks = entry.getValue();
+            String name = level.getName().toUpperCase() + "_" + out.getPortName();
+            String sinkValues = buildSinkValues(sinks);
+            DynamicEnvVarsImpl portsVar = DynamicEnvVarsImpl.NETWORK_PORTS;
+            portsVar.setEnvVars(buildSingleElementMap(name,sinkValues));
+            try {
+              injectDynamicEnvVars(portsVar);
+            } catch (ContainerException ex) {
+                LOGGER.error("Cannot inject variable " + portsVar + "as it has a wrong type");
+            }
+        }
     }
 
     /* old/unused code

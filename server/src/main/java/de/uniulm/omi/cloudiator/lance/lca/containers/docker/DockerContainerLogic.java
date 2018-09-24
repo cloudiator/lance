@@ -9,6 +9,9 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerExce
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
@@ -40,11 +43,27 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   @Override
+  void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
+    Map<String,String> envVarsStaticTmp = new HashMap<>();
+
+    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
+      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+      if(!translateMap.containsKey(entry.getKey()))
+        continue;
+
+      envVarsStaticTmp.put(translateMap.get(entry.getKey()),entry.getValue());
+    }
+
+    executeGenericEnvSetting(envVarsStaticTmp);
+  }
+
+  @Override
   void setDynamicEnvironment(BashExportBasedVisitor visitor, PortDiff<DownstreamAddress> diff) throws ContainerException {
     this.myComponent.injectDeploymentContext(this.deploymentContext);
-    networkHandler.accept(visitor, diff);
-    this.myComponent.accept(visitor);
+    networkHandler.generateDynamicEnvVars(diff);
+    this.myComponent.generateDynamicEnvVars();
     collectDynamicEnvVars();
+    executeGenericEnvSetting(envVarsDynamic);
   }
 
   @Override
@@ -103,6 +122,28 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
 
     return dshell;
+  }
+
+  private void executeGenericEnvSetting(Map<String,String> vars) throws ContainerException {
+    try {
+      String envStr = buildEnvString(vars);
+      String envCmdStr = "exec -i " + envStr +  myComponent.getContainerName() + " bash";
+      client.executeProgressingDockerCommand(envCmdStr);
+    } catch (DockerException de) {
+      throw new ContainerException(de);
+    } catch(DockerCommandException ce) {
+      throw new ContainerException(ce);
+    }
+  }
+
+  private String buildEnvString(Map<String,String> vars) {
+    StringBuilder builder = new StringBuilder();
+
+    for(Entry<String, String> var: vars.entrySet()) {
+      builder.append("-e " + var.getKey()+"="+var.getValue() + " ");
+    }
+
+    return builder.toString();
   }
 
   static class Builder extends AbstractBuilder<DockerComponent> {

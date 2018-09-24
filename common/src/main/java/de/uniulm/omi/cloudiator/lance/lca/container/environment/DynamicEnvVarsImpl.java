@@ -1,6 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
 import com.google.common.net.InetAddresses;
+import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,11 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
   NETWORK_PORTS((String str) ->
   {
     return true;
+  }),
+  //todo: implement
+  DEPL_COMPONENT((String str) ->
+  {
+    return true;
   });
 
 
@@ -63,5 +69,22 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
   @Override
   public Map<String, String> getEnvVars() {
     return vars;
+  }
+
+  @Override
+  public void generateDynamicEnvVars() {
+    vars = new HashMap<>();
+  }
+
+  @Override
+  public void injectDynamicEnvVars(DynamicEnvVarsImpl vars)  {
+    setEnvVars(vars.getEnvVars());
+  }
+
+  @Override
+  public void removeDynamicEnvVars(DynamicEnvVars vars) {
+    for(Entry<String,String> entry: vars.getEnvVars().entrySet()) {
+      this.vars.remove(entry.getKey(),entry.getValue());
+    }
   }
 }

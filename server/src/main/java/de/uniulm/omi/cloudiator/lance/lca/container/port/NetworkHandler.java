@@ -18,11 +18,15 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
 import org.slf4j.Logger;
@@ -56,7 +60,7 @@ public final class NetworkHandler implements DynamicEnvVars {
     private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<>();
     
     private final OutPortHandler outPorts;
-    private Map<String, String> currentEnvVarsDynamic;
+    private Set<DynamicEnvVarsImpl> currentEnvVarsDynamic;
 
     public NetworkHandler(GlobalRegistryAccessor accessorParam, DeployableComponent myComponentParam, HostContext hostContextParam) {
         
@@ -66,15 +70,17 @@ public final class NetworkHandler implements DynamicEnvVars {
         portAccessor = new PortRegistryTranslator(accessorParam, hostContext);
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
-        currentEnvVarsDynamic = new HashMap<>();
+        currentEnvVarsDynamic = new HashSet<>();
     }
 
-    private void injectDynamicEnvVars(DynamicEnvVars vars) {
-        this.currentEnvVarsDynamic.putAll(vars.getEnvVars());
+    //todo: exception handling if wrong enum type
+    public void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException {
+        this.currentEnvVarsDynamic.add(vars);
     }
 
-    private void removeDynamicEnvVars(DynamicEnvVars vars) {
-        this.currentEnvVarsDynamic.remove(vars.getEnvVars().keySet());
+    //todo: exception handling if wrong enum type
+    public void removeDynamicEnvVars(DynamicEnvVars vars) throws ContainerException {
+        this.currentEnvVarsDynamic.remove(vars);
     }
 
     public void initPorts(String address) throws RegistrationException {
@@ -210,30 +216,24 @@ public final class NetworkHandler implements DynamicEnvVars {
         }
     }
 
-    public void accept(NetworkVisitor visitor, PortDiff<DownstreamAddress> diffSet) {
-        for(PortHierarchyLevel level : ipAddresses) {
-            String name = level.getName().toUpperCase() + "_IP";
-            String address = ipAddresses.valueAtLevel(level);
-            DynamicEnvVarsImpl addrVar = DynamicEnvVarsImpl.NETWORK_ADDR;
-            addrVar.setEnvVars(buildSingleElementMap(name,address));
-            injectDynamicEnvVars(addrVar);
-            visitor.visitNetworkAddress(name, address);
+    public void accept(NetworkVisitor visitor) {
+        for (Iterator<DynamicEnvVarsImpl> it = currentEnvVarsDynamic.iterator(); it.hasNext(); ) {
+            DynamicEnvVarsImpl impl = it.next();
+            if (impl.equals(DynamicEnvVarsImpl.NETWORK_ADDR)) {
+                for(Entry<String, String> entry : impl.getEnvVars().entrySet()) {
+                  visitor.visitNetworkAddress(entry.getKey(), entry.getValue());
+              }
+            }
+            else if (impl.equals(DynamicEnvVarsImpl.NETWORK_PORT)) {
+                for(Entry<String, String> entry : impl.getEnvVars().entrySet()) {
+                    visitor.visitInPort(entry.getKey(), entry.getValue());
+                }
+            }
+            else
+                LOGGER.warn("Variables of type: " + impl + "not known.");
         }
-        
-        for(Entry<String, HierarchyLevelState<Integer>> entry : inPorts.entrySet()) {
-            String portName = entry.getKey();
-            HierarchyLevelState<Integer> state = entry.getValue();
-            for(PortHierarchyLevel level : state) {
-                String fullPortName = level.getName().toUpperCase() + "_" + portName.toUpperCase();
-                String portNumber = state.valueAtLevel(level).toString();
-                DynamicEnvVarsImpl portVar = DynamicEnvVarsImpl.NETWORK_PORT;
-                portVar.setEnvVars(buildSingleElementMap(fullPortName,portNumber));
-                injectDynamicEnvVars(portVar);
-                visitor.visitInPort(fullPortName, portNumber);
-            }    
-        }
-        
-        outPorts.accept(visitor, diffSet);
+
+        outPorts.accept(visitor);
     }
 
     public void updateAddress(PortHierarchyLevel level2Param, String containerIp) {
@@ -251,9 +251,48 @@ public final class NetworkHandler implements DynamicEnvVars {
     //copies and not the originals of currentEnvVarsDynamic of NWHandler and outports are returned
     @Override
     public Map<String, String> getEnvVars() {
-        Map<String,String> completeDynamicEnvVars = new HashMap<>(currentEnvVarsDynamic);
+        Map<String,String> completeDynamicEnvVars = new HashMap<>();
+        for(DynamicEnvVars vars: currentEnvVarsDynamic)
+            completeDynamicEnvVars.putAll(vars.getEnvVars());
+
         Map<String,String> outPDynVars = new HashMap<>(outPorts.getEnvVars());
         completeDynamicEnvVars.putAll(outPDynVars);
         return completeDynamicEnvVars;
+    }
+
+    @Override
+    public void generateDynamicEnvVars() {
+       generateDynamicEnvVars(null);
+    }
+
+    public void generateDynamicEnvVars(PortDiff<DownstreamAddress> diff) {
+        for(PortHierarchyLevel level : ipAddresses) {
+            String name = level.getName().toUpperCase() + "_IP";
+            String address = ipAddresses.valueAtLevel(level);
+            DynamicEnvVarsImpl addrVar = DynamicEnvVarsImpl.NETWORK_ADDR;
+            addrVar.setEnvVars(buildSingleElementMap(name,address));
+            try {
+              injectDynamicEnvVars(addrVar);
+            } catch (ContainerException ex) {
+                LOGGER.error("Cannot inject variable " + addrVar + "as it has a wrong type");
+            }
+        }
+        for(Entry<String, HierarchyLevelState<Integer>> entry : inPorts.entrySet()) {
+            String portName = entry.getKey();
+            HierarchyLevelState<Integer> state = entry.getValue();
+            for(PortHierarchyLevel level : state) {
+                String fullPortName = level.getName().toUpperCase() + "_" + portName.toUpperCase();
+                String portNumber = state.valueAtLevel(level).toString();
+                DynamicEnvVarsImpl portVar = DynamicEnvVarsImpl.NETWORK_PORT;
+                portVar.setEnvVars(buildSingleElementMap(fullPortName,portNumber));
+                try {
+                  injectDynamicEnvVars(portVar);
+                } catch (ContainerException ex) {
+                    LOGGER.error("Cannot inject variable " + portVar + "as it has a wrong type");
+                }
+            }
+        }
+
+        outPorts.generateDynamicEnvVars(diff);
     }
 }

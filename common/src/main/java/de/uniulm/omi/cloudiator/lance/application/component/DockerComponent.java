@@ -122,6 +122,10 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
     entireDockerCommands.setOption(DockerCommand.CREATE, Option.NAME, buildNameOptionFromId(id));
   }
 
+  public String getContainerName() throws DockerCommandException {
+    return entireDockerCommands.getContainerName(DockerCommand.CREATE);
+  }
+
   private static String buildNameOptionFromId(ComponentInstanceId id) {
     return "dockering__"+ id.toString();
   }
