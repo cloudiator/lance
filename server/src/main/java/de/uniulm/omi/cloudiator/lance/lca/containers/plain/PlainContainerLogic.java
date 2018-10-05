@@ -214,8 +214,23 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   @Override
   public void setDynamicEnvironment() throws ContainerException {
-    //todo: implement
+    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
+    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
+    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+      PowershellExportBasedVisitor visitor =
+          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
+      networkHandler.accept(visitor, null);
+      this.deployableComponent.accept(this.deploymentContext, visitor);
+    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+      BashExportBasedVisitor visitor =
+          new BashExportBasedVisitor(plainShellWrapper.plainShell);
+      //visitor.addEnvironmentVariable();
+      networkHandler.accept(visitor, null);
+      this.deployableComponent.accept(this.deploymentContext, visitor);
+    } else {
+      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
+    }
   }
 
   @Override
@@ -225,32 +240,17 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
     }
+    else {
+      setDynamicEnvironment();
+    }
     if (type == LifecycleHandlerType.PRE_STOP) {
       stopped = true;
     }
 
   }
 
-  private void preInstallAction() {
-    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
-
-    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-
-      PowershellExportBasedVisitor visitor =
-          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-      networkHandler.accept(visitor, null);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor =
-          new BashExportBasedVisitor(plainShellWrapper.plainShell);
-
-      //visitor.addEnvironmentVariable();
-      networkHandler.accept(visitor, null);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else {
-      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
-    }
+  private void preInstallAction() throws ContainerException {
+    setDynamicEnvironment();
   }
 
   @Override
@@ -306,6 +306,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preDestroy() throws ContainerException {
     setStaticEnvironment();
+    setDynamicEnvironment();
   }
 
   @Override
