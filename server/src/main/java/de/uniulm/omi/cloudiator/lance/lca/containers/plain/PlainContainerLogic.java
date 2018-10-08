@@ -214,29 +214,10 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   @Override
   public void setDynamicEnvironment() throws ContainerException {
-    //todo: implement
-
-  }
-
-  @Override
-  public void prepare(HandlerType type) throws ContainerException {
-    setStaticEnvironment();
-
-    if (type == LifecycleHandlerType.INSTALL) {
-      preInstallAction();
-    }
-    if (type == LifecycleHandlerType.PRE_STOP) {
-      stopped = true;
-    }
-
-  }
-
-  private void preInstallAction() {
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
 
     //TODO: move os switch to a central point (currently here and in PlainShellImpl)
     if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-
       PowershellExportBasedVisitor visitor =
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
       networkHandler.accept(visitor, null);
@@ -244,7 +225,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
       BashExportBasedVisitor visitor =
           new BashExportBasedVisitor(plainShellWrapper.plainShell);
-
       //visitor.addEnvironmentVariable();
       networkHandler.accept(visitor, null);
       this.deployableComponent.accept(this.deploymentContext, visitor);
@@ -254,12 +234,33 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   @Override
+  public void prepare(HandlerType type) throws ContainerException {
+    setStaticEnvironment();
+
+    if (type == LifecycleHandlerType.INSTALL) {
+      preInstallAction();
+    }
+    else {
+      setDynamicEnvironment();
+    }
+    if (type == LifecycleHandlerType.PRE_STOP) {
+      stopped = true;
+    }
+
+  }
+
+  private void preInstallAction() throws ContainerException {
+    setDynamicEnvironment();
+  }
+
+  @Override
   public void postprocess(HandlerType type) {
     if (type == LifecycleHandlerType.PRE_INSTALL) {
       postPreInstall();
     } else if (type == LifecycleHandlerType.POST_INSTALL) {
       // TODO: how should we snapshot the folder? //
     }
+    plainShellFactory.closeShell();
   }
 
   private void postPreInstall() {
@@ -305,6 +306,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preDestroy() throws ContainerException {
     setStaticEnvironment();
+    setDynamicEnvironment();
   }
 
   @Override
