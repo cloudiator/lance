@@ -110,9 +110,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     LOGGER.info("creating new plain container with foldername " + plainContainerFolder);
     plainShell.executeCommand("mkdir " + plainContainerFolder);
 
-    LOGGER.info("Switching to plain container: " + plainContainerFolder);
-    plainShell.setDirectory(plainContainerFolder);
-
     setStaticEnvironment(plainShell);
   }
 
@@ -169,6 +166,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     collectDynamicEnvVars();
 
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
+    setHomeDir(plainShellWrapper.plainShell);
 
     //TODO: move os switch to a central point (currently here and in PlainShellImpl)
     if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
@@ -213,6 +211,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   private void setStaticWindowsEnvironment(PlainShell plainShell) {
+    setHomeDir(plainShell);
     PowershellExportBasedVisitor visitor =
         new PowershellExportBasedVisitor(plainShell);
 
@@ -226,6 +225,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   private void setStaticLinuxEnvironment(PlainShell plainShell) {
+    setHomeDir(plainShell);
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShell);
 
     for(Entry<String, String> entry: envVarsStatic.entrySet()) {
@@ -235,6 +235,15 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
       visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
+  }
+
+  private void setHomeDir(PlainShell plainShell) {
+    final String plainContainerFolder =
+        System.getProperty("user.home")
+            + System.getProperty("file.separator")
+            + this.myId.toString();
+    LOGGER.info("Switching to plain container: " + plainContainerFolder);
+    plainShell.setDirectory(plainContainerFolder);
   }
 
   @Override
