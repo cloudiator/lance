@@ -113,9 +113,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     LOGGER.info("creating new plain container with foldername " + plainContainerFolder);
     plainShell.executeCommand("mkdir " + plainContainerFolder);
 
-    LOGGER.info("Switching to plain container: " + plainContainerFolder);
-    plainShell.setDirectory(plainContainerFolder);
-
     setStaticEnvironment(plainShell);
   }
 
@@ -188,6 +185,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   private void setStaticWindowsEnvironment(PlainShell plainShell) {
+    setHomeDir(plainShell);
     PowershellExportBasedVisitor visitor =
         new PowershellExportBasedVisitor(plainShell);
 
@@ -201,6 +199,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   private void setStaticLinuxEnvironment(PlainShell plainShell) {
+    setHomeDir(plainShell);
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShell);
 
     for(Entry<String, String> entry: envVarsStatic.entrySet()) {
@@ -212,10 +211,35 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     }
   }
 
+  private void setHomeDir(PlainShell plainShell) {
+    final String plainContainerFolder =
+        System.getProperty("user.home") + System.getProperty("file.separator") + this.myId
+            .toString();
+
+    LOGGER.info("Switching to plain container: " + plainContainerFolder);
+    plainShell.setDirectory(plainContainerFolder);
+  }
+
   @Override
   public void setDynamicEnvironment() throws ContainerException {
-    //todo: implement
+    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
+    setHomeDir(plainShellWrapper.plainShell);
 
+    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
+    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+      PowershellExportBasedVisitor visitor =
+          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
+      networkHandler.accept(visitor, null);
+      this.deployableComponent.accept(this.deploymentContext, visitor);
+    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+      BashExportBasedVisitor visitor =
+          new BashExportBasedVisitor(plainShellWrapper.plainShell);
+      //visitor.addEnvironmentVariable();
+      networkHandler.accept(visitor, null);
+      this.deployableComponent.accept(this.deploymentContext, visitor);
+    } else {
+      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
+    }
   }
 
   @Override
@@ -225,32 +249,17 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
     }
+    else {
+      setDynamicEnvironment();
+    }
     if (type == LifecycleHandlerType.PRE_STOP) {
       stopped = true;
     }
 
   }
 
-  private void preInstallAction() {
-    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
-
-    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-
-      PowershellExportBasedVisitor visitor =
-          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-      networkHandler.accept(visitor, null);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor =
-          new BashExportBasedVisitor(plainShellWrapper.plainShell);
-
-      //visitor.addEnvironmentVariable();
-      networkHandler.accept(visitor, null);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else {
-      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
-    }
+  private void preInstallAction() throws ContainerException {
+    setDynamicEnvironment();
   }
 
   @Override
@@ -306,6 +315,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preDestroy() throws ContainerException {
     setStaticEnvironment();
+    setDynamicEnvironment();
   }
 
   @Override

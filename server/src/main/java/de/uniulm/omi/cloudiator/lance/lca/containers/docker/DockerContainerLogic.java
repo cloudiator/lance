@@ -137,6 +137,7 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
   @Override
   public void preDestroy() throws ContainerException{
     setStaticEnvironment();
+    setDynamicEnvironment();
   }
 
   @Override
@@ -162,7 +163,7 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
     doVisit(shell,visitor);
   }
 
-  private void setCompleteStaticEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
+  private void setCompleteDynamicEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
     DockerShell shell = getShell();
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
     doVisit(shell,visitor);
@@ -184,7 +185,7 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
 
   @Override
   public void setDynamicEnvironment() throws ContainerException {
-    //todo: implement
+    prepareEnvironment();
   }
 
   @Override
@@ -216,6 +217,9 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
     setStaticEnvironment();
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
+    }
+    else {
+      setDynamicEnvironment();
     }
   }
 
@@ -302,7 +306,7 @@ class DockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor
   }
 
   private void prepareEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
-    setCompleteStaticEnvironment(diff);
+    setCompleteDynamicEnvironment(diff);
   }
 
   private void executeCreation() throws DockerException {
