@@ -37,6 +37,7 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.CONTAINER_STATUS;
 
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
@@ -51,6 +52,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
@@ -187,6 +189,33 @@ public final class LifecycleClient {
     }
   }
 
+  public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
+    try {
+      currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
+      currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
+      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS , params.getStatus().toString());
+      //do I need to create a DeploymentContext for this and do setProperty instead?
+
+      for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
+        currentRegistry.addComponentProperty(
+            params.getAppId(),
+            params.getcId(),
+            params.getcInstId(),
+            inPortC.getFullPortName(),
+            inPortC.getInernalInPortNmbr().toString());
+      }
+
+      currentRegistry.addComponentProperty(
+          params.getAppId(),
+          params.getcId(),
+          params.getcInstId(),
+          params.getFullHostName(),
+          params.getPublicIp());
+    } catch (RegistrationException e) {
+      e.printStackTrace();
+    }
+  }
+
   public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
       throws DeploymentException {
     try {
@@ -220,6 +249,19 @@ public final class LifecycleClient {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Got interrupted while waiting for container to be ready.");
+    }
+  }
+
+  public boolean isReady(ContainerType type, ComponentInstanceId cid) {
+    try {
+      boolean isReady = lifecycleAgent.componentInstanceIsReady(type, cid);
+      if(isReady) {
+        return true;
+      }
+      return false;
+    } catch (RemoteException | LcaException | ContainerException e) {
+      throw new RuntimeException(
+          String.format("Error while waiting for container %s to be ready.", cid), e);
     }
   }
 

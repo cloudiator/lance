@@ -87,7 +87,6 @@ public class DummyContainer implements ContainerLogic {
         });
 	}
 
-	@Override
 	public void setStaticEnvironment() throws ContainerException {
 
 	}

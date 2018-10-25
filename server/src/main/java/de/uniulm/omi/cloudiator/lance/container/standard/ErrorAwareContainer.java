@@ -57,7 +57,8 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     final ComponentInstanceId containerId;
     final NetworkHandler network;
     final LifecycleController controller;
-    
+    private boolean isReady;
+
     private ErrorAwareStateMachine<ContainerStatus> buildUpStateMachine() {
     	ErrorAwareStateMachineBuilder<ContainerStatus> builder = 
     			new ErrorAwareStateMachineBuilder<>(ContainerStatus.NEW, ContainerStatus.UNKNOWN);
@@ -78,6 +79,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         controller = controllerParam;
         accessor = accessorParam;
         stateMachine = buildUpStateMachine();
+        isReady = false;
     }
 
     @Override
@@ -124,7 +126,12 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
-    @Override
+  @Override
+  public boolean isReady() {
+    return isReady;
+  }
+
+  @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, ContainerStatus.READY, new Object[]{store});
     }
@@ -184,6 +191,8 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         network.updateAddress(PortRegistryTranslator.PORT_HIERARCHY_2, address);
         network.iterateOverInPorts(logic.getPortMapper());
         network.pollForNeededConnections();
+        //dependencies fullfilled
+        isReady = true;
     }
 
     void preInitAction() throws LifecycleException {

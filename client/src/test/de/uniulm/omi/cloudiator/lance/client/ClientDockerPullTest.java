@@ -21,6 +21,9 @@ package de.uniulm.omi.cloudiator.lance.client;
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
 
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.Builder;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
@@ -590,6 +593,29 @@ public class ClientDockerPullTest {
   }
 
   @Test
+  public void testHLInsertExtDeplContext() {
+    ExternalContextParameters.InPortContext inpC = new InPortContext("sparkJob1Port",9999);
+    List<InPortContext> inpCList = new ArrayList<>();
+    inpCList.add(inpC);
+    ExternalContextParameters.Builder builder = new ExternalContextParameters.Builder();
+    builder.name("sparkJob1");
+    builder.appInstanceId(appInstanceId);
+    builder.compId(new ComponentId());
+    builder.compInstId(new ComponentInstanceId());
+    builder.pubIp(publicIp);
+    builder.inPortContext(inpCList);
+    builder.status(ContainerStatus.READY);
+
+    ExternalContextParameters params = builder.build();
+
+    try {
+      client.injectExternalDeploymentContext(params);
+    } catch (DeploymentException e) {
+      System.err.println("Couldn't inject ExtContext");
+    }
+  }
+
+  @Test
   public void testIZookDeploy() {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
@@ -611,9 +637,18 @@ public class ClientDockerPullTest {
       zookComp.setTag("3.4.12");
       zookId =
           client.deploy(zookContext, zookComp);
+      boolean isReady = false;
+      do {
+        System.out.println("zook not ready");
+        isReady = client.isReady(ContainerType.DOCKER, zookId);
+        sleep(50);
+      } while (isReady != true);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy zookeeper component");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
     }
+    System.out.println("zook is ready");
   }
 
   @Test
@@ -667,9 +702,18 @@ public class ClientDockerPullTest {
       }
       cassId =
           client.deploy(cassContext, cassComp);
+      boolean isReady = false;
+      do {
+        System.out.println("cass not ready");
+        isReady = client.isReady(ContainerType.DOCKER, cassId);
+        sleep(50);
+      } while (isReady != true);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy cassandra component");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
     }
+    System.out.println("cass is ready");
   }
 
   @Test
@@ -717,9 +761,18 @@ public class ClientDockerPullTest {
       kafkComp.setImageName("kafka");
       kafkId =
           client.deploy(kafkContext, kafkComp);
+      boolean isReady = false;
+      do {
+        System.out.println("kafk not ready");
+        isReady = client.isReady(ContainerType.DOCKER, kafkId);
+        sleep(50);
+      } while (isReady != true);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy kafka component");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
     }
+    System.out.println("kafk is ready");
   }
 
   @Test

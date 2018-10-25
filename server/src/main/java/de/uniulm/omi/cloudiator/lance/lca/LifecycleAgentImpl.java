@@ -24,6 +24,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -140,10 +141,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   @Override
   public boolean stopComponentInstance(ContainerType containerType,
       ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException {
-    ContainerController cid = containers.getContainer(instanceId);
-    if (cid == null) {
-      throw new LcaException("Component instance not known: " + instanceId);
-    }
+    ContainerController cid = getController(instanceId);
     ContainerStatus state = cid.getState();
     if (state != ContainerStatus.READY) {
       throw new ContainerException("container in wrong state: " + state);
@@ -151,6 +149,27 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     cid.tearDown();
     cid.awaitDestruction();
     return true;
+  }
+
+  @Override
+  public boolean componentInstanceIsReady(ContainerType containerType,
+      ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException {
+    ContainerController cid = getController(instanceId);
+    ContainerStatus state = cid.getState();
+    boolean isReady = cid.isReady();
+    if (state != ContainerStatus.READY || isReady == false) {
+      return false;
+    }
+    return true;
+  }
+
+  private ContainerController getController(ComponentInstanceId instanceId) throws LcaException {
+    ContainerController cid = containers.getContainer(instanceId);
+    if (cid == null) {
+      throw new LcaException("Component instance not known: " + instanceId);
+    }
+
+    return cid;
   }
 
   private static void componentConsistentlyRegistered(DeploymentContext ctx,

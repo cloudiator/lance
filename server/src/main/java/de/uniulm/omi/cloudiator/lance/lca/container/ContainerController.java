@@ -30,16 +30,17 @@ public interface ContainerController {
     
 	void bootstrap() ;
 
-    void init(LifecycleStore store) ;
+  void init(LifecycleStore store) ;
 
-    void tearDown() ;
+  void tearDown() ;
 
-    void awaitInitialisation() throws ContainerException;
+  void awaitInitialisation() throws ContainerException;
 
-    void awaitCreation() throws ContainerException;
+  void awaitCreation() throws ContainerException;
 
-    void awaitDestruction() throws ContainerException;
+  void awaitDestruction() throws ContainerException;
 
 	void awaitBootstrap() throws ContainerException;
 
+	boolean isReady();
 }

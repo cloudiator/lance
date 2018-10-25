@@ -38,6 +38,7 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
 
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForBootstrapParameters;
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForCreationParameters;
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.READY;
 
 // FIXME: move status updates to network handler to this class instead of keeping
 // them in the individual container classes 
@@ -106,18 +107,26 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     @Override
+    public boolean isReady() {
+      if (stateMachine.getState().equals(READY)) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[]{store});
     }
 
     @Override
     public void awaitInitialisation() {
-        stateMachine.waitForTransitionEnd(ContainerStatus.READY);
+        stateMachine.waitForTransitionEnd(READY);
     }
 
     @Override
     public void tearDown() {
-        stateMachine.transit(ContainerStatus.READY);
+        stateMachine.transit(READY);
     }
 
     @Override
@@ -214,7 +223,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     private StateMachineBuilder<ContainerStatus> addInitTransition(StateMachineBuilder<ContainerStatus> b) {
-        return b.addAsynchronousTransition(ContainerStatus.BOOTSTRAPPED, ContainerStatus.INITIALISING, ContainerStatus.READY,
+        return b.addAsynchronousTransition(ContainerStatus.BOOTSTRAPPED, ContainerStatus.INITIALISING, READY,
                 new TransitionAction() {
                     @Override
                     public void transit(Object[] params) {
@@ -223,7 +232,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                             logic.preInit();
                             preInitAction();
                             postInitAction();
-                            registerStatus(ContainerStatus.READY);
+                            registerStatus(READY);
                         } catch (ContainerException | LifecycleException | RegistrationException ce) {
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */
@@ -233,7 +242,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     private StateMachineBuilder<ContainerStatus> addDestroyTransition(StateMachineBuilder<ContainerStatus> b) {
-        return b.addAsynchronousTransition(ContainerStatus.READY, ContainerStatus.SHUTTING_DOWN, ContainerStatus.DESTROYED,
+        return b.addAsynchronousTransition(READY, ContainerStatus.SHUTTING_DOWN, ContainerStatus.DESTROYED,
                 new TransitionAction() {
                     @Override
                     public void transit(Object[] params) {
