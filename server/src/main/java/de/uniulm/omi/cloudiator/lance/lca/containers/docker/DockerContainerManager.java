@@ -95,9 +95,10 @@ public class DockerContainerManager implements ContainerManager {
     public ContainerController createNewContainer(DeploymentContext ctx,
         DeployableComponent comp, OperatingSystem os) throws ContainerException {
 
+      final boolean forceRegDel = false;
       ContainerComponents cComponents = new ContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
       accessorInit(cComponents.accessor, cComponents.id);
-        ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+        ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, forceRegDel);
         registry.addContainer(dc);
         dc.create();
         return dc;
@@ -107,9 +108,11 @@ public class DockerContainerManager implements ContainerManager {
     public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
         LifecycleComponent comp, OperatingSystem os) throws ContainerException {
 
+      //todo: implement this also for LifecycleContainers!?
+      final boolean forceRegDel = false;
       LifecycleContainerComponents cComponents = new LifecycleContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, forceRegDel);
       registry.addContainer(dc);
       dc.create();
       return dc;
@@ -117,11 +120,11 @@ public class DockerContainerManager implements ContainerManager {
 
     //used by deployDockerComponent
     public ContainerController createNewDockerContainer(DeploymentContext ctx,
-        DockerComponent comp) throws ContainerException {
+        DockerComponent comp, boolean forceRegDel) throws ContainerException {
 
       DockerContainerComponents cComponents = new DockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, forceRegDel);
       registry.addContainer(dc);
       dc.create();
       return dc;

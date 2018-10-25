@@ -52,7 +52,7 @@ public interface LifecycleAgent extends Remote {
     ComponentInstanceId deployLifecycleComponent(DeploymentContext ctx, LifecycleComponent component,
         OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
 
-    ComponentInstanceId deployDockerComponent(DeploymentContext ctx, DockerComponent component) throws RemoteException, LcaException, RegistrationException, ContainerException;
+    ComponentInstanceId deployDockerComponent(DeploymentContext ctx, DockerComponent component, boolean forceRegDel) throws RemoteException, LcaException, RegistrationException, ContainerException;
 
     boolean stopComponentInstance(ContainerType containerType, ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
 

@@ -53,6 +53,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
 
     private final ErrorAwareStateMachine<ContainerStatus> stateMachine;
     private final GlobalRegistryAccessor accessor;
+    private final boolean forceRegDeletion;
     final T logic;
     final ComponentInstanceId containerId;
     final NetworkHandler network;
@@ -72,7 +73,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     public ErrorAwareContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-                             LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
+                             LifecycleController controllerParam, GlobalRegistryAccessor accessorParam, boolean forceRegDel) {
         containerId = id;
         logic = logicParam;
         network = networkParam;
@@ -80,6 +81,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         accessor = accessorParam;
         stateMachine = buildUpStateMachine();
         isReady = false;
+        forceRegDeletion = forceRegDel;
     }
 
     @Override
@@ -157,6 +159,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     public void awaitDestruction() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(DestroyTransitionAction.isSuccessfullEndState(stat)) {
+    	  updateRegistry();
     		return;
     	}
     	if(DestroyTransitionAction.isKnownErrorState(stat)) {
@@ -165,7 +168,17 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
-    void setNetworking() throws ContainerException {
+  private void updateRegistry() throws ContainerConfigurationException {
+      if(forceRegDeletion) {
+        try {
+          accessor.deleteComponentInstance();
+        } catch (RegistrationException e) {
+          throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
+        }
+      }
+  }
+
+  void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();
         try {
             network.initPorts(address);

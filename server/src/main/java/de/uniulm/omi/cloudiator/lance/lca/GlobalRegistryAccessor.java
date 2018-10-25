@@ -70,7 +70,11 @@ public final class GlobalRegistryAccessor {
     		throw new NullPointerException("type has to be set");
     	return type.toString().equals(map.get(CONTAINER_STATUS));
     }
-    
+
+    public final void deleteComponentInstance() throws RegistrationException {
+        reg.deleteComponentInstance(appInstId, compId, localId);
+    }
+
     /* 
     @Deprecated
     public final String getProperty(ComponentInstanceId myId, String name) throws RegistrationException {

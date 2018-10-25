@@ -86,9 +86,11 @@ public class PlainContainerManager implements ContainerManager {
                 re);
         }
 
+        //todo: implement this also for LifecycleContainers!?
+        final boolean foreRegDel = false;
         ContainerController containerController =
             new ErrorAwareContainer<>(componentInstanceId, plainContainerLogic, networkHandler,
-                lifecycleController, accessor);
+                lifecycleController, accessor, foreRegDel);
 
         this.registry.addContainer(containerController);
         containerController.create();

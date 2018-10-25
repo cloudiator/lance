@@ -246,7 +246,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
 
         ErrorAwareContainer<PlainContainerLogic> controller =
                 new ErrorAwareContainer<PlainContainerLogic>(fullComp.cInstId, containerLogic, fullComp.networkHandler,
-                        lifecycleController, fullComp.accessor);
+                        lifecycleController, fullComp.accessor, false);
 
         //not a really good design
         fullComp.addLifecycleController(lifecycleController);

@@ -115,4 +115,10 @@ public final class RmiWrapper implements LcaRegistry {
             throw new RegistrationException("operation failed.", re);
         }
     }
+
+    @Override
+    public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
+        ComponentInstanceId cinstId) throws RegistrationException {
+       //todo: implement, though this is legacy code
+    }
 }

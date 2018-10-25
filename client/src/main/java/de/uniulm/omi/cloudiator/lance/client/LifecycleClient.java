@@ -152,7 +152,7 @@ public final class LifecycleClient {
  }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DockerComponent comp)
+      final DockerComponent comp, boolean forceRegDel)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
@@ -160,7 +160,7 @@ public final class LifecycleClient {
     Callable<ComponentInstanceId> callable = () -> {
       LOGGER.info("Trying to deploy Docker component " + comp);
       return lifecycleAgent
-          .deployDockerComponent(ctx, comp);
+          .deployDockerComponent(ctx, comp, forceRegDel);
     };
 
     return doRetryerCall(retryer, callable);

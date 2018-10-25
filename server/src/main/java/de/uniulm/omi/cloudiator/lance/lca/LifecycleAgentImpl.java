@@ -116,7 +116,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   //todo: Do we need to distinguish between the ContainerType(s) DOCKER and DOCKER_REMOTE?
   @Override
   public ComponentInstanceId deployDockerComponent(DeploymentContext ctx,
-      DockerComponent component)
+      DockerComponent component, boolean forceRegDel)
       throws RemoteException, LcaException, RegistrationException, ContainerException {
 
     componentConsistentlyRegistered(ctx, component);
@@ -128,7 +128,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     LOGGER.info(String
         .format("Creating new container using context %s, and containerType %s.",
             hostContext, ContainerType.DOCKER));
-    ContainerController cc = manager.createNewDockerContainer(ctx, component);
+    ContainerController cc = manager.createNewDockerContainer(ctx, component, forceRegDel);
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));
