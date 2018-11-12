@@ -26,7 +26,6 @@ public class DockerComponent extends AbstractComponent {
 
   private EntireDockerCommands entireDockerCommands;
   private String imageName;
-  private String registryUri;
   private String imageFolder;
   private String tag;
   private String digestSHA256;
@@ -34,7 +33,6 @@ public class DockerComponent extends AbstractComponent {
   public static class Builder extends AbstractComponent.Builder<Builder> {
     private final EntireDockerCommands entireDockerCommandsParam;
     private final String imageNameParam;
-    private String registryUriParam;
     private String imageFolderParam;
     private String tagParam;
     private String digestSHA256Param;
@@ -42,11 +40,6 @@ public class DockerComponent extends AbstractComponent {
     public Builder(EntireDockerCommands entireDockerCommands, String imageName) {
       this.entireDockerCommandsParam = entireDockerCommands;
       this.imageNameParam = imageName;
-    }
-
-    public Builder registryUri(String registryUri) {
-      this.registryUriParam = registryUri;
-      return this;
     }
 
     public Builder imageFolder(String imageFolder) {
@@ -96,11 +89,6 @@ public class DockerComponent extends AbstractComponent {
     else
       this.imageFolder = builder.imageFolderParam;
 
-    if(builder.registryUriParam == null)
-      this.registryUri = "";
-    else
-      this.registryUri = builder.registryUriParam;
-
     if(builder.tagParam == null)
       this.tag = "";
     else
@@ -114,10 +102,6 @@ public class DockerComponent extends AbstractComponent {
 
   public EntireDockerCommands getEntireDockerCommands() {
     return this.entireDockerCommands;
-  }
-
-  public String getRegistryUri() {
-    return this.registryUri;
   }
 
   public String getImageFolder() {
@@ -175,7 +159,6 @@ public class DockerComponent extends AbstractComponent {
   public String getFullImageName() throws IllegalArgumentException {
     StringBuilder builder = new StringBuilder();
 
-    builder.append(buildPrefixString(registryUri));
     builder.append(buildPrefixString(imageFolder));
     builder.append(imageName);
 

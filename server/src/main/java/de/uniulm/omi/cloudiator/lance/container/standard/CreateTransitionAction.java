@@ -25,9 +25,9 @@ final class CreateTransitionAction implements TransitionAction {
 			theContainer.logic.doCreate();
 			theContainer.postCreateAction();
 			theContainer.registerStatus(ContainerStatus.CREATED);
-        } catch (ContainerException | RegistrationException ce) {
-            throw new TransitionException(ce); 
-        }
+    } catch (ContainerException | RegistrationException ce) {
+        throw new TransitionException(ce);
+    }
 	}
 	
     private static void checkForCreationParameters(Object[] o){

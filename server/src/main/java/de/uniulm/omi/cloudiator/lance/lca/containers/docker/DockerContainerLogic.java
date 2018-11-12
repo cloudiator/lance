@@ -32,7 +32,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      String fullImageName = myComponent.getFullImageName();
+      String fullImageName = getFullImageName();
       client.pullImage(fullImageName);
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.CREATE));
     } catch(DockerException de) {
@@ -105,6 +105,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   void collectDynamicEnvVars() {
     envVarsDynamic.putAll(myComponent.getEnvVars());
     envVarsDynamic.putAll(networkHandler.getEnvVars());
+  }
+
+  @Override
+  String getFullImageName() {
+    return myComponent.getFullImageName();
   }
 
   private DockerShell executeGenericStart() throws ContainerException {

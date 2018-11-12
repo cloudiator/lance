@@ -140,7 +140,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     LOGGER.info(String
         .format("Creating new container using context %s, and containerType %s.",
             hostContext, ContainerType.DOCKER_REMOTE));
-    ContainerController cc = manager.createNewDockerContainer(ctx, component);
+    ContainerController cc = manager.createNewRemoteDockerContainer(ctx, component);
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));

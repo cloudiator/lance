@@ -115,16 +115,16 @@ public class DockerContainerManager implements ContainerManager {
       return dc;
     }
 
-  /*public ContainerController createNewRemoteDockerContainer(DeploymentContext ctx,
-      RemoteDockerComponent comp) throws ContainerException {
+    public ContainerController createNewRemoteDockerContainer(DeploymentContext ctx,
+        RemoteDockerComponent comp) throws ContainerException {
 
-    RemoteDockerContainerComponents cComponents = new RemoteDockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
-    accessorInit(cComponents.accessor, cComponents.id);
-    ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
-    registry.addContainer(dc);
-    dc.create();
-    return dc;
-  }*/
+      RemoteDockerContainerComponents cComponents = new RemoteDockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
+      accessorInit(cComponents.accessor, cComponents.id);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      registry.addContainer(dc);
+      dc.create();
+      return dc;
+    }
 
     private static void accessorInit(GlobalRegistryAccessor acc, ComponentInstanceId cId) throws ContainerException {
       try {

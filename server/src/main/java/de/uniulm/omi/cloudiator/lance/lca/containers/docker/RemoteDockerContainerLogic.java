@@ -11,4 +11,9 @@ public class RemoteDockerContainerLogic extends DockerContainerLogic {
     super(builder);
     this.comp = comp;
   }
+
+  @Override
+  String getFullImageName() {
+    return comp.getFullImageName();
+  }
 }

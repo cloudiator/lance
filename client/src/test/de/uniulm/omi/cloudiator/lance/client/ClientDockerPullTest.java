@@ -80,14 +80,13 @@ public class ClientDockerPullTest {
   private static ApplicationId applicationId;
   private static ApplicationInstanceId appInstanceId;
 
-  private static String zookeeperComponent, zookeeperComponent_lifecycle;
-  private static String zookeeperInternalInportName, zookeeperInternalInportName_lifecycle;
-  private static String cassInternalInportName, cassInternalInportName_lifecycle;
-  private static String zookeeperOutportName, zookeeperOutportName_lifecycle;
+  private static String zookeeperComponent, zookeeperComponent_lifecycle, zookeeperComponent_remote;
+  private static String zookeeperInternalInportName, zookeeperInternalInportName_lifecycle, zookeeperInternalInportName_remote;
+  private static String zookeeperOutportName, zookeeperOutportName_lifecycle, zookeeperOutportName_remote;
   private static String imageName;
-  private static ComponentId zookeeperComponentId, zookeeperComponentId_lifecycle;
-  private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle;
-  private static ComponentInstanceId zookId, zookId_lifecycle;
+  private static ComponentId zookeeperComponentId, zookeeperComponentId_lifecycle, zookeeperComponentId_remote;
+  private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultZookeeperInternalInport_remote;
+  private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
   private static String publicIp = "x.x.x.x";
   private static LifecycleClient client;
@@ -100,17 +99,20 @@ public class ClientDockerPullTest {
     Random rand = new Random();
     zookeeperComponent = "zookeeper";
     zookeeperComponent_lifecycle = "zookeeper_lifecycle";
+    zookeeperComponent_remote = "zookeeper_remote";
     zookeeperInternalInportName = "ZOOK_INT_INP";
     zookeeperInternalInportName_lifecycle = "ZOOK_INT_INP_LIFECYCLE";
-    cassInternalInportName = "cass_inp_docker";
-    cassInternalInportName_lifecycle = "cass_inp_lifecycle";
+    zookeeperInternalInportName_remote = "ZOOK_INT_INP_REMOTE";
     zookeeperOutportName = "ZOOK_OUT";
     zookeeperOutportName_lifecycle = "ZOOK_OUT_LIFECYCLE";
+    zookeeperOutportName_remote = "ZOOK_OUT_REMOTE";
     imageName = "zookeeper";
     zookeeperComponentId = new ComponentId();
     zookeeperComponentId_lifecycle = new ComponentId();
+    zookeeperComponentId_remote = new ComponentId();
     defaultZookeeperInternalInport = 3888;
     defaultZookeeperInternalInport_lifecycle = (rand.nextInt(65563) + 1);
+    defaultZookeeperInternalInport_remote = (rand.nextInt(65563) + 1);
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
@@ -276,6 +278,7 @@ public class ClientDockerPullTest {
       client.registerApplicationInstance(appInstanceId, applicationId);
       client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId);
       client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId_lifecycle);
+      client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId_remote);
     } catch (RegistrationException ex) {
       System.err.println("Exception during registration");
     }
@@ -331,10 +334,14 @@ public class ClientDockerPullTest {
       internalInportName = zookeeperInternalInportName;
       defaultInternalInport = defaultZookeeperInternalInport;
       outportName = zookeeperOutportName;
-    } else {
+    } else if(v == version.LIFECYCLE) {
       internalInportName = zookeeperInternalInportName_lifecycle;
       defaultInternalInport = defaultZookeeperInternalInport_lifecycle;
       outportName = zookeeperOutportName_lifecycle;
+    } else {
+      internalInportName = zookeeperInternalInportName_remote;
+      defaultInternalInport = defaultZookeeperInternalInport_remote;
+      outportName = zookeeperOutportName_remote;
     }
 
     DeploymentContext zookeeper_context =
@@ -412,7 +419,7 @@ public class ClientDockerPullTest {
   }
 
   @Test
-  public void testHLInsertExtDeplContext() {
+  public void testGLInsertExtDeplContext() {
     ExternalContextParameters.InPortContext inpC = new InPortContext("sparkJob1Port",9999);
     List<InPortContext> inpCList = new ArrayList<>();
     inpCList.add(inpC);
@@ -435,6 +442,30 @@ public class ClientDockerPullTest {
   }
 
   @Test
+  public void testHRemoteDockerComponent() {
+    try {
+      DeploymentContext dummyContext =
+          client.initDeploymentContext(applicationId, appInstanceId);
+      List<InportInfo> dummyInInfs = new ArrayList<>();
+      /*InportInfo inInf =
+          new InportInfo("dummInPort", PortProperties.PortType.INTERNAL_PORT, 2, 888);
+      dummyInInfs.add(inInf);*/
+      List<OutportInfo> dummyOutInfs = new ArrayList<>();
+      /*OutportInfo outInf =
+          new OutportInfo(
+              "dummyOutPort",
+              DeploymentHelper.getEmptyPortUpdateHandler(),
+              1,
+              OutPort.NO_SINKS);
+      dummyOutInfs.add(outInf);*/
+      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, zookeeperComponent_remote, zookeeperComponentId_remote, dummyInInfs, dummyOutInfs, "latest", "fh.host", 92);
+      client.deploy(dummyContext, rDockerComponent);
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy remote docker zookeeper component");
+    }
+  }
+
+  @Test
   public void testIZookDeploy() {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
@@ -453,9 +484,8 @@ public class ClientDockerPullTest {
       System.err.println("Couldn't deploy docker zookeeper component");
     } catch (InterruptedException ex) {
       System.err.println("Interrupted!");
-    } catch (Exception ex) {
-    ex.printStackTrace();
-  }
+    }
+
     System.out.println("zook is ready");
   }
 

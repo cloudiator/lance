@@ -40,7 +40,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 public abstract class AbstractComponent implements Serializable, DynamicEnvVars {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponent.class);
-    private static final long serialVersionUID = -8008479179768130524L;
+    private static final long serialVersionUID = -8078692212700712671L;
 
     private final String name;
     private final ComponentId myId;

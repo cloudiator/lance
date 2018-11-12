@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RemoteDockerComponent  extends DockerComponent {
+
   private final DockerRegistry dReg;
 
   //todo: Better construct a Builder that fits into the Class Hierarchy
@@ -27,6 +28,13 @@ public class RemoteDockerComponent  extends DockerComponent {
 
   public DockerRegistry getDockerReg () {
     return this.dReg;
+  }
+
+  @Override
+  public String getFullImageName() throws IllegalArgumentException {
+    String prefix = buildRemoteRegString();
+    String fullName = prefix + super.getFullImageName();
+    return fullName;
   }
 
   private String buildRemoteRegString() throws IllegalArgumentException {
