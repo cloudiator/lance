@@ -1,6 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
@@ -79,13 +80,21 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     envVarsDynamic.putAll(networkHandler.getEnvVars());
   }
 
-  static class Builder extends AbstractBuilder<LifecycleComponent> {
+  public static class Builder extends AbstractDockerContainerLogic.Builder<LifecycleComponent,Builder> {
+    private final OperatingSystem osParam;
 
-    public Builder(){}
+    public Builder(OperatingSystem osParam){
+      this.osParam = osParam;
+    }
 
     @Override
-    public AbstractDockerContainerLogic build() {
+    public LifecycleDockerContainerLogic build() {
       return new LifecycleDockerContainerLogic(this);
+    }
+
+    @Override
+    protected Builder self() {
+      return this;
     }
   }
 }

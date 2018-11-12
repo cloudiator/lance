@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.client;
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
 
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent.DockerRegistry;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.Builder;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
@@ -92,7 +93,7 @@ public class ClientDockerPullTest {
   private static ComponentInstanceId zookId, cassId, kafkId;
   private static ComponentInstanceId zookId_lifecycle, cassId_lifecycle, kafkId_lifecycle;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static LifecycleClient client;
 
   @BeforeClass
@@ -136,7 +137,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
   }
 
   private DockerComponent buildDockerComponent(
@@ -169,6 +170,40 @@ public class ClientDockerPullTest {
     }
     builder.deploySequentially(true);
     DockerComponent comp = builder.build(DockerComponent.class);
+    return comp;
+  }
+
+  private RemoteDockerComponent buildRemoteDockerComponent(
+      LifecycleClient client,
+      String compName,
+      ComponentId id,
+      List<InportInfo> inInfs,
+      List<OutportInfo> outInfs,
+      Callable<LifecycleStore> createLifeCycleStore) {
+    ComponentBuilder<RemoteDockerComponent> builder = new ComponentBuilder(RemoteDockerComponent.class, compName, id);
+
+    for (int i = 0; i < inInfs.size(); i++)
+      builder.addInport(
+          inInfs.get(i).inportName,
+          inInfs.get(i).portType,
+          inInfs.get(i).cardinality,
+          inInfs.get(i).inPort);
+
+    for (int i = 0; i < outInfs.size(); i++)
+      builder.addOutport(
+          outInfs.get(i).outportName,
+          outInfs.get(i).puHandler,
+          outInfs.get(i).cardinality,
+          outInfs.get(i).min);
+
+    try {
+      builder.addLifecycleStore(createLifeCycleStore.call());
+    } catch (Exception ex) {
+      System.err.println("Server not reachable");
+    }
+    builder.deploySequentially(true);
+
+    RemoteDockerComponent comp = builder.build(RemoteDockerComponent.class);
     return comp;
   }
 
@@ -616,6 +651,46 @@ public class ClientDockerPullTest {
   }
 
   @Test
+  public void testIAZookDummyDeploy() {
+    try {
+      List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
+      List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
+      RemoteDockerComponent zookComp = buildRemoteDockerComponent(
+          client,
+          zookeeperComponent , zookeeperComponentId,
+          inInfs,
+          outInfs,
+          new Callable<LifecycleStore>() {
+            public LifecycleStore call() {
+              return createDefaultLifecycleStore();
+            }
+          });
+      DeploymentContext zookContext = createZookeperContext(client,version.DOCKER_DEPL);
+      EntireDockerCommands cmds = buildEntireDockerCommands("zook");
+      zookComp.setEntireDockerCommands(cmds);
+      RemoteDockerComponent.DockerRegistry dReg = new DockerRegistry();
+      dReg.hostName = "flori.reg";
+      dReg.port = 8871;
+      zookComp.setDockerReg(dReg);
+      zookComp.setImageName("zookeeper");
+      zookComp.setTag("3.4.12");
+      zookId =
+          client.deploy(zookContext, zookComp);
+      boolean isReady = false;
+      do {
+        System.out.println("zook not ready");
+        isReady = client.isReady(ContainerType.DOCKER, zookId);
+        sleep(50);
+      } while (isReady != true);
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy zookeeper component");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
+    }
+    System.out.println("zook is ready");
+  }
+
+  @Test
   public void testIZookDeploy() {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
@@ -831,12 +906,12 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      client.undeploy(zookId, ContainerType.DOCKER);
-      client.undeploy(cassId, ContainerType.DOCKER);
-      client.undeploy(kafkId, ContainerType.DOCKER);
-      client.undeploy(zookId_lifecycle, ContainerType.DOCKER);
-      client.undeploy(cassId_lifecycle, ContainerType.DOCKER);
-      client.undeploy(kafkId_lifecycle, ContainerType.DOCKER);
+      client.undeploy(zookId, ContainerType.DOCKER, true);
+      client.undeploy(cassId, ContainerType.DOCKER, true);
+      client.undeploy(kafkId, ContainerType.DOCKER, true);
+      client.undeploy(zookId_lifecycle, ContainerType.DOCKER, true);
+      client.undeploy(cassId_lifecycle, ContainerType.DOCKER, true);
+      client.undeploy(kafkId_lifecycle, ContainerType.DOCKER, true);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     }

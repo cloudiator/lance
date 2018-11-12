@@ -32,13 +32,15 @@ public interface ContainerController {
 
   void init(LifecycleStore store) ;
 
+  void init();
+
   void tearDown() ;
 
   void awaitInitialisation() throws ContainerException;
 
   void awaitCreation() throws ContainerException;
 
-  void awaitDestruction() throws ContainerException;
+  void awaitDestruction(boolean forceRegDeletion) throws ContainerException;
 
 	void awaitBootstrap() throws ContainerException;
 

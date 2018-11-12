@@ -120,6 +120,11 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     @Override
+    public void init() {
+        stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[]{});
+    }
+
+    @Override
     public void awaitInitialisation() {
         stateMachine.waitForTransitionEnd(READY);
     }
@@ -130,10 +135,20 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     @Override
-    public void awaitDestruction() {
+    public void awaitDestruction(boolean forceRegDeletion) throws ContainerException {
         stateMachine.waitForTransitionEnd(ContainerStatus.DESTROYED);
+        if (forceRegDeletion) {
+            deleteInRegistry();
+        }
     }
 
+    private void deleteInRegistry() throws ContainerException {
+        try {
+            accessor.deleteComponentInstance();
+        } catch (RegistrationException re) {
+            throw new ContainerException("cannot access registry.", re);
+        }
+    }
 
     private void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();

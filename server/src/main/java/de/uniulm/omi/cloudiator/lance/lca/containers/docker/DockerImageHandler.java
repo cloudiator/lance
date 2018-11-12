@@ -21,7 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
@@ -32,15 +32,15 @@ final class DockerImageHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDockerContainerLogic.class);
     
     private final DockerOperatingSystemTranslator translator;
-    private final OperatingSystem os;
+    private OperatingSystem os;
     private final DockerConnector client;
-    private final DeployableComponent myComponent;
+    private final AbstractComponent myComponent;
     private final DockerConfiguration dockerConfig;
     
     private volatile ImageCreationType initSource;
     
     DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam, 
-                DockerConnector clientParam, DeployableComponent componentParam, DockerConfiguration dockerConfigParam) {
+                DockerConnector clientParam, AbstractComponent componentParam, DockerConfiguration dockerConfigParam) {
         if(osParam == null) 
             throw new NullPointerException("operating system has to be set.");
         
@@ -50,9 +50,17 @@ final class DockerImageHandler {
         client = clientParam;
         myComponent = componentParam;
     }
-    
-    
-    static String createComponentInstallId(DeployableComponent myComponent) {
+
+    DockerImageHandler(DockerOperatingSystemTranslator translatorParam,
+        DockerConnector clientParam, AbstractComponent componentParam, DockerConfiguration dockerConfigParam) {
+
+        dockerConfig = dockerConfigParam;
+        translator = translatorParam;
+        client = clientParam;
+        myComponent = componentParam;
+    }
+
+    static String createComponentInstallId(AbstractComponent myComponent) {
         return "dockering." + "component." + myComponent.getComponentId().toString(); 
     }
     

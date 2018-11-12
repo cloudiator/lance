@@ -19,7 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
@@ -78,11 +78,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     translateMap = Collections.unmodifiableMap(tmpMap);
   }
 
-  protected AbstractDockerContainerLogic(AbstractBuilder builder) {
-
-    if (builder.osParam == null) {
-      throw new NullPointerException("operating system has to be set.");
-    }
+  protected AbstractDockerContainerLogic(Builder<?,?> builder) {
 
     this.myId = builder.myId;
     final StaticEnvVars instVars = this.myId;
@@ -272,11 +268,10 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   abstract void collectDynamicEnvVars();
 
-  abstract static class AbstractBuilder<T extends DeployableComponent> {
+  abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
     protected ComponentInstanceId myId;
     protected DockerConnector client;
 
-    protected OperatingSystem osParam;
     protected DockerShellFactory shellFactory;
 
     protected T myComponent;
@@ -287,53 +282,48 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
     protected HostContext hostContext;
 
-    public AbstractBuilder(){}
-
-    public AbstractBuilder cInstId(ComponentInstanceId myId) {
+    public S cInstId(ComponentInstanceId myId) {
       this.myId = myId;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder dockerConnector(DockerConnector connector) {
+    public S dockerConnector(DockerConnector connector) {
       this.client = connector;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder osParam(OperatingSystem os) {
-      this.osParam = os;
-      return this;
-    }
-
-    public AbstractBuilder dockerShellFac(DockerShellFactory shellFactory) {
+    public S dockerShellFac(DockerShellFactory shellFactory) {
       this.shellFactory = shellFactory;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder<T> deplComp(T comp) {
+    public S deplComp(T comp) {
       this.myComponent = comp;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder deplContext(DeploymentContext dContext) {
+    public S deplContext(DeploymentContext dContext) {
       this.deploymentContext = dContext;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder nwHandler(NetworkHandler nwHandler) {
+    public S nwHandler(NetworkHandler nwHandler) {
       this.networkHandler = nwHandler;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder dockerConfig(DockerConfiguration config) {
+    public S dockerConfig(DockerConfiguration config) {
       this.dockerConfig = config;
-      return this;
+      return self();
     }
 
-    public AbstractBuilder hostContext(HostContext hostContext) {
+    public S hostContext(HostContext hostContext) {
       this.hostContext = hostContext;
-      return this;
+      return self();
     }
 
     abstract AbstractDockerContainerLogic build();
+
+    protected abstract S self();
   }
 }

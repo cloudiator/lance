@@ -34,7 +34,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
@@ -53,11 +53,11 @@ final class OutPortHandler implements DynamicEnvVars {
     }
     
     private final List<OutPortState> portStates = new ArrayList<>();
-    private final DeployableComponent myComponent;
+    private final AbstractComponent myComponent;
 
     private DynamicEnvVarsImpl currentEnvVarsDynamic;
 
-    public OutPortHandler(DeployableComponent myComponentParam) {
+    public OutPortHandler(AbstractComponent myComponentParam) {
         myComponent = myComponentParam;
         currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
     }

@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import java.util.EnumMap;
 
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
@@ -43,6 +45,12 @@ public final class ContainerManagerFactory {
         if(sf == null)
         	throw new IllegalArgumentException("Type: " + type + " not supported");
         return sf.createContainerManager(myId);
+    }
+
+    public static ContainerManager createRemoteContainerManager(HostContext myId, RemoteDockerComponent.DockerRegistry dReg) {
+        if(mapper.get(DOCKER_REMOTE) == null)
+            throw new IllegalArgumentException("Type: " + DOCKER_REMOTE + " not supported");
+        return new DockerContainerManager(myId, dReg.hostName);
     }
 
     private static SpecificContainerManagerFactory getContainerFactoryFromContainerType(ContainerType containerType){

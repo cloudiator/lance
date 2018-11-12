@@ -49,8 +49,10 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
@@ -137,22 +139,22 @@ public final class LifecycleClient {
   }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
+      final LifecycleComponent comp, final OperatingSystem os, final ContainerType containerType)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
 
     Callable<ComponentInstanceId> callable = () -> {
-      LOGGER.info("Trying to deploy component " + comp);
+      LOGGER.info("Trying to deploy Lifecycle component " + comp);
       return lifecycleAgent
-          .deployComponent(ctx, comp, os, containerType);
+          .deployLifecycleComponent(ctx, comp, os, containerType);
     };
 
     return doRetryerCall(retryer, callable);
  }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DockerComponent comp, boolean forceRegDel)
+      final DockerComponent comp)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
@@ -160,7 +162,22 @@ public final class LifecycleClient {
     Callable<ComponentInstanceId> callable = () -> {
       LOGGER.info("Trying to deploy Docker component " + comp);
       return lifecycleAgent
-          .deployDockerComponent(ctx, comp, forceRegDel);
+          .deployDockerComponent(ctx, comp);
+    };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  public final ComponentInstanceId deploy(final DeploymentContext ctx,
+      final RemoteDockerComponent comp)
+      throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable = () -> {
+      LOGGER.info("Trying to deploy Remote Docker component " + comp);
+      return lifecycleAgent
+          .deployRemoteDockerComponent(ctx, comp);
     };
 
     return doRetryerCall(retryer, callable);
@@ -267,9 +284,9 @@ public final class LifecycleClient {
 
   //todo: overload with Method for Docker-Deployment
   public final boolean undeploy(ComponentInstanceId componentInstanceId,
-      ContainerType containerType) throws DeploymentException {
+      ContainerType containerType, boolean forceRegDel) throws DeploymentException {
     try {
-      return lifecycleAgent.stopComponentInstance(containerType, componentInstanceId);
+      return lifecycleAgent.stopComponentInstance(containerType, componentInstanceId, forceRegDel);
     } catch (RemoteException e) {
       throw new DeploymentException(handleRemoteException(e));
     } catch (LcaException | ContainerException e) {

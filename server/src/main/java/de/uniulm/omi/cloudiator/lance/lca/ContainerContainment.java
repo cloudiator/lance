@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +60,12 @@ final class ContainerContainment implements BasicContainer {
 		return (DockerContainerManager) getContainerManager(context, ContainerType.DOCKER);
 	}
 
+	//Returns reference to DockerContainerManager object
+	public DockerContainerManager getRemoteDockerContainerManager(HostContext context, RemoteDockerComponent.DockerRegistry dReg) {
+		//todo: refactor
+		return (DockerContainerManager) getContainerManager(context, dReg);
+	}
+
 	private ContainerManager getContainerManager(HostContext contex, ContainerType containerType) {
     synchronized(managers) {
       ContainerManager mng = managers.get(containerType);
@@ -68,6 +75,17 @@ final class ContainerContainment implements BasicContainer {
       }
       return mng;
     }
+	}
+
+	private ContainerManager getContainerManager(HostContext contex, RemoteDockerComponent.DockerRegistry dReg) {
+		synchronized(managers) {
+			ContainerManager mng = managers.get(ContainerType.DOCKER_REMOTE);
+			if(mng == null) {
+				mng = ContainerManagerFactory.createRemoteContainerManager(contex, dReg);
+				managers.put(ContainerType.DOCKER_REMOTE, mng);
+			}
+			return mng;
+		}
 	}
 
 	@Override

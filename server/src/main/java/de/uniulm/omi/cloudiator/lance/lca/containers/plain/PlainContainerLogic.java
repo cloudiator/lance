@@ -19,7 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
@@ -59,7 +59,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   private static final Logger LOGGER = LoggerFactory.getLogger(PlainContainerLogic.class);
 
   private final ComponentInstanceId myId;
-  private final DeployableComponent deployableComponent;
+  private final AbstractComponent deployableComponent;
   private final DeploymentContext deploymentContext;
   private final OperatingSystem os;
   private final NetworkHandler networkHandler;
@@ -316,7 +316,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   public static class Builder {
     private ComponentInstanceId myId;
-    private DeployableComponent deployableComponent;
+    private AbstractComponent deployableComponent;
     private DeploymentContext deploymentContext;
     private OperatingSystem os;
     private NetworkHandler networkHandler;
@@ -330,7 +330,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       return this;
     }
 
-    public Builder deplComp(DeployableComponent comp) {
+    public Builder deplComp(AbstractComponent comp) {
       this.deployableComponent = comp;
       return this;
     }

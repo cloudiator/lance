@@ -6,18 +6,46 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
-//TODO: Implement. DeployableComponent should among other things not depend on LifeCycleStore but LifecycleComponent should
-public class LifecycleComponent extends DeployableComponent{
-    LifecycleComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam,
-                       List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam,
-                       HashMap<String, ? extends Serializable> propertyValuesParam) {
-        super(nameParam, idParam, lifecycleStoreParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
+public class LifecycleComponent extends AbstractComponent {
+    private final LifecycleStore lifecycle;
+
+    public static class Builder extends AbstractComponent.Builder<Builder> {
+      private volatile LifecycleStore lifecycle;
+
+      public Builder(String name, ComponentId id) {
+        //this.lifecycle = lifecycle;
+        this.nameParam = name;
+        this.myIdParam = id;
+      }
+
+      public static Builder createBuilder(String name, ComponentId componentId) {
+        return new Builder(name,  componentId);
+      }
+
+      public Builder addLifecycleStore(LifecycleStore lifecycleStore) {
+        this.lifecycle = lifecycleStore;
+        return this;
+      }
+
+      @Override
+      public LifecycleComponent build() {
+        return new LifecycleComponent(this);
+      }
+
+      @Override
+      protected Builder self() {
+        return this;
+      }
     }
 
-  // needed temporarily to make ComponentBuilder class work, as long as DockerComponent and
-  // LifecycleComponent inherit from DeployableComponent
-  public LifecycleComponent() {
-    super();
-  }
+    private LifecycleComponent(Builder builder) {
+        super(builder);
+        lifecycle = builder.lifecycle;
+    }
+
+    public LifecycleStore getLifecycleStore() {
+        return lifecycle;
+    }
 }

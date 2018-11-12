@@ -19,7 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
@@ -58,49 +58,37 @@ public class PlainContainerManager implements ContainerManager {
         return this.registry.getContainer(id);
     }
 
-    @Override public ContainerController createNewContainer(DeploymentContext ctx,
-        DeployableComponent component, OperatingSystem os) throws ContainerException {
+    @Override
+    public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
+        LifecycleComponent component, OperatingSystem os) throws ContainerException {
 
-        ComponentInstanceId componentInstanceId = new ComponentInstanceId();
-
+      AbstractComponentDependencies cDeps = new AbstractComponentDependencies(ctx, component, hostContext);
         PlainShellFactory plainShellFactory = new PlainShellFactoryImpl();
-
-        GlobalRegistryAccessor accessor =
-            new GlobalRegistryAccessor(ctx, component, componentInstanceId);
-
-        NetworkHandler networkHandler = new NetworkHandler(accessor, component, this.hostContext);
         PlainContainerLogic.Builder builder = new PlainContainerLogic.Builder();
-        PlainContainerLogic plainContainerLogic = builder.cInstId(componentInstanceId).deplComp(component)
-            .deplContext(ctx).operatingSys(os).nwHandler(networkHandler).plShellFac(plainShellFactory)
+        PlainContainerLogic plainContainerLogic = builder.cInstId(cDeps.componentInstanceId).deplComp(component)
+            .deplContext(ctx).operatingSys(os).nwHandler(cDeps.networkHandler).plShellFac(plainShellFactory)
             .hostContext(this.hostContext).build();
 
         ExecutionContext executionContext = new ExecutionContext(os, plainShellFactory);
         LifecycleController lifecycleController =
-            new LifecycleController(component.getLifecycleStore(), plainContainerLogic, accessor,
+            new LifecycleController(component.getLifecycleStore(), plainContainerLogic, cDeps.accessor,
                 executionContext, hostContext);
 
         try {
-            accessor.init(componentInstanceId);
+            cDeps.accessor.init(cDeps.componentInstanceId);
         } catch (RegistrationException re) {
             throw new ContainerException("cannot start container, because registry not available",
                 re);
         }
 
         //todo: implement this also for LifecycleContainers!?
-        final boolean foreRegDel = false;
         ContainerController containerController =
-            new ErrorAwareContainer<>(componentInstanceId, plainContainerLogic, networkHandler,
-                lifecycleController, accessor, foreRegDel);
+            new ErrorAwareContainer<>(cDeps.componentInstanceId, plainContainerLogic, cDeps.networkHandler,
+                lifecycleController, cDeps.accessor);
 
         this.registry.addContainer(containerController);
         containerController.create();
         return containerController;
-    }
-
-    @Override
-    public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
-        LifecycleComponent component, OperatingSystem os) throws ContainerException {
-        return createNewContainer(ctx, component, os);
     }
 
     @Override public void terminate() {

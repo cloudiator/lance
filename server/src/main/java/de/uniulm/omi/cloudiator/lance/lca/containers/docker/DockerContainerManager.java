@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
@@ -65,11 +66,12 @@ public class DockerContainerManager implements ContainerManager {
         LOGGER.debug("using local host " + LcaConstants.LOCALHOST_IP + " as host name");
     }
 
-    DockerContainerManager(HostContext vmId, String host) {
-        this(vmId, host, true);
-    }
+  public DockerContainerManager(HostContext vmId, String host) {
+    this(vmId, host, true);
+    LOGGER.debug("using remote host " + host + " as host name");
+  }
     
-    private DockerContainerManager(HostContext vmId, String host, boolean remote) {
+    DockerContainerManager(HostContext vmId, String host, boolean remote) {
         hostContext = vmId;
         hostname = host;
         client = ConnectorFactory.INSTANCE.createConnector(hostname);
@@ -89,46 +91,40 @@ public class DockerContainerManager implements ContainerManager {
         return ContainerType.DOCKER;
     }
 
-    //used by deploy(Lifecycle)Component with ContainerType==DOCKER
-    //todo: Replace calls to this method in time when DeployableComponent isn't needed anymore
-    @Override
-    public ContainerController createNewContainer(DeploymentContext ctx,
-        DeployableComponent comp, OperatingSystem os) throws ContainerException {
-
-      final boolean forceRegDel = false;
-      ContainerComponents cComponents = new ContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
-      accessorInit(cComponents.accessor, cComponents.id);
-        ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, forceRegDel);
-        registry.addContainer(dc);
-        dc.create();
-        return dc;
-    }
-
     @Override
     public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
         LifecycleComponent comp, OperatingSystem os) throws ContainerException {
 
       //todo: implement this also for LifecycleContainers!?
-      final boolean forceRegDel = false;
       LifecycleContainerComponents cComponents = new LifecycleContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, forceRegDel);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
       registry.addContainer(dc);
       dc.create();
       return dc;
     }
 
-    //used by deployDockerComponent
     public ContainerController createNewDockerContainer(DeploymentContext ctx,
-        DockerComponent comp, boolean forceRegDel) throws ContainerException {
+        DockerComponent comp) throws ContainerException {
 
       DockerContainerComponents cComponents = new DockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, forceRegDel);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
       registry.addContainer(dc);
       dc.create();
       return dc;
     }
+
+  /*public ContainerController createNewRemoteDockerContainer(DeploymentContext ctx,
+      RemoteDockerComponent comp) throws ContainerException {
+
+    RemoteDockerContainerComponents cComponents = new RemoteDockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
+    accessorInit(cComponents.accessor, cComponents.id);
+    ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+    registry.addContainer(dc);
+    dc.create();
+    return dc;
+  }*/
 
     private static void accessorInit(GlobalRegistryAccessor acc, ComponentInstanceId cId) throws ContainerException {
       try {
@@ -166,41 +162,19 @@ public class DockerContainerManager implements ContainerManager {
     }
   }
 
-  //todo: keep this as long as legacy DeployableComponent exists
-  private static class ContainerComponents extends DefaultContainerComponents {
-    private final NetworkHandler networkHandler;
-    private final LifecycleController controller;
-    private final GlobalRegistryAccessor accessor;
-    private final AbstractDockerContainerLogic logic;
-
-    ContainerComponents(DeployableComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
-      super();
-
-      this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
-      this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
-      LegacyDockerContainerLogic.Builder builder = new LegacyDockerContainerLogic.Builder();
-      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
-          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
-
-      ExecutionContext ec = new ExecutionContext(os, shellFactory);
-      this.controller = new LifecycleController(comp.getLifecycleStore(), logic, accessor, ec, hostContext);
-    }
-  }
-
-
   private static class LifecycleContainerComponents extends DefaultContainerComponents {
     private final NetworkHandler networkHandler;
     private final LifecycleController controller;
     private final GlobalRegistryAccessor accessor;
-    private final AbstractDockerContainerLogic logic;
+    private final LifecycleDockerContainerLogic logic;
 
     LifecycleContainerComponents(LifecycleComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
       this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
-      LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder();
-      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
+      LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(os);
+      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
           nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
 
       ExecutionContext ec = new ExecutionContext(os, shellFactory);
@@ -208,33 +182,53 @@ public class DockerContainerManager implements ContainerManager {
     }
   }
 
-  private static class DockerContainerComponents extends DefaultContainerComponents {
-    private final NetworkHandler networkHandler;
-    //todo: kick LCC member-var
-    private final LifecycleController controller;
-    private final GlobalRegistryAccessor accessor;
-    private final AbstractDockerContainerLogic logic;
+  private static class DefaultDockerContainerComponents extends DefaultContainerComponents {
+    protected final NetworkHandler networkHandler;
+    protected final GlobalRegistryAccessor accessor;
 
-    DockerContainerComponents(DockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+    DefaultDockerContainerComponents(AbstractComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
       this.networkHandler = new NetworkHandler(accessor, comp, hostContext);
+    }
+  }
+
+  private static class DockerContainerComponents extends DefaultDockerContainerComponents {
+    private final DockerContainerLogic logic;
+    private final LifecycleController controller;
+
+    DockerContainerComponents(DockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+      super(comp, hostContext, client, ctx, dockerConfig);
+
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
-      //todo: kick os parameter
-      OperatingSystem os = OperatingSystem.UBUNTU_14_04;
-      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).osParam(os).
+      this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
           nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
-      //todo: kick LCS parameter
-      LifecycleStoreBuilder lsBuilder = new LifecycleStoreBuilder();
-      lsBuilder.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
-      LifecycleStore store = lsBuilder.build();
-      //todo: kick ExecutionContext parameter
-      ExecutionContext ec = new ExecutionContext(os, shellFactory);
-      //todo: kick LCC member-var
-      this.controller =
-          new LifecycleController(lsBuilder.build(), this.logic, this.accessor,
-              ec, hostContext);
+      LifecycleStoreBuilder storeBuilder = new LifecycleStoreBuilder();
+      storeBuilder.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
+      LifecycleStore store = storeBuilder.build();
+      ExecutionContext ec = new ExecutionContext(OperatingSystem.UBUNTU_14_04, shellFactory);
+      this.controller = new LifecycleController(store, logic, accessor, ec, hostContext);
+    }
+  }
+
+  private static class RemoteDockerContainerComponents extends DefaultDockerContainerComponents {
+    private final RemoteDockerContainerLogic logic;
+    private final LifecycleController controller;
+
+    RemoteDockerContainerComponents(RemoteDockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+      super(comp, hostContext, client, ctx, dockerConfig);
+
+      DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+      builder = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
+          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext);
+
+      this.logic = new RemoteDockerContainerLogic(builder, comp);
+      LifecycleStoreBuilder storeBuilder = new LifecycleStoreBuilder();
+      storeBuilder.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
+      LifecycleStore store = storeBuilder.build();
+      ExecutionContext ec = new ExecutionContext(OperatingSystem.UBUNTU_14_04, shellFactory);
+      this.controller = new LifecycleController(store, logic, accessor, ec, hostContext);
     }
   }
 }

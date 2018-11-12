@@ -17,90 +17,119 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//TODO: Implement. DeployableComponent should among other things not depend on LifeCycleStore but LifecycleComponent should
-public class DockerComponent extends DeployableComponent implements ComponentFactory<DockerComponent> {
-    DockerComponent(String nameParam, ComponentId idParam, LifecycleStore lifecycleStoreParam,
-                       List<InPort> inPortsParam, List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam,
-                       HashMap<String, ? extends Serializable> propertyValuesParam) {
-        super(nameParam, idParam, lifecycleStoreParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
+public class DockerComponent extends AbstractComponent {
+    /*DockerComponent(String nameParam, ComponentId idParam, List<InPort> inPortsParam,
+        List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam,
+        HashMap<String, ? extends Serializable> propertyValuesParam) {
+        super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
+    }*/
+
+  private EntireDockerCommands entireDockerCommands;
+  private String imageName;
+  private String registryUri;
+  private String imageFolder;
+  private String tag;
+  private String digestSHA256;
+
+  public static class Builder extends AbstractComponent.Builder<Builder> {
+    private final EntireDockerCommands entireDockerCommandsParam;
+    private final String imageNameParam;
+    private String registryUriParam;
+    private String imageFolderParam;
+    private String tagParam;
+    private String digestSHA256Param;
+
+    public Builder(EntireDockerCommands entireDockerCommands, String imageName) {
+      this.entireDockerCommandsParam = entireDockerCommands;
+      this.imageNameParam = imageName;
     }
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DockerComponent.class);
-  //todo: make this variable initializable via the constructor
-  private EntireDockerCommands entireDockerCommands = new EntireDockerCommands();
-  //todo: make this variable initializable via the constructor
-  private String registryUri = "";
-  //todo: make this variable initializable via the constructor
-  private String imageFolder = "";
-  //todo: make this variable initializable via the constructor
-  private String imageName = "";
-  //todo: make this variable initializable via the constructor
-  private String tag = "";
-  //todo: make this variable initializable via the constructor
-  private String digestSHA256 = "";
+    public Builder registryUri(String registryUri) {
+      this.registryUriParam = registryUri;
+      return this;
+    }
 
-  //needed temporarily to make ComponentBuilder class work, as long as DockerComponent and LifecycleComponent inherit from DeployableComponent
-  public DockerComponent() {
-                           super();
-                                   }
+    public Builder imageFolder(String imageFolder) {
+      this.imageFolderParam = imageFolder;
+      return this;
+    }
 
-  @Override
-  public DockerComponent newObject(String nameParam, ComponentId idParam,
-      LifecycleStore lifecycleStoreParam, List<InPort> inPortsParam, List<OutPort> outPortsParam,
-      Map<String, Class<?>> propertiesParam,
-      HashMap<String, ? extends Serializable> propertyValuesParam) {
-      return new DockerComponent(nameParam, idParam, lifecycleStoreParam,  inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
+    public Builder tag(String tag) {
+      this.tagParam = tag;
+      return this;
+    }
+
+    public Builder digestSHA256(String digestSHA256) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+      checkSHA256(digestSHA256);
+      this.digestSHA256Param = digestSHA256;
+      return this;
+    }
+
+    @Override
+    public DockerComponent build() {
+      return new DockerComponent(this);
+    }
+
+    @Override
+    protected Builder self() {
+      return this;
+    }
+
+    private static void checkSHA256(String sha256) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+      MessageDigest crypt = MessageDigest.getInstance("SHA-256");
+      crypt.reset();
+      //Java uses UTF-16 for the internal text representation
+      crypt.update(sha256.getBytes("UTF-16"));
+
+      if(crypt.getDigestLength() != 32)
+        throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
+    }
   }
 
-  public void setEntireDockerCommands(EntireDockerCommands cmds) {
-    this.entireDockerCommands = cmds;
+  public DockerComponent(Builder builder) {
+    super(builder);
+    entireDockerCommands = builder.entireDockerCommandsParam;
+    imageName = builder.imageNameParam;
+
+    if(builder.imageFolderParam == null)
+      this.imageFolder = "";
+    else
+      this.imageFolder = builder.imageFolderParam;
+
+    if(builder.registryUriParam == null)
+      this.registryUri = "";
+    else
+      this.registryUri = builder.registryUriParam;
+
+    if(builder.tagParam == null)
+      this.tag = "";
+    else
+      this.tag = builder.tagParam;
+
+    if(builder.digestSHA256Param == null)
+      this.digestSHA256 = "";
+    else
+      this.digestSHA256 = builder.digestSHA256Param;
   }
 
   public EntireDockerCommands getEntireDockerCommands() {
     return this.entireDockerCommands;
   }
 
-  public void setRegistryUri(String uri) {
-      this.registryUri = uri;
-  }
-
   public String getRegistryUri() {
     return this.registryUri;
-  }
-
-  public void setImageFolder(String folder) {
-    this.imageFolder = folder;
   }
 
   public String getImageFolder() {
     return this.imageFolder;
   }
 
-  public void setImageName (String name) {
-    this.imageName = name;
-  }
-
   public String getImageName () {
     return this.imageName;
   }
 
-  public void setTag (String tag) {
-    this.tag = tag;
-  }
-
   public String getTag () {
     return this.tag;
-  }
-
-  public void setDigestSHA256 (String sha256) throws NoSuchAlgorithmException, UnsupportedEncodingException  {
-    MessageDigest crypt = MessageDigest.getInstance("SHA-256");
-    crypt.reset();
-    //Java uses UTF-16 for the internal text representation
-    crypt.update(sha256.getBytes("UTF-16"));
-
-    if(crypt.getDigestLength() != 32)
-      throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
-    digestSHA256 = sha256;
   }
 
   public String getDigestSHA256 () {
@@ -131,8 +160,9 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
   }
 
   public String getFullIdentifier(DockerCommand cmd) throws IllegalArgumentException {
-    if (cmd == DockerCommand.CREATE)
+    if (cmd == DockerCommand.CREATE) {
       return getFullImageName();
+    }
     else {
       try {
         return entireDockerCommands.getContainerName(DockerCommand.CREATE);
@@ -142,10 +172,11 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
     }
   }
 
-  public String getFullImageName() {
+  public String getFullImageName() throws IllegalArgumentException {
     StringBuilder builder = new StringBuilder();
-    builder.append(getPrefixString(registryUri));
-    builder.append(getPrefixString(imageFolder));
+
+    builder.append(buildPrefixString(registryUri));
+    builder.append(buildPrefixString(imageFolder));
     builder.append(imageName);
 
     if(tag.equals("") && !digestSHA256.equals(""))
@@ -167,7 +198,7 @@ public class DockerComponent extends DeployableComponent implements ComponentFac
     return builder.toString();
   }
 
-  private static String getPrefixString(String str) {
+  private static String buildPrefixString(String str) {
       String returnStr;
 
     if(!str.equals(""))

@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,6 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
 
     private final ErrorAwareStateMachine<ContainerStatus> stateMachine;
     private final GlobalRegistryAccessor accessor;
-    private final boolean forceRegDeletion;
     final T logic;
     final ComponentInstanceId containerId;
     final NetworkHandler network;
@@ -73,7 +72,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     public ErrorAwareContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-                             LifecycleController controllerParam, GlobalRegistryAccessor accessorParam, boolean forceRegDel) {
+                             LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
         containerId = id;
         logic = logicParam;
         network = networkParam;
@@ -81,8 +80,12 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         accessor = accessorParam;
         stateMachine = buildUpStateMachine();
         isReady = false;
-        forceRegDeletion = forceRegDel;
     }
+
+  public ErrorAwareContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
+      GlobalRegistryAccessor accessorParam) {
+      this(id, logicParam, networkParam, null, accessorParam);
+  }
 
     @Override
     public ComponentInstanceId getId() {
@@ -128,14 +131,19 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
-  @Override
-  public boolean isReady() {
-    return isReady;
-  }
+    @Override
+    public boolean isReady() {
+                                 return isReady;
+                                                }
 
-  @Override
+    @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, ContainerStatus.READY, new Object[]{store});
+    }
+
+    @Override
+    public void init() {
+      stateMachine.transit(ContainerStatus.BOOTSTRAPPED, ContainerStatus.READY, null);
     }
 
     @Override
@@ -156,10 +164,12 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitDestruction() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
+    public void awaitDestruction(boolean forceRegDeletion) throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(DestroyTransitionAction.isSuccessfullEndState(stat)) {
-    	  updateRegistry();
+        if (forceRegDeletion) {
+          deleteInRegistry();
+    	  }
     		return;
     	}
     	if(DestroyTransitionAction.isKnownErrorState(stat)) {
@@ -168,13 +178,11 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
-  private void updateRegistry() throws ContainerConfigurationException {
-      if(forceRegDeletion) {
-        try {
-          accessor.deleteComponentInstance();
-        } catch (RegistrationException e) {
-          throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
-        }
+  private void deleteInRegistry() throws ContainerConfigurationException {
+      try {
+        accessor.deleteComponentInstance();
+      } catch (RegistrationException e) {
+        throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
       }
   }
 
@@ -209,6 +217,11 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     void preInitAction() throws LifecycleException {
+      if (controller == null) {
+        LOGGER.info("Skipping Lifecycle Actions for component %s", containerId);
+        return;
+      }
+
         controller.blockingInit();
         controller.blockingInstall();
         controller.blockingConfigure();

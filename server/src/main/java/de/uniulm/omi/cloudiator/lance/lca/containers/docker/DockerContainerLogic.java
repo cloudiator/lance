@@ -17,10 +17,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
   private final DockerImageHandler imageHandler;
 
-  private DockerContainerLogic(Builder builder) {
+  public DockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(builder.osParam, new DockerOperatingSystemTranslator(),
+    this.imageHandler = new DockerImageHandler(new DockerOperatingSystemTranslator(),
         builder.client, builder.myComponent, builder.dockerConfig);
     try {
       myComponent.setContainerName(this.myId);
@@ -146,13 +146,16 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     return builder.toString();
   }
 
-  static class Builder extends AbstractBuilder<DockerComponent> {
-
-    public Builder(){}
+  public static class Builder extends AbstractDockerContainerLogic.Builder<DockerComponent,Builder> {
 
     @Override
-    public AbstractDockerContainerLogic build() {
+    public DockerContainerLogic build() {
       return new DockerContainerLogic(this);
+    }
+
+    @Override
+    protected Builder self() {
+      return this;
     }
   }
 }

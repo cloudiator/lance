@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
@@ -52,7 +52,7 @@ public final class NetworkHandler implements DynamicEnvVars {
     private volatile ScheduledFuture<?> updateFuture = null;
     
     private final PortHierarchy portHierarchy;
-    private final DeployableComponent myComponent;
+    private final AbstractComponent myComponent;
     private final PortRegistryTranslator portAccessor;
     
     private final HierarchyLevelState<String> ipAddresses;
@@ -62,7 +62,7 @@ public final class NetworkHandler implements DynamicEnvVars {
     private final OutPortHandler outPorts;
     private Set<DynamicEnvVarsImpl> currentEnvVarsDynamic;
 
-    public NetworkHandler(GlobalRegistryAccessor accessorParam, DeployableComponent myComponentParam, HostContext hostContextParam) {
+    public NetworkHandler(GlobalRegistryAccessor accessorParam, AbstractComponent myComponentParam, HostContext hostContextParam) {
         
         portHierarchy = PortRegistryTranslator.PORT_HIERARCHY;
         myComponent = myComponentParam;

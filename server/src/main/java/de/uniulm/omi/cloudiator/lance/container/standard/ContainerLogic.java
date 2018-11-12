@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
