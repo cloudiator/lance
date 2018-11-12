@@ -149,10 +149,10 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
   abstract static class Builder<T extends Builder<T>> {
       protected String nameParam;
       protected ComponentId myIdParam;
-      private List<InPort> inPortsParam;
-      private List<OutPort> outPortsParam;
-      private HashMap<String, Class<?>> propertiesParam;
-      private HashMap<String, Serializable> defaultValuesParam;
+      private List<InPort> inPortsParam = new ArrayList<>();
+      private List<OutPort> outPortsParam = new ArrayList<>();
+      private HashMap<String, Class<?>> propertiesParam = new HashMap<>();
+      private HashMap<String, Serializable> defaultValuesParam = new HashMap<>();
 
       public T name(String name) {
           nameParam = name;
