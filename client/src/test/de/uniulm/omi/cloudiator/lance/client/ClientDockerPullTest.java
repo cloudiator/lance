@@ -80,12 +80,12 @@ public class ClientDockerPullTest {
   private static ApplicationId applicationId;
   private static ApplicationInstanceId appInstanceId;
 
-  private static String zookeeperComponent, zookeeperComponent_lifecycle, zookeeperComponent_remote;
-  private static String zookeeperInternalInportName, zookeeperInternalInportName_lifecycle, zookeeperInternalInportName_remote;
-  private static String zookeeperOutportName, zookeeperOutportName_lifecycle, zookeeperOutportName_remote;
-  private static String imageName;
-  private static ComponentId zookeeperComponentId, zookeeperComponentId_lifecycle, zookeeperComponentId_remote;
-  private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultZookeeperInternalInport_remote;
+  private static String zookeeperComponent, zookeeperComponent_lifecycle, rubyComponent_remote;
+  private static String zookeeperInternalInportName, zookeeperInternalInportName_lifecycle, rubyInternalInportName_remote;
+  private static String zookeeperOutportName, zookeeperOutportName_lifecycle, rubyOutportName_remote;
+  private static String imageName, imageName_remote;
+  private static ComponentId zookeeperComponentId, zookeeperComponentId_lifecycle, rubyComponentId_remote;
+  private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
   private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
   private static String publicIp = "x.x.x.x";
@@ -99,20 +99,21 @@ public class ClientDockerPullTest {
     Random rand = new Random();
     zookeeperComponent = "zookeeper";
     zookeeperComponent_lifecycle = "zookeeper_lifecycle";
-    zookeeperComponent_remote = "zookeeper_remote";
+    rubyComponent_remote = "ruby_remote";
     zookeeperInternalInportName = "ZOOK_INT_INP";
     zookeeperInternalInportName_lifecycle = "ZOOK_INT_INP_LIFECYCLE";
-    zookeeperInternalInportName_remote = "ZOOK_INT_INP_REMOTE";
+    rubyInternalInportName_remote = "RUBY_INT_INP_REMOTE";
     zookeeperOutportName = "ZOOK_OUT";
     zookeeperOutportName_lifecycle = "ZOOK_OUT_LIFECYCLE";
-    zookeeperOutportName_remote = "ZOOK_OUT_REMOTE";
+    rubyOutportName_remote = "RUBY_OUT_REMOTE";
     imageName = "zookeeper";
+    imageName_remote = "ruby-fh";
     zookeeperComponentId = new ComponentId();
     zookeeperComponentId_lifecycle = new ComponentId();
-    zookeeperComponentId_remote = new ComponentId();
+    rubyComponentId_remote = new ComponentId();
     defaultZookeeperInternalInport = 3888;
     defaultZookeeperInternalInport_lifecycle = (rand.nextInt(65563) + 1);
-    defaultZookeeperInternalInport_remote = (rand.nextInt(65563) + 1);
+    defaultRubyInternalInport_remote = (rand.nextInt(65563) + 1);
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
@@ -125,9 +126,16 @@ public class ClientDockerPullTest {
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
-      String tag) {
-    DockerComponent.Builder builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
+      String imageFolder,
+      String tag, boolean isRemote) {
+    DockerComponent.Builder builder;
+    if (isRemote) {
+      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName_remote);
+    } else {
+      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
+    }
     builder.name(compName);
+    builder.imageFolder(imageFolder);
     builder.tag(tag);
     builder.myId(id);
 
@@ -150,6 +158,17 @@ public class ClientDockerPullTest {
     return builder;
   }
 
+  private DockerComponent.Builder buildDockerComponentBuilder(
+      LifecycleClient client,
+      String compName,
+      ComponentId id,
+      List<InportInfo> inInfs,
+      List<OutportInfo> outInfs,
+      String tag, boolean isRemote) {
+
+    return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, isRemote);
+  }
+
   private DockerComponent buildDockerComponent(
       LifecycleClient client,
       String compName,
@@ -158,7 +177,7 @@ public class ClientDockerPullTest {
       List<OutportInfo> outInfs,
       String tag) {
 
-    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag);
+    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false);
     DockerComponent comp = builder.build();
     return comp;
   }
@@ -169,13 +188,12 @@ public class ClientDockerPullTest {
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
+      String imageFolder,
       String tag,
-      String hostName, int port) {
+      String hostName) {
 
-    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag);
-    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry();
-    dReg.hostName = hostName;
-    dReg.port = port;
+    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
+    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, /*5005,*/ "xxxx", "xxxx");
     RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
 
     return rDockerComp;
@@ -278,7 +296,7 @@ public class ClientDockerPullTest {
       client.registerApplicationInstance(appInstanceId, applicationId);
       client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId);
       client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId_lifecycle);
-      client.registerComponentForApplicationInstance(appInstanceId, zookeeperComponentId_remote);
+      client.registerComponentForApplicationInstance(appInstanceId, rubyComponentId_remote);
     } catch (RegistrationException ex) {
       System.err.println("Exception during registration");
     }
@@ -339,9 +357,9 @@ public class ClientDockerPullTest {
       defaultInternalInport = defaultZookeeperInternalInport_lifecycle;
       outportName = zookeeperOutportName_lifecycle;
     } else {
-      internalInportName = zookeeperInternalInportName_remote;
-      defaultInternalInport = defaultZookeeperInternalInport_remote;
-      outportName = zookeeperOutportName_remote;
+      internalInportName = rubyInternalInportName_remote;
+      defaultInternalInport = defaultRubyInternalInport_remote;
+      outportName = rubyOutportName_remote;
     }
 
     DeploymentContext zookeeper_context =
@@ -458,7 +476,7 @@ public class ClientDockerPullTest {
               1,
               OutPort.NO_SINKS);
       dummyOutInfs.add(outInf);*/
-      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, zookeeperComponent_remote, zookeeperComponentId_remote, dummyInInfs, dummyOutInfs, "latest", "fh.host", 92);
+      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxxxx" );
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");

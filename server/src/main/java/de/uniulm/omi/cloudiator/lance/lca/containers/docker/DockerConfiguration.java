@@ -3,24 +3,35 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-enum DockerConfiguration {
+public class DockerConfiguration {
 	
-	INSTANCE{
-		
-	},
-	;
-	
+	public static final DockerConfiguration INSTANCE = new DockerConfiguration(false);
+
 	private final String hostname;
 	private final int port;
 	private final boolean useRegistry;
-	
-	DockerConfiguration(){
-		useRegistry = DockerConfigurationFields.isEnabled();
-		hostname = DockerConfigurationFields.getHostname();
-		port = DockerConfigurationFields.getPort();
-		if(shouldBeUsedButCant()) {
-			DockerConfigurationFields.LOGGER.error("cannot make use of registry@ " + hostname + ":" + port);
-		}
+  private final boolean portRequired;
+  private final String userName;
+  private final String password;
+
+	DockerConfiguration(String userName, String password, boolean portRequiredParam) {
+    useRegistry = DockerConfigurationFields.isEnabled();
+    hostname = DockerConfigurationFields.getHostname();
+    if (portRequiredParam) {
+      port = DockerConfigurationFields.getPort();
+    } else {
+      port = 0;
+    }
+    if(shouldBeUsedButCant()) {
+      DockerConfigurationFields.LOGGER.error("cannot make use of registry@ " + hostname + ":" + port);
+    }
+	  this.userName = userName;
+    this.password = password;
+    this.portRequired = portRequiredParam;
+  }
+
+	DockerConfiguration(boolean portRequiredParam){
+    this("","", portRequiredParam);
 	}
 	
 	private boolean shouldBeUsedButCant() {
@@ -31,15 +42,15 @@ enum DockerConfiguration {
 	}
 
 	static class DockerConfigurationFields {
-		private static final Logger LOGGER = LoggerFactory.getLogger(DockerConfigurationFields.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerConfigurationFields.class);
 		
-	 public static final String DOCKER_REGISTRY_USE_KEY = "host.docker.registry.use";
-	 public static final String DOCKER_REGISTRY_HOST_KEY = "host.docker.registry.host";
-	 public static final String DOCKER_REGISTRY_PORT_KEY = "host.docker.registry.port";
+    public static final String DOCKER_REGISTRY_USE_KEY = "host.docker.registry.use";
+    public static final String DOCKER_REGISTRY_HOST_KEY = "host.docker.registry.host";
+    public static final String DOCKER_REGISTRY_PORT_KEY = "host.docker.registry.port";
 	 
-	 public static final Boolean DOCKER_REGISTRY_USE_DEFAULT = Boolean.FALSE;
-	 public static final String DOCKER_REGISTRY_HOST_DEFAULT = null;
-	 public static final int DOCKER_REGISTRY_PORT_DEFAULT = 5000;
+    public static final Boolean DOCKER_REGISTRY_USE_DEFAULT = Boolean.FALSE;
+    public static final String DOCKER_REGISTRY_HOST_DEFAULT = null;
+    public static final int DOCKER_REGISTRY_PORT_DEFAULT = 5000;
 	 
 	 static boolean isEnabled() {
 		 System.out.println(System.getProperties());
@@ -68,17 +79,33 @@ enum DockerConfiguration {
 	 }
 	}
 
+  public boolean isUseRegistry() {
+    return useRegistry;
+  }
+
+  public String getUserName() {
+    return userName;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
 	public boolean registryCanBeUsed() {
 		return registryEnabled() && !shouldBeUsedButCant();
 	}
-	
+
 	public boolean registryEnabled() {
 		return useRegistry;
 	}
-	
+
 	public String prependRegistry(String pre) {
 		if(useRegistry && !shouldBeUsedButCant()) {
-			return hostname + ":" + port + "/" + pre;
+      if (portRequired) {
+        return hostname + ":" + port + "/" + pre;
+			} else {
+        return hostname + "/" + pre;
+      }
 		}
 		return pre;
 	}

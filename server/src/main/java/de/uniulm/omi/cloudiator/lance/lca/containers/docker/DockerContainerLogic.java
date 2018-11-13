@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
-  private final DockerImageHandler imageHandler;
+  protected final DockerImageHandler imageHandler;
 
   public DockerContainerLogic(Builder builder) {
     super(builder);

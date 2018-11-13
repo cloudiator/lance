@@ -30,7 +30,7 @@ public class RemoteDockerComponent  extends DockerComponent {
     return this.dReg;
   }
 
-  @Override
+  /*@Override
   public String getFullImageName() throws IllegalArgumentException {
     String prefix = buildRemoteRegString();
     String fullName = prefix + super.getFullImageName();
@@ -44,12 +44,45 @@ public class RemoteDockerComponent  extends DockerComponent {
 
     String fullString = dReg.hostName + ":" + new Integer(dReg.port).toString() + "/";
     return fullString;
+  }*/
+
+  public String getUriEndPoint() throws IllegalArgumentException {
+    if(dReg.hostName == null || dReg.hostName.equals(""))
+      throw new IllegalArgumentException("Registry information is corrupted.");
+
+    boolean usePort = !(dReg.port<0) && dReg.port<65536;
+    String fullString;
+    if(usePort) {
+      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString();// + "/";
+    } else {
+      fullString = dReg.hostName;// + "/";
+    }
+    return fullString;
   }
 
   public static class DockerRegistry implements Serializable {
-    public String hostName;
-    public int port;
-    public String userName;
-    public String password;
+    public final String hostName;
+    public final int port;
+    public final String userName;
+    public final String password;
+
+    public DockerRegistry(String hostNameParam, int portParam, String userNameParam, String passwordParam) {
+      this.hostName = hostNameParam;
+      this.port = portParam;
+      this.userName = userNameParam;
+      this.password = passwordParam;
+    }
+
+    public DockerRegistry(String hostNameParam) {
+      this(hostNameParam, -1, "", "");
+    }
+
+    public DockerRegistry(String hostNameParam, int portParam) {
+      this(hostNameParam, portParam, "", "");
+    }
+
+    public DockerRegistry(String hostNameParam, String userNameParam, String passwordParam) {
+      this(hostNameParam, -1, userNameParam, passwordParam);
+    }
   }
 }

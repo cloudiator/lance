@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerConfiguration.DockerConfigurationFields;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
@@ -59,24 +60,34 @@ public class DockerContainerManager implements ContainerManager {
     private final String hostname;
     private final DockerConnector client;
     private final ContainerRegistry registry = new ContainerRegistry();
-    private final DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE; 
+    private final DockerConfiguration dockerConfig;
     
     public DockerContainerManager(HostContext vmId) {
-        this(vmId, LcaConstants.LOCALHOST_IP, false);
+        this(vmId, LcaConstants.LOCALHOST_IP, false, DockerConfiguration.INSTANCE);
         LOGGER.debug("using local host " + LcaConstants.LOCALHOST_IP + " as host name");
     }
 
-  public DockerContainerManager(HostContext vmId, String host) {
-    this(vmId, host, true);
-    LOGGER.debug("using remote host " + host + " as host name");
-  }
+    public DockerContainerManager(HostContext vmId, RemoteDockerComponent.DockerRegistry dReg) {
+      System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_USE_KEY, "true");
+      System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_HOST_KEY, dReg.hostName);
+      System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_PORT_KEY, Integer.toString(dReg.port));
+      DockerConfiguration dConf = new DockerConfiguration(dReg.userName, dReg.password, (!(dReg.port<0) && dReg.port<65555) ? true : false);
+      hostContext = vmId;
+      hostname = dReg.hostName;
+      client = ConnectorFactory.INSTANCE.createConnector(hostname);
+      // translator = createAndInitTranslator();
+      isRemote = true;
+      dockerConfig = dConf;
+      LOGGER.debug("using remote host " + hostname + " as host name");
+    }
     
-    DockerContainerManager(HostContext vmId, String host, boolean remote) {
+    DockerContainerManager(HostContext vmId, String host, boolean remote, DockerConfiguration config) {
         hostContext = vmId;
         hostname = host;
         client = ConnectorFactory.INSTANCE.createConnector(hostname);
         // translator = createAndInitTranslator();
         isRemote = remote;
+        dockerConfig = config;
     }
     
     @Override

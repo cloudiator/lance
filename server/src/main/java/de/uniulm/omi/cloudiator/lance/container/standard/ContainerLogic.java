@@ -49,15 +49,15 @@ public interface ContainerLogic {
     void doDestroy(boolean forceShutdown) throws ContainerException;
 
     // ComponentInstanceId getId();
+
+    void preDestroy() throws ContainerException;
+
     /**
-     * 
+     *
      * @return null if no address is available;
      * otherwise a stringified form of an IP address
      * @throws ContainerException when a container-specific exception occurs
      */
-
-    void preDestroy() throws ContainerException;
-
     String getLocalAddress() throws ContainerException;
 
     InportAccessor getPortMapper();

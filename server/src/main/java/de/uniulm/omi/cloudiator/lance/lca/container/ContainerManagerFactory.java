@@ -50,7 +50,7 @@ public final class ContainerManagerFactory {
     public static ContainerManager createRemoteContainerManager(HostContext myId, RemoteDockerComponent.DockerRegistry dReg) {
         if(mapper.get(DOCKER_REMOTE) == null)
             throw new IllegalArgumentException("Type: " + DOCKER_REMOTE + " not supported");
-        return new DockerContainerManager(myId, dReg.hostName);
+        return new DockerContainerManager(myId, dReg);
     }
 
     private static SpecificContainerManagerFactory getContainerFactoryFromContainerType(ContainerType containerType){

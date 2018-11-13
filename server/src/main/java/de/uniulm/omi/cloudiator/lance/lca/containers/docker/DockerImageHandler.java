@@ -18,6 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import com.spotify.docker.client.DefaultDockerClient;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.messages.RegistryAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,19 +165,33 @@ final class DockerImageHandler {
 
     //TODO: Implement searching in generic repo and localCache
     String doPullImages(ComponentInstanceId myId, String imageName) throws DockerException {
-        String result = getImageFromDefaultLocation(imageName);
+        // first step: try to find matching image for configured component
+        String result = searchImageInLocalCache(imageName);
+        if(result == null){
+            // second step: try to find matching image for prepared component
+            // in case a custom docker registry is configured
+            result = getImageFromPrivateRepository(imageName);
+            if(result == null) {
+                // third step: fall back to the operating system //
+                result = getImageFromDefaultLocation(imageName);
+            }
+        }
         if(result != null)
             return result;
 
         throw new DockerException("cannot pull image: " + myId);
     }
 
+    private String searchImageInLocalCache(String imageName) {
+        // currently not implemented;
+        return null;
+    }
 
     private String searchImageInLocalCache() {
         // currently not implemented; 
     	return null;
     }
-    
+
     private String getImageFromPrivateRepository() throws DockerException {
     	String componentInstallId = createComponentInstallId();
         String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
@@ -187,7 +204,53 @@ final class DockerImageHandler {
         return null;
     }
 
-    //
+    private String getImageFromPrivateRepository(String imageName) {
+        if (!dockerConfig.registryCanBeUsed()) {
+            return null;
+        }
+
+        String result = null;
+        String userName = dockerConfig.getUserName();
+        String password = dockerConfig.getPassword();
+        String hostName = DockerConfiguration.DockerConfigurationFields.getHostname();
+        int port = DockerConfiguration.DockerConfigurationFields.getPort();
+
+        try {
+          if (userName.equals("") && password.equals("")) {
+            result = doGetSingleImage(dockerConfig.prependRegistry(imageName));
+          } else {
+            RegistryAuth registryAuth =
+                RegistryAuth.builder()
+                    .username(userName)
+                    .password(password)
+                    .serverAddress(hostName)
+                    .build();
+            DockerClient dClient =
+                DefaultDockerClient.builder()
+                    .registryAuth(registryAuth)
+                    /*.uri("http://" + xxx.xxx.xxx + ":" + 2375).build();*/
+                    .uri("http://" + hostName + (!(port < 0) ? ":" + Integer.toString(port) : ""))
+                    .build();
+
+            dClient.pull(dockerConfig.prependRegistry(imageName));
+            result = imageName;
+          }
+        } catch (InterruptedException e) {
+            LOGGER.error("Problems with DockerClient. Cannot pull image " + imageName + " from private registry");
+        } catch (com.spotify.docker.client.exceptions.DockerException e) {
+            LOGGER.error("Problems with DockerClient. Cannot pull image " + imageName + " from private registry");
+        } catch (DockerException e) {
+            LOGGER.error("Cannot pull image " + imageName + " from private registry");
+        }
+
+        if(result != null) {
+            LOGGER.info("pulled image: " + dockerConfig.prependRegistry(imageName) + " from private registry");
+            initSource = ImageCreationType.COMPONENT_INSTANCE;
+        }
+
+        return result;
+    }
+
     private String getImageFromDefaultLocation() throws DockerException {
         String target = buildImageTagName(ImageCreationType.OPERATING_SYSTEM, null);
         String result = doGetSingleImage(target);
@@ -200,8 +263,7 @@ final class DockerImageHandler {
     }
 
     private String getImageFromDefaultLocation(String imageName) throws DockerException {
-        String target = buildImageTagName(ImageCreationType.COMPONENT_INSTANCE, null, imageName);
-        String result = doGetSingleImage(target);
+        String result = doGetSingleImage(imageName);
         if(result != null) {
             LOGGER.info("pulled default image: " + result);
             initSource = ImageCreationType.COMPONENT_INSTANCE;
