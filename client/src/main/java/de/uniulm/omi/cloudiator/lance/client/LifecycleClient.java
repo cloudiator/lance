@@ -198,10 +198,10 @@ public final class LifecycleClient {
     }
   }
 
-  public final boolean undeploy(ComponentInstanceId componentInstanceId)
-      throws DeploymentException {
+  public final boolean undeploy(ComponentInstanceId componentInstanceId,
+      ContainerType containerType) throws DeploymentException {
     try {
-      return lifecycleAgent.stopComponentInstance(componentInstanceId);
+      return lifecycleAgent.stopComponentInstance(containerType, componentInstanceId);
     } catch (RemoteException e) {
       throw new DeploymentException(handleRemoteException(e));
     } catch (LcaException | ContainerException e) {
@@ -210,11 +210,11 @@ public final class LifecycleClient {
   }
 
   public final String getHostEnv() throws DeploymentException {
-    try {
-      return lifecycleAgent.getHostEnv();
-    } catch (RemoteException e) {
-      throw new DeploymentException(handleRemoteException(e));
-    }
+      try {
+        return lifecycleAgent.getHostEnv();
+      } catch (RemoteException e) {
+        throw new DeploymentException(handleRemoteException(e));
+      }
   }
 
   private static Exception handleRemoteException(RemoteException re) {

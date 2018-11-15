@@ -121,8 +121,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   }
 
   @Override
-  public boolean stopComponentInstance(ComponentInstanceId instanceId)
-      throws RemoteException, LcaException, ContainerException {
+  public boolean stopComponentInstance(ContainerType containerType,
+      ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException {
     ContainerController cid = containers.getContainer(instanceId);
     if (cid == null) {
       throw new LcaException("Component instance not known: " + instanceId);
@@ -153,9 +153,9 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   public String getHostEnv() throws RemoteException {
     List<ComponentInstanceId> ids = listContainers();
 
-    Map<String, String> envVarsStatic = new HashMap<String, String>(hostContext.getEnvVars());
+    Map<String,String > envVarsStatic = new HashMap<String, String>(hostContext.getEnvVars());
 
-    for (ComponentInstanceId id : ids) {
+    for(ComponentInstanceId id : ids) {
       for (Map.Entry<String, String> kv : id.getEnvVars().entrySet()) {
         envVarsStatic.put(kv.getKey(), kv.getValue());
       }
