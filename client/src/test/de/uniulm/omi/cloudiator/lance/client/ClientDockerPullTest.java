@@ -193,7 +193,9 @@ public class ClientDockerPullTest {
       String hostName) {
 
     DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
-    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, /*5005,*/ "xxxx", "xxxx");
+    //ssl Port
+    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, 443, "xxx", "xxx");
+    //RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName /*,5005*/);
     RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
 
     return rDockerComp;
@@ -476,7 +478,7 @@ public class ClientDockerPullTest {
               1,
               OutPort.NO_SINKS);
       dummyOutInfs.add(outInf);*/
-      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxxxx" );
+      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxx");
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");

@@ -9,6 +9,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerExce
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,6 +28,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     } catch (DockerCommandException ce) {
       LOGGER.error("Cannot set name for Docker container for component:" + myId, ce);
     }
+
+    initRedeployDockerCommand();
   }
 
   @Override
@@ -34,11 +37,23 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     try {
       String fullImageName = getFullImageName();
       client.pullImage(fullImageName);
-      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.CREATE));
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.CREATE));
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
     } catch(DockerCommandException ce) {
       throw new ContainerException(ce);
+    }
+  }
+
+  private void initRedeployDockerCommand() {
+    DockerCommand origCmd = myComponent.getEntireDockerCommands().getCreate();
+    DockerCommand redeplCmd = myComponent.getEntireDockerCommands().getRun();
+    try {
+      EntireDockerCommands.copyCmdOptions(origCmd, redeplCmd);
+      EntireDockerCommands.copyCmdOsCommand(origCmd, redeplCmd);
+      EntireDockerCommands.copyCmdArgs(origCmd, redeplCmd);
+    } catch (DockerCommandException ex) {
+      LOGGER.error(ex.getMessage());
     }
   }
 
@@ -84,7 +99,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     /* currently docker ignores the flag */
     try {
       //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
-      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.STOP));
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
     } catch (DockerException de) {
       throw new ContainerException(de);
     } catch(DockerCommandException ce) {
@@ -115,7 +130,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private DockerShell executeGenericStart() throws ContainerException {
     final DockerShell dshell;
     try {
-      dshell = client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.START));
+      dshell = client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.START));
       BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
       setStaticEnvironment(dshell, visitor);
       //Setting Dynamic-Envvars here fails, because pub-ip would be set to <unknown> which is invalid bash syntax

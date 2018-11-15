@@ -120,36 +120,36 @@ public class DockerComponent extends AbstractComponent {
     return this.digestSHA256;
   }
 
-  public String getFullDockerCommand(DockerCommand cmd) throws DockerCommandException {
+  public String getFullDockerCommand(DockerCommand.Type cType) throws DockerCommandException {
     StringBuilder builder = new StringBuilder();
-    builder.append(mapCommandToString(cmd) + " ");
-    builder.append(entireDockerCommands.getSetOptionsString(cmd) + " ");
-    builder.append(getFullIdentifier(cmd) + " ");
-    builder.append(entireDockerCommands.getSetOsCommandString(cmd) + " ");
-    builder.append(entireDockerCommands.getSetArgsString(cmd));
+    builder.append(mapCommandToString(cType) + " ");
+    builder.append(entireDockerCommands.getSetOptionsString(cType) + " ");
+    builder.append(getFullIdentifier(cType) + " ");
+    builder.append(entireDockerCommands.getSetOsCommandString(cType) + " ");
+    builder.append(entireDockerCommands.getSetArgsString(cType));
 
     return builder.toString();
   }
 
   public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
-    entireDockerCommands.setOption(DockerCommand.CREATE, Option.NAME, buildNameOptionFromId(id));
+    entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
   }
 
   public String getContainerName() throws DockerCommandException {
-    return entireDockerCommands.getContainerName(DockerCommand.CREATE);
+    return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
   }
 
   private static String buildNameOptionFromId(ComponentInstanceId id) {
     return "dockering__"+ id.toString();
   }
 
-  public String getFullIdentifier(DockerCommand cmd) throws IllegalArgumentException {
-    if (cmd == DockerCommand.CREATE) {
+  public String getFullIdentifier(DockerCommand.Type cType) throws IllegalArgumentException {
+    if (cType == DockerCommand.Type.CREATE) {
       return getFullImageName();
     }
     else {
       try {
-        return entireDockerCommands.getContainerName(DockerCommand.CREATE);
+        return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
       } catch (Exception e) {
         throw new IllegalArgumentException(e);
       }
@@ -192,12 +192,12 @@ public class DockerComponent extends AbstractComponent {
     return returnStr;
   }
 
-  private static String mapCommandToString(DockerCommand cmd) throws IllegalArgumentException {
-    if(cmd==DockerCommand.CREATE)
+  private static String mapCommandToString(DockerCommand.Type cType) throws IllegalArgumentException {
+    if(cType==DockerCommand.Type.CREATE)
       return "create";
-    if(cmd==DockerCommand.START)
+    if(cType==DockerCommand.Type.START)
       return "start";
-    if(cmd==DockerCommand.STOP)
+    if(cType==DockerCommand.Type.STOP)
       return "stop";
     else
       //todo insert String representation of DockerCommand in exception String
