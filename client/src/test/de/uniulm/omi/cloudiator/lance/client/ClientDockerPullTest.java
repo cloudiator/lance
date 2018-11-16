@@ -447,6 +447,7 @@ public class ClientDockerPullTest {
     }
   }
 
+  @Ignore
   @Test
   public void testHRemoteDockerComponent() {
     try {
@@ -471,7 +472,6 @@ public class ClientDockerPullTest {
     }
   }
 
-  @Ignore
   @Test
   public void testIZookDeploy() {
     try {
@@ -496,7 +496,6 @@ public class ClientDockerPullTest {
     System.out.println("zook is ready");
   }
 
-  @Ignore
   @Test
   public void testIZookDeploy_lifecycle() {
     try {
@@ -516,7 +515,6 @@ public class ClientDockerPullTest {
     }
   }
 
-  @Ignore
   @Test
   public void testLComponentStatus() {
     ContainerStatus zookStatus, zookStatus_lifecycle;
@@ -536,7 +534,6 @@ public class ClientDockerPullTest {
     } while (zookStatus != READY || zookStatus_lifecycle != READY);
   }
 
-  @Ignore
   @Test
   public void testMStopContainers() {
     try {

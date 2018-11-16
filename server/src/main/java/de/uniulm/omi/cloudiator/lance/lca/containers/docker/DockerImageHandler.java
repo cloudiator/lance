@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerCertificateException;
 import com.spotify.docker.client.messages.RegistryAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,14 +199,14 @@ final class DockerImageHandler {
         }
 
     	String componentInstallId = createComponentInstallId();
-        String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
-        String result = doGetSingleImage(target);
-        if(result != null) {
-        	LOGGER.info("pulled prepared image: " + result);
-            initSource = ImageCreationType.COMPONENT;
-            return result;
-        }
-        return null;
+      String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
+      String result = doGetSingleImage(target);
+      if(result != null) {
+        LOGGER.info("pulled prepared image: " + result);
+          initSource = ImageCreationType.COMPONENT;
+          return result;
+      }
+      return null;
     }
 
     private String getImageFromPrivateRepository(String imageName) {
@@ -213,16 +214,17 @@ final class DockerImageHandler {
             return null;
         }
 
+        String regExpandedImageName = dockerConfig.prependRegistry(imageName);
         String result = null;
         String userName = dockerConfig.getUserName();
         String password = dockerConfig.getPassword();
         String hostName = DockerConfiguration.DockerConfigurationFields.getHostname();
         int port = DockerConfiguration.DockerConfigurationFields.getPort();
-        int statusCode = -1;
+        int statusCode = 404;
 
         try {
           if (userName.equals("") && password.equals("")) {
-            result = doGetSingleImage(dockerConfig.prependRegistry(imageName));
+            result = doGetSingleImage(regExpandedImageName);
           } else {
             RegistryAuth registryAuth =
                 RegistryAuth.builder()
@@ -231,28 +233,24 @@ final class DockerImageHandler {
                     .serverAddress(hostName + (!(port < 0) ? ":" + Integer.toString(port) : ""))
                     .build();
 
-            DockerClient dClient =
-                DefaultDockerClient.builder()
-                    .registryAuth(registryAuth)
-                    .uri("http://" + hostName + (!(port < 0) ? ":" + Integer.toString(port) : ""))
-                    .build();
-
+            DockerClient dClient = DefaultDockerClient.fromEnv().dockerAuth(false).registryAuth(registryAuth).build();
             statusCode = dClient.auth(registryAuth);
-            //dClient.pull(dockerConfig.prependRegistry(imageName));
-            dClient.pull(imageName);
-            result = imageName;
+            dClient.pull(regExpandedImageName);
+            result = regExpandedImageName;
           }
         } catch (InterruptedException e) {
-            LOGGER.error("Problems with DockerClient. Cannot pull image " + imageName + " from private registry");
+            LOGGER.error("Problems with DockerClient. Cannot pull image " + regExpandedImageName + " from private registry");
         } catch (com.spotify.docker.client.exceptions.DockerException e) {
-            LOGGER.error("Problems with DockerClient. Cannot pull image " + imageName + " from private registry");
+            LOGGER.error("Problems with DockerClient. Cannot pull image " + regExpandedImageName + " from private registry");
             LOGGER.error("Auth status to registry is: " + Integer.toString(statusCode));
         } catch (DockerException e) {
-            LOGGER.error("Cannot pull image " + imageName + " from private registry");
+            LOGGER.error("Cannot pull image " + regExpandedImageName + " from private registry");
+        } catch (DockerCertificateException e) {
+            LOGGER.error("Cannot pull image " + regExpandedImageName + " from private registry");
         }
 
         if(result != null) {
-            LOGGER.info("pulled image: " + dockerConfig.prependRegistry(imageName) + " from private registry");
+            LOGGER.info("pulled image: " + regExpandedImageName + " from private registry");
             initSource = ImageCreationType.COMPONENT_INSTANCE;
         }
 
