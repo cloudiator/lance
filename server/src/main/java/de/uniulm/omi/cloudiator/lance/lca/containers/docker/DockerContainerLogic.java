@@ -8,6 +8,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.HashMap;
@@ -16,7 +17,13 @@ import java.util.Map.Entry;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
+  //Needed to check for redeployment
+  private Map<String, String> envVarsStaticPrev;
+  //Needed to check for redeployment
+  private Map<String, String> envVarsDynamicPrev;
   protected final DockerImageHandler imageHandler;
+
+  private enum EnvType {STATIC, DYNAMIC};
 
   public DockerContainerLogic(Builder builder) {
     super(builder);
@@ -28,7 +35,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     } catch (DockerCommandException ce) {
       LOGGER.error("Cannot set name for Docker container for component:" + myId, ce);
     }
-
+    
+    envVarsStaticPrev = new HashMap<>(envVarsStatic);
+    envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
     initRedeployDockerCommand();
   }
 
@@ -69,7 +78,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       envVarsStaticTmp.put(translateMap.get(entry.getKey()),entry.getValue());
     }
 
-    executeGenericEnvSetting(envVarsStaticTmp);
+    executeEnvSetting(EnvType.STATIC, envVarsStaticTmp);
   }
 
   @Override
@@ -78,7 +87,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     networkHandler.generateDynamicEnvVars(diff);
     this.myComponent.generateDynamicEnvVars();
     collectDynamicEnvVars();
-    executeGenericEnvSetting(envVarsDynamic);
+    executeEnvSetting(EnvType.DYNAMIC, envVarsDynamic);
   }
 
   @Override
@@ -144,16 +153,60 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     return dshell;
   }
 
-  private void executeGenericEnvSetting(Map<String,String> vars) throws ContainerException {
+  private void executeEnvSetting(EnvType eType, Map<String,String> vars) throws ContainerException {
+    if(checkEnvChange(eType)) {
+      try {
+        doRedeploy();
+      } catch (ContainerException e) {
+        LOGGER.error("cannot redeploy container " + myId + "for updating the environment");
+      }
+    }
+
+    if(eType == EnvType.STATIC)
+      envVarsStaticPrev = new HashMap<>(envVarsStatic);
+    else
+      envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
+  }
+
+  private void doRedeploy() throws ContainerException {
+    DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
-      String envStr = buildEnvString(vars);
-      String envCmdStr = "exec -i " + envStr +  myComponent.getContainerName() + " bash";
-      client.executeProgressingDockerCommand(envCmdStr);
+      copyEnvIntoCommand(runCmd);
+    } catch (DockerCommandException e) {
+      throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
+    }
+    executeGenericRedeploy();
+  }
+
+  private void executeGenericRedeploy() throws ContainerException {
+    try {
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
+      client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
     } catch (DockerException de) {
-      throw new ContainerException(de);
+      throw new ContainerException("cannot redeploy container: " + myId, de);
     } catch(DockerCommandException ce) {
       throw new ContainerException(ce);
     }
+  }
+
+  private void copyEnvIntoCommand(DockerCommand dCmd) throws DockerCommandException {
+    for(Entry<String, String> var: envVarsStatic.entrySet()) {
+      dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+    }
+    for(Entry<String, String> var: envVarsDynamic.entrySet()) {
+      dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+    }
+  }
+
+  private boolean checkEnvChange(EnvType eType) {
+    if(eType == EnvType.STATIC && envVarsStatic.equals(envVarsStaticPrev))
+      return false;
+
+    if(eType == EnvType.DYNAMIC && envVarsDynamic.equals(envVarsDynamicPrev))
+      return false;
+
+    return true;
   }
 
   private String buildEnvString(Map<String,String> vars) {

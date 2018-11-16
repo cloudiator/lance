@@ -193,6 +193,10 @@ final class DockerImageHandler {
     }
 
     private String getImageFromPrivateRepository() throws DockerException {
+        if (!dockerConfig.registryCanBeUsed()) {
+            return null;
+        }
+
     	String componentInstallId = createComponentInstallId();
         String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
         String result = doGetSingleImage(target);
@@ -214,6 +218,7 @@ final class DockerImageHandler {
         String password = dockerConfig.getPassword();
         String hostName = DockerConfiguration.DockerConfigurationFields.getHostname();
         int port = DockerConfiguration.DockerConfigurationFields.getPort();
+        int statusCode = -1;
 
         try {
           if (userName.equals("") && password.equals("")) {
@@ -223,22 +228,25 @@ final class DockerImageHandler {
                 RegistryAuth.builder()
                     .username(userName)
                     .password(password)
-                    .serverAddress(hostName)
+                    .serverAddress(hostName + (!(port < 0) ? ":" + Integer.toString(port) : ""))
                     .build();
+
             DockerClient dClient =
                 DefaultDockerClient.builder()
                     .registryAuth(registryAuth)
-                    /*.uri("http://" + xxx.xxx.xxx + ":" + 2375).build();*/
                     .uri("http://" + hostName + (!(port < 0) ? ":" + Integer.toString(port) : ""))
                     .build();
 
-            dClient.pull(dockerConfig.prependRegistry(imageName));
+            statusCode = dClient.auth(registryAuth);
+            //dClient.pull(dockerConfig.prependRegistry(imageName));
+            dClient.pull(imageName);
             result = imageName;
           }
         } catch (InterruptedException e) {
             LOGGER.error("Problems with DockerClient. Cannot pull image " + imageName + " from private registry");
         } catch (com.spotify.docker.client.exceptions.DockerException e) {
             LOGGER.error("Problems with DockerClient. Cannot pull image " + imageName + " from private registry");
+            LOGGER.error("Auth status to registry is: " + Integer.toString(statusCode));
         } catch (DockerException e) {
             LOGGER.error("Cannot pull image " + imageName + " from private registry");
         }

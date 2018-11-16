@@ -21,17 +21,14 @@ package de.uniulm.omi.cloudiator.lance.client;
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
 
-import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent.DockerRegistry;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
-import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.Builder;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,6 +41,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import java.util.Map;
 import java.util.Random;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -88,7 +86,7 @@ public class ClientDockerPullTest {
   private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
   private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static LifecycleClient client;
 
   @BeforeClass
@@ -117,7 +115,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
   }
 
   private DockerComponent.Builder buildDockerComponentBuilder(
@@ -182,20 +180,12 @@ public class ClientDockerPullTest {
     return comp;
   }
 
-  private RemoteDockerComponent buildRemoteDockerComponent(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String imageFolder,
-      String tag,
-      String hostName) {
+  private RemoteDockerComponent buildRemoteDockerComponent( LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs,
+      List<OutportInfo> outInfs, String imageFolder, String tag, String hostName, int port) {
 
     DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
     //ssl Port
-    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, 443, "xxx", "xxx");
-    //RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName /*,5005*/);
+    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, port, "xxxxx", "xxxxx");
     RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
 
     return rDockerComp;
@@ -380,9 +370,7 @@ public class ClientDockerPullTest {
 
   EntireDockerCommands buildEntireDockerCommands() {
     Random rand = new Random();
-    DockerCommand.Builder createBuilder = new DockerCommand.Builder(DockerCommand.CREATE);
-    DockerCommand.Builder startBuilder = new DockerCommand.Builder(DockerCommand.START);
-    DockerCommand.Builder stopBuilder = new DockerCommand.Builder(DockerCommand.STOP);
+    EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
     try {
       Map<Option,List<String>> createOptionMap = new HashMap<>();
       createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
@@ -394,35 +382,33 @@ public class ClientDockerPullTest {
       createOsCommandList.add(OsCommand.BASH);
       List<String> createArgsList = new ArrayList<>();
       createArgsList.add("--noediting");
+      cmdsBuilder.setOptions(Type.CREATE, createOptionMap);
+      cmdsBuilder.setCommand(Type.CREATE, createOsCommandList);
+      cmdsBuilder.setArgs(Type.CREATE, createArgsList);
+
       Map<Option,List<String>> startOptionMap = new HashMap<>();
       startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-
-      createBuilder.setOptions(createOptionMap);
-      createBuilder.setCommand(createOsCommandList);
-      createBuilder.setArgs(createArgsList);
-
-      startBuilder.setOptions(startOptionMap);
+      cmdsBuilder.setOptions(Type.START, startOptionMap);
     } catch (DockerCommandException ce) {
       System.err.println("Error in creating docker commands");
     }
 
-    EntireDockerCommands cmds = new EntireDockerCommands(createBuilder.build(), startBuilder.build(), stopBuilder.build());
-    return cmds;
+    return cmdsBuilder.build();
   }
 
   private void printCommandParts(EntireDockerCommands cmds) {
     try {
-      System.out.println(cmds.getSetOptionsString(DockerCommand.CREATE));
-      System.out.println(cmds.getSetOsCommandString(DockerCommand.CREATE));
-      System.out.println(cmds.getSetArgsString(DockerCommand.CREATE));
+      System.out.println(cmds.getSetOptionsString(DockerCommand.Type.CREATE));
+      System.out.println(cmds.getSetOsCommandString(DockerCommand.Type.CREATE));
+      System.out.println(cmds.getSetArgsString(DockerCommand.Type.CREATE));
       System.out.println("\n");
-      System.out.println(cmds.getSetOptionsString(DockerCommand.START));
-      System.out.println(cmds.getSetOsCommandString(DockerCommand.START));
-      System.out.println(cmds.getSetArgsString(DockerCommand.START));
+      System.out.println(cmds.getSetOptionsString(DockerCommand.Type.START));
+      System.out.println(cmds.getSetOsCommandString(DockerCommand.Type.START));
+      System.out.println(cmds.getSetArgsString(DockerCommand.Type.START));
       System.out.println("\n");
-      System.out.println(cmds.getSetOptionsString(DockerCommand.STOP));
-      System.out.println(cmds.getSetOsCommandString(DockerCommand.STOP));
-      System.out.println(cmds.getSetArgsString(DockerCommand.STOP));
+      System.out.println(cmds.getSetOptionsString(DockerCommand.Type.STOP));
+      System.out.println(cmds.getSetOsCommandString(DockerCommand.Type.STOP));
+      System.out.println(cmds.getSetArgsString(DockerCommand.Type.STOP));
     } catch (DockerCommandException e) {
       System.err.println("Error in printing docker command strings");
     }
@@ -478,13 +464,14 @@ public class ClientDockerPullTest {
               1,
               OutPort.NO_SINKS);
       dummyOutInfs.add(outInf);*/
-      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxx");
+      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxxx", 443);
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");
     }
   }
 
+  @Ignore
   @Test
   public void testIZookDeploy() {
     try {
@@ -509,6 +496,7 @@ public class ClientDockerPullTest {
     System.out.println("zook is ready");
   }
 
+  @Ignore
   @Test
   public void testIZookDeploy_lifecycle() {
     try {
@@ -528,6 +516,7 @@ public class ClientDockerPullTest {
     }
   }
 
+  @Ignore
   @Test
   public void testLComponentStatus() {
     ContainerStatus zookStatus, zookStatus_lifecycle;
@@ -547,6 +536,7 @@ public class ClientDockerPullTest {
     } while (zookStatus != READY || zookStatus_lifecycle != READY);
   }
 
+  @Ignore
   @Test
   public void testMStopContainers() {
     try {

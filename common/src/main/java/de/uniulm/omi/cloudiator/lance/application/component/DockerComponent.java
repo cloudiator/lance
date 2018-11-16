@@ -24,60 +24,12 @@ public class DockerComponent extends AbstractComponent {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
 
-  private EntireDockerCommands entireDockerCommands;
-  private String imageName;
-  private String imageFolder;
-  private String tag;
-  private String digestSHA256;
-
-  public static class Builder extends AbstractComponent.Builder<Builder> {
-    private final EntireDockerCommands entireDockerCommandsParam;
-    private final String imageNameParam;
-    private String imageFolderParam;
-    private String tagParam;
-    private String digestSHA256Param;
-
-    public Builder(EntireDockerCommands entireDockerCommands, String imageName) {
-      this.entireDockerCommandsParam = entireDockerCommands;
-      this.imageNameParam = imageName;
-    }
-
-    public Builder imageFolder(String imageFolder) {
-      this.imageFolderParam = imageFolder;
-      return this;
-    }
-
-    public Builder tag(String tag) {
-      this.tagParam = tag;
-      return this;
-    }
-
-    public Builder digestSHA256(String digestSHA256) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-      checkSHA256(digestSHA256);
-      this.digestSHA256Param = digestSHA256;
-      return this;
-    }
-
-    @Override
-    public DockerComponent build() {
-      return new DockerComponent(this);
-    }
-
-    @Override
-    protected Builder self() {
-      return this;
-    }
-
-    private static void checkSHA256(String sha256) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-      MessageDigest crypt = MessageDigest.getInstance("SHA-256");
-      crypt.reset();
-      //Java uses UTF-16 for the internal text representation
-      crypt.update(sha256.getBytes("UTF-16"));
-
-      if(crypt.getDigestLength() != 32)
-        throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
-    }
-  }
+  private final EntireDockerCommands entireDockerCommands;
+  private final String imageName;
+  private final String imageFolder;
+  private final String tag;
+  private final String digestSHA256;
+  private String containerName;
 
   public DockerComponent(Builder builder) {
     super(builder);
@@ -98,6 +50,11 @@ public class DockerComponent extends AbstractComponent {
       this.digestSHA256 = "";
     else
       this.digestSHA256 = builder.digestSHA256Param;
+
+    if(builder.containerNameParam == null)
+      this.containerName = "<unknown container>";
+    else
+      this.containerName = builder.containerNameParam;
   }
 
   public EntireDockerCommands getEntireDockerCommands() {
@@ -122,7 +79,7 @@ public class DockerComponent extends AbstractComponent {
 
   public String getFullDockerCommand(DockerCommand.Type cType) throws DockerCommandException {
     StringBuilder builder = new StringBuilder();
-    builder.append(mapCommandToString(cType) + " ");
+    builder.append(DockerCommand.Type.mapCommandToString(cType) + " ");
     builder.append(entireDockerCommands.getSetOptionsString(cType) + " ");
     builder.append(getFullIdentifier(cType) + " ");
     builder.append(entireDockerCommands.getSetOsCommandString(cType) + " ");
@@ -133,6 +90,7 @@ public class DockerComponent extends AbstractComponent {
 
   public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
     entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
+    containerName = buildNameOptionFromId(id);
   }
 
   public String getContainerName() throws DockerCommandException {
@@ -144,15 +102,11 @@ public class DockerComponent extends AbstractComponent {
   }
 
   public String getFullIdentifier(DockerCommand.Type cType) throws IllegalArgumentException {
-    if (cType == DockerCommand.Type.CREATE) {
+    if (cType == DockerCommand.Type.CREATE || cType == DockerCommand.Type.RUN) {
       return getFullImageName();
     }
     else {
-      try {
-        return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
-      } catch (Exception e) {
-        throw new IllegalArgumentException(e);
-      }
+      return containerName;
     }
   }
 
@@ -192,15 +146,59 @@ public class DockerComponent extends AbstractComponent {
     return returnStr;
   }
 
-  private static String mapCommandToString(DockerCommand.Type cType) throws IllegalArgumentException {
-    if(cType==DockerCommand.Type.CREATE)
-      return "create";
-    if(cType==DockerCommand.Type.START)
-      return "start";
-    if(cType==DockerCommand.Type.STOP)
-      return "stop";
-    else
-      //todo insert String representation of DockerCommand in exception String
-      throw new IllegalArgumentException("No mapping for this Docker Command available");
+  public static class Builder extends AbstractComponent.Builder<Builder> {
+    private final EntireDockerCommands entireDockerCommandsParam;
+    private final String imageNameParam;
+    private String imageFolderParam;
+    private String tagParam;
+    private String digestSHA256Param;
+    private String containerNameParam;
+
+    public Builder(EntireDockerCommands entireDockerCommands, String imageName) {
+      this.entireDockerCommandsParam = entireDockerCommands;
+      this.imageNameParam = imageName;
+    }
+
+    public Builder imageFolder(String imageFolder) {
+      this.imageFolderParam = imageFolder;
+      return this;
+    }
+
+    public Builder tag(String tag) {
+      this.tagParam = tag;
+      return this;
+    }
+
+    public Builder digestSHA256(String digestSHA256) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+      checkSHA256(digestSHA256);
+      this.digestSHA256Param = digestSHA256;
+      return this;
+    }
+
+    public Builder containerName(String containerName) {
+      this.containerNameParam = containerName;
+      return this;
+    }
+
+    @Override
+    public DockerComponent build() {
+      return new DockerComponent(this);
+    }
+
+    @Override
+    protected Builder self() {
+      return this;
+    }
+
+    private static void checkSHA256(String sha256) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+      MessageDigest crypt = MessageDigest.getInstance("SHA-256");
+      crypt.reset();
+      //Java uses UTF-16 for the internal text representation
+      crypt.update(sha256.getBytes("UTF-16"));
+
+      if(crypt.getDigestLength() != 32)
+        throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
+    }
   }
+
 }

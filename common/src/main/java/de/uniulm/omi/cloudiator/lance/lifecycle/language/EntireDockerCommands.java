@@ -18,12 +18,14 @@ public class EntireDockerCommands implements Serializable {
   private final DockerCommand start;
   private final DockerCommand stop;
   private final DockerCommand run;
+  private final DockerCommand remove;
 
   public EntireDockerCommands() {
     create = new DockerCommand.Builder(Type.CREATE).build();
     start = new DockerCommand.Builder(Type.START).build();
     stop = new DockerCommand.Builder(Type.STOP).build();
     run =  new DockerCommand.Builder(Type.RUN).build();
+    remove =  new DockerCommand.Builder(Type.REMOVE).build();
   }
 
   private EntireDockerCommands(Builder builder) {
@@ -31,6 +33,7 @@ public class EntireDockerCommands implements Serializable {
     start =  builder.startCmd;
     stop =  builder.stopCmd;
     run =  builder.runCmd;
+    remove =  builder.removeCmd;
   }
 
   public DockerCommand getCreate() {
@@ -49,6 +52,10 @@ public class EntireDockerCommands implements Serializable {
     return run;
   }
 
+  public DockerCommand getKill() {
+    return remove;
+  }
+
   public void setOption(DockerCommand.Type cType, Option opt, String arg) throws DockerCommandException {
     if(cType==DockerCommand.Type.CREATE)
       create.setOption(opt,arg);
@@ -58,6 +65,8 @@ public class EntireDockerCommands implements Serializable {
       stop.setOption(opt,arg);
     else if(cType==DockerCommand.Type.RUN)
       run.setOption(opt,arg);
+    else if(cType==DockerCommand.Type.REMOVE)
+      remove.setOption(opt,arg);
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -71,6 +80,8 @@ public class EntireDockerCommands implements Serializable {
       stop.setOsCommand(osCmd);
     else if(cType==DockerCommand.Type.RUN)
       run.setOsCommand(osCmd);
+    else if(cType==DockerCommand.Type.REMOVE)
+      remove.setOsCommand(osCmd);
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -84,6 +95,8 @@ public class EntireDockerCommands implements Serializable {
       stop.setArg(arg);
     if(cType==DockerCommand.Type.RUN)
       run.setArg(arg);
+    if(cType==DockerCommand.Type.REMOVE)
+      remove.setArg(arg);
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -97,6 +110,8 @@ public class EntireDockerCommands implements Serializable {
       return stop.getSetOptionsString();
     else if(cType==DockerCommand.Type.RUN)
       return run.getSetOptionsString();
+    else if(cType==DockerCommand.Type.REMOVE)
+      return remove.getSetOptionsString();
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -110,6 +125,8 @@ public class EntireDockerCommands implements Serializable {
       return stop.getSetOsCommandString();
     if(cType==DockerCommand.Type.RUN)
       return run.getSetOsCommandString();
+    if(cType==DockerCommand.Type.REMOVE)
+      return remove.getSetOsCommandString();
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -123,6 +140,8 @@ public class EntireDockerCommands implements Serializable {
       return stop.getSetArgsString();
     if(cType==DockerCommand.Type.RUN)
       return run.getSetArgsString();
+    if(cType==DockerCommand.Type.REMOVE)
+      return remove.getSetArgsString();
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -137,6 +156,8 @@ public class EntireDockerCommands implements Serializable {
       return stop.getContainerName();
     if(cType==DockerCommand.Type.RUN)
       return run.getContainerName();
+    if(cType==DockerCommand.Type.REMOVE)
+      return remove.getContainerName();
     else
       throw new DockerCommandException(wrongCmdMessage);
   }
@@ -183,11 +204,13 @@ public class EntireDockerCommands implements Serializable {
     private final DockerCommand.Builder startCmdBuilder;
     private final DockerCommand.Builder stopCmdBuilder;
     private final DockerCommand.Builder runCmdBuilder;
+    private final DockerCommand.Builder removeCmdBuilder;
 
     private DockerCommand createCmd;
     private DockerCommand startCmd;
     private DockerCommand stopCmd;
     private DockerCommand runCmd;
+    private DockerCommand removeCmd;
 
     public Builder() {
 
@@ -195,6 +218,7 @@ public class EntireDockerCommands implements Serializable {
       this.startCmdBuilder = new DockerCommand.Builder(Type.START);
       this.stopCmdBuilder = new DockerCommand.Builder(Type.STOP);
       this.runCmdBuilder = new DockerCommand.Builder(Type.RUN);
+      this.removeCmdBuilder = new DockerCommand.Builder(Type.REMOVE);
     }
 
     public Builder setOptions(DockerCommand.Type type, Map<Option,List<String>> opts) throws DockerCommandException  {
@@ -250,6 +274,7 @@ public class EntireDockerCommands implements Serializable {
       startCmd = startCmdBuilder.build();
       stopCmd = stopCmdBuilder.build();
       runCmd = runCmdBuilder.build();
+      removeCmd = removeCmdBuilder.build();
       return new EntireDockerCommands(this);
     }
   }
