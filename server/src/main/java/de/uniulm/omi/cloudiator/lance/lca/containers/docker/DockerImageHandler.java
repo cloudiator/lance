@@ -218,19 +218,20 @@ final class DockerImageHandler {
         String result = null;
         String userName = dockerConfig.getUserName();
         String password = dockerConfig.getPassword();
+        boolean useCredentials = dockerConfig.useCredentials();
         String hostName = DockerConfiguration.DockerConfigurationFields.getHostname();
         int port = DockerConfiguration.DockerConfigurationFields.getPort();
         int statusCode = 404;
 
         try {
-          if (userName.equals("") && password.equals("")) {
+          if (!useCredentials) {
             result = doGetSingleImage(regExpandedImageName);
           } else {
             RegistryAuth registryAuth =
                 RegistryAuth.builder()
                     .username(userName)
                     .password(password)
-                    .serverAddress(hostName + (!(port < 0) ? ":" + Integer.toString(port) : ""))
+                    .serverAddress(hostName + (!(port < 0) && port < 65555 ? ":" + Integer.toString(port) : ""))
                     .build();
 
             DockerClient dClient = DefaultDockerClient.fromEnv().dockerAuth(false).registryAuth(registryAuth).build();

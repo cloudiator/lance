@@ -30,22 +30,6 @@ public class RemoteDockerComponent  extends DockerComponent {
     return this.dReg;
   }
 
-  /*@Override
-  public String getFullImageName() throws IllegalArgumentException {
-    String prefix = buildRemoteRegString();
-    String fullName = prefix + super.getFullImageName();
-    return fullName;
-  }
-
-  private String buildRemoteRegString() throws IllegalArgumentException {
-    if(dReg.hostName == null || dReg.hostName.equals("") ||
-        dReg.port<0 || dReg.port>65535)
-      throw new IllegalArgumentException("Registry information is corrupted.");
-
-    String fullString = dReg.hostName + ":" + new Integer(dReg.port).toString() + "/";
-    return fullString;
-  }*/
-
   public String getUriEndPoint() throws IllegalArgumentException {
     if(dReg.hostName == null || dReg.hostName.equals(""))
       throw new IllegalArgumentException("Registry information is corrupted.");
@@ -53,9 +37,9 @@ public class RemoteDockerComponent  extends DockerComponent {
     boolean usePort = !(dReg.port<0) && dReg.port<65536;
     String fullString;
     if(usePort) {
-      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString();// + "/";
+      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString() + "/";
     } else {
-      fullString = dReg.hostName;// + "/";
+      fullString = dReg.hostName + "/";
     }
     return fullString;
   }
@@ -65,24 +49,26 @@ public class RemoteDockerComponent  extends DockerComponent {
     public final int port;
     public final String userName;
     public final String password;
+    public final boolean useCredentialsParam;
 
-    public DockerRegistry(String hostNameParam, int portParam, String userNameParam, String passwordParam) {
+    public DockerRegistry(String hostNameParam, int portParam, String userNameParam, String passwordParam, boolean useCredentialsParam) {
       this.hostName = hostNameParam;
       this.port = portParam;
       this.userName = userNameParam;
       this.password = passwordParam;
+      this.useCredentialsParam = useCredentialsParam;
     }
 
     public DockerRegistry(String hostNameParam) {
-      this(hostNameParam, -1, "", "");
+      this(hostNameParam, -1, "", "", false);
     }
 
     public DockerRegistry(String hostNameParam, int portParam) {
-      this(hostNameParam, portParam, "", "");
+      this(hostNameParam, portParam, "", "", false);
     }
 
     public DockerRegistry(String hostNameParam, String userNameParam, String passwordParam) {
-      this(hostNameParam, -1, userNameParam, passwordParam);
+      this(hostNameParam, -1, userNameParam, passwordParam, true);
     }
   }
 }

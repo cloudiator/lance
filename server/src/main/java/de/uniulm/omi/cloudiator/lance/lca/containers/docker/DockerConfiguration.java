@@ -13,8 +13,9 @@ public class DockerConfiguration {
   private final boolean portRequired;
   private final String userName;
   private final String password;
+	private final boolean useCredentialsParam;
 
-	DockerConfiguration(String userName, String password, boolean portRequiredParam) {
+	DockerConfiguration(String userName, String password, boolean portRequiredParam, boolean useCredentialsParam) {
     useRegistry = DockerConfigurationFields.isEnabled();
     hostname = DockerConfigurationFields.getHostname();
     if (portRequiredParam) {
@@ -28,10 +29,11 @@ public class DockerConfiguration {
 	  this.userName = userName;
     this.password = password;
     this.portRequired = portRequiredParam;
+		this.useCredentialsParam = useCredentialsParam ;
   }
 
 	DockerConfiguration(boolean portRequiredParam){
-    this("","", portRequiredParam);
+    this("","", portRequiredParam, false);
 	}
 	
 	private boolean shouldBeUsedButCant() {
@@ -39,6 +41,10 @@ public class DockerConfiguration {
 		if(hostname == null || hostname.isEmpty() || port < 0 || port > 65555) // whatever the right number is
 			return true;
 		return false;
+	}
+
+	public boolean useCredentials() {
+		return useCredentialsParam;
 	}
 
 	static class DockerConfigurationFields {

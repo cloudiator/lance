@@ -71,7 +71,12 @@ public class DockerContainerManager implements ContainerManager {
       System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_USE_KEY, "true");
       System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_HOST_KEY, dReg.hostName);
       System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_PORT_KEY, Integer.toString(dReg.port));
-      DockerConfiguration dConf = new DockerConfiguration(dReg.userName, dReg.password, (!(dReg.port<0) && dReg.port<65555) ? true : false);
+    DockerConfiguration dConf =
+        new DockerConfiguration(
+            dReg.userName,
+            dReg.password,
+            (!(dReg.port < 0) && dReg.port < 65555) ? true : false,
+            dReg.useCredentialsParam);
       hostContext = vmId;
       hostname = dReg.hostName;
       client = ConnectorFactory.INSTANCE.createConnector(hostname);
