@@ -98,7 +98,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     LOGGER.info(String
         .format("Creating new container using context %s, os %s and containerType %s.",
             hostContext, os, containerType));
-    ContainerController cc = manager.createNewLifecycleContainer(ctx, component, os);
+    ContainerController cc = manager.createNewLifecycleContainer(ctx, component, os, false);
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s to execution handler.", cc));
@@ -119,7 +119,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     LOGGER.info(String
         .format("Creating new container using context %s, and containerType %s.",
             hostContext, ContainerType.DOCKER));
-    ContainerController cc = manager.createNewDockerContainer(ctx, component);
+    ContainerController cc = manager.createNewDockerContainer(ctx, component, false);
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));
@@ -140,7 +140,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     LOGGER.info(String
         .format("Creating new container using context %s, and containerType %s.",
             hostContext, ContainerType.DOCKER_REMOTE));
-    ContainerController cc = manager.createNewRemoteDockerContainer(ctx, component);
+    ContainerController cc = manager.createNewRemoteDockerContainer(ctx, component, false);
 
     LOGGER.info(String
         .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));
@@ -150,22 +150,22 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   }
 
 
-  //todo: overload with Method for Docker-Deployment
   @Override
-  public boolean stopComponentInstance(ContainerType containerType,
+  public boolean stopComponentInstance(
       ComponentInstanceId instanceId, boolean forceRegDel) throws RemoteException, LcaException, ContainerException {
     ContainerController cid = getController(instanceId);
     ContainerStatus state = cid.getState();
     if (state != ContainerStatus.READY) {
       throw new ContainerException("container in wrong state: " + state);
     }
+    cid.setShouldBeRemoved(forceRegDel);
     cid.tearDown();
     cid.awaitDestruction(forceRegDel);
     return true;
   }
 
   @Override
-  public boolean componentInstanceIsReady(ContainerType containerType,
+  public boolean componentInstanceIsReady(
       ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException {
     ContainerController cid = getController(instanceId);
     ContainerStatus state = cid.getState();

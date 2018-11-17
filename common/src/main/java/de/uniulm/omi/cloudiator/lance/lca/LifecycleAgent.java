@@ -54,7 +54,7 @@ public interface LifecycleAgent extends Remote {
 
     ComponentInstanceId deployRemoteDockerComponent(DeploymentContext ctx, RemoteDockerComponent component) throws RemoteException, LcaException, RegistrationException, ContainerException;
 
-    boolean stopComponentInstance(ContainerType containerType, ComponentInstanceId instanceId, boolean forceRegDel) throws RemoteException, LcaException, ContainerException;
+    boolean stopComponentInstance(ComponentInstanceId instanceId, boolean forceRegDel) throws RemoteException, LcaException, ContainerException;
 
-    boolean componentInstanceIsReady(ContainerType containerType,ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
+    boolean componentInstanceIsReady(ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
 }

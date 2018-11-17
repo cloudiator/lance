@@ -61,6 +61,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     private final ComponentInstanceId containerId;
     private final NetworkHandler network;
     final LifecycleController controller;
+    private boolean shouldBeRemoved;
 
     public StandardContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
                              LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
@@ -74,6 +75,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                         addCreateTransition(new StateMachineBuilder<>(ContainerStatus.NEW).
                                 addAllState(ContainerStatus.values())))
                 )).build();
+        this.shouldBeRemoved = false;
     }
 
     @Override
@@ -84,6 +86,16 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     @Override
     public ContainerStatus getState() {
         return stateMachine.getState();
+    }
+
+    @Override
+    public boolean shouldBeRemoved() {
+        return shouldBeRemoved;
+    }
+
+    @Override
+    public void setShouldBeRemoved(boolean shouldBeRemoved) {
+        this.shouldBeRemoved = shouldBeRemoved;
     }
 
     @Override
@@ -270,7 +282,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                                 getLogger().error("could not shut down component; trying to force shut down of container", ex);
                                 forceShutdown = true;
                             }
-                            logic.doDestroy(forceShutdown);
+                            logic.doDestroy(forceShutdown, shouldBeRemoved);
                             registerStatus(ContainerStatus.DESTROYED);
                         } catch (ContainerException | RegistrationException ce) {
                             getLogger().error("could not shut down container; FIXME add error state", ce); 

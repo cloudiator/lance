@@ -109,34 +109,34 @@ public class DockerContainerManager implements ContainerManager {
 
     @Override
     public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
-        LifecycleComponent comp, OperatingSystem os) throws ContainerException {
+        LifecycleComponent comp, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException {
 
       //todo: implement this also for LifecycleContainers!?
       LifecycleContainerComponents cComponents = new LifecycleContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, shouldBeRemoved);
       registry.addContainer(dc);
       dc.create();
       return dc;
     }
 
     public ContainerController createNewDockerContainer(DeploymentContext ctx,
-        DockerComponent comp) throws ContainerException {
+        DockerComponent comp, boolean shouldBeRemoved) throws ContainerException {
 
       DockerContainerComponents cComponents = new DockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, shouldBeRemoved);
       registry.addContainer(dc);
       dc.create();
       return dc;
     }
 
     public ContainerController createNewRemoteDockerContainer(DeploymentContext ctx,
-        RemoteDockerComponent comp) throws ContainerException {
+        RemoteDockerComponent comp, boolean shouldBeRemoved) throws ContainerException {
 
       RemoteDockerContainerComponents cComponents = new RemoteDockerContainerComponents(comp, hostContext, client, ctx, dockerConfig);
       accessorInit(cComponents.accessor, cComponents.id);
-      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor);
+      ContainerController dc = new ErrorAwareContainer<>(cComponents.id, cComponents.logic, cComponents.networkHandler, cComponents.controller, cComponents.accessor, shouldBeRemoved);
       registry.addContainer(dc);
       dc.create();
       return dc;

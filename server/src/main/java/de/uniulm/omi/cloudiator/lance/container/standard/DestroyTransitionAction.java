@@ -27,7 +27,7 @@ final class DestroyTransitionAction implements TransitionAction {
         forceShutdown = true;
       }
       theContainer.logic.preDestroy();
-      theContainer.logic.doDestroy(forceShutdown);
+      theContainer.logic.doDestroy(forceShutdown, theContainer.shouldBeRemoved());
       theContainer.registerStatus(ContainerStatus.DESTROYED);
     } catch (ContainerException | RegistrationException ce) {
       ErrorAwareContainer.getLogger().error("could not shut down container;", ce);

@@ -104,11 +104,12 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   @Override
-  public void doDestroy(boolean force) throws ContainerException {
-    /* currently docker ignores the flag */
+  public void doDestroy(boolean force, boolean remove) throws ContainerException {
+    /* currently docker ignores force flag */
     try {
-      //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
+      if(remove)
+        client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
     } catch (DockerException de) {
       throw new ContainerException(de);
     } catch(DockerCommandException ce) {

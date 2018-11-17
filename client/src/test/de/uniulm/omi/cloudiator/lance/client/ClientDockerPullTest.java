@@ -484,7 +484,7 @@ public class ClientDockerPullTest {
       boolean isReady = false;
       do {
         System.out.println("zook not ready");
-        isReady = client.isReady(ContainerType.DOCKER, zookId);
+        isReady = client.isReady(zookId);
         sleep(50);
       } while (isReady != true);
     } catch (DeploymentException ex) {
@@ -537,8 +537,8 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      client.undeploy(zookId, ContainerType.DOCKER, true);
-      client.undeploy(zookId_lifecycle, ContainerType.DOCKER, true);
+      client.undeploy(zookId, true);
+      client.undeploy(zookId_lifecycle, true);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     }

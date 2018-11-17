@@ -180,7 +180,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   public abstract void doInit(LifecycleStore store) throws ContainerException;
 
   @Override
-  public abstract void doDestroy(boolean force) throws ContainerException;
+  public abstract void doDestroy(boolean force, boolean remove) throws ContainerException;
 
   @Override
   public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {

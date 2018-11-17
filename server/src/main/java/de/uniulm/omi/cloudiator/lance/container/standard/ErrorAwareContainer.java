@@ -57,6 +57,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     final ComponentInstanceId containerId;
     final NetworkHandler network;
     final LifecycleController controller;
+    private boolean shouldBeRemovedParam;
     private boolean isReady;
 
     private ErrorAwareStateMachine<ContainerStatus> buildUpStateMachine() {
@@ -72,20 +73,16 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     public ErrorAwareContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-                             LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
-        containerId = id;
-        logic = logicParam;
-        network = networkParam;
-        controller = controllerParam;
-        accessor = accessorParam;
-        stateMachine = buildUpStateMachine();
-        isReady = false;
+        LifecycleController controllerParam, GlobalRegistryAccessor accessorParam, boolean shouldBeRemovedParam) {
+      containerId = id;
+      logic = logicParam;
+      network = networkParam;
+      controller = controllerParam;
+      accessor = accessorParam;
+      stateMachine = buildUpStateMachine();
+      this.shouldBeRemovedParam = shouldBeRemovedParam;
+      isReady = false;
     }
-
-  public ErrorAwareContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-      GlobalRegistryAccessor accessorParam) {
-      this(id, logicParam, networkParam, null, accessorParam);
-  }
 
     @Override
     public ComponentInstanceId getId() {
@@ -98,6 +95,16 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
+    public boolean shouldBeRemoved() {
+      return shouldBeRemovedParam;
+    }
+
+  @Override
+  public void setShouldBeRemoved(boolean shouldBeRemoved) {
+    this.shouldBeRemovedParam = shouldBeRemoved;
+  }
+
+  @Override
     public void create() {
         stateMachine.transit(ContainerStatus.NEW, ContainerStatus.CREATED, new Object[]{});
     }

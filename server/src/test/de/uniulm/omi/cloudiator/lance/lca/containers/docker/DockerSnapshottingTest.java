@@ -132,7 +132,7 @@ public class DockerSnapshottingTest {
 				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
 				hostContext(new FakeHostContext()).build();
 		logic.doCreate();
-		logic.doDestroy(true);
+		logic.doDestroy(true, false);
 	}
 	
 	
@@ -151,7 +151,7 @@ public class DockerSnapshottingTest {
 		logic.doCreate();
 		logic.prepare(LifecycleHandlerType.PRE_INSTALL);
 		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
-		logic.doDestroy(true);
+		logic.doDestroy(true, false);
 
 		LifecycleDockerContainerLogic.Builder builder2 = new LifecycleDockerContainerLogic.Builder();
 		//split for better readability

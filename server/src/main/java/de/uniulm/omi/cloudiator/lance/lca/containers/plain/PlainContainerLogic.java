@@ -129,9 +129,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   @Override
-  public void doDestroy(boolean forceShutdown) throws ContainerException {
+  public void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException {
     //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
-    LOGGER.warn("doDestroy not fully implemented!");
+    LOGGER.warn("doDestroy not implemented for Plain Container!");
   }
 
   @Override

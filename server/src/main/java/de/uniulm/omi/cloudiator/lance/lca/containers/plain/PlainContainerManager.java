@@ -60,7 +60,7 @@ public class PlainContainerManager implements ContainerManager {
 
     @Override
     public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
-        LifecycleComponent component, OperatingSystem os) throws ContainerException {
+        LifecycleComponent component, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException {
 
       AbstractComponentDependencies cDeps = new AbstractComponentDependencies(ctx, component, hostContext);
         PlainShellFactory plainShellFactory = new PlainShellFactoryImpl();
@@ -84,7 +84,7 @@ public class PlainContainerManager implements ContainerManager {
         //todo: implement this also for LifecycleContainers!?
         ContainerController containerController =
             new ErrorAwareContainer<>(cDeps.componentInstanceId, plainContainerLogic, cDeps.networkHandler,
-                lifecycleController, cDeps.accessor);
+                lifecycleController, cDeps.accessor, shouldBeRemoved);
 
         this.registry.addContainer(containerController);
         containerController.create();

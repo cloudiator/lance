@@ -39,5 +39,5 @@ public interface ContainerManager extends BasicContainer {
 
     ContainerType getContainerType();
 
-    ContainerController createNewLifecycleContainer(DeploymentContext ctx, LifecycleComponent component, OperatingSystem os) throws ContainerException;
+    ContainerController createNewLifecycleContainer(DeploymentContext ctx, LifecycleComponent component, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException;
 }

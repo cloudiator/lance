@@ -46,7 +46,7 @@ public interface ContainerLogic {
      * 				Otherwise, it does its best to terminate the application if possible.
      * @throws ContainerException when shutting down the container was not possible
      */
-    void doDestroy(boolean forceShutdown) throws ContainerException;
+    void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException;
 
     // ComponentInstanceId getId();
 

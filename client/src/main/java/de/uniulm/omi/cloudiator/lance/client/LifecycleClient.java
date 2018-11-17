@@ -269,9 +269,9 @@ public final class LifecycleClient {
     }
   }
 
-  public boolean isReady(ContainerType type, ComponentInstanceId cid) {
+  public final boolean isReady(ComponentInstanceId cid) {
     try {
-      boolean isReady = lifecycleAgent.componentInstanceIsReady(type, cid);
+      boolean isReady = lifecycleAgent.componentInstanceIsReady(cid);
       if(isReady) {
         return true;
       }
@@ -282,11 +282,10 @@ public final class LifecycleClient {
     }
   }
 
-  //todo: overload with Method for Docker-Deployment
   public final boolean undeploy(ComponentInstanceId componentInstanceId,
-      ContainerType containerType, boolean forceRegDel) throws DeploymentException {
+      boolean forceRegDel) throws DeploymentException {
     try {
-      return lifecycleAgent.stopComponentInstance(containerType, componentInstanceId, forceRegDel);
+      return lifecycleAgent.stopComponentInstance(componentInstanceId, forceRegDel);
     } catch (RemoteException e) {
       throw new DeploymentException(handleRemoteException(e));
     } catch (LcaException | ContainerException e) {

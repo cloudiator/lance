@@ -55,8 +55,8 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   }
 
   @Override
-  public void doDestroy(boolean force) throws ContainerException {
-    /* currently docker ignores the flag */
+  public void doDestroy(boolean force, boolean remove) throws ContainerException {
+    /* currently docker ignores both flags */
     try {
       //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
       client.stopContainer(myId);
