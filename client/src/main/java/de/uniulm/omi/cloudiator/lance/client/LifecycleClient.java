@@ -293,6 +293,11 @@ public final class LifecycleClient {
     }
   }
 
+  public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
+      ComponentInstanceId componentInstanceId)  throws RegistrationException {
+    currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
+  }
+
   private static Exception handleRemoteException(RemoteException re) {
     Throwable t = re.getCause();
     if (t == null) {
