@@ -51,7 +51,7 @@ import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
@@ -139,7 +139,7 @@ public final class LifecycleClient {
   }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final LifecycleComponent comp, final OperatingSystem os, final ContainerType containerType)
+      final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
@@ -147,7 +147,7 @@ public final class LifecycleClient {
     Callable<ComponentInstanceId> callable = () -> {
       LOGGER.info("Trying to deploy Lifecycle component " + comp);
       return lifecycleAgent
-          .deployLifecycleComponent(ctx, comp, os, containerType);
+          .deployDeployableComponent(ctx, comp, os, containerType);
     };
 
     return doRetryerCall(retryer, callable);

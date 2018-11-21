@@ -22,7 +22,7 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
@@ -88,7 +88,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
   //todo: check todo-remark at deployComponent
   @Override
-  public ComponentInstanceId deployLifecycleComponent(DeploymentContext ctx, LifecycleComponent component,
+  public ComponentInstanceId deployDeployableComponent(DeploymentContext ctx, DeployableComponent component,
       OperatingSystem os, ContainerType containerType)
       throws RemoteException, LcaException, RegistrationException, ContainerException {
 

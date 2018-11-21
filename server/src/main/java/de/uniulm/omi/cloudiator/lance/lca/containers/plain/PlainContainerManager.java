@@ -20,7 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
@@ -60,7 +60,7 @@ public class PlainContainerManager implements ContainerManager {
 
     @Override
     public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
-        LifecycleComponent component, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException {
+        DeployableComponent component, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException {
 
       AbstractComponentDependencies cDeps = new AbstractComponentDependencies(ctx, component, hostContext);
         PlainShellFactory plainShellFactory = new PlainShellFactoryImpl();

@@ -1,6 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
@@ -10,7 +10,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerExce
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic {
-  private final LifecycleComponent myComponent;
+  private final DeployableComponent myComponent;
   private final DockerImageHandler imageHandler;
 
   private LifecycleDockerContainerLogic(Builder builder) {
@@ -86,7 +86,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     return "ubuntu";
   }
 
-  public static class Builder extends AbstractDockerContainerLogic.Builder<LifecycleComponent,Builder> {
+  public static class Builder extends AbstractDockerContainerLogic.Builder<DeployableComponent,Builder> {
     private final OperatingSystem osParam;
 
     public Builder(OperatingSystem osParam){

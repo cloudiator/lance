@@ -190,7 +190,7 @@ public class ClientDockerPullTest {
     return rDockerComp;
   }
 
-  private LifecycleComponent buildLifecycleComponent(
+  private DeployableComponent buildDeployableComponent(
       LifecycleClient client,
       String compName,
       ComponentId id,
@@ -198,7 +198,7 @@ public class ClientDockerPullTest {
       List<OutportInfo> outInfs,
       Callable<LifecycleStore> createLifeCycleStore) {
 
-    LifecycleComponent.Builder builder = LifecycleComponent.Builder.createBuilder(compName,id);
+    DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(compName,id);
 
     for (int i = 0; i < inInfs.size(); i++)
       builder.addInport(
@@ -221,7 +221,7 @@ public class ClientDockerPullTest {
     }
 
     builder.deploySequentially(true);
-    LifecycleComponent comp = builder.build();
+    DeployableComponent comp = builder.build();
     return comp;
   }
 
@@ -304,7 +304,7 @@ public class ClientDockerPullTest {
   public void testCZookCompDescriptions_lifecycle() {
     List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
     List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
-    buildLifecycleComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
+    buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
         inInfs, outInfs, new Callable<LifecycleStore>() {
           public LifecycleStore call() {
             return createDefaultLifecycleStore();
@@ -501,7 +501,7 @@ public class ClientDockerPullTest {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
       List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
-      LifecycleComponent zookComp = buildLifecycleComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
+      DeployableComponent zookComp = buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
           inInfs, outInfs, new Callable<LifecycleStore>() {
             public LifecycleStore call() {
               return createDefaultLifecycleStore();

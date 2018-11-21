@@ -18,8 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent.Builder;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent.Builder;
 import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapperRM;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
@@ -39,7 +39,7 @@ import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.*;
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
@@ -187,8 +187,8 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         fullComponents = new ArrayList<FullComponent>(arch.getComponents().size());
 
         for(ComponentInfo cInfo: arch.getComponents()) {
-            //LifecycleComponent.Builder builder = new Builder();.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
-            LifecycleComponent.Builder builder = LifecycleComponent.Builder.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
+            //DeployableComponent.Builder builder = new Builder();.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
+            DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
             boolean stopIt;
 
             switch (cInfo.getComponentName()) {
@@ -213,7 +213,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
                 builder.addOutport(outInf.getOutportName(), outInf.getPuHandler(), outInf.getCardinality(), outInf.getMin());
 
             builder.deploySequentially(true);
-            LifecycleComponent comp = builder.build();
+            DeployableComponent comp = builder.build();
             GlobalRegistryAccessor accessor = new GlobalRegistryAccessor(core.ctx, comp, cInfo.getComponentInstanceId());
             final LcaRegistry reg = core.ctx.getRegistry();
             NetworkHandler networkHandler = new NetworkHandler(accessor, comp, CoreElementsRemote.context);
@@ -515,7 +515,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
 
     static class FullComponent {
 
-        FullComponent(LifecycleComponent comp, GlobalRegistryAccessor accessor, NetworkHandler networkHandler, ComponentId cId, ComponentInstanceId cInstId, ExecutionContext exCtx, boolean stopIt, ErrorAwareContainer<PlainContainerLogic> container, LifecycleController lcc) {
+        FullComponent(DeployableComponent comp, GlobalRegistryAccessor accessor, NetworkHandler networkHandler, ComponentId cId, ComponentInstanceId cInstId, ExecutionContext exCtx, boolean stopIt, ErrorAwareContainer<PlainContainerLogic> container, LifecycleController lcc) {
             this.comp = comp;
             this.accessor = accessor;
             this.networkHandler = networkHandler;
@@ -527,7 +527,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             this.lcc = lcc;
         }
 
-        FullComponent(LifecycleComponent comp, GlobalRegistryAccessor accessor, NetworkHandler networkHandler, ComponentId cId, ComponentInstanceId cInstId, ExecutionContext exCtx, boolean stopIt) {
+        FullComponent(DeployableComponent comp, GlobalRegistryAccessor accessor, NetworkHandler networkHandler, ComponentId cId, ComponentInstanceId cInstId, ExecutionContext exCtx, boolean stopIt) {
             this(comp, accessor, networkHandler, cId, cInstId, exCtx, stopIt,null, null);
         }
 
@@ -539,7 +539,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             this.lcc = lcc;
         }
 
-        public LifecycleComponent comp;
+        public DeployableComponent comp;
         public GlobalRegistryAccessor accessor;
         public NetworkHandler networkHandler;
         public ComponentId cId;

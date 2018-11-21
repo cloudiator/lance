@@ -19,7 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.LifecycleComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerConfiguration.DockerConfigurationFields;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -109,7 +109,7 @@ public class DockerContainerManager implements ContainerManager {
 
     @Override
     public ContainerController createNewLifecycleContainer(DeploymentContext ctx,
-        LifecycleComponent comp, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException {
+        DeployableComponent comp, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException {
 
       //todo: implement this also for LifecycleContainers!?
       LifecycleContainerComponents cComponents = new LifecycleContainerComponents(comp, hostContext, client, ctx, dockerConfig, os);
@@ -184,7 +184,7 @@ public class DockerContainerManager implements ContainerManager {
     private final GlobalRegistryAccessor accessor;
     private final LifecycleDockerContainerLogic logic;
 
-    LifecycleContainerComponents(LifecycleComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
+    LifecycleContainerComponents(DeployableComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);

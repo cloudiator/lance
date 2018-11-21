@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
-public class LifecycleComponent extends AbstractComponent {
+public class DeployableComponent extends AbstractComponent {
     private final LifecycleStore lifecycle;
 
     public static class Builder extends AbstractComponent.Builder<Builder> {
@@ -30,8 +30,8 @@ public class LifecycleComponent extends AbstractComponent {
       }
 
       @Override
-      public LifecycleComponent build() {
-        return new LifecycleComponent(this);
+      public DeployableComponent build() {
+        return new DeployableComponent(this);
       }
 
       @Override
@@ -40,7 +40,7 @@ public class LifecycleComponent extends AbstractComponent {
       }
     }
 
-    private LifecycleComponent(Builder builder) {
+    private DeployableComponent(Builder builder) {
         super(builder);
         lifecycle = builder.lifecycle;
     }
