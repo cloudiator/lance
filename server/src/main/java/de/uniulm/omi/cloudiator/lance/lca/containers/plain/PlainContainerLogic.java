@@ -272,6 +272,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     } else if (type == LifecycleHandlerType.POST_INSTALL) {
       // TODO: how should we snapshot the folder? //
     }
+    plainShellFactory.closeShell();
   }
 
   private void postPreInstall() {
