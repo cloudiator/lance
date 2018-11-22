@@ -7,16 +7,11 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DockerComponent extends AbstractComponent {
     /*DockerComponent(String nameParam, ComponentId idParam, List<InPort> inPortsParam,
