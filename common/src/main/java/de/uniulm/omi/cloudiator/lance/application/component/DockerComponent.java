@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +93,23 @@ public class DockerComponent extends AbstractComponent {
     entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
     containerName = buildNameOptionFromId(id);
   }
+
+  public void setPort(Map<Integer, Integer> inPortsParam) throws DockerCommandException {
+    if(inPortsParam.size()>1) {
+      LOGGER.info("Trying to set multiple ports for Docker Component " +  containerName);
+    }
+
+    for(Entry<Integer, Integer> entry : inPortsParam.entrySet()) {
+      Integer i = entry.getKey();
+      Integer j = entry.getValue();
+      if(j.intValue() < 0 || j.intValue() > 65536) {
+        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, i.toString());
+      } else {
+        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, i.toString() + ":" + j.toString());
+      }
+    }
+  }
+
 
   public String getContainerName() throws DockerCommandException {
     return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
