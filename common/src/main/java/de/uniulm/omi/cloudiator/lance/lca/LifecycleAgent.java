@@ -57,4 +57,6 @@ public interface LifecycleAgent extends Remote {
     boolean stopComponentInstance(ComponentInstanceId instanceId, boolean forceRegDel) throws RemoteException, LcaException, ContainerException;
 
     boolean componentInstanceIsReady(ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
+
+    void updateDownStreamPorts() throws RemoteException, LcaException, ContainerException;
 }

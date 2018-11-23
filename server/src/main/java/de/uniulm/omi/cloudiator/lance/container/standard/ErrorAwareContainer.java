@@ -185,15 +185,21 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
 
-  private void deleteInRegistry() throws ContainerConfigurationException {
-      try {
-        accessor.deleteComponentInstance();
-      } catch (RegistrationException e) {
-        throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
-      }
-  }
+    @Override
+    public void startPortUpdaters() {
+      network.startPortUpdaters(controller);
 
-  void setNetworking() throws ContainerException {
+    }
+
+    private void deleteInRegistry() throws ContainerConfigurationException {
+        try {
+          accessor.deleteComponentInstance();
+        } catch (RegistrationException e) {
+          throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
+        }
+    }
+
+    void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();
         try {
             network.initPorts(address);
@@ -249,7 +255,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     void registerStatus(ContainerStatus status) throws RegistrationException {
         accessor.updateContainerState(containerId, status);
     }
-    
+
     void throwExceptionIfGenericErrorStateOrOtherState(ContainerStatus stat) throws ContainerConfigurationException, UnexpectedContainerStateException {
     	if(stateMachine.isGenericErrorState(stat)){
     		throw new ContainerConfigurationException("generic error state reached: " + stat, stateMachine.collectExceptions());

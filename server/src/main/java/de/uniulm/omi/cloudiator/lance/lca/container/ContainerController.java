@@ -49,4 +49,6 @@ public interface ContainerController {
 	void awaitBootstrap() throws ContainerException;
 
 	boolean isReady();
+
+	void startPortUpdaters();
 }

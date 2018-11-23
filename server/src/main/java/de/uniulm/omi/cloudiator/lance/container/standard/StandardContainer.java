@@ -127,6 +127,11 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     @Override
+    public void startPortUpdaters() {
+       network.startPortUpdaters(controller);
+    }
+
+    @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[]{store});
     }

@@ -294,8 +294,19 @@ public final class LifecycleClient {
   }
 
   public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
-      ComponentInstanceId componentInstanceId)  throws RegistrationException {
+      ComponentInstanceId componentInstanceId)  throws RegistrationException, DeploymentException {
     currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
+    updateDownStreamPorts();
+  }
+
+  public final void updateDownStreamPorts() throws DeploymentException {
+    try {
+      lifecycleAgent.updateDownStreamPorts();
+    } catch (RemoteException e) {
+      throw new DeploymentException(handleRemoteException(e));
+    } catch (LcaException | ContainerException e) {
+      throw new DeploymentException(e);
+    }
   }
 
   private static Exception handleRemoteException(RemoteException re) {
