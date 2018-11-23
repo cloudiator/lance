@@ -18,11 +18,15 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
@@ -42,23 +46,19 @@ public interface ContainerLogic {
      * 				Otherwise, it does its best to terminate the application if possible.
      * @throws ContainerException when shutting down the container was not possible
      */
-    void doDestroy(boolean forceShutdown) throws ContainerException;
+    void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException;
 
     // ComponentInstanceId getId();
+
+    void preDestroy() throws ContainerException;
+
     /**
-     * 
+     *
      * @return null if no address is available;
      * otherwise a stringified form of an IP address
      * @throws ContainerException when a container-specific exception occurs
      */
-
-    void preDestroy() throws ContainerException;
-
     String getLocalAddress() throws ContainerException;
 
     InportAccessor getPortMapper();
-
-    void setStaticEnvironment() throws ContainerException;
-
-    void setDynamicEnvironment() throws ContainerException;
 }

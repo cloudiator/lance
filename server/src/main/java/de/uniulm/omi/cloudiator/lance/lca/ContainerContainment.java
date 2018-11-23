@@ -1,5 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,19 +46,47 @@ final class ContainerContainment implements BasicContainer {
 		return result;
 	}
 
-    public ContainerManager getContainerManager(HostContext contex, OperatingSystem operatingSystem, ContainerType containerType) throws LcaException{
-    	if(containerType.supportsOsFamily(operatingSystem.getFamily())) {
-    		synchronized(managers) {
-    			ContainerManager mng = managers.get(containerType);
-    			if(mng == null) {
-					mng = ContainerManagerFactory.createContainerManager(contex, containerType);
-    				managers.put(containerType, mng);
-        		}
-    			return mng;
-    		}
-    	} 
-        throw new LcaException("Operating System and container do not match: " + operatingSystem.toString());
+	//Returns reference to DockerContainerManager object if ContainerType==DOCKER/DOCKER-REMOTE else to PlainContainerManager object
+  public ContainerManager getLifecycleContainerManager(HostContext context, OperatingSystem operatingSystem, ContainerType containerType) throws LcaException{
+    if(containerType.supportsOsFamily(operatingSystem.getFamily())) {
+      return getContainerManager(context, containerType);
     }
+    throw new LcaException("Operating System and container do not match: " + operatingSystem.toString());
+  }
+
+	//Returns reference to DockerContainerManager object
+  public DockerContainerManager getDockerContainerManager(HostContext context) {
+		//todo: refactor
+		return (DockerContainerManager) getContainerManager(context, ContainerType.DOCKER);
+	}
+
+	//Returns reference to DockerContainerManager object
+	public DockerContainerManager getRemoteDockerContainerManager(HostContext context, RemoteDockerComponent.DockerRegistry dReg) {
+		//todo: refactor
+		return (DockerContainerManager) getContainerManager(context, dReg);
+	}
+
+	private ContainerManager getContainerManager(HostContext contex, ContainerType containerType) {
+    synchronized(managers) {
+      ContainerManager mng = managers.get(containerType);
+      if(mng == null) {
+        mng = ContainerManagerFactory.createContainerManager(contex, containerType);
+        managers.put(containerType, mng);
+      }
+      return mng;
+    }
+	}
+
+	private ContainerManager getContainerManager(HostContext contex, RemoteDockerComponent.DockerRegistry dReg) {
+		synchronized(managers) {
+			ContainerManager mng = managers.get(ContainerType.DOCKER_REMOTE);
+			if(mng == null) {
+				mng = ContainerManagerFactory.createRemoteContainerManager(contex, dReg);
+				managers.put(ContainerType.DOCKER_REMOTE, mng);
+			}
+			return mng;
+		}
+	}
 
 	@Override
 	public void terminate() {

@@ -1,7 +1,5 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import static org.junit.Assert.*;
-
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -127,12 +125,14 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder();
 		//split for better readability
-		builder = builder.cInstId(core.componentInstanceId).dockerConnector(client).deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04);
-		DockerContainerLogic logic = builder.nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(new FakeHostContext()).build();
+		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
+				deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04).
+				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
+				hostContext(new FakeHostContext()).build();
 		logic.doCreate();
-		logic.doDestroy(true);
+		logic.doDestroy(true, false);
 	}
 	
 	
@@ -142,16 +142,22 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
+		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder();
 		//split for better readability
-		builder = builder.cInstId(core.componentInstanceId).dockerConnector(client).deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04);
-		DockerContainerLogic logic = builder.nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(new FakeHostContext()).build();
+		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
+				deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04).
+				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
+				hostContext(new FakeHostContext()).build();
 		logic.doCreate();
 		logic.prepare(LifecycleHandlerType.PRE_INSTALL);
 		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
-		logic.doDestroy(true);
+		logic.doDestroy(true, false);
 
-		builder = builder.cInstId(core.componentInstanceId).dockerConnector(client).deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04);
-		logic = builder.nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(new FakeHostContext()).build();
+		LifecycleDockerContainerLogic.Builder builder2 = new LifecycleDockerContainerLogic.Builder();
+		//split for better readability
+		AbstractDockerContainerLogic logic2 = builder2.cInstId(core.componentInstanceId).dockerConnector(client).
+				deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04).
+				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
+				hostContext(new FakeHostContext()).build();
 	}
 }

@@ -39,6 +39,11 @@
             <version>1.7.9</version>
         </dependency>
         <dependency>
+            <groupId>com.spotify</groupId>
+            <artifactId>docker-client</artifactId>
+            <version>7.0.2</version>
+        </dependency>
+        <dependency>
             <groupId>io.github.cloudiator.lance</groupId>
             <artifactId>common</artifactId>
         </dependency>

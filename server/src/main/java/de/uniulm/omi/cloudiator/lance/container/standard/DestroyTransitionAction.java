@@ -9,14 +9,14 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 
 final class DestroyTransitionAction implements TransitionAction {
 
-	private final ErrorAwareContainer<?> theContainer;
+  private final ErrorAwareContainer<?> theContainer;
 
-	private DestroyTransitionAction(ErrorAwareContainer<?> container) {
-		theContainer = container;
-	}
-	
+  private DestroyTransitionAction(ErrorAwareContainer<?> container) {
+    theContainer = container;
+  }
+
   @Override
-	public void transit(Object[] params) throws TransitionException {
+  public void transit(Object[] params) throws TransitionException {
 		theContainer.network.stopPortUpdaters();
     try {
       boolean forceShutdown = false;
@@ -27,7 +27,7 @@ final class DestroyTransitionAction implements TransitionAction {
         forceShutdown = true;
       }
       theContainer.logic.preDestroy();
-      theContainer.logic.doDestroy(forceShutdown);
+      theContainer.logic.doDestroy(forceShutdown, theContainer.shouldBeRemoved());
       theContainer.registerStatus(ContainerStatus.DESTROYED);
     } catch (ContainerException | RegistrationException ce) {
       ErrorAwareContainer.getLogger().error("could not shut down container;", ce);

@@ -96,6 +96,20 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
 
     @Override
+    public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId)
+        throws RegistrationException {
+        String dirName = generateComponentInstanceDirectory(instId, cid, cinstId);
+        if(!directoryDoesExist(dirName)) {
+           throw new RegistrationException("Cannot delete Component instance out of etcd as the corresponding directory does not exist");
+        }
+        try {
+            etcd.deleteDir(dirName).recursive().send();
+        } catch (IOException e) {
+            throw new RegistrationException("Cannot delete Component instance out of etcd as an IOException occured");
+        }
+    }
+
+    @Override
     public void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException {
         String dirName = generateComponentInstanceDirectory(instId, cid, cinstId);
         setPropertyInDirectory(dirName, property, value.toString());

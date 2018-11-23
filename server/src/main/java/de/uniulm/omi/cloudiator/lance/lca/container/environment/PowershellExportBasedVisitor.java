@@ -58,25 +58,18 @@ public class PowershellExportBasedVisitor implements NetworkVisitor, PropertyVis
 
 
     @Override
-    public void visitNetworkAddress(PortHierarchyLevel level, String address) {
-        addEnvironmentVariable(level.getName().toUpperCase() + "_IP", address);
+    public void visitNetworkAddress(String name, String address) {
+        addEnvironmentVariable(name, address);
     }
 
     @Override
-    public void visitInPort(String portName, PortHierarchyLevel level, Integer portNr) {
-        addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName.toUpperCase(), portNr.toString());
+    public void visitInPort(String fullPortName, String portNr) {
+        addEnvironmentVariable(fullPortName,portNr);
     }
 
     @Override
-    public void visitOutPort(String portName, PortHierarchyLevel level, List<DownstreamAddress> sinks) {
-        String value = "";
-        for(DownstreamAddress element : sinks) {
-            if(!value.isEmpty()) {
-                value = value + ",";
-            }
-            value = value + element.toString();
-        }
-        addEnvironmentVariable(level.getName().toUpperCase() + "_" + portName, value);
+    public void visitOutPort(String name, String sinkValues) {
+        addEnvironmentVariable(name, sinkValues);
     }
 
     @Override

@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent.Builder;
 import de.uniulm.omi.cloudiator.lance.lca.EnvContextWrapperRM;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
@@ -38,7 +40,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.*;
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponentBuilder;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
@@ -151,7 +152,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
             theContainer.network.publishLocalData(theContainer.containerId) : //network-stuff
             */
             container.tearDown();
-            container.awaitDestruction();
+            container.awaitDestruction(false);
 
             assertRightState(ContainerStatus.DESTROYED, container);
             doChecks(fullComp);
@@ -186,14 +187,8 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         fullComponents = new ArrayList<FullComponent>(arch.getComponents().size());
 
         for(ComponentInfo cInfo: arch.getComponents()) {
-            DeployableComponentBuilder builder = DeployableComponentBuilder.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
-
-            for(InportInfo inInf: cInfo.getInportInfos())
-                builder.addInport(inInf.getInportName(), inInf.getPortType(), inInf.getCardinality(), inInf.getInPort());
-
-            for(OutportInfo outInf: cInfo.getOutportInfos())
-                builder.addOutport(outInf.getOutportName(), outInf.getPuHandler(), outInf.getCardinality(), outInf.getMin());
-
+            //DeployableComponent.Builder builder = new Builder();.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
+            DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(arch.getApplicationName(), cInfo.getComponentId());
             boolean stopIt;
 
             switch (cInfo.getComponentName()) {
@@ -210,6 +205,12 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
                 default:
                     throw new ContainerException();
             }
+
+            for(InportInfo inInf: cInfo.getInportInfos())
+                builder.addInport(inInf.getInportName(), inInf.getPortType(), inInf.getCardinality(), inInf.getInPort());
+
+            for(OutportInfo outInf: cInfo.getOutportInfos())
+                builder.addOutport(outInf.getOutportName(), outInf.getPuHandler(), outInf.getCardinality(), outInf.getMin());
 
             builder.deploySequentially(true);
             DeployableComponent comp = builder.build();
@@ -246,7 +247,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
 
         ErrorAwareContainer<PlainContainerLogic> controller =
                 new ErrorAwareContainer<PlainContainerLogic>(fullComp.cInstId, containerLogic, fullComp.networkHandler,
-                        lifecycleController, fullComp.accessor);
+                        lifecycleController, fullComp.accessor, false);
 
         //not a really good design
         fullComp.addLifecycleController(lifecycleController);
@@ -377,6 +378,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         builder_pre_inst.addCommand(
         "echo \"deb http://debian.datastax.com/community stable main\" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list");
         builder_pre_inst.addCommand("sudo apt-get -y -q update");
+        builder_pre_inst.addCommand("touch a");
         store.setHandler(builder_pre_inst.build(LifecycleHandlerType.PRE_INSTALL), LifecycleHandlerType.PRE_INSTALL);
 
         /**
@@ -389,6 +391,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         //adjust
         //builder_inst.addCommand("sudo apt-get -y -q install dsc22=2.2.3-1 cassandra=2.2.3");
         builder_inst.addCommand("sudo apt-get -y -q install cassandra=3.0.0");
+        builder_inst.addCommand("touch b");
         store.setHandler(builder_inst.build(LifecycleHandlerType.INSTALL), LifecycleHandlerType.INSTALL);
 
         /*
@@ -409,6 +412,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         builder_start.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
         builder_start.addCommand("sudo chmod 750 /var/run/cassandra");
         builder_start.addCommand("sudo service cassandra start");
+        builder_start.addCommand("touch c");
         store.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
         store.setHandler(builder_start.build(LifecycleHandlerType.START), LifecycleHandlerType.START);
         /**
@@ -422,6 +426,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         BashBasedHandlerBuilder builder_pre_stop = new BashBasedHandlerBuilder();
         builder_pre_stop.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
         builder_pre_stop.addCommand("sleep 10s");
+        builder_pre_stop.addCommand("touch d");
         store.setHandler(builder_pre_stop.build(LifecycleHandlerType.PRE_STOP), LifecycleHandlerType.PRE_STOP);
 
         /**
@@ -431,6 +436,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         BashBasedHandlerBuilder builder_stop = new BashBasedHandlerBuilder();
         builder_stop.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
         builder_stop.addCommand("sudo service cassandra stop");
+        builder_stop.addCommand("touch e");
         store.setHandler(builder_stop.build(LifecycleHandlerType.STOP), LifecycleHandlerType.STOP);
 
         /**

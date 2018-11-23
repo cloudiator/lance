@@ -53,5 +53,9 @@ public interface DockerConnector {
 
 	void stopContainer(ComponentInstanceId myId) throws DockerException;
 
-	void pushImage(String target) throws DockerException;;
+	void pushImage(String target) throws DockerException;
+
+  String executeSingleDockerCommand(String fullDockerCommand) throws DockerException;
+
+  DockerShell executeProgressingDockerCommand(String fullDockerCommand) throws DockerException;
 }

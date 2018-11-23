@@ -23,7 +23,7 @@ registry (via the client) so that the correct branches of components are being c
 ### Step III: Create Component Descriptions (if not available)
 
 ```
-DeployableComponentBuilder builder = DeployableComponentBuilder.createBuilder(CASSANDRA_COMPONENT_NAME, CASSANDRA_COMPONENT_ID);
+AbstractComponentBuilder builder = AbstractComponentBuilder.createBuilder(CASSANDRA_COMPONENT_NAME, CASSANDRA_COMPONENT_ID);
 builder.addInport(CASSANDRA_IN_PORT_NAME, PortType.INTERNAL_PORT, PortProperties.INFINITE_CARDINALITY, CASSANDRA_DEFAULT_INPORT);
 builder.addInport(CASSANDRA_INTERNAL_IN_PORT_NAME, PortType.CLUSTER_PORT, PortProperties.INFINITE_CARDINALITY, CASSANDRA_DEFAULT_INTERNAL_INPORT);
 builder.addOutport(CASSANDRA_INTERNAL_OUT_PORT_NAME, DeploymentHelper.getEmptyPortUpdateHandler(), PortProperties.INFINITE_CARDINALITY);

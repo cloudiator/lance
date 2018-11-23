@@ -44,32 +44,21 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
     }
 
     @Override
-    public void visitNetworkAddress(PortHierarchyLevel level, String address) {
-    	String name = level.getName().toUpperCase() + "_IP";
+    public void visitNetworkAddress(String name, String address) {
     	LOGGER.info("exporting network address as environment variable: " + name + " = " + address);
         addEnvironmentVariable(name, address);
     }
 
     @Override
-    public void visitInPort(String portName, PortHierarchyLevel level, Integer portNr) {
-    	String name = level.getName().toUpperCase() + "_" + portName.toUpperCase();
-    	LOGGER.info("exporting inPort as environment variable: " + name + " = " + portNr);
-        addEnvironmentVariable(name, portNr.toString());
+    public void visitInPort(String fullPortName, String portNr) {
+    	LOGGER.info("exporting inPort as environment variable: " + fullPortName + " = " + portNr);
+        addEnvironmentVariable(fullPortName, portNr);
     }
 
     @Override
-    public void visitOutPort(String portName, PortHierarchyLevel level, List<DownstreamAddress> sinks) {
-        String value = "";
-        for(DownstreamAddress element : sinks) {
-            if(!value.isEmpty()) {
-                value = value + ","; 
-            }
-            value = value + element.toString();
-        
-        }
-        String name = level.getName().toUpperCase() + "_" + portName;
-        LOGGER.info("exporting out port as environment variable: " + name + " = " + value);
-        addEnvironmentVariable(name, value);
+    public void visitOutPort(String name, String sinkValues) {
+        LOGGER.info("exporting out port as environment variable: " + name + " = " + sinkValues);
+        addEnvironmentVariable(name, sinkValues);
     }
 
     @Override

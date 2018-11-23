@@ -9,7 +9,6 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponentBuilder;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;

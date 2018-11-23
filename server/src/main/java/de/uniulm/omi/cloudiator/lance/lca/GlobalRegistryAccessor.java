@@ -25,7 +25,7 @@ import java.util.Map;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
@@ -39,10 +39,10 @@ public final class GlobalRegistryAccessor {
     private final ApplicationInstanceId appInstId; 
     private final ComponentId compId;
     private final DeploymentContext ctx;
-    // private final DeployableComponent comp;
+    // private final AbstractComponent comp;
     private final ComponentInstanceId localId;
     
-    public GlobalRegistryAccessor(DeploymentContext ctxParam, DeployableComponent compParam, ComponentInstanceId localIdParam) {
+    public GlobalRegistryAccessor(DeploymentContext ctxParam, AbstractComponent compParam, ComponentInstanceId localIdParam) {
         reg = ctxParam.getRegistry();
         // appId = _ctx.getApplicationId();
         appInstId = ctxParam.getApplicationInstanceId();
@@ -70,7 +70,11 @@ public final class GlobalRegistryAccessor {
     		throw new NullPointerException("type has to be set");
     	return type.toString().equals(map.get(CONTAINER_STATUS));
     }
-    
+
+    public final void deleteComponentInstance() throws RegistrationException {
+        reg.deleteComponentInstance(appInstId, compId, localId);
+    }
+
     /* 
     @Deprecated
     public final String getProperty(ComponentInstanceId myId, String name) throws RegistrationException {

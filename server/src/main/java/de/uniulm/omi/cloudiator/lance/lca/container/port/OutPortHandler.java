@@ -18,23 +18,28 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 
-final class OutPortHandler {
+final class OutPortHandler implements DynamicEnvVars {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OutPort.class);
     
@@ -48,12 +53,30 @@ final class OutPortHandler {
     }
     
     private final List<OutPortState> portStates = new ArrayList<>();
-    private final DeployableComponent myComponent;
-    
-    public OutPortHandler(DeployableComponent myComponentParam) {
+    private final AbstractComponent myComponent;
+
+    private DynamicEnvVarsImpl currentEnvVarsDynamic;
+
+    public OutPortHandler(AbstractComponent myComponentParam) {
         myComponent = myComponentParam;
+        currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
     }
-    
+
+    //todo: exception handling if wrong enum type
+    public void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException {
+        this.currentEnvVarsDynamic = vars;
+    }
+
+    //todo: exception handling if wrong enum type
+    public void removeDynamicEnvVars(DynamicEnvVars vars) throws ContainerException {
+        if(!currentEnvVarsDynamic.equals(vars))
+            LOGGER.error("Cannot remove vars " + vars + " as they are not currently available.");
+
+        //todo: Check if vars Map in DynamicEnvVarsImpl is reset
+        this.currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
+    }
+
+
     void initPortStates(PortRegistryTranslator accessor, PortHierarchy portHierarchy) throws RegistrationException {
         List<OutPort> outPorts = myComponent.getDownstreamPorts();
         if(outPorts.isEmpty()) {
@@ -124,19 +147,10 @@ final class OutPortHandler {
         return retVal;
     }
 
-    void accept(NetworkVisitor visitor, PortDiff<DownstreamAddress> diffSet) {
-        for(OutPortState out : portStates) {
-        	Map<PortHierarchyLevel, List<DownstreamAddress>> elements = null;
-        	if(diffSet != null && out.matchesPort(diffSet.getPort())) {
-        		elements = OutPortState.orderSinksByHierarchyLevel(diffSet.getCurrentSinkSet());
-        	} else {
-        		elements = out.sinksByHierarchyLevel();
-        	}
-            
-            Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit = elements.isEmpty() ? 
-                    doCollect(out, EMPTY_VISIT_MAP) : doCollect(out, elements);        
-            doVisit(visitor, out, toVisit);
-        }
+    void accept(NetworkVisitor visitor) {
+            for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
+                visitor.visitOutPort(entry.getKey() , entry.getValue());
+            }
     }
     
     private static Map<PortHierarchyLevel, List<DownstreamAddress>> doCollect(OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> elements) {
@@ -158,14 +172,6 @@ final class OutPortHandler {
         }
         return toVisit;
     }
-    
-    private static void doVisit(NetworkVisitor visitor, OutPortState out, Map<PortHierarchyLevel, List<DownstreamAddress>> toVisit) {
-        for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : toVisit.entrySet()) {
-            PortHierarchyLevel level = entry.getKey();
-            List<DownstreamAddress> sinks = entry.getValue();
-            visitor.visitOutPort(out.getPortName(), level, sinks);
-        }
-    }
 
 	void manifestChangeset(PortDiff<DownstreamAddress> diff) {
 		for(OutPortState state : portStates) {
@@ -176,8 +182,69 @@ final class OutPortHandler {
         }
 		LOGGER.error("could not apply diff set " + diff + " to port configuration.");
 	}
-    
-    /* old/unused code 
+
+	private static String buildSinkValues(List<DownstreamAddress> sinks) {
+      String value = "";
+      for(DownstreamAddress element : sinks) {
+          if(!value.isEmpty()) {
+              value = value + ",";
+          }
+          value = value + element.toString();
+      }
+
+      return value;
+  }
+
+    private static Map<String,String> buildSingleElementMap(String key, String value) {
+        Map<String,String> map = new HashMap<>();
+        map.put(key,value);
+
+        return map;
+    }
+
+    @Override
+    public Map<String, String> getEnvVars() {
+        return currentEnvVarsDynamic.getEnvVars();
+    }
+
+    @Override
+    public void generateDynamicEnvVars() {
+       generateDynamicEnvVars(null);
+    }
+
+    public void generateDynamicEnvVars(PortDiff<DownstreamAddress> diffSet) {
+        for(OutPortState out : portStates) {
+            Map<PortHierarchyLevel, List<DownstreamAddress>> elements = null;
+            if(diffSet != null && out.matchesPort(diffSet.getPort())) {
+                elements = OutPortState.orderSinksByHierarchyLevel(diffSet.getCurrentSinkSet());
+            } else {
+                elements = out.sinksByHierarchyLevel();
+            }
+
+            Map<PortHierarchyLevel, List<DownstreamAddress>> toGenerate = elements.isEmpty() ?
+                doCollect(out, EMPTY_VISIT_MAP) : doCollect(out, elements);
+            doGenerateDynamicEnvVars(out, toGenerate);
+        }
+    }
+
+    private void doGenerateDynamicEnvVars(OutPortState out,
+        Map<PortHierarchyLevel, List<DownstreamAddress>> toGenerate) {
+        for(Entry<PortHierarchyLevel, List<DownstreamAddress>> entry : toGenerate.entrySet()) {
+            PortHierarchyLevel level = entry.getKey();
+            List<DownstreamAddress> sinks = entry.getValue();
+            String name = level.getName().toUpperCase() + "_" + out.getPortName();
+            String sinkValues = buildSinkValues(sinks);
+            DynamicEnvVarsImpl portsVar = DynamicEnvVarsImpl.NETWORK_PORTS;
+            portsVar.setEnvVars(buildSingleElementMap(name,sinkValues));
+            try {
+              injectDynamicEnvVars(portsVar);
+            } catch (ContainerException ex) {
+                LOGGER.error("Cannot inject variable " + portsVar + "as it has a wrong type");
+            }
+        }
+    }
+
+    /* old/unused code
     @SuppressWarnings("static-method")
     public void startPortUpdaters() {
         LOGGER.error("Port updaters are currently not run.");
@@ -194,7 +261,7 @@ final class OutPortHandler {
             //FIXME: the scheduling should not be the task of the OutPortState
         }
     }
-    
+
     private void addConnectionListAsEnvironmentVariable(DockerShell dshell, String portName, List<String> addresses) {
         String s = "";
         for(String a : addresses) {

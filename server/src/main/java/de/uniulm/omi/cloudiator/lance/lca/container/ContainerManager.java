@@ -19,6 +19,8 @@
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 
@@ -37,5 +39,5 @@ public interface ContainerManager extends BasicContainer {
 
     ContainerType getContainerType();
 
-    ContainerController createNewContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os) throws ContainerException;
+    ContainerController createNewLifecycleContainer(DeploymentContext ctx, DeployableComponent component, OperatingSystem os, boolean shouldBeRemoved) throws ContainerException;
 }
