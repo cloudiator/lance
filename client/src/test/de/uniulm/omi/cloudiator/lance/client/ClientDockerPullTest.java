@@ -537,6 +537,7 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
+      //
       client.undeploy(zookId, true);
       client.undeploy(zookId_lifecycle, true);
     } catch (DeploymentException ex) {
