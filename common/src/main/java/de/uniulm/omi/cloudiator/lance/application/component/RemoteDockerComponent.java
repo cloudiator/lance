@@ -37,9 +37,9 @@ public class RemoteDockerComponent  extends DockerComponent {
     boolean usePort = !(dReg.port<0) && dReg.port<65536;
     String fullString;
     if(usePort) {
-      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString() + "/";
+      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString();
     } else {
-      fullString = dReg.hostName + "/";
+      fullString = dReg.hostName;
     }
     return fullString;
   }
