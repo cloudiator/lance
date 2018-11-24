@@ -44,8 +44,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      String fullImageName = getFullImageName();
-      client.pullImage(fullImageName);
+      imageHandler.doPullImages(myId, myComponent.getFullImageName());
       Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
       myComponent.setPort(portsToSet);
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.CREATE));
@@ -132,11 +131,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   void collectDynamicEnvVars() {
     envVarsDynamic.putAll(myComponent.getEnvVars());
     envVarsDynamic.putAll(networkHandler.getEnvVars());
-  }
-
-  @Override
-  String getFullImageName() {
-    return myComponent.getFullImageName();
   }
 
   private DockerShell executeGenericStart() throws ContainerException {

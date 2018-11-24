@@ -50,6 +50,11 @@ public class RemoteDockerComponent  extends DockerComponent {
     return fullImageName;
   }
 
+  public String getFullImageNameRegStripped() throws IllegalArgumentException {
+    String strippedImageName = super.getFullImageName();
+    return strippedImageName;
+  }
+
   public static class DockerRegistry implements Serializable {
     public final String hostName;
     public final int port;

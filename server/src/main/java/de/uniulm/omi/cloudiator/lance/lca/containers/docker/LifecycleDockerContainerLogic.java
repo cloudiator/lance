@@ -80,7 +80,6 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     envVarsDynamic.putAll(networkHandler.getEnvVars());
   }
 
-  @Override
   String getFullImageName() {
     //ubuntu 14.04
     return "ubuntu";
