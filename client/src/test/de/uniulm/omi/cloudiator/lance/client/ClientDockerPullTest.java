@@ -105,7 +105,7 @@ public class ClientDockerPullTest {
     zookeeperOutportName_lifecycle = "ZOOK_OUT_LIFECYCLE";
     rubyOutportName_remote = "RUBY_OUT_REMOTE";
     imageName = "zookeeper";
-    imageName_remote = "ruby-fh";
+    imageName_remote = "mysql";
     zookeeperComponentId = new ComponentId();
     zookeeperComponentId_lifecycle = new ComponentId();
     rubyComponentId_remote = new ComponentId();

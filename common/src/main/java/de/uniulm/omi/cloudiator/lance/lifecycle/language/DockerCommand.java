@@ -135,6 +135,11 @@ public class DockerCommand implements Serializable{
         builder.append(getOptionString(kv.getKey()) + " " + str + " ");
       }
     }
+
+    //strip last blank
+    if(builder.length() > 0)
+      builder.setLength(builder.length() - 1);
+
     return builder.toString();
   }
 
@@ -151,6 +156,11 @@ public class DockerCommand implements Serializable{
     for (String arg: setArgs) {
       builder.append(arg + " ");
     }
+
+    //strip last blank
+    if(builder.length() > 0)
+      builder.setLength(builder.length() - 1);
+
     return builder.toString();
   }
 
