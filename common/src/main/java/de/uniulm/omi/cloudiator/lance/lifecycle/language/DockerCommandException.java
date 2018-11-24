@@ -16,13 +16,25 @@
  * under the License.
  */
 
-package de.uniulm.omi.cloudiator.lance.lca.container.port;
+package de.uniulm.omi.cloudiator.lance.lifecycle.language;
 
-import java.util.List;
+public final class DockerCommandException extends Exception {
 
-public interface NetworkVisitor {
+  private static final long serialVersionUID = 6538529730996838090L;
 
-    void visitNetworkAddress(String name, String address);
-    void visitInPort(String fullPortName, String portNr);
-    void visitOutPort(String name,String sinkValues);
+  public DockerCommandException() {
+    super();
+  }
+
+  public DockerCommandException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public DockerCommandException(String message) {
+    super(message);
+  }
+
+  public DockerCommandException(Throwable cause) {
+    super(cause);
+  }
 }

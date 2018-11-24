@@ -167,8 +167,8 @@ public final class LifecycleController {
     }
     
     synchronized void accidentalStop() {
-		// directly move to STOP. TODO: do we need to force the application?
-		run(LifecycleHandlerType.POST_START, LifecycleHandlerType.UNEXPECTED_EXECUTION_STOP);
+      // directly move to STOP. TODO: do we need to force the application?
+      run(LifecycleHandlerType.POST_START, LifecycleHandlerType.UNEXPECTED_EXECUTION_STOP);
     }
 
     public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {

@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,10 +64,41 @@ public final class ProcessWrapper {
         List<String> l = new ArrayList<>();
         l.add("sudo");
         l.add("docker");
-        for(String s : args) {
+
+        //If a quote appears -> treat all following Strings (incl. the quote) until next quote appears as one arg
+        //including the quote
+        boolean matchingStart = false;
+        String patternStringStart = "^[\"'].*";
+        String patternStringEnd = ".*[\"']$";
+        Pattern patternStart = Pattern.compile(patternStringStart);
+        Pattern patternEnd = Pattern.compile(patternStringEnd);
+        StringBuilder builder = new StringBuilder();
+
+      for(String s : args) {
+        if (!matchingStart) {
+          Matcher matcher = patternStart.matcher(s);
+          matchingStart = matcher.matches();
+
+          if(matchingStart) {
+            builder = new StringBuilder();
+            builder.append(s + " ");
+          } else {
             l.add(s);
+          }
+        } else {
+          builder.append(s + " ");
+          Matcher matcher = patternEnd.matcher(s);
+          boolean matchingEnd = matcher.matches();
+
+          if (matchingEnd) {
+            matchingStart = false;
+            String quotedArg = builder.toString();
+            l.add(quotedArg);
+          }
         }
-        return l;
+      }
+
+      return l;
     }
     
     public static Inprogress progressingDockerCommand(String ... args) throws DockerException {

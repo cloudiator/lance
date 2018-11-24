@@ -43,10 +43,15 @@ public class DummyContainer implements ContainerLogic {
 	}
 
 	@Override
-	public void completeInit() throws ContainerException {
+	public void preInit() throws ContainerException {
 		invocationCounter++;
 		callStack.add(ContainerCalls.COMPLETE_INIT);
 		calls.get(ContainerCalls.COMPLETE_INIT).getNext();
+	}
+
+	@Override
+	public void completeShutDown() throws ContainerException {
+
 	}
 
 	@Override
@@ -54,6 +59,11 @@ public class DummyContainer implements ContainerLogic {
 		invocationCounter++;
 		callStack.add(ContainerCalls.OTHER);
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void preDestroy() throws ContainerException {
+
 	}
 
 	@Override
@@ -76,7 +86,11 @@ public class DummyContainer implements ContainerLogic {
         	clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, mapping[2]);
         });
 	}
-	
+
+	public void setStaticEnvironment() throws ContainerException {
+
+	}
+
 	/* validation methods */
 	
 	public enum ContainerCalls {

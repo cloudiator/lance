@@ -1,25 +1,20 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
-//package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.ComponentBuilder;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.DockerShellTestAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.containers.TestImpl;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.ProcessBasedConnector;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
-import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
-import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRemote;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import de.uniulm.omi.cloudiator.lance.util.application.AppArchitecture;
 import de.uniulm.omi.cloudiator.lance.util.application.ComponentInfo;
 import java.rmi.RemoteException;
@@ -128,18 +123,9 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
   protected void init(AppArchitecture arch) throws ContainerException {
     if (info == null) throw new ContainerException("ComponentInfo not set");
 
-    ComponentBuilder<DockerComponent> builder = new ComponentBuilder(DockerComponent.class, arch.getApplicationName(), info.getComponentId());
-
-    switch (info.getComponentName()) {
-      case "zookeeper":
-        builder.addLifecycleStore(createZookeeperLifecleStore());
-        break;
-      default:
-        throw new ContainerException("wrong container name: " + info.getComponentName());
-    }
-
+    DockerComponent.Builder builder = new DockerComponent.Builder(new EntireDockerCommands(), info.getComponentName());
     builder.deploySequentially(true);
-    comp = builder.build(DockerComponent.class);
+    comp = builder.build();
   }
 
   private LifecycleStore createZookeeperLifecleStore() {

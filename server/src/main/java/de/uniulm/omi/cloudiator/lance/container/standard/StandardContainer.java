@@ -38,6 +38,7 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
 
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForBootstrapParameters;
 import static de.uniulm.omi.cloudiator.lance.container.standard.StandardContainerHelper.checkForCreationParameters;
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.READY;
 
 // FIXME: move status updates to network handler to this class instead of keeping
 // them in the individual container classes 
@@ -60,6 +61,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     private final ComponentInstanceId containerId;
     private final NetworkHandler network;
     final LifecycleController controller;
+    private boolean shouldBeRemoved;
 
     public StandardContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
                              LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
@@ -73,6 +75,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                         addCreateTransition(new StateMachineBuilder<>(ContainerStatus.NEW).
                                 addAllState(ContainerStatus.values())))
                 )).build();
+        this.shouldBeRemoved = false;
     }
 
     @Override
@@ -83,6 +86,16 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     @Override
     public ContainerStatus getState() {
         return stateMachine.getState();
+    }
+
+    @Override
+    public boolean shouldBeRemoved() {
+        return shouldBeRemoved;
+    }
+
+    @Override
+    public void setShouldBeRemoved(boolean shouldBeRemoved) {
+        this.shouldBeRemoved = shouldBeRemoved;
     }
 
     @Override
@@ -106,25 +119,53 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     @Override
+    public boolean isReady() {
+      if (stateMachine.getState().equals(READY)) {
+        return true;
+      }
+      return false;
+    }
+
+    @Override
+    public void startPortUpdaters() {
+       network.startPortUpdaters(controller);
+    }
+
+    @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[]{store});
     }
 
     @Override
+    public void init() {
+        stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[]{});
+    }
+
+    @Override
     public void awaitInitialisation() {
-        stateMachine.waitForTransitionEnd(ContainerStatus.READY);
+        stateMachine.waitForTransitionEnd(READY);
     }
 
     @Override
     public void tearDown() {
-        stateMachine.transit(ContainerStatus.READY);
+        stateMachine.transit(READY);
     }
 
     @Override
-    public void awaitDestruction() {
+    public void awaitDestruction(boolean forceRegDeletion) throws ContainerException {
         stateMachine.waitForTransitionEnd(ContainerStatus.DESTROYED);
+        if (forceRegDeletion) {
+            deleteInRegistry();
+        }
     }
 
+    private void deleteInRegistry() throws ContainerException {
+        try {
+            accessor.deleteComponentInstance();
+        } catch (RegistrationException re) {
+            throw new ContainerException("cannot access registry.", re);
+        }
+    }
 
     private void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();
@@ -214,7 +255,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     private StateMachineBuilder<ContainerStatus> addInitTransition(StateMachineBuilder<ContainerStatus> b) {
-        return b.addAsynchronousTransition(ContainerStatus.BOOTSTRAPPED, ContainerStatus.INITIALISING, ContainerStatus.READY,
+        return b.addAsynchronousTransition(ContainerStatus.BOOTSTRAPPED, ContainerStatus.INITIALISING, READY,
                 new TransitionAction() {
                     @Override
                     public void transit(Object[] params) {
@@ -223,7 +264,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                             logic.preInit();
                             preInitAction();
                             postInitAction();
-                            registerStatus(ContainerStatus.READY);
+                            registerStatus(READY);
                         } catch (ContainerException | LifecycleException | RegistrationException ce) {
                             getLogger().error("could not initialise container; FIXME add error state", ce); 
                             /* FIXME: change to error state */
@@ -233,7 +274,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
     }
 
     private StateMachineBuilder<ContainerStatus> addDestroyTransition(StateMachineBuilder<ContainerStatus> b) {
-        return b.addAsynchronousTransition(ContainerStatus.READY, ContainerStatus.SHUTTING_DOWN, ContainerStatus.DESTROYED,
+        return b.addAsynchronousTransition(READY, ContainerStatus.SHUTTING_DOWN, ContainerStatus.DESTROYED,
                 new TransitionAction() {
                     @Override
                     public void transit(Object[] params) {
@@ -246,7 +287,7 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
                                 getLogger().error("could not shut down component; trying to force shut down of container", ex);
                                 forceShutdown = true;
                             }
-                            logic.doDestroy(forceShutdown);
+                            logic.doDestroy(forceShutdown, shouldBeRemoved);
                             registerStatus(ContainerStatus.DESTROYED);
                         } catch (ContainerException | RegistrationException ce) {
                             getLogger().error("could not shut down container; FIXME add error state", ce); 

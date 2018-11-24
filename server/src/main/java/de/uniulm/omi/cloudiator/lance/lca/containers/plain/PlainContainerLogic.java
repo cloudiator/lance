@@ -19,12 +19,12 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
-import de.uniulm.omi.cloudiator.lance.lca.StaticEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -36,6 +36,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
@@ -49,27 +50,25 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//todo f.held: refactor redundant code
 /**
- * Created by Daniel Seybold on 10.08.2015.
+ * Created by Daniel Seybold on 10.08.2015. Refactored by fh 20.09.2018
  */
+//todo: set dynamic env after it has first been set and along with all settings of the static environment
 public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlainContainerLogic.class);
 
   private final ComponentInstanceId myId;
-  private final DeployableComponent deployableComponent;
+  private final AbstractComponent deployableComponent;
   private final DeploymentContext deploymentContext;
   private final OperatingSystem os;
   private final NetworkHandler networkHandler;
   private final PlainShellFactory plainShellFactory;
   private final HostContext hostContext;
   private boolean stopped = false;
-  private final StaticEnvVars instVars;
-  private final StaticEnvVars hostVars;
 
   private final Map<String, String> envVarsStatic;
-  private final Map<String, String> envVarsDynamic;
+  private  Map<String, String> envVarsDynamic;
 
   //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
   private static final Map<String, String> translateMap;
@@ -83,22 +82,20 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   private PlainContainerLogic(Builder builder) {
 
     this.myId = builder.myId;
-    this.instVars = this.myId;
+    final StaticEnvVars instVars = this.myId;
     this.deployableComponent = builder.deployableComponent;
     this.deploymentContext = builder.deploymentContext;
     this.os = builder.os;
     this.networkHandler = builder.networkHandler;
     this.plainShellFactory = builder.plainShellFactory;
     this.hostContext = builder.hostContext;
-    this.hostVars = this.hostContext;
+    final StaticEnvVars hostVars = this.hostContext;
     this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
     for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
       envVarsStatic.put(kv.getKey(),kv.getValue());
     }
-
-    this.envVarsDynamic = new HashMap<>();
-    //todo: fill dynamic map with appropriate env-vars
+     envVarsDynamic = new HashMap<>();
   }
 
   @Override
@@ -132,9 +129,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   @Override
-  public void doDestroy(boolean forceShutdown) throws ContainerException {
+  public void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException {
     //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
-    LOGGER.warn("doDestroy not fully implemented!");
+    LOGGER.warn("doDestroy not implemented for Plain Container!");
   }
 
   @Override
@@ -162,18 +159,47 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     });
   }
 
+  PlainShell setDynamicEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
+    this.deployableComponent.injectDeploymentContext(this.deploymentContext);
+    networkHandler.generateDynamicEnvVars(diff);
+    this.deployableComponent.generateDynamicEnvVars();
+    collectDynamicEnvVars();
+
+    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
+    setHomeDir(plainShellWrapper.plainShell);
+
+    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
+    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+
+      PowershellExportBasedVisitor visitor =
+          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
+      networkHandler.accept(visitor);
+      this.deployableComponent.accept(visitor);
+    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+      BashExportBasedVisitor visitor =
+          new BashExportBasedVisitor(plainShellWrapper.plainShell);
+
+      //visitor.addEnvironmentVariable();
+      networkHandler.accept(visitor);
+      this.deployableComponent.accept(visitor);
+    } else {
+      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
+    }
+
+    return plainShellWrapper.plainShell;
+  }
+
+  private void collectDynamicEnvVars() {
+    envVarsDynamic.putAll(this.deployableComponent.getEnvVars());
+    envVarsDynamic.putAll(networkHandler.getEnvVars());
+  }
+
   //todo: where to throw exception
-  @Override
-  public void setStaticEnvironment()  throws ContainerException {
+  void setStaticEnvironment()  throws ContainerException {
     this.plainShellFactory.createAndinstallPlainShell(this.os);
 
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
-
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-      setStaticWindowsEnvironment(plainShellWrapper.plainShell);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      setStaticLinuxEnvironment(plainShellWrapper.plainShell);
-    }
+    setStaticEnvironment(plainShellWrapper.plainShell);
   }
 
   private void setStaticEnvironment(PlainShell plainShell)  throws ContainerException {
@@ -213,44 +239,20 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   private void setHomeDir(PlainShell plainShell) {
     final String plainContainerFolder =
-        System.getProperty("user.home") + System.getProperty("file.separator") + this.myId
-            .toString();
-
+        System.getProperty("user.home")
+            + System.getProperty("file.separator")
+            + this.myId.toString();
     LOGGER.info("Switching to plain container: " + plainContainerFolder);
     plainShell.setDirectory(plainContainerFolder);
   }
 
   @Override
-  public void setDynamicEnvironment() throws ContainerException {
-    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
-    setHomeDir(plainShellWrapper.plainShell);
-
-    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-      PowershellExportBasedVisitor visitor =
-          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-      networkHandler.accept(visitor, null);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor =
-          new BashExportBasedVisitor(plainShellWrapper.plainShell);
-      //visitor.addEnvironmentVariable();
-      networkHandler.accept(visitor, null);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else {
-      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
-    }
-  }
-
-  @Override
   public void prepare(HandlerType type) throws ContainerException {
     setStaticEnvironment();
+    setDynamicEnvironment(null);
 
     if (type == LifecycleHandlerType.INSTALL) {
       preInstallAction();
-    }
-    else {
-      setDynamicEnvironment();
     }
     if (type == LifecycleHandlerType.PRE_STOP) {
       stopped = true;
@@ -259,7 +261,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   private void preInstallAction() throws ContainerException {
-    setDynamicEnvironment();
+    this.deployableComponent.injectDeploymentContext(this.deploymentContext);
+    setDynamicEnvironment(null);
   }
 
   @Override
@@ -289,32 +292,14 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
       throws ContainerException {
 
-    //TODO: again duplicated code, needs refactoring
-    plainShellFactory.createAndinstallPlainShell(this.os);
-    PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
-
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
-
-      PowershellExportBasedVisitor visitor =
-          new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
-      networkHandler.accept(visitor, diff);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor =
-          new BashExportBasedVisitor(plainShellWrapper.plainShell);
-
-      networkHandler.accept(visitor, diff);
-      this.deployableComponent.accept(this.deploymentContext, visitor);
-    } else {
-      throw new RuntimeException("Unsupported Operating System: " + this.os.toString());
-    }
-    setStaticEnvironment(plainShellWrapper.plainShell);
+    PlainShell pShell = setDynamicEnvironment(diff);
+    setStaticEnvironment(pShell);
   }
 
   @Override
   public void preDestroy() throws ContainerException {
     setStaticEnvironment();
-    setDynamicEnvironment();
+    setDynamicEnvironment(null);
   }
 
   @Override
@@ -325,11 +310,12 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void preprocessDetector(DetectorType type) throws ContainerException {
     LOGGER.error("preprocessDetector is not implemented for plain container");
+    setDynamicEnvironment(null);
   }
 
   public static class Builder {
     private ComponentInstanceId myId;
-    private DeployableComponent deployableComponent;
+    private AbstractComponent deployableComponent;
     private DeploymentContext deploymentContext;
     private OperatingSystem os;
     private NetworkHandler networkHandler;
@@ -343,7 +329,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       return this;
     }
 
-    public Builder deplComp(DeployableComponent comp) {
+    public Builder deplComp(AbstractComponent comp) {
       this.deployableComponent = comp;
       return this;
     }

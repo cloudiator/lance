@@ -37,6 +37,7 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.CONTAINER_STATUS;
 
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
@@ -48,8 +49,12 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
@@ -77,7 +82,6 @@ import org.slf4j.LoggerFactory;
 public final class LifecycleClient {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleClient.class);
-
 
   public static LifecycleClient getClient(String serverIp)
       throws RemoteException, NotBoundException {
@@ -138,17 +142,57 @@ public final class LifecycleClient {
       final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
       throws DeploymentException {
 
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable = () -> {
+      LOGGER.info("Trying to deploy Lifecycle component " + comp);
+      return lifecycleAgent
+          .deployDeployableComponent(ctx, comp, os, containerType);
+    };
+
+    return doRetryerCall(retryer, callable);
+ }
+
+  public final ComponentInstanceId deploy(final DeploymentContext ctx,
+      final DockerComponent comp)
+      throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable = () -> {
+      LOGGER.info("Trying to deploy Docker component " + comp);
+      return lifecycleAgent
+          .deployDockerComponent(ctx, comp);
+    };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  public final ComponentInstanceId deploy(final DeploymentContext ctx,
+      final RemoteDockerComponent comp)
+      throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable = () -> {
+      LOGGER.info("Trying to deploy Remote Docker component " + comp);
+      return lifecycleAgent
+          .deployRemoteDockerComponent(ctx, comp);
+    };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  private static Retryer<ComponentInstanceId> buildRetryerComponent() {
     Retryer<ComponentInstanceId> retryer = RetryerBuilder.<ComponentInstanceId>newBuilder()
         .retryIfExceptionOfType(RemoteException.class).withWaitStrategy(
             WaitStrategies.exponentialWait()).withStopStrategy(StopStrategies.stopAfterDelay(5,
             TimeUnit.MINUTES)).build();
 
-    Callable<ComponentInstanceId> callable = () -> {
-      LOGGER.info("Trying to deploy component " + comp);
-      return lifecycleAgent
-          .deployComponent(ctx, comp, os, containerType);
-    };
+    return retryer;
+  }
 
+  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer, Callable<ComponentInstanceId> callable) throws DeploymentException {
     try {
       return retryer.call(callable);
     } catch (ExecutionException e) {
@@ -159,6 +203,33 @@ public final class LifecycleClient {
       } else {
         throw new IllegalStateException(e);
       }
+    }
+  }
+
+  public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
+    try {
+      currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
+      currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
+      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS , params.getStatus().toString());
+      //do I need to create a DeploymentContext for this and do setProperty instead?
+
+      for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
+        currentRegistry.addComponentProperty(
+            params.getAppId(),
+            params.getcId(),
+            params.getcInstId(),
+            inPortC.getFullPortName(),
+            inPortC.getInernalInPortNmbr().toString());
+      }
+
+      currentRegistry.addComponentProperty(
+          params.getAppId(),
+          params.getcId(),
+          params.getcInstId(),
+          params.getFullHostName(),
+          params.getPublicIp());
+    } catch (RegistrationException e) {
+      e.printStackTrace();
     }
   }
 
@@ -198,10 +269,23 @@ public final class LifecycleClient {
     }
   }
 
-  public final boolean undeploy(ComponentInstanceId componentInstanceId)
-      throws DeploymentException {
+  public final boolean isReady(ComponentInstanceId cid) {
     try {
-      return lifecycleAgent.stopComponentInstance(componentInstanceId);
+      boolean isReady = lifecycleAgent.componentInstanceIsReady(cid);
+      if(isReady) {
+        return true;
+      }
+      return false;
+    } catch (RemoteException | LcaException | ContainerException e) {
+      throw new RuntimeException(
+          String.format("Error while waiting for container %s to be ready.", cid), e);
+    }
+  }
+
+  public final boolean undeploy(ComponentInstanceId componentInstanceId,
+      boolean forceRegDel) throws DeploymentException {
+    try {
+      return lifecycleAgent.stopComponentInstance(componentInstanceId, forceRegDel);
     } catch (RemoteException e) {
       throw new DeploymentException(handleRemoteException(e));
     } catch (LcaException | ContainerException e) {
@@ -209,11 +293,19 @@ public final class LifecycleClient {
     }
   }
 
-  public final String getHostEnv() throws DeploymentException {
+  public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
+      ComponentInstanceId componentInstanceId)  throws RegistrationException, DeploymentException {
+    currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
+    updateDownStreamPorts();
+  }
+
+  public final void updateDownStreamPorts() throws DeploymentException {
     try {
-      return lifecycleAgent.getHostEnv();
+      lifecycleAgent.updateDownStreamPorts();
     } catch (RemoteException e) {
       throw new DeploymentException(handleRemoteException(e));
+    } catch (LcaException | ContainerException e) {
+      throw new DeploymentException(e);
     }
   }
 

@@ -18,12 +18,16 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -43,10 +47,16 @@ public interface LifecycleAgent extends Remote {
 
     List<ComponentInstanceId> listContainers() throws RemoteException;
 
-    ComponentInstanceId deployComponent(DeploymentContext ctx, DeployableComponent component, 
-                OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
-    
-    boolean stopComponentInstance(ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
+    ComponentInstanceId deployDeployableComponent(DeploymentContext ctx, DeployableComponent component,
+        OperatingSystem os, ContainerType containerType) throws RemoteException, LcaException, RegistrationException, ContainerException;
 
-    public String getHostEnv() throws RemoteException;
+    ComponentInstanceId deployDockerComponent(DeploymentContext ctx, DockerComponent component) throws RemoteException, LcaException, RegistrationException, ContainerException;
+
+    ComponentInstanceId deployRemoteDockerComponent(DeploymentContext ctx, RemoteDockerComponent component) throws RemoteException, LcaException, RegistrationException, ContainerException;
+
+    boolean stopComponentInstance(ComponentInstanceId instanceId, boolean forceRegDel) throws RemoteException, LcaException, ContainerException;
+
+    boolean componentInstanceIsReady(ComponentInstanceId instanceId) throws RemoteException, LcaException, ContainerException;
+
+    void updateDownStreamPorts() throws RemoteException, LcaException, ContainerException;
 }

@@ -18,7 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
-import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,9 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     final ComponentInstanceId containerId;
     final NetworkHandler network;
     final LifecycleController controller;
-    
+    private boolean shouldBeRemovedParam;
+    private boolean isReady;
+
     private ErrorAwareStateMachine<ContainerStatus> buildUpStateMachine() {
     	ErrorAwareStateMachineBuilder<ContainerStatus> builder = 
     			new ErrorAwareStateMachineBuilder<>(ContainerStatus.NEW, ContainerStatus.UNKNOWN);
@@ -71,13 +73,15 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     public ErrorAwareContainer(ComponentInstanceId id, T logicParam, NetworkHandler networkParam,
-                             LifecycleController controllerParam, GlobalRegistryAccessor accessorParam) {
-        containerId = id;
-        logic = logicParam;
-        network = networkParam;
-        controller = controllerParam;
-        accessor = accessorParam;
-        stateMachine = buildUpStateMachine();
+        LifecycleController controllerParam, GlobalRegistryAccessor accessorParam, boolean shouldBeRemovedParam) {
+      containerId = id;
+      logic = logicParam;
+      network = networkParam;
+      controller = controllerParam;
+      accessor = accessorParam;
+      stateMachine = buildUpStateMachine();
+      this.shouldBeRemovedParam = shouldBeRemovedParam;
+      isReady = false;
     }
 
     @Override
@@ -91,6 +95,16 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
+    public boolean shouldBeRemoved() {
+      return shouldBeRemovedParam;
+    }
+
+  @Override
+  public void setShouldBeRemoved(boolean shouldBeRemoved) {
+    this.shouldBeRemovedParam = shouldBeRemoved;
+  }
+
+  @Override
     public void create() {
         stateMachine.transit(ContainerStatus.NEW, ContainerStatus.CREATED, new Object[]{});
     }
@@ -125,8 +139,18 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
+    public boolean isReady() {
+                                 return isReady;
+                                                }
+
+    @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, ContainerStatus.READY, new Object[]{store});
+    }
+
+    @Override
+    public void init() {
+      stateMachine.transit(ContainerStatus.BOOTSTRAPPED, ContainerStatus.READY, null);
     }
 
     @Override
@@ -147,15 +171,32 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     }
 
     @Override
-    public void awaitDestruction() throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
+    public void awaitDestruction(boolean forceRegDeletion) throws ContainerOperationException, ContainerConfigurationException, UnexpectedContainerStateException {
     	ContainerStatus stat = stateMachine.waitForEndOfCurrentTransition();
     	if(DestroyTransitionAction.isSuccessfullEndState(stat)) {
+        if (forceRegDeletion) {
+          deleteInRegistry();
+    	  }
     		return;
     	}
     	if(DestroyTransitionAction.isKnownErrorState(stat)) {
     		throw new ContainerOperationException("container deletion failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
+    }
+
+    @Override
+    public void startPortUpdaters() {
+      network.startPortUpdaters(controller);
+
+    }
+
+    private void deleteInRegistry() throws ContainerConfigurationException {
+        try {
+          accessor.deleteComponentInstance();
+        } catch (RegistrationException e) {
+          throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
+        }
     }
 
     void setNetworking() throws ContainerException {
@@ -184,9 +225,16 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         network.updateAddress(PortRegistryTranslator.PORT_HIERARCHY_2, address);
         network.iterateOverInPorts(logic.getPortMapper());
         network.pollForNeededConnections();
+        //dependencies fullfilled
+        isReady = true;
     }
 
     void preInitAction() throws LifecycleException {
+      if (controller == null) {
+        LOGGER.info("Skipping Lifecycle Actions for component %s", containerId);
+        return;
+      }
+
         controller.blockingInit();
         controller.blockingInstall();
         controller.blockingConfigure();
@@ -207,7 +255,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     void registerStatus(ContainerStatus status) throws RegistrationException {
         accessor.updateContainerState(containerId, status);
     }
-    
+
     void throwExceptionIfGenericErrorStateOrOtherState(ContainerStatus stat) throws ContainerConfigurationException, UnexpectedContainerStateException {
     	if(stateMachine.isGenericErrorState(stat)){
     		throw new ContainerConfigurationException("generic error state reached: " + stat, stateMachine.collectExceptions());

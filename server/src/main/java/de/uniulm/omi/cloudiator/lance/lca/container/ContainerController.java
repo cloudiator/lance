@@ -22,24 +22,33 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public interface ContainerController {
 
-    ComponentInstanceId getId();
+  ComponentInstanceId getId();
 
-    ContainerStatus getState();
+  ContainerStatus getState();
 
-    void create() ;
-    
+  boolean shouldBeRemoved();
+
+  void setShouldBeRemoved(boolean shouldBeRemoved);
+
+  void create() ;
+
 	void bootstrap() ;
 
-    void init(LifecycleStore store) ;
+  void init(LifecycleStore store) ;
 
-    void tearDown() ;
+  void init();
 
-    void awaitInitialisation() throws ContainerException;
+  void tearDown() ;
 
-    void awaitCreation() throws ContainerException;
+  void awaitInitialisation() throws ContainerException;
 
-    void awaitDestruction() throws ContainerException;
+  void awaitCreation() throws ContainerException;
+
+  void awaitDestruction(boolean forceRegDeletion) throws ContainerException;
 
 	void awaitBootstrap() throws ContainerException;
 
+	boolean isReady();
+
+	void startPortUpdaters();
 }
