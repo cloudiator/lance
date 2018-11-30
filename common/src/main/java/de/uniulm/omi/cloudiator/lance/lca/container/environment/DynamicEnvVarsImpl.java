@@ -58,12 +58,10 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
   public void setEnvVars(Map<String,String> vars) {
     for(Entry<String, String> entry : vars.entrySet()) {
       if(func.check(entry.getValue()))
-        vars.put(entry.getKey(),entry.getValue());
+        this.vars.put(entry.getKey(),entry.getValue());
       else
         LOGGER.warn("Cannot set Dynamic Environment variable: " + entry.getKey() + ". Value: " + entry.getValue() + " has wrong format");
     }
-
-    this.vars = vars;
   }
 
   @Override

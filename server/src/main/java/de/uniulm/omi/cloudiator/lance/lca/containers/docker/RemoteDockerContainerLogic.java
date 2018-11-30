@@ -10,6 +10,9 @@ import com.spotify.docker.client.messages.RegistryConfigs;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
+import java.util.Map;
 
 public class RemoteDockerContainerLogic extends DockerContainerLogic {
 
@@ -22,17 +25,16 @@ public class RemoteDockerContainerLogic extends DockerContainerLogic {
   }
 
   @Override
-  String getFullImageName() {
-    return comp.getFullImageName();
-  }
-
-  @Override
   public void doCreate() throws ContainerException {
     try {
-      String target = imageHandler.doPullImages(myId, getFullImageName());
-      executeCreation(target);
+      imageHandler.doPullImages(myId, comp.getFullImageNameRegStripped());
+      Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+      comp.setPort(portsToSet);
+      client.executeSingleDockerCommand(comp.getFullDockerCommand(DockerCommand.Type.CREATE));
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
+    } catch (DockerCommandException ce) {
+      throw new ContainerException(ce);
     }
   }
 }

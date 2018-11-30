@@ -268,8 +268,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   abstract void collectDynamicEnvVars();
 
-  abstract String getFullImageName();
-
   abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
     protected ComponentInstanceId myId;
     protected DockerConnector client;

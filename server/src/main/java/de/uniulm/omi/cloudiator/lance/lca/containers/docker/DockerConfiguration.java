@@ -21,7 +21,7 @@ public class DockerConfiguration {
     if (portRequiredParam) {
       port = DockerConfigurationFields.getPort();
     } else {
-      port = 0;
+      port = -1;
     }
     if(shouldBeUsedButCant()) {
       DockerConfigurationFields.LOGGER.error("cannot make use of registry@ " + hostname + ":" + port);

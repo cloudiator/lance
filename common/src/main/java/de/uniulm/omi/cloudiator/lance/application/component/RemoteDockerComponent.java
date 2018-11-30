@@ -37,11 +37,22 @@ public class RemoteDockerComponent  extends DockerComponent {
     boolean usePort = !(dReg.port<0) && dReg.port<65536;
     String fullString;
     if(usePort) {
-      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString() + "/";
+      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString();
     } else {
-      fullString = dReg.hostName + "/";
+      fullString = dReg.hostName;
     }
     return fullString;
+  }
+
+  @Override
+  public String getFullImageName() throws IllegalArgumentException {
+    String fullImageName = getUriEndPoint() + "/" + super.getFullImageName();
+    return fullImageName;
+  }
+
+  public String getFullImageNameRegStripped() throws IllegalArgumentException {
+    String strippedImageName = super.getFullImageName();
+    return strippedImageName;
   }
 
   public static class DockerRegistry implements Serializable {
