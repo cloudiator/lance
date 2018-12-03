@@ -119,6 +119,23 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
 
     @Override
+    public boolean isExternalComponent(ApplicationInstanceId instId, ComponentId cid,
+        ComponentInstanceId cinstId) throws RegistrationException {
+        Map<ComponentInstanceId, Map<String,String>> dump = dumpComponent(instId, cid);
+        Map<String,String> cInstanceMap = dump.get(cinstId);
+
+        if(cInstanceMap == null)
+            return false;
+
+        String val = cInstanceMap.get(LcaRegistryConstants.EXTERNAL_COMPONENT);
+
+        if(val == null || val.equals("false"))
+            return false;
+
+        return true;
+    }
+
+    @Override
     public void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException {
         String dirName = generateComponentInstanceDirectory(instId, cid, cinstId);
         setPropertyInDirectory(dirName, property, value.toString());
@@ -148,7 +165,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
         }
         return retVal;
     }
-    
+
     @Override
     public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String property) throws RegistrationException {
         String dirName = generateComponentInstanceDirectory(appInstId, compId, myId);
@@ -167,7 +184,14 @@ final class EtcdRegistryImpl implements LcaRegistry {
         String dirName = generateComponentDirectory(appInstId, compId);
         return directoryDoesExist(dirName); 
     }
-    
+
+    @Override
+    public boolean applicationComponentInstanceExists(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId)
+        throws RegistrationException {
+        String dirName = generateComponentInstanceDirectory(instId, cid, cinstId);
+        return directoryDoesExist(dirName);
+    }
+
     /**
      * @return true if this directory has been created successfully. false if it was already 
      *             contained in the registry.

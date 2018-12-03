@@ -40,16 +40,20 @@ public interface LcaRegistry extends Serializable {
      * in the registry.
      * @throws RegistrationException when a registration error occurs.
      */
-    public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
-    public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
-    public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
+    boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
+    void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
+    void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
     void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException;
-    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
-    public String getComponentProperty(ApplicationInstanceId appInstId,
+    Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
+    String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
-    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
+    boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
     boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
+    boolean applicationComponentInstanceExists(ApplicationInstanceId instId, ComponentId cid,
+        ComponentInstanceId cinstId) throws RegistrationException;
     void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
     void addExternalComponentProperty(ApplicationInstanceId appInstId, ComponentId compId,
         ComponentInstanceId myId, boolean isExternal) throws RegistrationException;
+    boolean isExternalComponent(ApplicationInstanceId instId, ComponentId cid,
+        ComponentInstanceId cinstId) throws RegistrationException;
 }

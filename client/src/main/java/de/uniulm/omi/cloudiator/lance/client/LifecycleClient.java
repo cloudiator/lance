@@ -208,6 +208,15 @@ public final class LifecycleClient {
 
   public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
     try {
+      final boolean alreadyExists = currentRegistry.applicationComponentInstanceExists(params.getAppId(), params.getcId(), params.getcInstId());
+
+      if(alreadyExists && !currentRegistry.isExternalComponent(params.getAppId(), params.getcId(), params.getcInstId())) {
+        throw new DeploymentException(String.format("Cannot inject external Deployment Context for internal Component %s.", params.getcInstId()));
+      }
+
+      if(alreadyExists)
+        LOGGER.info(String.format("Registry entry for Component %s already exists, updating it...", params.getcInstId()));
+
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS , params.getStatus().toString());
@@ -220,7 +229,6 @@ public final class LifecycleClient {
 
       currentRegistry.addComponentProperty(
         params.getAppId(), params.getcId(), params.getcInstId(), params.getPublicIpHostString(), params.getPublicIp());
-
       //Refers to an external component
       currentRegistry.addExternalComponentProperty(
         params.getAppId(), params.getcId(), params.getcInstId(), true);

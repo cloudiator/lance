@@ -118,6 +118,13 @@ public final class RmiWrapper implements LcaRegistry {
     }
 
     @Override
+    public boolean applicationComponentInstanceExists(ApplicationInstanceId instId, ComponentId cid,
+        ComponentInstanceId cinstId) throws RegistrationException {
+        //todo: implement, though this is legacy code
+        return false;
+    }
+
+    @Override
     public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
         ComponentInstanceId cinstId) throws RegistrationException {
       //todo: implement, though this is legacy code
@@ -131,5 +138,12 @@ public final class RmiWrapper implements LcaRegistry {
         } catch(RemoteException re){
             throw new RegistrationException("operation failed.", re);
         }
+    }
+
+    @Override
+    public boolean isExternalComponent(ApplicationInstanceId instId, ComponentId cid,
+        ComponentInstanceId cinstId) throws RegistrationException {
+        //todo: implement, though this is legacy code
+        return false;
     }
 }
