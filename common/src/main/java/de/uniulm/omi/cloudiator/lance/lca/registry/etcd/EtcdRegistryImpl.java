@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.etcd;
 
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
@@ -107,6 +108,14 @@ final class EtcdRegistryImpl implements LcaRegistry {
         } catch (IOException e) {
             throw new RegistrationException("Cannot delete Component instance out of etcd as an IOException occured");
         }
+    }
+
+    @Override
+    public void addExternalComponentProperty(ApplicationInstanceId appInstId, ComponentId compId,
+        ComponentInstanceId myId, boolean isExternal) throws RegistrationException {
+        String dirName = generateComponentInstanceDirectory(appInstId, compId, myId);
+        Boolean b = isExternal;
+        setPropertyInDirectory(dirName, LcaRegistryConstants.EXTERNAL_COMPONENT, Boolean.toString(b));
     }
 
     @Override

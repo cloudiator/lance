@@ -45,7 +45,7 @@ public enum RegistryFactory {
     public static final String LCA_REGISTRY_CONFIG_KEY = "lca.client.config.registry";
     public static final String LCA_REGISTRY_CONFIG_RMI_VALUE = "rmiregistry";
     public static final String LCA_REGISTRY_CONFIG_ETCD_VALUE = "etcdregistry";
-    
+
     private static RegistryContainer container = null;
     
     public synchronized static LcaRegistry createRegistry() throws RegistrationException {

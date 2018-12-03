@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import java.rmi.RemoteException;
 import java.util.Map;
 
@@ -119,6 +120,16 @@ public final class RmiWrapper implements LcaRegistry {
     @Override
     public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
         ComponentInstanceId cinstId) throws RegistrationException {
-       //todo: implement, though this is legacy code
+      //todo: implement, though this is legacy code
+    }
+
+    @Override
+    public void addExternalComponentProperty(ApplicationInstanceId appInstId, ComponentId compId,
+        ComponentInstanceId myId, boolean isExternal) throws RegistrationException {
+        try {
+            delegate.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.EXTERNAL_COMPONENT, "false");
+        } catch(RemoteException re){
+            throw new RegistrationException("operation failed.", re);
+        }
     }
 }

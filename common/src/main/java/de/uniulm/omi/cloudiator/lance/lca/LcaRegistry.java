@@ -50,4 +50,6 @@ public interface LcaRegistry extends Serializable {
     public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
     boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
     void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
+    void addExternalComponentProperty(ApplicationInstanceId appInstId, ComponentId compId,
+        ComponentInstanceId myId, boolean isExternal) throws RegistrationException;
 }

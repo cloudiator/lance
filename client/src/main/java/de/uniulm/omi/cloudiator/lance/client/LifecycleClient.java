@@ -214,20 +214,16 @@ public final class LifecycleClient {
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
       for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
-        currentRegistry.addComponentProperty(
-            params.getAppId(),
-            params.getcId(),
-            params.getcInstId(),
-            inPortC.getFullPortName(),
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullPortName(),
             inPortC.getInernalInPortNmbr().toString());
       }
 
       currentRegistry.addComponentProperty(
-          params.getAppId(),
-          params.getcId(),
-          params.getcInstId(),
-          params.getPublicIpHostString(),
-          params.getPublicIp());
+        params.getAppId(), params.getcId(), params.getcInstId(), params.getPublicIpHostString(), params.getPublicIp());
+
+      //Refers to an external component
+      currentRegistry.addExternalComponentProperty(
+        params.getAppId(), params.getcId(), params.getcInstId(), true);
     } catch (RegistrationException e) {
       e.printStackTrace();
     }
