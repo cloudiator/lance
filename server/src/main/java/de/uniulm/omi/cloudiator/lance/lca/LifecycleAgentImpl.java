@@ -176,16 +176,6 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     return true;
   }
 
-  @Override
-  public void updateDownStreamPorts() throws RemoteException, LcaException, ContainerException {
-    List<ComponentInstanceId> containerIds = containers.getAllContainers();
-
-    for(ComponentInstanceId cId: containerIds) {
-      ContainerController cc = getController(cId);
-      cc.startPortUpdaters();
-    }
-  }
-
   private ContainerController getController(ComponentInstanceId instanceId) throws LcaException {
     ContainerController cid = containers.getContainer(instanceId);
     if (cid == null) {
