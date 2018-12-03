@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ExternalContextParameters {
+  private static final String pubIpHostString = "HOST_PUBLIC_IP";
+  private static final String fullPortPrefixString = "ACCESS_PUBLIC_";
   private final String name;
   private final ApplicationInstanceId appId;
   private final ComponentId cId;
@@ -61,9 +63,8 @@ public class ExternalContextParameters {
     return status;
   }
 
-  public String getFullHostName() {
-    final String name = "HOST_PUBLIC_IP";
-    return name;
+  public static String getPublicIpHostString() {
+    return pubIpHostString;
   }
 
   public static class InPortContext {
@@ -80,7 +81,7 @@ public class ExternalContextParameters {
     }
 
     public String getFullPortName() {
-      final String fullPortName = "ACCESS_" + "PUBLIC_" + portName;
+      final String fullPortName = fullPortPrefixString + portName;
       return fullPortName;
     }
   }

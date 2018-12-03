@@ -268,29 +268,6 @@ public class ClientDockerPullTest {
     createZookeperContext(client, zookeeperComponentId, zookeeperInternalInportName, version.LIFECYCLE);
   }
 
-  @Test
-  public void testGLInsertExtDeplContext() {
-    ExternalContextParameters.InPortContext inpC = new InPortContext("sparkJob1Port",9999);
-    List<InPortContext> inpCList = new ArrayList<>();
-    inpCList.add(inpC);
-    ExternalContextParameters.Builder builder = new ExternalContextParameters.Builder();
-    builder.name("sparkJob1");
-    builder.appInstanceId(appInstanceId);
-    builder.compId(new ComponentId());
-    builder.compInstId(new ComponentInstanceId());
-    builder.pubIp(publicIp);
-    builder.inPortContext(inpCList);
-    builder.status(ContainerStatus.READY);
-
-    ExternalContextParameters params = builder.build();
-
-    try {
-      client.injectExternalDeploymentContext(params);
-    } catch (DeploymentException e) {
-      System.err.println("Couldn't inject ExtContext");
-    }
-  }
-
   @Ignore
   @Test
   public void testHRemoteDockerComponent() {

@@ -55,6 +55,8 @@ public final class GlobalRegistryAccessor {
     public final void init(ComponentInstanceId myId) throws RegistrationException {
         reg.addComponentInstance(appInstId, compId, myId);
         reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, LifecycleHandlerType.NEW.toString());
+        //Created via LifecycleAgent
+        reg.addComponentProperty(appInstId, compId, myId, EXTERNAL_COMPONENT, "false");
     }
     
     public final void updateInstanceState(ComponentInstanceId myId, LifecycleHandlerType type) throws RegistrationException {

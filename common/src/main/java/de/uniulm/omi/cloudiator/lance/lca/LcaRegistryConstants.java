@@ -28,8 +28,8 @@ public final class LcaRegistryConstants {
     public static final String HOST_INTERNAL_IP = "Host_Internal_Ip";
     public static final String LOCAL_IP = "Local_Ip";
     public static final String INSTANCE_NR = "Instance_Number";
-    
-    
+    public static final String EXTERNAL_COMPONENT = "External_Component";
+
     private LcaRegistryConstants () {
         // 
     }

@@ -226,7 +226,7 @@ public final class LifecycleClient {
           params.getAppId(),
           params.getcId(),
           params.getcInstId(),
-          params.getFullHostName(),
+          params.getPublicIpHostString(),
           params.getPublicIp());
     } catch (RegistrationException e) {
       e.printStackTrace();

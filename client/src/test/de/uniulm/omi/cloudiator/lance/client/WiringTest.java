@@ -14,8 +14,11 @@ import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortL
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
 import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.util.application.AppArchitecture;
 import de.uniulm.omi.cloudiator.lance.util.application.AppArchitectureBuilder;
@@ -53,22 +56,22 @@ public class WiringTest {
   public static void configureAppContext() {
     AppArchitectureBuilder builder = new AppArchitectureBuilder("WiringApp", new ApplicationId(), new ApplicationInstanceId());
     //root-component
-    ProvidedPortInfo rootProvidedPortInfo = new ProvidedPortInfo("ROOT_INPORT_NAME", PortProperties.PortType.PUBLIC_PORT, 800, 0, 0);
+    ProvidedPortInfo rootProvidedPortInfo = new ProvidedPortInfo("ROOT_INPORT", PortProperties.PortType.PUBLIC_PORT, 800, 0, 0);
     HashSet<ProvidedPortInfo> rootProvSet = new HashSet<>();
     rootProvSet.add(rootProvidedPortInfo);
-    RequiredPortInfo rootRequiredPortInfo1 = new RequiredPortInfo("ROOT_OUTPORT_NAME_1", DeploymentHelper.getEmptyPortUpdateHandler(), 1, 1, 1);
-    RequiredPortInfo rootRequiredPortInfo2 = new RequiredPortInfo("ROOT_OUTPORT_NAME_2", DeploymentHelper.getEmptyPortUpdateHandler(), 2, 1, 1);
+    RequiredPortInfo rootRequiredPortInfo1 = new RequiredPortInfo("ROOT_OUTPORT_1", DeploymentHelper.getEmptyPortUpdateHandler(), 1, 1, 1);
+    RequiredPortInfo rootRequiredPortInfo2 = new RequiredPortInfo("ROOT_OUTPORT_2", DeploymentHelper.getEmptyPortUpdateHandler(), 2, 1, 1);
     HashSet<RequiredPortInfo> rootReqSet = new HashSet<>();
     rootReqSet.add(rootRequiredPortInfo1);
     rootReqSet.add(rootRequiredPortInfo2);
     ComponentInfo rootCompInfo = new ComponentInfo("root", new ComponentId(), new ComponentInstanceId(), rootProvSet, rootReqSet, OperatingSystem.UBUNTU_14_04);
     //downstream-component1
-    ProvidedPortInfo downstream1ProvidedPortInfo = new ProvidedPortInfo("DOWNSTREAM1_INPORT_NAME", PortType.CLUSTER_PORT, 801, 1, 1);
+    ProvidedPortInfo downstream1ProvidedPortInfo = new ProvidedPortInfo("DOWNSTREAM1_INPORT", PortType.CLUSTER_PORT, 801, 1, 1);
     HashSet<ProvidedPortInfo> downstream1ProvSet = new HashSet<>();
     downstream1ProvSet.add(downstream1ProvidedPortInfo);
     ComponentInfo downstream1CompInfo  = new ComponentInfo("downstream_1", new ComponentId(), new ComponentInstanceId(), downstream1ProvSet, new HashSet<>(), OperatingSystem.UBUNTU_14_04);
     //downstream-component2
-    ProvidedPortInfo downstream2ProvidedPortInfo = new ProvidedPortInfo("DOWNSTREAM2_INPORT_NAME", PortType.CLUSTER_PORT, 802, 2, 1);
+    ProvidedPortInfo downstream2ProvidedPortInfo = new ProvidedPortInfo("DOWNSTREAM2_INPORT", PortType.CLUSTER_PORT, 802, 2, 1);
     HashSet<ProvidedPortInfo> downstream2ProvSet = new HashSet<>();
     downstream2ProvSet.add(downstream2ProvidedPortInfo);
     ComponentInfo downstream2CompInfo  = new ComponentInfo("downstream_2", new ComponentId(), new ComponentInstanceId(), downstream2ProvSet, new HashSet<>(), OperatingSystem.UBUNTU_14_04);
@@ -130,6 +133,30 @@ public class WiringTest {
       System.err.println("Couldn't deploy lifecycle component");
     }
   }
+
+  @Test
+  public void test4InsertExtDeplContext() {
+    ExternalContextParameters.InPortContext inpC = new InPortContext("SPARKJOB1_INPORT",9999);
+    List<InPortContext> inpCList = new ArrayList<>();
+    inpCList.add(inpC);
+    ExternalContextParameters.Builder builder = new ExternalContextParameters.Builder();
+    builder.name("sparkJob1");
+    builder.appInstanceId(arch.getAppInstanceId());
+    builder.compId(new ComponentId());
+    builder.compInstId(new ComponentInstanceId());
+    builder.pubIp(publicIp);
+    builder.inPortContext(inpCList);
+    builder.status(ContainerStatus.READY);
+
+    ExternalContextParameters params = builder.build();
+
+    try {
+      client.injectExternalDeploymentContext(params);
+    } catch (DeploymentException e) {
+      System.err.println("Couldn't inject ExtContext");
+    }
+  }
+
 
   private static void deployCompsFirst() throws DeploymentException {
     deploy(deployFirst);
