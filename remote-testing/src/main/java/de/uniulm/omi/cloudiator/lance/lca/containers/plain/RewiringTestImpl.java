@@ -206,11 +206,11 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
                     throw new ContainerException();
             }
 
-            for(InportInfo inInf: cInfo.getInportInfos())
-                builder.addInport(inInf.getInportName(), inInf.getPortType(), inInf.getCardinality(), inInf.getInPort());
+            for(ProvidedPortInfo provInf: cInfo.getProvidedPortInfos())
+                builder.addInport(provInf.getProvidedPortName(), provInf.getPortType(), provInf.getCardinality(), provInf.getProvidedPort());
 
-            for(OutportInfo outInf: cInfo.getOutportInfos())
-                builder.addOutport(outInf.getOutportName(), outInf.getPuHandler(), outInf.getCardinality(), outInf.getMin());
+            for(RequiredPortInfo reqInf: cInfo.getRequiredPortInfos())
+                builder.addOutport(reqInf.getRequiredPortName(), reqInf.getPuHandler(), reqInf.getCardinality(), reqInf.getMin());
 
             builder.deploySequentially(true);
             DeployableComponent comp = builder.build();

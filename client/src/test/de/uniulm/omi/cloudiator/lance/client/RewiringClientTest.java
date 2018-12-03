@@ -69,19 +69,19 @@ public class RewiringClientTest {
   public static void configureAppContext() {
     AppArchitectureBuilder builder = new AppArchitectureBuilder("RewiringApp", new ApplicationId(), new ApplicationInstanceId());
     //cassandra
-    InportInfo cassInportInfo = new InportInfo("CASS_INT_INP", PortProperties.PortType.INTERNAL_PORT, 9160, 0, 1);
-    HashSet<InportInfo> cassInSet = new HashSet<>();
-    cassInSet.add(cassInportInfo);
-    ComponentInfo cassCompInfo = new ComponentInfo("cassandra", new ComponentId(), new ComponentInstanceId(), cassInSet, new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
+    ProvidedPortInfo cassProvidedPortInfo = new ProvidedPortInfo("CASS_INT_INP", PortProperties.PortType.INTERNAL_PORT, 9160, 0, 1);
+    HashSet<ProvidedPortInfo> cassInSet = new HashSet<>();
+    cassInSet.add(cassProvidedPortInfo);
+    ComponentInfo cassCompInfo = new ComponentInfo("cassandra", new ComponentId(), new ComponentInstanceId(), cassInSet, new HashSet<RequiredPortInfo>(), OperatingSystem.UBUNTU_14_04);
     //kafka
-    InportInfo kafkaInportInfo = new InportInfo("KAFKA_INP", PortProperties.PortType.PUBLIC_PORT, 9092, 1, 1);
-    HashSet<InportInfo> kafkaInSet = new HashSet<>();
-    kafkaInSet.add(kafkaInportInfo);
+    ProvidedPortInfo kafkaProvidedPortInfo = new ProvidedPortInfo("KAFKA_INP", PortProperties.PortType.PUBLIC_PORT, 9092, 1, 1);
+    HashSet<ProvidedPortInfo> kafkaInSet = new HashSet<>();
+    kafkaInSet.add(kafkaProvidedPortInfo);
     //hier! PU-Handler anpassen
-    //OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 1);
-    OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 0);
-    HashSet<OutportInfo> kafkaOutSet = new HashSet<>();
-    kafkaOutSet.add(kafkaOutportInfo);
+    //RequiredPortInfo kafkaRequiredPortInfo = new RequiredPortInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 1);
+    RequiredPortInfo kafkaRequiredPortInfo = new RequiredPortInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 0);
+    HashSet<RequiredPortInfo> kafkaOutSet = new HashSet<>();
+    kafkaOutSet.add(kafkaRequiredPortInfo);
     ComponentInfo kafkaCompInfo = new ComponentInfo("kafka", new ComponentId(), new ComponentInstanceId(), kafkaInSet, kafkaOutSet, OperatingSystem.UBUNTU_14_04);
     //setup Architecture
     arch = builder.addComponentInfo(kafkaCompInfo).addComponentInfo(cassCompInfo).build();

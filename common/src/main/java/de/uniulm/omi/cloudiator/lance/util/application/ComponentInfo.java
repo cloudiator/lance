@@ -14,8 +14,8 @@ public class ComponentInfo implements Serializable {
   private final String componentName;
   private final ComponentId componentId;
   private final ComponentInstanceId componentInstanceId;
-  private final Set<InportInfo> inportInfos;
-  private final Set<OutportInfo> outportInfos;
+  private final Set<ProvidedPortInfo> providedPortInfos;
+  private final Set<RequiredPortInfo> requiredPortInfos;
   private final OperatingSystem os;
 
   public String getComponentName() {
@@ -30,24 +30,24 @@ public class ComponentInfo implements Serializable {
         return componentInstanceId;
     }
 
-  public Set<InportInfo> getInportInfos() {
-        return inportInfos;
+  public Set<ProvidedPortInfo> getProvidedPortInfos() {
+        return providedPortInfos;
     }
 
-  public Set<OutportInfo> getOutportInfos() {
-        return outportInfos;
+  public Set<RequiredPortInfo> getRequiredPortInfos() {
+        return requiredPortInfos;
     }
 
   public OperatingSystem getOs() {
         return os;
     }
 
-  public ComponentInfo(String componentName, ComponentId componentId, ComponentInstanceId componentInstanceId, Set<InportInfo> inportInfos, Set<OutportInfo> outportInfos, OperatingSystem os) {
+  public ComponentInfo(String componentName, ComponentId componentId, ComponentInstanceId componentInstanceId, Set<ProvidedPortInfo> providedPortInfos, Set<RequiredPortInfo> requiredPortInfos, OperatingSystem os) {
     this.componentName = componentName;
     this.componentId = componentId;
     this.componentInstanceId = componentInstanceId;
-    this.inportInfos = inportInfos;
-    this.outportInfos = outportInfos;
+    this.providedPortInfos = providedPortInfos;
+    this.requiredPortInfos = requiredPortInfos;
     this.os = os;
   }
 }

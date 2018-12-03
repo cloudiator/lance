@@ -5,33 +5,33 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 import java.io.Serializable;
 
-public class OutportInfo implements Serializable {
+public class RequiredPortInfo implements Serializable {
 
     private static final long serialVersionUID = -4836138962934247464L;
-    private final String outportName;
+    private final String requiredPortName;
     private final transient PortUpdateHandler puHandler;
-    private final int providedPortNumber;
+    private final int requiredRefNumber;
     private final int cardinality;
     private final int min;
 
-    public OutportInfo(String outportName, PortUpdateHandler puHandler, int providedPortNumber, int cardinality, int min) {
-        this.outportName = outportName;
+    public RequiredPortInfo(String requiredPortName, PortUpdateHandler puHandler, int requiredPortNumber, int cardinality, int min) {
+        this.requiredPortName = requiredPortName;
         this.puHandler = puHandler;
         this.cardinality = cardinality;
         this.min = min;
-        this.providedPortNumber = providedPortNumber;
+        this.requiredRefNumber= requiredPortNumber;
     }
 
-    public String getOutportName() {
-        return outportName;
+    public String getRequiredPortName() {
+        return requiredPortName;
     }
 
     public PortUpdateHandler getPuHandler() {
         return puHandler;
     }
 
-    public int getProvidedPortNumber() {
-        return providedPortNumber;
+    public int getRequiredPortNumber() {
+        return requiredRefNumber;
     }
 
     public int getCardinality() {
@@ -42,7 +42,7 @@ public class OutportInfo implements Serializable {
         return min;
     }
 
-    public OutportInfo(String outportName, PortUpdateHandler puHandler, int providedPortNumber) {
-        this(outportName, puHandler, providedPortNumber, 1, OutPort.NO_SINKS);
+    public RequiredPortInfo(String requiredPortName, PortUpdateHandler puHandler, int requiredPortNumber) {
+        this(requiredPortName, puHandler, requiredPortNumber, 1, OutPort.NO_SINKS);
     }
 }

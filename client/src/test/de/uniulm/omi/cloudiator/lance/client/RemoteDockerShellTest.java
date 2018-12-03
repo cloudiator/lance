@@ -31,8 +31,6 @@ import de.uniulm.omi.cloudiator.lance.lca.DockerShellTestAgent;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.util.application.InportInfo;
-import de.uniulm.omi.cloudiator.lance.util.application.OutportInfo;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.BeforeClass;
@@ -62,7 +60,7 @@ public class RemoteDockerShellTest {
   @BeforeClass
   public static void configureAppContext() {
     AppArchitectureBuilder builder = new AppArchitectureBuilder("ShellTestApp", new ApplicationId(), new ApplicationInstanceId());
-    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
+    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<ProvidedPortInfo> (), new HashSet<RequiredPortInfo>(), OperatingSystem.UBUNTU_14_04);
     arch = builder.addComponentInfo(zookCompInfo).build();
 
     System.setProperty("lca.client.config.registry", "etcdregistry");

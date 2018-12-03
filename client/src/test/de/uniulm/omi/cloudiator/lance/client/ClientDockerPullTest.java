@@ -24,14 +24,12 @@ import static java.lang.Thread.sleep;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import de.uniulm.omi.cloudiator.lance.util.application.ProvidedPortInfo;
+import de.uniulm.omi.cloudiator.lance.util.application.RequiredPortInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.application.component.*;
@@ -39,8 +37,8 @@ import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.BeforeClass;
@@ -48,7 +46,6 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
@@ -63,7 +60,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import java.util.concurrent.Callable;
 import java.rmi.RemoteException;
 import java.rmi.NotBoundException;
-import java.lang.Exception;
 
 // Important: Java-re, docker daemon and Lance(Server) must be installed on the VM and related ports
 // must be opened on the vm
@@ -86,7 +82,7 @@ public class ClientDockerPullTest {
   private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
   private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
-  private static String publicIp = "134.60.64.95";
+  private static String publicIp = "x.x.x.x";
   private static LifecycleClient client;
 
   @BeforeClass
@@ -115,142 +111,17 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
-  private DockerComponent.Builder buildDockerComponentBuilder(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String imageFolder,
-      String tag, boolean isRemote) {
-    DockerComponent.Builder builder;
-    if (isRemote) {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName_remote);
-    } else {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
-    }
-    builder.name(compName);
-    builder.imageFolder(imageFolder);
-    builder.tag(tag);
-    builder.myId(id);
+  private RemoteDockerComponent buildRemoteDockerComponent( LifecycleClient client, String compName, ComponentId id, Set<ProvidedPortInfo> provInfs,
+      Set<RequiredPortInfo> reqInfs, String imageFolder, String tag, String hostName, int port, boolean useCredentials) {
 
-    for (int i = 0; i < inInfs.size(); i++)
-      builder.addInport(
-          inInfs.get(i).inportName,
-          inInfs.get(i).portType,
-          inInfs.get(i).cardinality,
-          inInfs.get(i).inPort);
-
-
-    for (int i = 0; i < outInfs.size(); i++)
-      builder.addOutport(
-          outInfs.get(i).outportName,
-          outInfs.get(i).puHandler,
-          outInfs.get(i).cardinality,
-          outInfs.get(i).min);
-
-    builder.deploySequentially(true);
-    return builder;
-  }
-
-  private DockerComponent.Builder buildDockerComponentBuilder(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String tag, boolean isRemote) {
-
-    return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, isRemote);
-  }
-
-  private DockerComponent buildDockerComponent(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String tag) {
-
-    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false);
-    DockerComponent comp = builder.build();
-    return comp;
-  }
-
-  private RemoteDockerComponent buildRemoteDockerComponent( LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs,
-      List<OutportInfo> outInfs, String imageFolder, String tag, String hostName, int port, boolean useCredentials) {
-
-    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
+    DockerComponent.Builder dCompBuilder = ClientTestUtils.buildDockerComponentBuilder(client, compName, id, provInfs, reqInfs, imageFolder, imageName_remote, tag);
     RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, port, "xxxxx", "xxxxx", useCredentials);
     RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
 
     return rDockerComp;
-  }
-
-  private DeployableComponent buildDeployableComponent(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      Callable<LifecycleStore> createLifeCycleStore) {
-
-    DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(compName,id);
-
-    for (int i = 0; i < inInfs.size(); i++)
-      builder.addInport(
-          inInfs.get(i).inportName,
-          inInfs.get(i).portType,
-          inInfs.get(i).cardinality,
-          inInfs.get(i).inPort);
-
-    for (int i = 0; i < outInfs.size(); i++)
-      builder.addOutport(
-          outInfs.get(i).outportName,
-          outInfs.get(i).puHandler,
-          outInfs.get(i).cardinality,
-          outInfs.get(i).min);
-
-    try {
-      builder.addLifecycleStore(createLifeCycleStore.call());
-    } catch (Exception ex) {
-      System.err.println("Server not reachable");
-    }
-
-    builder.deploySequentially(true);
-    DeployableComponent comp = builder.build();
-    return comp;
-  }
-
-  static class InportInfo {
-    public final String inportName;
-    public final PortProperties.PortType portType;
-    public final int cardinality;
-    public final int inPort;
-
-    InportInfo(String inportName, PortProperties.PortType portType, int cardinality, int inPort) {
-      this.inportName = inportName;
-      this.portType = portType;
-      this.cardinality = cardinality;
-      this.inPort = inPort;
-    }
-  }
-
-  static class OutportInfo {
-    public final String outportName;
-    public final PortUpdateHandler puHandler;
-    public final int cardinality;
-    public final int min;
-
-    OutportInfo(String outportName, PortUpdateHandler puHandler, int cardinality, int min) {
-      this.outportName = outportName;
-      this.puHandler = puHandler;
-      this.cardinality = cardinality;
-      this.min = min;
-    }
   }
 
   private LifecycleStore createDefaultLifecycleStore() {
@@ -295,43 +166,45 @@ public class ClientDockerPullTest {
 
   @Test
   public void testCZookCompDescriptions() {
-    List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
-    List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
-    buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
+    Set<ProvidedPortInfo> provInfs = getProvPortInfos(zookeeperInternalInportName);
+    Set<RequiredPortInfo> reqInfs = getReqPortInfos(zookeeperOutportName);
+    DockerComponent.Builder dBuilder = ClientTestUtils.buildDockerComponentBuilder( client, zookeeperComponent, zookeeperComponentId, provInfs, reqInfs, "", imageName, "3.4.12");
+    dBuilder.build();
   }
 
   @Test
   public void testCZookCompDescriptions_lifecycle() {
-    List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
-    List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
-    buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
-        inInfs, outInfs, new Callable<LifecycleStore>() {
+    Set<ProvidedPortInfo> provInfs = getProvPortInfos(zookeeperInternalInportName_lifecycle);
+    Set<RequiredPortInfo> reqInfs = getReqPortInfos(zookeeperOutportName_lifecycle);
+    ClientTestUtils.buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
+        provInfs, reqInfs, new Callable<LifecycleStore>() {
           public LifecycleStore call() {
             return createDefaultLifecycleStore();
           }
         });
   }
 
-  private static List<InportInfo> getInPortInfos(String internalInportName) {
-    List<InportInfo> inInfs = new ArrayList<>();
-    InportInfo inInf =
-        new InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
-    inInfs.add(inInf);
+  private static Set<ProvidedPortInfo> getProvPortInfos(String internalInportName) {
+    Set<ProvidedPortInfo> provInfs = new HashSet<>();
+    ProvidedPortInfo provInf =
+        new ProvidedPortInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
+    provInfs.add(provInf);
 
-    return inInfs;
+    return provInfs;
   }
 
-  private static List<OutportInfo> getOutPortInfos(String outPortName) {
-    List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
-            outPortName,
+  private static Set<RequiredPortInfo> getReqPortInfos(String reqPortName) {
+    Set<RequiredPortInfo> reqInfs = new HashSet<>();
+    RequiredPortInfo reqInf =
+        new RequiredPortInfo(
+            reqPortName,
             DeploymentHelper.getEmptyPortUpdateHandler(),
             1,
+            1,
             OutPort.NO_SINKS);
-    outInfs.add(outInf);
+    reqInfs.add(reqInf);
 
-    return outInfs;
+    return reqInfs;
   }
 
   private static DeploymentContext createZookeperContext(LifecycleClient client, ComponentId otherComponentId, String otherInternalInportName, version v) {
@@ -365,34 +238,6 @@ public class ClientDockerPullTest {
             new PortReference(otherComponentId, otherInternalInportName , PortLinkage.ALL),
         OutPort.class);
     return zookeeper_context;
-  }
-
-  EntireDockerCommands buildEntireDockerCommands() {
-    Random rand = new Random();
-    EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
-    try {
-      Map<Option,List<String>> createOptionMap = new HashMap<>();
-      createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
-      String  n = Integer.toString(rand.nextInt(65536) + 1);
-      createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n)));
-      createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
-      createOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      List<OsCommand> createOsCommandList = new ArrayList<>();
-      createOsCommandList.add(OsCommand.BASH);
-      List<String> createArgsList = new ArrayList<>();
-      createArgsList.add("--noediting");
-      cmdsBuilder.setOptions(Type.CREATE, createOptionMap);
-      cmdsBuilder.setCommand(Type.CREATE, createOsCommandList);
-      cmdsBuilder.setArgs(Type.CREATE, createArgsList);
-
-      Map<Option,List<String>> startOptionMap = new HashMap<>();
-      startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      cmdsBuilder.setOptions(Type.START, startOptionMap);
-    } catch (DockerCommandException ce) {
-      System.err.println("Error in creating docker commands");
-    }
-
-    return cmdsBuilder.build();
   }
 
   private void printCommandParts(EntireDockerCommands cmds) {
@@ -452,20 +297,10 @@ public class ClientDockerPullTest {
     try {
       DeploymentContext dummyContext =
           client.initDeploymentContext(applicationId, appInstanceId);
-      List<InportInfo> dummyInInfs = new ArrayList<>();
-      /*InportInfo inInf =
-          new InportInfo("dummInPort", PortProperties.PortType.INTERNAL_PORT, 2, 888);
-      dummyInInfs.add(inInf);*/
-      List<OutportInfo> dummyOutInfs = new ArrayList<>();
-      /*OutportInfo outInf =
-          new OutportInfo(
-              "dummyOutPort",
-              DeploymentHelper.getEmptyPortUpdateHandler(),
-              1,
-              OutPort.NO_SINKS);
-      dummyOutInfs.add(outInf);*/
+      Set<ProvidedPortInfo> dummyProvInfs = new HashSet<>();
+      Set<RequiredPortInfo> dummyReqInfs = new HashSet<>();
       //ssl Port
-      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxxx", 443, true);
+      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyProvInfs, dummyReqInfs, "fh/docker-reg", "latest","xxxx", 443, true);
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");
@@ -475,9 +310,9 @@ public class ClientDockerPullTest {
   @Test
   public void testIZookDeploy() {
     try {
-      List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
-      List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
-      DockerComponent zookComp = buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
+      Set<ProvidedPortInfo> provInfs = getProvPortInfos(zookeeperInternalInportName);
+      Set<RequiredPortInfo> reqInfs = getReqPortInfos(zookeeperOutportName);
+      DockerComponent zookComp = ClientTestUtils.buildDockerComponentBuilder( client, zookeeperComponent, zookeeperComponentId, provInfs, reqInfs, "", zookeeperComponent,  "3.4.12").build();
       DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId_lifecycle, zookeeperInternalInportName_lifecycle, version.DOCKER );
       zookId =
           client.deploy(zookContext, zookComp);
@@ -499,10 +334,10 @@ public class ClientDockerPullTest {
   @Test
   public void testIZookDeploy_lifecycle() {
     try {
-      List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
-      List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
-      DeployableComponent zookComp = buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
-          inInfs, outInfs, new Callable<LifecycleStore>() {
+      Set<ProvidedPortInfo> provInfs = getProvPortInfos(zookeeperInternalInportName_lifecycle);
+      Set<RequiredPortInfo> reqInfs = getReqPortInfos(zookeeperOutportName_lifecycle);
+      DeployableComponent zookComp = ClientTestUtils.buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
+          provInfs, reqInfs, new Callable<LifecycleStore>() {
             public LifecycleStore call() {
               return createDefaultLifecycleStore();
             }

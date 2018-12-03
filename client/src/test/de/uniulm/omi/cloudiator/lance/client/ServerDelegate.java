@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 //todo: implement in "enum" style
 class ServerDelegate<T> {
 
-  public enum TestType { REWIRINGTEST, DOCKERSHELLTEST };
+  public enum TestType { REWIRINGTEST, DOCKERSHELLTEST, WIRINGTEST };
   public final static String REWT_REGISTRY_KEY = "RewiringTestAgent";
   public final static String DST_REGISTRY_KEY = "DockerShellTestAgent";
 
