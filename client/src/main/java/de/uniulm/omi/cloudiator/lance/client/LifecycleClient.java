@@ -73,6 +73,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.RMISocketFactory;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -219,22 +220,49 @@ public final class LifecycleClient {
 
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
-      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS , params.getStatus().toString());
-      //do I need to create a DeploymentContext for this and do setProperty instead?
 
-      for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
-        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullPortName(),
-            inPortC.getInernalInPortNmbr().toString());
+      if (params.getStatus().toString() != null) {
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS,
+            params.getStatus().toString());
       }
 
-      currentRegistry.addComponentProperty(
-        params.getAppId(), params.getcId(), params.getcInstId(), params.getPublicIpHostString(), params.getPublicIp());
+      //todo: distinguish between PUBLIC, CLOUD, CONTAINER port -> see ExternalContextParameters class
+      if (params.getInpContext() != null) {
+        for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
+          currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullPublicPortName(),
+              inPortC.getInernalInPortNmbr().toString());
+          currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullCloudPortName(),
+              inPortC.getInernalInPortNmbr().toString());
+          currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullContainerPortName(),
+              inPortC.getInernalInPortNmbr().toString());
+        }
+      }
+
+      if (params.getPublicIp() != null) {
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getPublicIpHostString(),
+            params.getPublicIp());
+      }
+
+      if (params.getCloudIp() != null) {
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getCloudIpHostString(),
+            params.getCloudIp());
+      }
+
+      if (params.getContainerIp() != null) {
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getContainerIpHostString(),
+            params.getContainerIp());
+      }
+
       //Refers to an external component
       currentRegistry.addExternalComponentProperty(
         params.getAppId(), params.getcId(), params.getcInstId(), true);
     } catch (RegistrationException e) {
       e.printStackTrace();
     }
+  }
+
+  public final Map<ComponentInstanceId, Map<String, String>> getComponentDumps(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
+    return currentRegistry.dumpComponent(instId, compId);
   }
 
   public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)

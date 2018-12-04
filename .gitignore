@@ -6,4 +6,3 @@ target/
 .settings
 /bin/
 /classes/
-client/src/test/de/uniulm/omi/cloudiator/lance/client/ClientDockerPullTest.java

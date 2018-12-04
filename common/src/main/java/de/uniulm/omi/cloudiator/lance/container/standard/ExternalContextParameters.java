@@ -2,20 +2,22 @@ package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import java.util.List;
-import java.util.Map;
 
 public class ExternalContextParameters {
   private static final String pubIpHostString = "HOST_PUBLIC_IP";
-  private static final String fullPortPrefixString = "ACCESS_PUBLIC_";
+  private static final String cloudIpHostString = "HOST_CLOUD_IP";
+  private static final String containerIpHostString = "HOST_CONTAINER_IP";
   private final String name;
   private final ApplicationInstanceId appId;
   private final ComponentId cId;
   private final ComponentInstanceId cInstId;
   private final String publicIp;
+  //todo: make these adresses settable
+  private final String cloudIp;
+  private final String containerIp;
   private final List<InPortContext> inpContext;
   //private final List<OutPortContext> outpContext;
   private final ContainerStatus status;
@@ -26,6 +28,10 @@ public class ExternalContextParameters {
     this.cId = builder.cId;
     this.cInstId = builder.cInstId;
     this.publicIp = builder.publicIp;
+    //todo: Use builder vars
+    cloudIp = "0.0.0.0";
+    //todo: Use builder vars
+    containerIp = "0.0.0.0";
     this.inpContext = builder.inpContext;
     //this.outpContext = builder.outpContext;
     this.status = builder.status_;
@@ -51,6 +57,14 @@ public class ExternalContextParameters {
     return publicIp;
   }
 
+  public String getCloudIp() {
+    return cloudIp;
+  }
+
+  public String getContainerIp() {
+    return containerIp;
+  }
+
   public List<InPortContext> getInpContext() {
     return inpContext;
   }
@@ -67,7 +81,18 @@ public class ExternalContextParameters {
     return pubIpHostString;
   }
 
+  public static String getCloudIpHostString() {
+    return cloudIpHostString;
+  }
+  public static String getContainerIpHostString() {
+    return containerIpHostString;
+  }
+
+  //Todo: Expand this class with "CONTAINER" and "CLOUD" port
   public static class InPortContext {
+    private static final String fullPortPublicPrefixString = "ACCESS_PUBLIC_";
+    private static final String fullPortCloudPrefixString = "ACCESS_CLOUD_";
+    private static final String fullPortContainerPrefixString = "ACCESS_CONTAINER_";
     String portName;
     int inernalInPortNmbr;
 
@@ -80,8 +105,18 @@ public class ExternalContextParameters {
       return inernalInPortNmbr;
     }
 
-    public String getFullPortName() {
-      final String fullPortName = fullPortPrefixString + portName;
+    public String getFullPublicPortName() {
+      final String fullPortName = fullPortPublicPrefixString + portName;
+      return fullPortName;
+    }
+
+    public String getFullCloudPortName() {
+      final String fullPortName = fullPortCloudPrefixString + portName;
+      return fullPortName;
+    }
+
+    public String getFullContainerPortName() {
+      final String fullPortName = fullPortContainerPrefixString + portName;
       return fullPortName;
     }
   }
@@ -98,6 +133,10 @@ public class ExternalContextParameters {
     private ComponentId cId;
     private ComponentInstanceId cInstId;
     private String publicIp;
+    /* todo: integrate those vars
+     private final String cloudIp;
+     private final String containerIp;
+    */
     private List<InPortContext> inpContext;
     //private List<OutPortContext> outpContext;
     private ContainerStatus status_;
