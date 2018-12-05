@@ -1,5 +1,12 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+/*
+* todo: so far, cloud_ip and container_ip get correct keys, but default values
+* so far, cloud_port and container_port get correct keys, but no values can be queried
+* -> so far, use public_port value via InPortContext Method: getInernalInPortNmbr()
+* -> implement this
+*
+*/
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -15,7 +22,6 @@ public class ExternalContextParameters {
   private final ComponentId cId;
   private final ComponentInstanceId cInstId;
   private final String publicIp;
-  //todo: make these adresses settable
   private final String cloudIp;
   private final String containerIp;
   private final List<InPortContext> inpContext;
@@ -28,10 +34,8 @@ public class ExternalContextParameters {
     this.cId = builder.cId;
     this.cInstId = builder.cInstId;
     this.publicIp = builder.publicIp;
-    //todo: Use builder vars
-    cloudIp = "0.0.0.0";
-    //todo: Use builder vars
-    containerIp = "0.0.0.0";
+    this.cloudIp = builder.cloudIp;
+    this.containerIp = builder.containerIp;
     this.inpContext = builder.inpContext;
     //this.outpContext = builder.outpContext;
     this.status = builder.status_;
@@ -128,15 +132,14 @@ public class ExternalContextParameters {
   }*/
 
   public static class Builder {
-    private String name_;
-    private ApplicationInstanceId appInstId;
-    private ComponentId cId;
-    private ComponentInstanceId cInstId;
+    private String name_ = "<unknown>";
+    private ApplicationInstanceId appInstId = new ApplicationInstanceId();
+    private ComponentId cId = new ComponentId();
+    private ComponentInstanceId cInstId = new ComponentInstanceId();
     private String publicIp;
-    /* todo: integrate those vars
-     private final String cloudIp;
-     private final String containerIp;
-    */
+    // todo: might make those vars settable
+    private String cloudIp = "0.0.0.0";
+    private String containerIp = "0.0.0.0";
     private List<InPortContext> inpContext;
     //private List<OutPortContext> outpContext;
     private ContainerStatus status_;

@@ -207,58 +207,53 @@ public final class LifecycleClient {
     }
   }
 
-  public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
-    try {
-      final boolean alreadyExists = currentRegistry.applicationComponentInstanceExists(params.getAppId(), params.getcId(), params.getcInstId());
+  public void injectExternalDeploymentContext(ExternalContextParameters params) throws RegistrationException {
+    final boolean alreadyExists = currentRegistry.applicationComponentInstanceExists(params.getAppId(), params.getcId(), params.getcInstId());
 
-      if(alreadyExists && !currentRegistry.isExternalComponent(params.getAppId(), params.getcId(), params.getcInstId())) {
-        throw new DeploymentException(String.format("Cannot inject external Deployment Context for internal Component %s.", params.getcInstId()));
-      }
-
-      if(alreadyExists)
-        LOGGER.info(String.format("Registry entry for Component %s already exists, updating it...", params.getcInstId()));
-
-      currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
-      currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
-
-      if (params.getStatus().toString() != null) {
-        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS,
-            params.getStatus().toString());
-      }
-
-      //todo: distinguish between PUBLIC, CLOUD, CONTAINER port -> see ExternalContextParameters class
-      if (params.getInpContext() != null) {
-        for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
-          currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullPublicPortName(),
-              inPortC.getInernalInPortNmbr().toString());
-          currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullCloudPortName(),
-              inPortC.getInernalInPortNmbr().toString());
-          currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullContainerPortName(),
-              inPortC.getInernalInPortNmbr().toString());
-        }
-      }
-
-      if (params.getPublicIp() != null) {
-        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getPublicIpHostString(),
-            params.getPublicIp());
-      }
-
-      if (params.getCloudIp() != null) {
-        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getCloudIpHostString(),
-            params.getCloudIp());
-      }
-
-      if (params.getContainerIp() != null) {
-        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getContainerIpHostString(),
-            params.getContainerIp());
-      }
-
-      //Refers to an external component
-      currentRegistry.addExternalComponentProperty(
-        params.getAppId(), params.getcId(), params.getcInstId(), true);
-    } catch (RegistrationException e) {
-      e.printStackTrace();
+    if(alreadyExists && !currentRegistry.isExternalComponent(params.getAppId(), params.getcId(), params.getcInstId())) {
+      throw new RegistrationException(String.format("Cannot inject external Deployment Context for internal Component %s.", params.getcInstId()));
     }
+
+    if(alreadyExists)
+      LOGGER.info(String.format("Registry entry for Component %s already exists, updating it...", params.getcInstId()));
+
+    currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
+    currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
+
+    if (params.getStatus().toString() != null) {
+      currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS,
+          params.getStatus().toString());
+    }
+
+    //todo: distinguish between PUBLIC, CLOUD, CONTAINER port -> see ExternalContextParameters class
+    if (params.getInpContext() != null) {
+      for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullPublicPortName(),
+            inPortC.getInernalInPortNmbr().toString());
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullCloudPortName(),
+            inPortC.getInernalInPortNmbr().toString());
+        currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), inPortC.getFullContainerPortName(),
+            inPortC.getInernalInPortNmbr().toString());
+      }
+    }
+
+    if (params.getPublicIp() != null) {
+      currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getPublicIpHostString(),
+          params.getPublicIp());
+    }
+
+    if (params.getCloudIp() != null) {
+      currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getCloudIpHostString(),
+          params.getCloudIp());
+    }
+
+    if (params.getContainerIp() != null) {
+      currentRegistry.addComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), params.getContainerIpHostString(),
+          params.getContainerIp());
+    }
+
+    //Refers to an external component
+    currentRegistry.addExternalComponentProperty( params.getAppId(), params.getcId(), params.getcInstId(), true);
   }
 
   public final Map<ComponentInstanceId, Map<String, String>> getComponentDumps(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
@@ -326,7 +321,7 @@ public final class LifecycleClient {
   }
 
   public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
-      ComponentInstanceId componentInstanceId)  throws RegistrationException, DeploymentException {
+      ComponentInstanceId componentInstanceId)  throws RegistrationException {
     currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
   }
 

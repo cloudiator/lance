@@ -46,7 +46,7 @@ public class WiringTest {
   private static LifecycleClient client;
   private static AppArchitecture arch;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.64.95";
   private static String imageName = "ubuntu";
   private static List<DockerDeployInfo> dInfos = new ArrayList<>();
   private static List<ComponentInstanceId> deployFirst = new ArrayList<>();
@@ -140,14 +140,7 @@ public class WiringTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
-  }
-
-  @Test
-  public void test0DumpInstanceIds() {
-    for(ComponentInfo cInf: arch.getComponents()) {
-      System.out.println(cInf.getComponentInstanceId());
-    }
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
   }
 
   @Test
@@ -155,9 +148,9 @@ public class WiringTest {
     try {
       client = LifecycleClient.getClient(publicIp);
     } catch (RemoteException ex) {
-      System.err.println("Server not reachable");
+      ex.printStackTrace();
     } catch (NotBoundException ex) {
-      System.err.println("Socket not bound");
+      ex.printStackTrace();
     }
   }
 
@@ -172,6 +165,8 @@ public class WiringTest {
         deploySecond.add(cInfo.getComponentInstanceId());
       }
       DeploymentContext ctx = buildDeploymentContext(arch, cInfo);
+      //In Component: Only infos about In-/Outports are given (Outports never posses a port-number): No wiring infos are given here
+      //Inport-Infos go into registry
       DockerComponent.Builder dBuilder =
           ClientTestUtils.buildDockerComponentBuilder(
               client,
@@ -203,7 +198,7 @@ public class WiringTest {
       client.registerComponentForApplicationInstance(
           arch.getAppInstanceId(), extCompId);
     } catch (RegistrationException ex) {
-      System.err.println("Exception during registration");
+      ex.printStackTrace();
     }
   }
 
@@ -230,8 +225,8 @@ public class WiringTest {
     tDeplDStream.start();
   }
 
-  @Test(expected = DeploymentException.class)
-  public void test6UpdateExtDeplContextFail() throws DeploymentException {
+  @Test(expected = RegistrationException.class)
+  public void test6UpdateExtDeplContextFail() throws RegistrationException {
     try {
       tInjectOrig.join();
       tDeplDStream.join();
@@ -278,14 +273,13 @@ public class WiringTest {
     builder.appInstanceId(arch.getAppInstanceId());
     builder.compId(extCompId);
     builder.compInstId(extCompInstId);
-    builder.inPortContext(inpContextUsed);
     builder.status(ContainerStatus.READY);
 
     ExternalContextParameters params = builder.build();
 
     try {
       client.injectExternalDeploymentContext(params);
-    } catch (DeploymentException e) {
+    } catch (RegistrationException e) {
       e.printStackTrace();
     }
   }
@@ -313,6 +307,7 @@ public class WiringTest {
     }
   }
 
+  //Here wiring infos are set,  why are inport-infos needed here?
   private static DeploymentContext buildDeploymentContext(
       AppArchitecture arch, ComponentInfo cInfo) {
     DeploymentContext ctx =
@@ -381,8 +376,8 @@ public class WiringTest {
 
         try {
           client.injectExternalDeploymentContext(params);
-        } catch (DeploymentException e) {
-          System.err.println("Couldn't inject ExtContext");
+        } catch  (RegistrationException e) {
+          e.printStackTrace();
         }
       }
     }
