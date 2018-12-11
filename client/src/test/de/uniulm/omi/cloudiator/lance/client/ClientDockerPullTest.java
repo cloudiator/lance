@@ -86,7 +86,7 @@ public class ClientDockerPullTest {
   private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
   private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
-  private static String publicIp = "134.60.64.95";
+  private static String publicIp = "x.x.x.x";
   private static LifecycleClient client;
 
   @BeforeClass
@@ -115,7 +115,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.95:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
   private DockerComponent.Builder buildDockerComponentBuilder(
