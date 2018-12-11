@@ -244,7 +244,6 @@ public final class ProcessBasedConnector implements DockerConnector {
 
     @Override
     public String executeSingleDockerCommand(String fullDockerCommand) throws DockerException {
-
         ExecResult result = ProcessWrapper.singleDockerCommand(fullDockerCommand.split("\\s+"));
         if(result.isSuccess()) {
             return result.getOutput().trim();
