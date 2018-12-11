@@ -45,8 +45,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public void doCreate() throws ContainerException {
     try {
       imageHandler.doPullImages(myId, myComponent.getFullImageName());
-      Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-      myComponent.setPort(portsToSet);
+      //todo: Create function to check, if these ports match the ports given in docker command
+      //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+      //myComponent.setPort(portsToSet);
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.CREATE));
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);

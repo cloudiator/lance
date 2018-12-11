@@ -28,8 +28,9 @@ public class RemoteDockerContainerLogic extends DockerContainerLogic {
   public void doCreate() throws ContainerException {
     try {
       imageHandler.doPullImages(myId, comp.getFullImageNameRegStripped());
-      Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-      comp.setPort(portsToSet);
+      //todo: Create function to check, if these ports match the ports given in docker command
+      //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+      //comp.setPort(portsToSet);
       client.executeSingleDockerCommand(comp.getFullDockerCommand(DockerCommand.Type.CREATE));
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
