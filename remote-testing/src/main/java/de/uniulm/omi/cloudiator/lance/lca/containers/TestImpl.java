@@ -8,11 +8,13 @@ import de.uniulm.omi.cloudiator.lance.lifecycles.CoreElementsRemote;
 import de.uniulm.omi.cloudiator.lance.util.application.AppArchitecture;
 import java.rmi.RemoteException;
 
-abstract public class TestImpl {
+public abstract class TestImpl {
   public volatile CoreElementsRemote core;
 
-  protected ApplicationInstanceId setupApp(AppArchitecture appArch, String publicIp, LcaRegistry reg)  throws ContainerException, RemoteException {
-    //assertNotNull(CoreElements.context);
+  protected ApplicationInstanceId setupApp(
+      AppArchitecture appArch, String publicIp, LcaRegistry reg)
+      throws ContainerException, RemoteException {
+    // assertNotNull(CoreElements.context);
     CoreElementsRemote.arch = appArch;
     CoreElementsRemote.initHostContext(publicIp);
     core = new CoreElementsRemote(reg);

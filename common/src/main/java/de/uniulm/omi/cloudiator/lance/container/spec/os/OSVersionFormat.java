@@ -22,39 +22,43 @@ import java.io.Serializable;
 
 public abstract class OSVersionFormat implements Serializable {
 
-    public static final OSVersionFormat UBUNTU_VERSION_FORMAT = new OSVersionFormat() {
+  public static final OSVersionFormat UBUNTU_VERSION_FORMAT =
+      new OSVersionFormat() {
 
-        @Override public boolean hasCorrectFormat(String format) {
-            if(format == null || format.length() != 5) {
-                return false;
-            }
-            return format.matches("\\d\\d\\.\\d\\d");
-        }
-    };
-    
-    public static final OSVersionFormat WINDOWS_VERSION_FORMAT = new OSVersionFormat() {
-        private final String[] versions = {"95", "98", "2000", "ME", "Vista", "7", "8", "8.1" };
-        
-        @Override public boolean hasCorrectFormat(String format) {
-            for(String v : versions) {
-                if(v.equalsIgnoreCase(format)) {
-                    return true;
-                }
-            }
+        @Override
+        public boolean hasCorrectFormat(String format) {
+          if (format == null || format.length() != 5) {
             return false;
+          }
+          return format.matches("\\d\\d\\.\\d\\d");
         }
-    };
-    
-    public static final OSVersionFormat UNKNOWN_VERSION_FORMAT = new OSVersionFormat() {
-        @Override public boolean hasCorrectFormat(String format) {
-            return false;
-        }
-    };
-    private static final long serialVersionUID = -7624377333732191799L;
+      };
 
-    public abstract boolean hasCorrectFormat(String format);
-    
-    OSVersionFormat() {
-        
-    }
+  public static final OSVersionFormat WINDOWS_VERSION_FORMAT =
+      new OSVersionFormat() {
+        private final String[] versions = {"95", "98", "2000", "ME", "Vista", "7", "8", "8.1"};
+
+        @Override
+        public boolean hasCorrectFormat(String format) {
+          for (String v : versions) {
+            if (v.equalsIgnoreCase(format)) {
+              return true;
+            }
+          }
+          return false;
+        }
+      };
+
+  public static final OSVersionFormat UNKNOWN_VERSION_FORMAT =
+      new OSVersionFormat() {
+        @Override
+        public boolean hasCorrectFormat(String format) {
+          return false;
+        }
+      };
+  private static final long serialVersionUID = -7624377333732191799L;
+
+  public abstract boolean hasCorrectFormat(String format);
+
+  OSVersionFormat() {}
 }

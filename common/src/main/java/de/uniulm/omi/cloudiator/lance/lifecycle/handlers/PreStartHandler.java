@@ -18,33 +18,33 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment; 
+import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
- * may be used for checking that required operating system
- * files are available, like files, disk space, and port 
- * 
+ * may be used for checking that required operating system files are available, like files, disk
+ * space, and port
+ *
  * @author Joerg Domaschka
  */
 public interface PreStartHandler extends LifecycleHandler {
-    
-    // marker interface
+
+  // marker interface
 }
 
 final class PreStartDeploymentHandler implements PreStartHandler {
 
-    private static final long serialVersionUID = -2848584695480522743L;
-    private final Deployment d;
-    
-    PreStartDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = -2848584695480522743L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.PRE_START, ec);
-    }
+  PreStartDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.PRE_START, ec);
+  }
 }

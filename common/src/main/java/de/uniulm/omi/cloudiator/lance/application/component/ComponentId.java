@@ -36,18 +36,18 @@ public final class ComponentId implements Serializable {
     id = UUID.randomUUID().toString();
   }
 
-  private ComponentId(String s) {
-    this.id = s;
+  private ComponentId(String str) {
+    this.id = str;
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof ComponentId)) {
+  public boolean equals(Object obj) {
+    if (!(obj instanceof ComponentId)) {
       return false; // captures null
     }
-    ComponentId that = (ComponentId) o;
-    boolean c = this.id.equals(that.id);
-    return c;
+    ComponentId that = (ComponentId) obj;
+    boolean same = this.id.equals(that.id);
+    return same;
   }
 
   @Override
@@ -60,8 +60,8 @@ public final class ComponentId implements Serializable {
     return id;
   }
 
-  public static ComponentId fromString(String s) {
-    checkNotNull(s, "s is null");
-    return new ComponentId(s);
+  public static ComponentId fromString(String str) {
+    checkNotNull(str, "s is null");
+    return new ComponentId(str);
   }
 }

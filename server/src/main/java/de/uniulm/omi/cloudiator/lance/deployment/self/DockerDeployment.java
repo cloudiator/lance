@@ -26,25 +26,31 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.command.SetFileProperti
 
 public class DockerDeployment {
 
-    private DockerDeployment() {
-        // no instances of this class //
-    }
+  private DockerDeployment() {
+    // no instances of this class //
+  }
 
-    public static CommandSequence create() {
-        CommandSequenceBuilder b = new CommandSequenceBuilder("deploy and configure docker");
-        b.setPhase(LifecycleHandlerType.PRE_INSTALL);
-        CommandResultReference ref = b.download("https://get.docker.com/");
+  public static CommandSequence create() {
+    CommandSequenceBuilder b = new CommandSequenceBuilder("deploy and configure docker");
+    b.setPhase(LifecycleHandlerType.PRE_INSTALL);
+    CommandResultReference ref = b.download("https://get.docker.com/");
 
-        b.setPhase(LifecycleHandlerType.INSTALL);
-        // CommandResultReference f = 
-        b.setFileProperties(SetFilePropertiesCommand.SetFilePropertiesCommandConstants.ALL_ACCESS, SetFilePropertiesCommand.SetFilePropertiesCommandConstants.FILE_ALL, ref);
-        b.executeOnShell(ref);
-        
-        b.setPhase(LifecycleHandlerType.POST_INSTALL);
-        b.replaceFileContent(DockerConfigFileLocation.INSTANCE, "^#DOCKER_OPTS.*$", "DOCKER_OPTS=\"-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock\"");
-        
-        b.setPhase(LifecycleHandlerType.START);
-        b.configureSystemService("docker", "restart");
-        return b.build();
-    }
+    b.setPhase(LifecycleHandlerType.INSTALL);
+    // CommandResultReference f =
+    b.setFileProperties(
+        SetFilePropertiesCommand.SetFilePropertiesCommandConstants.ALL_ACCESS,
+        SetFilePropertiesCommand.SetFilePropertiesCommandConstants.FILE_ALL,
+        ref);
+    b.executeOnShell(ref);
+
+    b.setPhase(LifecycleHandlerType.POST_INSTALL);
+    b.replaceFileContent(
+        DockerConfigFileLocation.INSTANCE,
+        "^#DOCKER_OPTS.*$",
+        "DOCKER_OPTS=\"-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock\"");
+
+    b.setPhase(LifecycleHandlerType.START);
+    b.configureSystemService("docker", "restart");
+    return b.build();
+  }
 }

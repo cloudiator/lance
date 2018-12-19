@@ -19,25 +19,24 @@
 package de.uniulm.omi.cloudiator.lance.container.spec.os;
 
 public enum WindowsVersion {
+  WIN_95("95"),
+  WIN_98("98"),
+  WIN_2000("2000"),
+  WIN_ME("ME"),
+  WIN_VISTA("VISTA"),
+  WIN_7("7"),
+  WIN_8("8"),
+  WIN_8_1("8.1"),
+  ;
 
-    WIN_95("95"),
-    WIN_98("98"),
-    WIN_2000("2000"),
-    WIN_ME("ME"),
-    WIN_VISTA("VISTA"),
-    WIN_7("7"),
-    WIN_8("8"),
-    WIN_8_1("8.1"),
-    ;
+  private final String number;
 
-    private final String number;
-    
-    WindowsVersion(String numberParam) {
-        number = numberParam;
-    }
-    
-    @Override
-    public String toString() {
-        return number;
-    }
+  WindowsVersion(String numberParam) {
+    number = numberParam;
+  }
+
+  @Override
+  public String toString() {
+    return number;
+  }
 }

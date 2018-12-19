@@ -26,13 +26,11 @@ import java.rmi.server.RMISocketFactory;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-//todo: implement in "enum" style
+// todo: implement in "enum" style
 class ServerDelegate<T> {
 
-  public enum TestType { REWIRINGTEST, DOCKERSHELLTEST };
-  public final static String REWT_REGISTRY_KEY = "RewiringTestAgent";
-  public final static String DST_REGISTRY_KEY = "DockerShellTestAgent";
-
+    public static final String REWT_REGISTRY_KEY = "RewiringTestAgent";;
+  public static final String DST_REGISTRY_KEY = "DockerShellTestAgent";
   protected static final LcaRegistry currentRegistry;
   public static volatile TestType tType;
   public static volatile String publicIp;
@@ -47,51 +45,49 @@ class ServerDelegate<T> {
     }
   }
 
-  public ServerDelegate() {};
+public ServerDelegate() {}
+
+    public static String getPublicIp() {
+    return publicIp;
+  };
 
   public static void setPublicIp(String pIp) {
     publicIp = pIp;
-  }
-
-  public static String getPublicIp() {
-    return publicIp;
-  }
-
-  public static void setTType(TestType tT) {
-    tType = tT;
   }
 
   public static TestType getTType() {
     return tType;
   }
 
+  public static void setTType(TestType tT) {
+    tType = tT;
+  }
+
   protected static void setRemoteAgent() throws RemoteException, NotBoundException {
     try {
-      if(tType == null)
-        throw new RemoteException("TestType not set");
-      if(publicIp == null)
-        throw new RemoteException("publicIp not set");
+      if (tType == null) throw new RemoteException("TestType not set");
+      if (publicIp == null) throw new RemoteException("publicIp not set");
 
-      RMISocketFactory.setSocketFactory(new RMISocketFactory() {
+      RMISocketFactory.setSocketFactory(
+          new RMISocketFactory() {
 
-        private final RMISocketFactory delegate =
-            RMISocketFactory.getDefaultSocketFactory();
+            private final RMISocketFactory delegate = RMISocketFactory.getDefaultSocketFactory();
 
-        @Override
-        public Socket createSocket(String host, int port) throws IOException {
-          final Socket socket = delegate.createSocket(host, port);
-          return socket;
-        }
+            @Override
+            public Socket createSocket(String host, int port) throws IOException {
+              final Socket socket = delegate.createSocket(host, port);
+              return socket;
+            }
 
-        @Override
-        public ServerSocket createServerSocket(int i) throws IOException {
-          return delegate.createServerSocket(i);
-        }
-      });
+            @Override
+            public ServerSocket createServerSocket(int i) throws IOException {
+              return delegate.createServerSocket(i);
+            }
+          });
       Registry reg = LocateRegistry.getRegistry(publicIp);
       Object o;
 
-      switch(tType) {
+      switch (tType) {
         case REWIRINGTEST:
           o = reg.lookup(REWT_REGISTRY_KEY);
           rwTestAgent = (RewiringTestAgent) o;
@@ -106,7 +102,7 @@ class ServerDelegate<T> {
           throw new RemoteException("Wrong test type");
       }
     } catch (IOException e) {
-      //ignored
+      // ignored
     }
   }
 
@@ -152,5 +148,10 @@ class ServerDelegate<T> {
         throw new IllegalStateException(e);
       }
     }
+  }
+
+public enum TestType {
+    REWIRINGTEST,
+    DOCKERSHELLTEST
   }
 }

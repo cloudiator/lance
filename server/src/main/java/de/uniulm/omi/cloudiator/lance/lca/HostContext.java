@@ -48,5 +48,4 @@ public interface HostContext extends StaticEnvVars {
   <T> Future<T> run(Callable<T> callable);
 
   ScheduledFuture<?> scheduleAction(Runnable runner);
-
 }

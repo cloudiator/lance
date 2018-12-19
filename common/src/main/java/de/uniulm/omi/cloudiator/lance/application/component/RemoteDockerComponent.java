@@ -1,45 +1,32 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RemoteDockerComponent  extends DockerComponent {
 
-  private final DockerRegistry dReg;
+  private final DockerRegistry dockerReg;
 
   //todo: Better construct a Builder that fits into the Class Hierarchy
-  public RemoteDockerComponent(DockerComponent.Builder builder, DockerRegistry dReg) {
+  public RemoteDockerComponent(DockerComponent.Builder builder, DockerRegistry dockerReg) {
     super(builder);
-    this.dReg = dReg;
+    this.dockerReg = dockerReg;
   }
 
-  public DockerRegistry getDockerReg () {
-    return this.dReg;
+  public DockerRegistry getDockerReg() {
+    return this.dockerReg;
   }
 
   public String getUriEndPoint() throws IllegalArgumentException {
-    if(dReg.hostName == null || dReg.hostName.equals(""))
+    if (dockerReg.hostName == null || dockerReg.hostName.equals("")) {
       throw new IllegalArgumentException("Registry information is corrupted.");
+    }
 
-    boolean usePort = !(dReg.port<0) && dReg.port<65536;
+    boolean usePort = !(dockerReg.port < 0) && dockerReg.port < 65536;
     String fullString;
-    if(usePort) {
-      fullString = dReg.hostName + ":" + new Integer(dReg.port).toString();
+    if (usePort) {
+      fullString = dockerReg.hostName + ":" + new Integer(dockerReg.port).toString();
     } else {
-      fullString = dReg.hostName;
+      fullString = dockerReg.hostName;
     }
     return fullString;
   }
@@ -62,7 +49,8 @@ public class RemoteDockerComponent  extends DockerComponent {
     public final String password;
     public final boolean useCredentialsParam;
 
-    public DockerRegistry(String hostNameParam, int portParam, String userNameParam, String passwordParam, boolean useCredentialsParam) {
+    public DockerRegistry(String hostNameParam, int portParam, String userNameParam,
+        String passwordParam, boolean useCredentialsParam) {
       this.hostName = hostNameParam;
       this.port = portParam;
       this.userName = userNameParam;

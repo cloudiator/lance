@@ -18,31 +18,27 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-/**
- * Created by daniel on 26.02.16.
- */
+/** Created by daniel on 26.02.16. */
 public class DeploymentException extends Exception {
 
+  private static final long serialVersionUID = -671081742968251613L;
 
-    private static final long serialVersionUID = -671081742968251613L;
+  public DeploymentException() {}
 
-    public DeploymentException() {
-    }
+  public DeploymentException(String message) {
+    super(message);
+  }
 
-    public DeploymentException(String message) {
-        super(message);
-    }
+  public DeploymentException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-    public DeploymentException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public DeploymentException(Throwable cause) {
+    super(cause);
+  }
 
-    public DeploymentException(Throwable cause) {
-        super(cause);
-    }
-
-    public DeploymentException(String message, Throwable cause, boolean enableSuppression,
-        boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
+  public DeploymentException(
+      String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    super(message, cause, enableSuppression, writableStackTrace);
+  }
 }

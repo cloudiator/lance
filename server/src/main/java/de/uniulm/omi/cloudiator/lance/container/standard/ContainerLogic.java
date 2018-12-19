@@ -18,47 +18,37 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
-import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
-import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public interface ContainerLogic {
 
-    //void doCreate(OperatingSystem  o) ;
-    void doCreate() throws ContainerException;
+  // void doCreate(OperatingSystem  o) ;
+  void doCreate() throws ContainerException;
 
-    void doInit(LifecycleStore store) throws ContainerException;
-    
-    void preInit() throws ContainerException;
-    void completeShutDown() throws ContainerException;
+  void doInit(LifecycleStore store) throws ContainerException;
 
-    /**
-     * 
-     * @param forceShutdown if false, the 'stop' command was successful and the container can shut down gracefully. 
-     * 				Otherwise, it does its best to terminate the application if possible.
-     * @throws ContainerException when shutting down the container was not possible
-     */
-    void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException;
+  void preInit() throws ContainerException;
 
-    // ComponentInstanceId getId();
+  void completeShutDown() throws ContainerException;
 
-    void preDestroy() throws ContainerException;
+  /**
+   * @param forceShutdown if false, the 'stop' command was successful and the container can shut
+   *     down gracefully. Otherwise, it does its best to terminate the application if possible.
+   * @throws ContainerException when shutting down the container was not possible
+   */
+  void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException;
 
-    /**
-     *
-     * @return null if no address is available;
-     * otherwise a stringified form of an IP address
-     * @throws ContainerException when a container-specific exception occurs
-     */
-    String getLocalAddress() throws ContainerException;
+  // ComponentInstanceId getId();
 
-    InportAccessor getPortMapper();
+  void preDestroy() throws ContainerException;
+
+  /**
+   * @return null if no address is available; otherwise a stringified form of an IP address
+   * @throws ContainerException when a container-specific exception occurs
+   */
+  String getLocalAddress() throws ContainerException;
+
+  InportAccessor getPortMapper();
 }

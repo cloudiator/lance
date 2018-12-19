@@ -22,14 +22,12 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ShellFactory;
 
-
-/**
- * Created by Daniel Seybold on 12.08.2015.
- */
+/** Created by Daniel Seybold on 12.08.2015. */
 public interface PlainShellFactory extends ShellFactory {
 
-	PlainShellWrapper createShell();
-	void closeShell();
-	PlainShell createAndinstallPlainShell(OperatingSystem os);
+  PlainShellWrapper createShell();
 
+  void closeShell();
+
+  PlainShell createAndinstallPlainShell(OperatingSystem os);
 }

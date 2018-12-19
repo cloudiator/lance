@@ -25,24 +25,24 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * may be used to register service instances with a load balancer
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface PostStartHandler extends LifecycleHandler {
-    // marker interface
+  // marker interface
 }
 
 final class PostStartDeploymentHandler implements PostStartHandler {
 
-    private static final long serialVersionUID = -8885825960661042962L;
-    private final Deployment d;
-    
-    PostStartDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = -8885825960661042962L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.POST_START, ec);
-    }
+  PostStartDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.POST_START, ec);
+  }
 }

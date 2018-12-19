@@ -24,43 +24,45 @@ import java.util.List;
 import java.util.Set;
 
 @Deprecated
-public final class StateMachineBuilder<T extends Enum<?> & State > {
+public final class StateMachineBuilder<T extends Enum<?> & State> {
 
-    private final T init;
-    private final Set<T> states = new HashSet<>();
-    private final List<StateTransition<T>> transitions = new ArrayList<>();
-    
-    public StateMachineBuilder(T initState) {
-        init = initState;
-        states.add(initState);
-    }
-    
-    public StateMachineBuilder<T> addState(T state) {
-        states.add(state);
-        return this;
-    }
+  private final T init;
+  private final Set<T> states = new HashSet<>();
+  private final List<StateTransition<T>> transitions = new ArrayList<>();
 
-    public StateMachineBuilder<T> addSynchronousTransition(T fromParam, T toParam, TransitionAction aParam){
-        StateTransition<T> st = StateTransition.synchronousTransition(fromParam, toParam, aParam);
-        transitions.add(st);
-        return this;
-    }
-    
-    public StateMachineBuilder<T> addAsynchronousTransition(T fromParam, T intermediateParam, T toParam, TransitionAction aParam){
-        StateTransition<T> st = StateTransition.asynchronousTransition(fromParam, intermediateParam, toParam, aParam);
-        transitions.add(st);
-        return this;
-    }
-    
-    public StateMachine<T> build() {
-        return new StateMachine<>(init, new ArrayList<>(states), transitions);
-    }
+  public StateMachineBuilder(T initState) {
+    init = initState;
+    states.add(initState);
+  }
 
-    public StateMachineBuilder<T> addAllState(T[] values) {
-        for(T v : values) { 
-            addState(v); 
-        }
-        return this;
-    }
+  public StateMachineBuilder<T> addState(T state) {
+    states.add(state);
+    return this;
+  }
 
+  public StateMachineBuilder<T> addSynchronousTransition(
+      T fromParam, T toParam, TransitionAction aParam) {
+    StateTransition<T> st = StateTransition.synchronousTransition(fromParam, toParam, aParam);
+    transitions.add(st);
+    return this;
+  }
+
+  public StateMachineBuilder<T> addAsynchronousTransition(
+      T fromParam, T intermediateParam, T toParam, TransitionAction aParam) {
+    StateTransition<T> st =
+        StateTransition.asynchronousTransition(fromParam, intermediateParam, toParam, aParam);
+    transitions.add(st);
+    return this;
+  }
+
+  public StateMachine<T> build() {
+    return new StateMachine<>(init, new ArrayList<>(states), transitions);
+  }
+
+  public StateMachineBuilder<T> addAllState(T[] values) {
+    for (T v : values) {
+      addState(v);
+    }
+    return this;
+  }
 }

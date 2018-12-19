@@ -40,15 +40,15 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 public final class DeploymentHelper {
-	
-	public static PortUpdateHandler getEmptyPortUpdateHandler() {  
-		BashBasedHandlerBuilder builder = new BashBasedHandlerBuilder();
-		builder.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-		// basically empty; we do not execute anything //
-		return builder.buildPortUpdateHandler();
-	}
-	
-	private DeploymentHelper() {
-		//no instances // 
-	}
+
+  private DeploymentHelper() {
+    // no instances //
+  }
+
+  public static PortUpdateHandler getEmptyPortUpdateHandler() {
+    BashBasedHandlerBuilder builder = new BashBasedHandlerBuilder();
+    builder.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+    // basically empty; we do not execute anything //
+    return builder.buildPortUpdateHandler();
+  }
 }

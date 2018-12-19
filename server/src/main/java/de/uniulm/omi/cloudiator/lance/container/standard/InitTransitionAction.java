@@ -10,46 +10,48 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 
 final class InitTransitionAction implements TransitionAction {
 
-	private final ErrorAwareContainer<?> theContainer;
-	
-	private InitTransitionAction(ErrorAwareContainer<?> container) {
-		theContainer = container;
-	}
+  private final ErrorAwareContainer<?> theContainer;
 
-	@Override
-	public void transit(Object[] params) throws TransitionException {
-        // FIXME: add code for starting from snapshot (skip init and install steps)
-        // probably has to be realised at a different place
-        try {
-            theContainer.logic.preInit();
-            theContainer.preInitAction();
-            theContainer.postInitAction();
-            theContainer.registerStatus(ContainerStatus.READY);
-        } catch (ContainerException | LifecycleException | RegistrationException ce) {
-        	ErrorAwareContainer.getLogger().error("could not initialise container;", ce); 
-        }
+  private InitTransitionAction(ErrorAwareContainer<?> container) {
+    theContainer = container;
+  }
+
+  public static void create(
+      ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
+      ErrorAwareContainer<?> container) {
+
+    InitTransitionAction action = new InitTransitionAction(container);
+
+    // FIXME: add error handler //
+    transitionBuilder
+        .setStartState(ContainerStatus.BOOTSTRAPPED)
+        .setIntermediateState(ContainerStatus.INITIALISING, false)
+        .setEndState(ContainerStatus.READY)
+        .setErrorState(ContainerStatus.INITIALISATION_FAILED)
+        .addTransitionAction(action);
+
+    transitionBuilder.buildAndRegister();
+  }
+
+  public static boolean isKnownErrorState(ContainerStatus stat) {
+    return stat == ContainerStatus.INITIALISATION_FAILED;
+  }
+
+  public static boolean isSuccessfullEndState(ContainerStatus stat) {
+    return stat == ContainerStatus.READY;
+  }
+
+  @Override
+  public void transit(Object[] params) throws TransitionException {
+    // FIXME: add code for starting from snapshot (skip init and install steps)
+    // probably has to be realised at a different place
+    try {
+      theContainer.logic.preInit();
+      theContainer.preInitAction();
+      theContainer.postInitAction();
+      theContainer.registerStatus(ContainerStatus.READY);
+    } catch (ContainerException | LifecycleException | RegistrationException ce) {
+      ErrorAwareContainer.getLogger().error("could not initialise container;", ce);
     }
-
-	public static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
-			ErrorAwareContainer<?> container) {
-		
-		InitTransitionAction action = new InitTransitionAction(container);
-		
-		// FIXME: add error handler //
-		transitionBuilder.setStartState(ContainerStatus.BOOTSTRAPPED).
-						setIntermediateState(ContainerStatus.INITIALISING, false).
-						setEndState(ContainerStatus.READY).
-						setErrorState(ContainerStatus.INITIALISATION_FAILED).
-						addTransitionAction(action);
-		
-		transitionBuilder.buildAndRegister();
-	}
-
-	public static boolean isKnownErrorState(ContainerStatus stat) {
-		return stat == ContainerStatus.INITIALISATION_FAILED;
-	}
-
-	public static boolean isSuccessfullEndState(ContainerStatus stat) {
-		return stat == ContainerStatus.READY;
-	}
+  }
 }

@@ -26,50 +26,50 @@ import java.util.UUID;
 
 public final class ComponentInstanceId implements Serializable, StaticEnvVars {
 
-    // FIXME: set fixed value!
-    public static final ComponentInstanceId ERROR_ID = new ComponentInstanceId();
-    public static final ComponentInstanceId SYSTEM_ID = new ComponentInstanceId();
+  // FIXME: set fixed value!
+  public static final ComponentInstanceId ERROR_ID = new ComponentInstanceId();
+  public static final ComponentInstanceId SYSTEM_ID = new ComponentInstanceId();
 
-    private static final long serialVersionUID = -6741646835252735882L;;
-    public static final String INSTANCE_ID_KEY = "INSTANCE_ID";
+  private static final long serialVersionUID = -6741646835252735882L;;
+  public static final String INSTANCE_ID_KEY = "INSTANCE_ID";
 
-    private final UUID uuid;
-    
-    public ComponentInstanceId(){
-        uuid = UUID.randomUUID();
-    }
-    
-    private ComponentInstanceId(String s){
-        uuid = UUID.fromString(s);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if(!(o instanceof ComponentInstanceId)) {
-            return false; // captures null
-        }
-        ComponentInstanceId that = (ComponentInstanceId) o;
-        return this.uuid.equals(that.uuid);
-    }
-    
-    @Override 
-    public int hashCode() {
-        return uuid.hashCode();
-    }
-    
-    @Override
-    public String toString(){
-        return uuid.toString();
-    }
-    
-    public static ComponentInstanceId fromString(String s){
-        return new ComponentInstanceId(s);
-    }
+  private final UUID uuid;
 
-    @Override
-    public Map<String,String> getEnvVars() {
-        final Map<String,String> vars = new HashMap<String,String>();
-        vars.put(INSTANCE_ID_KEY,toString());
-        return vars;
+  public ComponentInstanceId() {
+    uuid = UUID.randomUUID();
+  }
+
+  private ComponentInstanceId(String s) {
+    uuid = UUID.fromString(s);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ComponentInstanceId)) {
+      return false; // captures null
     }
+    ComponentInstanceId that = (ComponentInstanceId) o;
+    return this.uuid.equals(that.uuid);
+  }
+
+  @Override
+  public int hashCode() {
+    return uuid.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return uuid.toString();
+  }
+
+  public static ComponentInstanceId fromString(String s) {
+    return new ComponentInstanceId(s);
+  }
+
+  @Override
+  public Map<String, String> getEnvVars() {
+    final Map<String, String> vars = new HashMap<String, String>();
+    vars.put(INSTANCE_ID_KEY, toString());
+    return vars;
+  }
 }

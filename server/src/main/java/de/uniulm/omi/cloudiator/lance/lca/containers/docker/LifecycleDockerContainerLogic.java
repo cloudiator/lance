@@ -16,8 +16,13 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   private LifecycleDockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(builder.osParam, new DockerOperatingSystemTranslator(),
-        builder.client, builder.myComponent, builder.dockerConfig);
+    this.imageHandler =
+        new DockerImageHandler(
+            builder.osParam,
+            new DockerOperatingSystemTranslator(),
+            builder.client,
+            builder.myComponent,
+            builder.dockerConfig);
   }
 
   @Override
@@ -25,14 +30,14 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     try {
       String target = imageHandler.doPullImages(myId);
       executeCreation(target);
-    } catch(DockerException de) {
+    } catch (DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
     }
   }
 
   @Override
-  void setDynamicEnvironment(BashExportBasedVisitor visitor,
-      PortDiff<DownstreamAddress> diff) throws ContainerException {
+  void setDynamicEnvironment(BashExportBasedVisitor visitor, PortDiff<DownstreamAddress> diff)
+      throws ContainerException {
     this.myComponent.injectDeploymentContext(this.deploymentContext);
     networkHandler.generateDynamicEnvVars(diff);
     this.myComponent.generateDynamicEnvVars();
@@ -43,22 +48,22 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
 
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
-      try {
-        //Environment still set (in logic.doInit call in BootstrapTransitionAction)
-        //could return a shell
-        doStartContainer();
-      } catch (ContainerException ce) {
-        throw ce;
-      } catch (Exception ex) {
-        throw new ContainerException(ex);
-      }
+    try {
+      // Environment still set (in logic.doInit call in BootstrapTransitionAction)
+      // could return a shell
+      doStartContainer();
+    } catch (ContainerException ce) {
+      throw ce;
+    } catch (Exception ex) {
+      throw new ContainerException(ex);
+    }
   }
 
   @Override
   public void doDestroy(boolean force, boolean remove) throws ContainerException {
     /* currently docker ignores both flags */
     try {
-      //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
+      // Environment still set (in logic.preDestroy call in DestroyTransitionAction)
       client.stopContainer(myId);
     } catch (DockerException de) {
       throw new ContainerException(de);
@@ -81,14 +86,15 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   }
 
   String getFullImageName() {
-    //ubuntu 14.04
+    // ubuntu 14.04
     return "ubuntu";
   }
 
-  public static class Builder extends AbstractDockerContainerLogic.Builder<DeployableComponent,Builder> {
+  public static class Builder
+      extends AbstractDockerContainerLogic.Builder<DeployableComponent, Builder> {
     private final OperatingSystem osParam;
 
-    public Builder(OperatingSystem osParam){
+    public Builder(OperatingSystem osParam) {
       this.osParam = osParam;
     }
 

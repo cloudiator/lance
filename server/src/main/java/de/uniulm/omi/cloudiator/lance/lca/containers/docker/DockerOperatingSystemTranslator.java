@@ -21,45 +21,40 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 
 final class DockerOperatingSystemTranslator {
-    
-    DockerOperatingSystemTranslator(){
-        
-    }
-    
-    String translate(OperatingSystem os) {
-        switch(os.getFamily()){
-        case LINUX:
-            return translateLinux(os);
-        case WINDOWS:
-            return translateWindows(os);
-        case BSD:
-        default:
-            return translateOther(os);
-        }
-            
-    }
-    
-    private static String translateLinux(OperatingSystem os) {
-        switch(os.getType()){
-        case UBUNTU:
-            return translateUbuntu(os);
-        case SUSE:
-        default:
-            return translateOther(os);
-        }
-    }
-    
-    private static String translateOther(@SuppressWarnings("unused") OperatingSystem os) {
-        throw new IllegalArgumentException("os not supported: ");
-    }
-    
-    private static String translateWindows(OperatingSystem os) {
+
+  DockerOperatingSystemTranslator() {}
+
+  private static String translateLinux(OperatingSystem os) {
+    switch (os.getType()) {
+      case UBUNTU:
+        return translateUbuntu(os);
+      case SUSE:
+      default:
         return translateOther(os);
     }
-    
-    private static String translateUbuntu(OperatingSystem os) {
-        return "ubuntu:" + os.getVersion();
+  }
+
+  private static String translateOther(@SuppressWarnings("unused") OperatingSystem os) {
+    throw new IllegalArgumentException("os not supported: ");
+  }
+
+  private static String translateWindows(OperatingSystem os) {
+    return translateOther(os);
+  }
+
+  private static String translateUbuntu(OperatingSystem os) {
+    return "ubuntu:" + os.getVersion();
+  }
+
+  String translate(OperatingSystem os) {
+    switch (os.getFamily()) {
+      case LINUX:
+        return translateLinux(os);
+      case WINDOWS:
+        return translateWindows(os);
+      case BSD:
+      default:
+        return translateOther(os);
     }
-    
-    
+  }
 }

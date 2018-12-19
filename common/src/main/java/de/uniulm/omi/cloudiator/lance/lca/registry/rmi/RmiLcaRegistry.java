@@ -28,13 +28,33 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 
 public interface RmiLcaRegistry extends Remote {
-    public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RemoteException;
-    public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RemoteException;
-    public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RemoteException;
-    void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RemoteException;
-    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RemoteException;
-    public String getComponentProperty(ApplicationInstanceId appInstId,
-            ComponentId compId, ComponentInstanceId myId, String name) throws RemoteException;
-    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RemoteException;
-    public boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RemoteException;
+  boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name)
+      throws RemoteException;
+
+  void addComponent(ApplicationInstanceId instId, ComponentId cid, String name)
+      throws RemoteException;
+
+  void addComponentInstance(
+      ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId)
+      throws RemoteException;
+
+  void addComponentProperty(
+      ApplicationInstanceId instId,
+      ComponentId cid,
+      ComponentInstanceId cinstId,
+      String property,
+      Object value)
+      throws RemoteException;
+
+  Map<ComponentInstanceId, Map<String, String>> dumpComponent(
+      ApplicationInstanceId instId, ComponentId compId) throws RemoteException;
+
+  String getComponentProperty(
+      ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String name)
+      throws RemoteException;
+
+  boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RemoteException;
+
+  boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId)
+      throws RemoteException;
 }

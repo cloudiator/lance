@@ -4,8 +4,7 @@ import java.util.concurrent.Future;
 
 public interface ErrorAwareTransitionState<T> {
 
-	void transitionStarted(T intermediate, Future<?> object);
+  void transitionStarted(T intermediate, Future<?> object);
 
-	void transitionComplete(T to, TransitionException t);
-
+  void transitionComplete(T to, TransitionException t);
 }

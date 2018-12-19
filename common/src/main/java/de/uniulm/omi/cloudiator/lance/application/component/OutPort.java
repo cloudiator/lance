@@ -23,94 +23,96 @@ import java.io.Serializable;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 public final class OutPort implements Serializable {
-    
-    public static final int INFINITE_SINKS = -1;
-    public static final int NO_SINKS = -2;
-    private static final long serialVersionUID = -3946943099972136410L;
 
-    private final PortUpdateHandler handler;
-    private final String name;
-    private final int cardinality;
-    private final int min;
-    private final int max;
-    
-    /**
-     * 
-     * @param nameParam
-     * @param handlerParam
-     * @param cardinalityParam
-     * @param minSinksParam
-     * @param maxSinksParam
-     * 
-     * @throws NullPointerException if name is null
-     */
-    OutPort(String nameParam, PortUpdateHandler handlerParam, int cardinalityParam, int minSinksParam, int maxSinksParam) {
-        if(nameParam == null) 
-            throw new NullPointerException("name has to be set");
-        name = nameParam;
-        cardinality = cardinalityParam;
-        min = minSinksParam;
-        max = maxSinksParam;
-        handler = handlerParam;
-    }
-    
-    public boolean canHandleInfiniteSinks() {
-        return max == INFINITE_SINKS;
-    }
-    
-    public boolean canHandleNoSinks() {
-        return min == NO_SINKS;
-    }
+  public static final int INFINITE_SINKS = -1;
+  public static final int NO_SINKS = -2;
+  private static final long serialVersionUID = -3946943099972136410L;
 
-    public String getName() {
-        return name;
-    }
+  private final PortUpdateHandler handler;
+  private final String name;
+  private final int cardinality;
+  private final int min;
+  private final int max;
 
-    public int getLowerBound() { 
-    	return min; 
+  /**
+   *
+   * @param nameParam
+   * @param handlerParam
+   * @param cardinalityParam
+   * @param minSinksParam
+   * @param maxSinksParam
+   *
+   * @throws NullPointerException if name is null
+  */
+  OutPort(String nameParam, PortUpdateHandler handlerParam, int cardinalityParam,
+      int minSinksParam, int maxSinksParam) {
+    if (nameParam == null) {
+      throw new NullPointerException("name has to be set");
     }
+    name = nameParam;
+    cardinality = cardinalityParam;
+    min = minSinksParam;
+    max = maxSinksParam;
+    handler = handlerParam;
+  }
 
-    public int getUpperBound() { 
-    	return max; 
-    }
-    
-    @Override
-    public String toString() {
-        return name + ": [" + min + "," + max + "]";
-    }
+  public boolean canHandleInfiniteSinks() {
+    return max == INFINITE_SINKS;
+  }
 
-    public PortUpdateHandler getUpdateHandler() { 
-    	return handler; 
-    }
+  public boolean canHandleNoSinks() {
+    return min == NO_SINKS;
+  }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + cardinality;
-        result = prime * result + max;
-        result = prime * result + min;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if(!(o instanceof OutPort)) {
-            return false;
-        }
-        OutPort that = (OutPort) o;
-        return name.equals(that.name) && this.max == that.max 
-                && this.min == that.min && this.cardinality == that.cardinality;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public boolean namesMatch(OutPort that) {
-        if(this == that) {
-            return true;
-        }
-        if(that == null || that.name == null) {
-            return false;
-        }
-        return this.name.equals(that.name);
+  public int getLowerBound() {
+    return min;
+  }
+
+  public int getUpperBound() {
+    return max;
+  }
+
+  @Override
+  public String toString() {
+    return name + ": [" + min + "," + max + "]";
+  }
+
+  public PortUpdateHandler getUpdateHandler() {
+    return handler;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + cardinality;
+    result = prime * result + max;
+    result = prime * result + min;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if(!(obj instanceof OutPort)) {
+      return false;
     }
+    OutPort that = (OutPort) obj;
+    return name.equals(that.name) && this.max == that.max
+        && this.min == that.min && this.cardinality == that.cardinality;
+  }
+
+  public boolean namesMatch(OutPort that) {
+    if (this == that) {
+      return true;
+    }
+    if (that == null || that.name == null) {
+      return false;
+    }
+    return this.name.equals(that.name);
+  }
 }

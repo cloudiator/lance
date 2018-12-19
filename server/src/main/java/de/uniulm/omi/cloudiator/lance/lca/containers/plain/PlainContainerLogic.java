@@ -24,19 +24,17 @@ import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
@@ -50,13 +48,22 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by Daniel Seybold on 10.08.2015. Refactored by fh 20.09.2018
- */
-//todo: set dynamic env after it has first been set and along with all settings of the static environment
+/** Created by Daniel Seybold on 10.08.2015. Refactored by fh 20.09.2018 */
+// todo: set dynamic env after it has first been set and along with all settings of the static
+// environment
 public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlainContainerLogic.class);
+  // todo: not needed in post-colosseum version, as the environment-var names should be set
+  // correctly then
+  private static final Map<String, String> translateMap;
+
+  static {
+    Map<String, String> tmpMap = new HashMap<>();
+    tmpMap.put("host.vm.id", "VM_ID");
+    tmpMap.put("INSTANCE_ID", "INSTANCE_ID");
+    translateMap = Collections.unmodifiableMap(tmpMap);
+  }
 
   private final ComponentInstanceId myId;
   private final AbstractComponent deployableComponent;
@@ -65,19 +72,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   private final NetworkHandler networkHandler;
   private final PlainShellFactory plainShellFactory;
   private final HostContext hostContext;
-  private boolean stopped = false;
-
   private final Map<String, String> envVarsStatic;
-  private  Map<String, String> envVarsDynamic;
-
-  //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
-  private static final Map<String, String> translateMap;
-  static {
-    Map<String, String> tmpMap = new HashMap<>();
-    tmpMap.put("host.vm.id", "VM_ID");
-    tmpMap.put("INSTANCE_ID", "INSTANCE_ID");
-    translateMap = Collections.unmodifiableMap(tmpMap);
-  }
+  private boolean stopped = false;
+  private Map<String, String> envVarsDynamic;
 
   private PlainContainerLogic(Builder builder) {
 
@@ -92,10 +89,10 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     final StaticEnvVars hostVars = this.hostContext;
     this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
-    for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
-      envVarsStatic.put(kv.getKey(),kv.getValue());
+    for (Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
+      envVarsStatic.put(kv.getKey(), kv.getValue());
     }
-     envVarsDynamic = new HashMap<>();
+    envVarsDynamic = new HashMap<>();
   }
 
   @Override
@@ -105,8 +102,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     PlainShell plainShell = this.plainShellFactory.createAndinstallPlainShell(os);
     LOGGER.debug("Java System user.dir value: " + System.getProperty("user.home"));
     final String plainContainerFolder =
-        System.getProperty("user.home") + System.getProperty("file.separator") + this.myId
-            .toString();
+        System.getProperty("user.home")
+            + System.getProperty("file.separator")
+            + this.myId.toString();
     LOGGER.info("creating new plain container with foldername " + plainContainerFolder);
     plainShell.executeCommand("mkdir " + plainContainerFolder);
 
@@ -115,7 +113,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   @Override
   public void doInit(LifecycleStore store) throws ContainerException {
-    //probably not needed for plain container, except setting the environment
+    // probably not needed for plain container, except setting the environment
   }
 
   @Override
@@ -130,7 +128,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   @Override
   public void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException {
-    //TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
+    // TODO: maybe remember pid of start, then kill this pid or gracefully kill pid.
     LOGGER.warn("doDestroy not implemented for Plain Container!");
   }
 
@@ -150,12 +148,10 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public InportAccessor getPortMapper() {
     return ((portName, clientState) -> {
-
       Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
       clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, portNumber);
       clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, portNumber);
       clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
-
     });
   }
 
@@ -168,7 +164,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
     setHomeDir(plainShellWrapper.plainShell);
 
-    //TODO: move os switch to a central point (currently here and in PlainShellImpl)
+    // TODO: move os switch to a central point (currently here and in PlainShellImpl)
     if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
 
       PowershellExportBasedVisitor visitor =
@@ -176,10 +172,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       networkHandler.accept(visitor);
       this.deployableComponent.accept(visitor);
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
-      BashExportBasedVisitor visitor =
-          new BashExportBasedVisitor(plainShellWrapper.plainShell);
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
-      //visitor.addEnvironmentVariable();
+      // visitor.addEnvironmentVariable();
       networkHandler.accept(visitor);
       this.deployableComponent.accept(visitor);
     } else {
@@ -194,15 +189,15 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     envVarsDynamic.putAll(networkHandler.getEnvVars());
   }
 
-  //todo: where to throw exception
-  void setStaticEnvironment()  throws ContainerException {
+  // todo: where to throw exception
+  void setStaticEnvironment() throws ContainerException {
     this.plainShellFactory.createAndinstallPlainShell(this.os);
 
     PlainShellWrapper plainShellWrapper = this.plainShellFactory.createShell();
     setStaticEnvironment(plainShellWrapper.plainShell);
   }
 
-  private void setStaticEnvironment(PlainShell plainShell)  throws ContainerException {
+  private void setStaticEnvironment(PlainShell plainShell) throws ContainerException {
     if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
       setStaticWindowsEnvironment(plainShell);
     } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
@@ -212,13 +207,12 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
 
   private void setStaticWindowsEnvironment(PlainShell plainShell) {
     setHomeDir(plainShell);
-    PowershellExportBasedVisitor visitor =
-        new PowershellExportBasedVisitor(plainShell);
+    PowershellExportBasedVisitor visitor = new PowershellExportBasedVisitor(plainShell);
 
-    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
-      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
-      if(!translateMap.containsKey(entry.getKey()))
-        continue;
+    for (Entry<String, String> entry : envVarsStatic.entrySet()) {
+      // todo: not needed in post-colosseum version, as the environment-var names should be set
+      // correctly then
+      if (!translateMap.containsKey(entry.getKey())) continue;
 
       visitor.visit(entry.getKey(), entry.getValue());
     }
@@ -228,10 +222,10 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     setHomeDir(plainShell);
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(plainShell);
 
-    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
-      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
-      if(!translateMap.containsKey(entry.getKey()))
-        continue;
+    for (Entry<String, String> entry : envVarsStatic.entrySet()) {
+      // todo: not needed in post-colosseum version, as the environment-var names should be set
+      // correctly then
+      if (!translateMap.containsKey(entry.getKey())) continue;
 
       visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
@@ -257,7 +251,6 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     if (type == LifecycleHandlerType.PRE_STOP) {
       stopped = true;
     }
-
   }
 
   private void preInstallAction() throws ContainerException {
@@ -290,8 +283,7 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   @Override
-  public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
-      throws ContainerException {
+  public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException {
 
     PlainShell pShell = setDynamicEnvironment(diff);
     setStaticEnvironment(pShell);

@@ -24,26 +24,25 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
- * invoked when the Lifecycle controller starts; 
- * may be used for validating system environment;
- * 
+ * invoked when the Lifecycle controller starts; may be used for validating system environment;
+ *
  * @author Joerg Domaschka
  */
 public interface InitHandler extends LifecycleHandler {
-    // marker interface //
+  // marker interface //
 }
 
 final class InitDeploymentHandler implements InitHandler {
 
-    private static final long serialVersionUID = 2458020584701468809L;
-    private final Deployment d;
-    
-    InitDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = 2458020584701468809L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.INIT, ec);
-    }
+  InitDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.INIT, ec);
+  }
 }

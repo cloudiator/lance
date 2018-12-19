@@ -21,6 +21,6 @@ package de.uniulm.omi.cloudiator.lance.lca.container;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 
 public interface SpecificContainerManagerFactory {
-    
-    public ContainerManager createContainerManager(HostContext myId);
+
+  public ContainerManager createContainerManager(HostContext myId);
 }

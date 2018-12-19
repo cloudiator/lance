@@ -25,24 +25,24 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * may be used to unzip and install service binaries
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface InstallHandler extends LifecycleHandler {
-    // marker interface //
+  // marker interface //
 }
 
 final class InstallDeploymentHandler implements InstallHandler {
 
-    private static final long serialVersionUID = 61710496022872382L;
-    private final Deployment d;
-    
-    InstallDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = 61710496022872382L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.INSTALL, ec);
-    }
+  InstallDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.INSTALL, ec);
+  }
 }

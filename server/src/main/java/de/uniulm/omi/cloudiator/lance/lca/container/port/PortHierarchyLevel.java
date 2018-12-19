@@ -20,44 +20,42 @@ package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
 public final class PortHierarchyLevel {
 
-    private final String levelName;
-    
-    private PortHierarchyLevel(String name) {
-        if(name == null) 
-            throw new NullPointerException("level name needs to be set.");
-        if(name.indexOf(" ") > -1) 
-            throw new IllegalStateException("hierarchy level must not contain spaces");
-        if(name.isEmpty()) 
-            throw new IllegalStateException("hierarchy level must not be empty");
-        if(name.indexOf(":") > -1) 
-            throw new IllegalStateException("hierarchy level must not contain colons");
-        levelName = name;
-    }
-    
-    @Override
-    public int hashCode() {
-        return 31 + levelName.hashCode();
-    }
+  private final String levelName;
 
-    @Override
-    public boolean equals(Object o) {
-        if(! (o instanceof PortHierarchyLevel)) {
-            return false;
-        }
-        PortHierarchyLevel that = (PortHierarchyLevel) o;
-        return this.levelName.equals(that.levelName);
-    }
-    
-    public static PortHierarchyLevel create(String string) {
-        return new PortHierarchyLevel(string);
-    }
+  private PortHierarchyLevel(String name) {
+    if (name == null) throw new NullPointerException("level name needs to be set.");
+    if (name.indexOf(" ") > -1)
+      throw new IllegalStateException("hierarchy level must not contain spaces");
+    if (name.isEmpty()) throw new IllegalStateException("hierarchy level must not be empty");
+    if (name.indexOf(":") > -1)
+      throw new IllegalStateException("hierarchy level must not contain colons");
+    levelName = name;
+  }
 
-    public String getName() {
-        return levelName;
+  public static PortHierarchyLevel create(String string) {
+    return new PortHierarchyLevel(string);
+  }
+
+  @Override
+  public int hashCode() {
+    return 31 + levelName.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof PortHierarchyLevel)) {
+      return false;
     }
-    
-    @Override
-    public String toString() {
-        return "HierachyLevel: " + levelName;
-    }
+    PortHierarchyLevel that = (PortHierarchyLevel) o;
+    return this.levelName.equals(that.levelName);
+  }
+
+  public String getName() {
+    return levelName;
+  }
+
+  @Override
+  public String toString() {
+    return "HierachyLevel: " + levelName;
+  }
 }

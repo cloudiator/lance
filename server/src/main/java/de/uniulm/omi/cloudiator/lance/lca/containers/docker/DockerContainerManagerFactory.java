@@ -23,40 +23,39 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.container.SpecificContainerManagerFactory;
 
 public enum DockerContainerManagerFactory implements SpecificContainerManagerFactory {
-	
-    INSTANCE {
-        @Override
-        public ContainerManager createContainerManager(HostContext vmId) {
-            return new DockerContainerManager(vmId);
-        }
-    },
-    
-    REMOTE {
-        @Override
-        public ContainerManager createContainerManager(HostContext vmId) {
-            if(! isRemoteAccessenabled()) 
-                throw new IllegalArgumentException("remote docker not supported"); 
-            throw new UnsupportedOperationException("remote IP address needs to be defined.");
-        }
-    };
-    
-    static { 
-    	int i = 0;
-    	if(1 == i) {
-    		// TODO: add configuration flag or remove
-    		// note that in order to support this,
-    		// Docker has to be made remote enabled
-    		DockerContainerManagerFactory.enableRemoteAccess();
-    	}
+  INSTANCE {
+    @Override
+    public ContainerManager createContainerManager(HostContext vmId) {
+      return new DockerContainerManager(vmId);
     }
-    
-    static boolean isRemoteAccessenabled() {
-        return remote_enabled;
-    }
-    
-    public static void enableRemoteAccess() {
-        remote_enabled = true;
-    }
+  },
 
-    private static volatile boolean remote_enabled = false;     
+  REMOTE {
+    @Override
+    public ContainerManager createContainerManager(HostContext vmId) {
+      if (!isRemoteAccessenabled())
+        throw new IllegalArgumentException("remote docker not supported");
+      throw new UnsupportedOperationException("remote IP address needs to be defined.");
+    }
+  };
+
+  private static volatile boolean remote_enabled = false;
+
+  static {
+    int i = 0;
+    if (1 == i) {
+      // TODO: add configuration flag or remove
+      // note that in order to support this,
+      // Docker has to be made remote enabled
+      DockerContainerManagerFactory.enableRemoteAccess();
+    }
+  }
+
+  static boolean isRemoteAccessenabled() {
+    return remote_enabled;
+  }
+
+  public static void enableRemoteAccess() {
+    remote_enabled = true;
+  }
 }

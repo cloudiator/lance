@@ -24,14 +24,13 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 
 enum DockerConfigFileLocation implements CommandResultReference {
+  INSTANCE;
 
-    INSTANCE;
-    
-    @Override
-    public String getResult(OperatingSystem os, ExecutionContext ec) {
-        if(os.isLinuxOs() && os.getType() == OperatingSystemType.UBUNTU) {
-                return "/etc/default/docker";
-        }
-        throw new IllegalStateException("location of config file unknown for " + os);
+  @Override
+  public String getResult(OperatingSystem os, ExecutionContext ec) {
+    if (os.isLinuxOs() && os.getType() == OperatingSystemType.UBUNTU) {
+      return "/etc/default/docker";
     }
+    throw new IllegalStateException("location of config file unknown for " + os);
+  }
 }

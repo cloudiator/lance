@@ -3,12 +3,12 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.DockerShellTestAgent;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.containers.TestImpl;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.ProcessBasedConnector;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -25,10 +25,10 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
 
   private static final int DEFAULT_PROPERTIES = 5;
   private static final String INITIAL_LOCAL_ADDRESS = "<unknown>";
-  private volatile ComponentInfo info = null;
-  private volatile DockerComponent comp;
   private final ProcessBasedConnector connector;
   private final DockerShellFactory shellFactory;
+  private volatile ComponentInfo info = null;
+  private volatile DockerComponent comp;
 
   public DockerShellTestImpl() {
     connector = new ProcessBasedConnector("ubuntu-host");
@@ -37,7 +37,8 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
 
   @Override
   public ApplicationInstanceId setupContainer(
-      AppArchitecture arch, String publicIp, LcaRegistry reg) throws ContainerException, RemoteException {
+      AppArchitecture arch, String publicIp, LcaRegistry reg)
+      throws ContainerException, RemoteException {
     info = (ComponentInfo) arch.getComponents().toArray()[0];
     ApplicationInstanceId id = setupApp(arch, publicIp, reg);
 
@@ -75,8 +76,7 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
 
   @Override
   public void setEnvironment() throws ContainerException, RemoteException {
-    if (info == null)
-      throw new ContainerException("ComponentInfo not set");
+    if (info == null) throw new ContainerException("ComponentInfo not set");
 
     DockerShell shell;
 
@@ -107,8 +107,7 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
   }
 
   @Override
-  public void openAndInstallShell()
-      throws ContainerException, RemoteException {
+  public void openAndInstallShell() throws ContainerException, RemoteException {
     DockerShell shell;
 
     try {
@@ -123,7 +122,8 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
   protected void init(AppArchitecture arch) throws ContainerException {
     if (info == null) throw new ContainerException("ComponentInfo not set");
 
-    DockerComponent.Builder builder = new DockerComponent.Builder(new EntireDockerCommands(), info.getComponentName());
+    DockerComponent.Builder builder =
+        new DockerComponent.Builder(new EntireDockerCommands(), info.getComponentName());
     builder.deploySequentially(true);
     comp = builder.build();
   }

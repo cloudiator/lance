@@ -18,33 +18,31 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.registry;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
-
 public final class ContainerRegistry {
-    
-    private final Map<ComponentInstanceId, ContainerController> containers = new HashMap<>();
-    
-    public final synchronized ComponentInstanceId addContainer(ContainerController containerParam) {
-        if(containerParam == null) 
-            throw new IllegalArgumentException("container is null");
-        
-        ComponentInstanceId id = containerParam.getId();
-        containers.put(id, containerParam);
-        return id;
-    }
 
-    public synchronized ContainerController getContainer(ComponentInstanceId idParam) {
-        return containers.get(idParam);
-    }
+  private final Map<ComponentInstanceId, ContainerController> containers = new HashMap<>();
 
-    public synchronized List<ComponentInstanceId> listComponentInstances() {
-        List<ComponentInstanceId> arrayList = new ArrayList<>(containers.keySet());
-        return arrayList;
-    }
+  public final synchronized ComponentInstanceId addContainer(ContainerController containerParam) {
+    if (containerParam == null) throw new IllegalArgumentException("container is null");
+
+    ComponentInstanceId id = containerParam.getId();
+    containers.put(id, containerParam);
+    return id;
+  }
+
+  public synchronized ContainerController getContainer(ComponentInstanceId idParam) {
+    return containers.get(idParam);
+  }
+
+  public synchronized List<ComponentInstanceId> listComponentInstances() {
+    List<ComponentInstanceId> arrayList = new ArrayList<>(containers.keySet());
+    return arrayList;
+  }
 }

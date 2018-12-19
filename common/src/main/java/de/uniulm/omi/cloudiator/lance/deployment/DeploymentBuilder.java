@@ -25,18 +25,18 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public final class DeploymentBuilder {
 
-    private final List<CommandSequence> seqs = new ArrayList<>();
-    
-    public DeploymentBuilder () {
-        // an empty constructor
-    }
-    
-    public DeploymentBuilder addSequence(CommandSequence seq) {
-        seqs.add(seq);
-        return this;
-    }
-    
-    public Deployment build() {
-        return new Deployment(new ArrayList<>(seqs));
-    }
+  private final List<CommandSequence> seqs = new ArrayList<>();
+
+  public DeploymentBuilder() {
+    // an empty constructor
+  }
+
+  public DeploymentBuilder addSequence(CommandSequence seq) {
+    seqs.add(seq);
+    return this;
+  }
+
+  public Deployment build() {
+    return new Deployment(new ArrayList<>(seqs));
+  }
 }

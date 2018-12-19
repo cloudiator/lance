@@ -23,5 +23,5 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 
 public interface PortUpdateCallback {
 
-    void handleUpdate(OutPort port, PortDiff<?> diff);
+  void handleUpdate(OutPort port, PortDiff<?> diff);
 }

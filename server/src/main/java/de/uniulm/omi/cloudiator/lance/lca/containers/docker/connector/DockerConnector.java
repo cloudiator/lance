@@ -18,42 +18,40 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
-import java.util.Map;
-
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
+import java.util.Map;
 
 public interface DockerConnector {
 
-    // public final String LIFECYCLE_DIRECTORY = "/lifecycle";
-    
-    DockerShell startContainer(ComponentInstanceId myId) throws DockerException;
+  // public final String LIFECYCLE_DIRECTORY = "/lifecycle";
 
-    void pullImage(String target) throws DockerException;
+  DockerShell startContainer(ComponentInstanceId myId) throws DockerException;
 
-    /**
-     * 
-     * @param key should be the id to use including the registry 
-     * @param os will be used as a tag in both cases
-     * @return the name of the container
-     * @throws DockerException 
-     */
-    String createSnapshotImage(ComponentInstanceId containerId, String key) throws DockerException;
+  void pullImage(String target) throws DockerException;
 
-    String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> portsToSet) throws DockerException;
+  /**
+   * @param key should be the id to use including the registry
+   * @param os will be used as a tag in both cases
+   * @return the name of the container
+   * @throws DockerException
+   */
+  String createSnapshotImage(ComponentInstanceId containerId, String key) throws DockerException;
 
-    String findImage(String target) throws DockerException ;
+  String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> portsToSet)
+      throws DockerException;
 
-    String getContainerIp(ComponentInstanceId myId) throws DockerException;
+  String findImage(String target) throws DockerException;
 
-    int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException;
+  String getContainerIp(ComponentInstanceId myId) throws DockerException;
 
-    DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
+  int getPortMapping(ComponentInstanceId myId, Integer portNumber) throws DockerException;
 
-	void stopContainer(ComponentInstanceId myId) throws DockerException;
+  DockerShell getSideShell(ComponentInstanceId myId) throws DockerException;
 
-	void pushImage(String target) throws DockerException;
+  void stopContainer(ComponentInstanceId myId) throws DockerException;
+
+  void pushImage(String target) throws DockerException;
 
   String executeSingleDockerCommand(String fullDockerCommand) throws DockerException;
 

@@ -20,6 +20,5 @@ package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
 public interface PropertyVisitor {
 
-    void visit(String propertyName, String propertyValue);
-
+  void visit(String propertyName, String propertyValue);
 }

@@ -23,44 +23,42 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+public final class ErrorAwareStateMachineBuilder<T extends Enum<?> & State> {
 
-public final class ErrorAwareStateMachineBuilder<T extends Enum<?> & State > {
+  private final T init;
+  private final T errorState;
+  private final Set<T> states = new HashSet<>();
+  private final List<ErrorAwareStateTransition<T>> transitions = new ArrayList<>();
 
-    private final T init;
-    private final T errorState;
-    private final Set<T> states = new HashSet<>();
-    private final List<ErrorAwareStateTransition<T>> transitions = new ArrayList<>();
-    
-    public ErrorAwareStateMachineBuilder(T initState, T genericErrorState) {
-        init = initState;
-        errorState = genericErrorState;
-        states.add(initState);
-        states.add(genericErrorState);
+  public ErrorAwareStateMachineBuilder(T initState, T genericErrorState) {
+    init = initState;
+    errorState = genericErrorState;
+    states.add(initState);
+    states.add(genericErrorState);
+  }
+
+  public ErrorAwareStateMachineBuilder<T> addState(T state) {
+    states.add(state);
+    return this;
+  }
+
+  public ErrorAwareStateMachineBuilder<T> addTransition(ErrorAwareStateTransition<T> t) {
+    transitions.add(t);
+    return this;
+  }
+
+  public ErrorAwareStateMachine<T> build() {
+    return new ErrorAwareStateMachine<>(init, errorState, new ArrayList<>(states), transitions);
+  }
+
+  public ErrorAwareStateMachineBuilder<T> addAllState(T[] values) {
+    for (T v : values) {
+      addState(v);
     }
-    
-    public ErrorAwareStateMachineBuilder<T> addState(T state) {
-        states.add(state);
-        return this;
-    }
+    return this;
+  }
 
-    public ErrorAwareStateMachineBuilder<T> addTransition(ErrorAwareStateTransition<T> t) {
-    	transitions.add(t);
-    	return this;
-    }
-    
-    public ErrorAwareStateMachine<T> build() {
-        return new ErrorAwareStateMachine<>(init, errorState, new ArrayList<>(states), transitions);
-    }
-
-    public ErrorAwareStateMachineBuilder<T> addAllState(T[] values) {
-        for(T v : values) { 
-            addState(v); 
-        }
-        return this;
-    }
-
-	public ErrorAwareTransitionBuilder<T> getTransitionBuilder() {
-		return new ErrorAwareTransitionBuilder<>(this);
-	}
-
+  public ErrorAwareTransitionBuilder<T> getTransitionBuilder() {
+    return new ErrorAwareTransitionBuilder<>(this);
+  }
 }

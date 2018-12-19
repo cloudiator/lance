@@ -19,9 +19,10 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 class ExecResultBuilder {
-    final StringBuilder error = new StringBuilder();
-    final StringBuilder output = new StringBuilder();
-    public ExecResult build(int retval) {
-        return new ExecResult(retval, output.toString(), error.toString());
-    }
+  final StringBuilder error = new StringBuilder();
+  final StringBuilder output = new StringBuilder();
+
+  public ExecResult build(int retval) {
+    return new ExecResult(retval, output.toString(), error.toString());
+  }
 }

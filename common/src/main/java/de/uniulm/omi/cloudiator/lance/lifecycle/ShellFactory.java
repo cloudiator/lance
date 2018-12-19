@@ -20,6 +20,5 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 public interface ShellFactory {
 
-    Shell createShell();
-
+  Shell createShell();
 }

@@ -6,8 +6,9 @@ import de.uniulm.omi.cloudiator.lance.util.Registrator;
 
 public class DockerShellTestBooter {
 
-  public final static String DST_REGISTRY_KEY = "DockerShellTestAgent";
-  private final static Registrator<DockerShellTestAgent> reg = Registrator.create(DockerShellTestAgent.class);
+  public static final String DST_REGISTRY_KEY = "DockerShellTestAgent";
+  private static final Registrator<DockerShellTestAgent> reg =
+      Registrator.create(DockerShellTestAgent.class);
   private static volatile DockerShellTestImpl dst = createDSImplementation();
   private static volatile DockerShellTestAgent stub = reg.export(dst, LcaConstants.AGENT_RMI_PORT);
 
@@ -17,11 +18,13 @@ public class DockerShellTestBooter {
       Thread idle = new Thread(new IdleRunnable());
       idle.setDaemon(true);
       idle.start();
-      Runtime.getRuntime().addShutdownHook(new Thread(
-          () -> {
-            unregister(dst);
-            idle.interrupt();
-          }));
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    unregister(dst);
+                    idle.interrupt();
+                  }));
     } else {
       Runtime.getRuntime().exit(-128);
     }
@@ -52,5 +55,4 @@ public class DockerShellTestBooter {
       }
     }
   }
-
 }

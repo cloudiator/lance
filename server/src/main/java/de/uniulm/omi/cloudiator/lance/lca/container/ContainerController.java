@@ -30,15 +30,15 @@ public interface ContainerController {
 
   void setShouldBeRemoved(boolean shouldBeRemoved);
 
-  void create() ;
+  void create();
 
-	void bootstrap() ;
+  void bootstrap();
 
-  void init(LifecycleStore store) ;
+  void init(LifecycleStore store);
 
   void init();
 
-  void tearDown() ;
+  void tearDown();
 
   void awaitInitialisation() throws ContainerException;
 
@@ -46,9 +46,9 @@ public interface ContainerController {
 
   void awaitDestruction(boolean forceRegDeletion) throws ContainerException;
 
-	void awaitBootstrap() throws ContainerException;
+  void awaitBootstrap() throws ContainerException;
 
-	boolean isReady();
+  boolean isReady();
 
-	void startPortUpdaters();
+  void startPortUpdaters();
 }

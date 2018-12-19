@@ -18,58 +18,60 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
-import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
-import java.util.EnumMap;
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerType.DOCKER_REMOTE;
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerType.values;
 
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
+import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManager;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManagerFactory;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.PlainContainerManagerFactory;
-
-import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerType.*;
+import java.util.EnumMap;
 
 public final class ContainerManagerFactory {
 
-    private static final EnumMap<ContainerType, SpecificContainerManagerFactory> mapper;
-    
-    static {
-        // FIXME: add initialisation code
-        mapper = new EnumMap<>(ContainerType.class);
-        for(ContainerType t : values()) {
-            mapper.put(t,getContainerFactoryFromContainerType(t));
-        }
+  private static final EnumMap<ContainerType, SpecificContainerManagerFactory> mapper;
+
+  static {
+    // FIXME: add initialisation code
+    mapper = new EnumMap<>(ContainerType.class);
+    for (ContainerType t : values()) {
+      mapper.put(t, getContainerFactoryFromContainerType(t));
     }
-    
-    public static ContainerManager createContainerManager(HostContext myId, ContainerType type) {
-        SpecificContainerManagerFactory sf = mapper.get(type);
-        if(sf == null)
-        	throw new IllegalArgumentException("Type: " + type + " not supported");
-        return sf.createContainerManager(myId);
+  }
+
+  private ContainerManagerFactory() {
+    // empty constructor //
+  }
+
+  public static ContainerManager createContainerManager(HostContext myId, ContainerType type) {
+    SpecificContainerManagerFactory sf = mapper.get(type);
+    if (sf == null) throw new IllegalArgumentException("Type: " + type + " not supported");
+    return sf.createContainerManager(myId);
+  }
+
+  public static ContainerManager createRemoteContainerManager(
+      HostContext myId, RemoteDockerComponent.DockerRegistry dReg) {
+    if (mapper.get(DOCKER_REMOTE) == null)
+      throw new IllegalArgumentException("Type: " + DOCKER_REMOTE + " not supported");
+    return new DockerContainerManager(myId, dReg);
+  }
+
+  private static SpecificContainerManagerFactory getContainerFactoryFromContainerType(
+      ContainerType containerType) {
+
+    switch (containerType) {
+      case PLAIN:
+        return PlainContainerManagerFactory.INSTANCE;
+
+      case DOCKER:
+        return DockerContainerManagerFactory.INSTANCE;
+
+      case DOCKER_REMOTE:
+        return DockerContainerManagerFactory.REMOTE;
+
+      default:
+        throw new IllegalStateException("Unsupported Container type: " + containerType.toString());
     }
-
-    public static ContainerManager createRemoteContainerManager(HostContext myId, RemoteDockerComponent.DockerRegistry dReg) {
-        if(mapper.get(DOCKER_REMOTE) == null)
-            throw new IllegalArgumentException("Type: " + DOCKER_REMOTE + " not supported");
-        return new DockerContainerManager(myId, dReg);
-    }
-
-    private static SpecificContainerManagerFactory getContainerFactoryFromContainerType(ContainerType containerType){
-
-        switch (containerType){
-            case PLAIN: return PlainContainerManagerFactory.INSTANCE;
-
-            case DOCKER: return DockerContainerManagerFactory.INSTANCE;
-
-            case DOCKER_REMOTE: return DockerContainerManagerFactory.REMOTE;
-
-            default: throw new IllegalStateException("Unsupported Container type: " + containerType.toString());
-
-        }
-
-    }
-
-
-    private ContainerManagerFactory() {
-        // empty constructor //
-    }
+  }
 }

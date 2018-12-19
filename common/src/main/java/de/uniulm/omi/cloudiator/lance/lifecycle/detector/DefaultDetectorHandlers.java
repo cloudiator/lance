@@ -26,23 +26,24 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 
 public final class DefaultDetectorHandlers {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDetectorHandlers.class);
-    
-    static Logger getLogger() { 
-    	return LOGGER; 
-    }
-    
-    public static final StartDetector DEFAULT_START_DETECTOR = new StartDetector() {
 
-		@Override
-		public DetectorState execute(ExecutionContext ec) {
-			getLogger().info("DEFAULT StopHandler doing nothing");
-			return DetectorState.DETECTED;
-		}
-	};
-    
-    private DefaultDetectorHandlers() {
-        // no instances //
-    }
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDetectorHandlers.class);
+
+  static Logger getLogger() {
+    return LOGGER;
+  }
+
+  public static final StartDetector DEFAULT_START_DETECTOR =
+      new StartDetector() {
+
+        @Override
+        public DetectorState execute(ExecutionContext ec) {
+          getLogger().info("DEFAULT StopHandler doing nothing");
+          return DetectorState.DETECTED;
+        }
+      };
+
+  private DefaultDetectorHandlers() {
+    // no instances //
+  }
 }

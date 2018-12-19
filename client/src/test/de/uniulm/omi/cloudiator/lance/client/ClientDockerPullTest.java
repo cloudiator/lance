@@ -18,52 +18,55 @@
 
 package de.uniulm.omi.cloudiator.lance.client;
 
-import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.READY;
+import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.UNKNOWN;
 import static java.lang.Thread.sleep;
 
+import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
+import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
+import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
+import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.InPort;
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
+import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
+import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortLinkage;
+import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
+import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
+import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
+import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
+import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
+import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
-import de.uniulm.omi.cloudiator.lance.application.component.*;
-import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
-import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import java.util.Map;
 import java.util.Random;
-import org.junit.Ignore;
-import org.junit.Test;
+import java.util.concurrent.Callable;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
-import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
-import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
-import de.uniulm.omi.cloudiator.lance.application.component.InPort;
-import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
-import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortLinkage;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
-import java.util.concurrent.Callable;
-import java.rmi.RemoteException;
-import java.rmi.NotBoundException;
-import java.lang.Exception;
 
 // Important: Java-re, docker daemon and Lance(Server) must be installed on the VM and related ports
 // must be opened on the vm
@@ -73,17 +76,22 @@ import java.lang.Exception;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClientDockerPullTest {
 
-  private enum version { DOCKER, LIFECYCLE };
-
-  private static ApplicationId applicationId;
+    private static ApplicationId applicationId;;
   private static ApplicationInstanceId appInstanceId;
-
   private static String zookeeperComponent, zookeeperComponent_lifecycle, rubyComponent_remote;
-  private static String zookeeperInternalInportName, zookeeperInternalInportName_lifecycle, rubyInternalInportName_remote;
-  private static String zookeeperOutportName, zookeeperOutportName_lifecycle, rubyOutportName_remote;
+  private static String zookeeperInternalInportName,
+      zookeeperInternalInportName_lifecycle,
+      rubyInternalInportName_remote;
+  private static String zookeeperOutportName,
+      zookeeperOutportName_lifecycle,
+      rubyOutportName_remote;
   private static String imageName, imageName_remote;
-  private static ComponentId zookeeperComponentId, zookeeperComponentId_lifecycle, rubyComponentId_remote;
-  private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
+  private static ComponentId zookeeperComponentId,
+      zookeeperComponentId_lifecycle,
+      rubyComponentId_remote;
+  private static int defaultZookeeperInternalInport,
+      defaultZookeeperInternalInport_lifecycle,
+      defaultRubyInternalInport_remote;
   private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
   private static String publicIp = "x.x.x.x";
@@ -118,6 +126,60 @@ public class ClientDockerPullTest {
     System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
+  private static List<InportInfo> getInPortInfos(String internalInportName) {
+    List<InportInfo> inInfs = new ArrayList<>();
+    InportInfo inInf =
+        new InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
+    inInfs.add(inInf);
+
+    return inInfs;
+  }
+
+  private static List<OutportInfo> getOutPortInfos(String outPortName) {
+    List<OutportInfo> outInfs = new ArrayList<>();
+    OutportInfo outInf =
+        new OutportInfo(
+            outPortName, DeploymentHelper.getEmptyPortUpdateHandler(), 1, OutPort.NO_SINKS);
+    outInfs.add(outInf);
+
+    return outInfs;
+  }
+
+  private static DeploymentContext createZookeperContext(
+      LifecycleClient client,
+      ComponentId otherComponentId,
+      String otherInternalInportName,
+      version v) {
+    String internalInportName;
+    int defaultInternalInport;
+    String outportName;
+
+    if (v == version.DOCKER) {
+      internalInportName = zookeeperInternalInportName;
+      defaultInternalInport = defaultZookeeperInternalInport;
+      outportName = zookeeperOutportName;
+    } else if (v == version.LIFECYCLE) {
+      internalInportName = zookeeperInternalInportName_lifecycle;
+      defaultInternalInport = defaultZookeeperInternalInport_lifecycle;
+      outportName = zookeeperOutportName_lifecycle;
+    } else {
+      internalInportName = rubyInternalInportName_remote;
+      defaultInternalInport = defaultRubyInternalInport_remote;
+      outportName = rubyOutportName_remote;
+    }
+
+    DeploymentContext zookeeper_context =
+        client.initDeploymentContext(applicationId, appInstanceId);
+    // saying that we want to use the default port as the actual port number //
+    zookeeper_context.setProperty(internalInportName, (Object) defaultInternalInport, InPort.class);
+    // saying that we wire this outgoing port to the incoming ports of CASSANDRA //
+    zookeeper_context.setProperty(
+        outportName,
+        (Object) new PortReference(otherComponentId, otherInternalInportName, PortLinkage.ALL),
+        OutPort.class);
+    return zookeeper_context;
+  }
+
   private DockerComponent.Builder buildDockerComponentBuilder(
       LifecycleClient client,
       String compName,
@@ -125,7 +187,8 @@ public class ClientDockerPullTest {
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
       String imageFolder,
-      String tag, boolean isRemote) {
+      String tag,
+      boolean isRemote) {
     DockerComponent.Builder builder;
     if (isRemote) {
       builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName_remote);
@@ -144,7 +207,6 @@ public class ClientDockerPullTest {
           inInfs.get(i).cardinality,
           inInfs.get(i).inPort);
 
-
     for (int i = 0; i < outInfs.size(); i++)
       builder.addOutport(
           outInfs.get(i).outportName,
@@ -162,7 +224,8 @@ public class ClientDockerPullTest {
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
-      String tag, boolean isRemote) {
+      String tag,
+      boolean isRemote) {
 
     return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, isRemote);
   }
@@ -175,16 +238,28 @@ public class ClientDockerPullTest {
       List<OutportInfo> outInfs,
       String tag) {
 
-    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false);
+    DockerComponent.Builder builder =
+        buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false);
     DockerComponent comp = builder.build();
     return comp;
   }
 
-  private RemoteDockerComponent buildRemoteDockerComponent( LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs,
-      List<OutportInfo> outInfs, String imageFolder, String tag, String hostName, int port, boolean useCredentials) {
+  private RemoteDockerComponent buildRemoteDockerComponent(
+      LifecycleClient client,
+      String compName,
+      ComponentId id,
+      List<InportInfo> inInfs,
+      List<OutportInfo> outInfs,
+      String imageFolder,
+      String tag,
+      String hostName,
+      int port,
+      boolean useCredentials) {
 
-    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
-    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, port, "xxxxx", "xxxxx", useCredentials);
+    DockerComponent.Builder dCompBuilder =
+        buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
+    RemoteDockerComponent.DockerRegistry dReg =
+        new RemoteDockerComponent.DockerRegistry(hostName, port, "xxxxx", "xxxxx", useCredentials);
     RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
 
     return rDockerComp;
@@ -198,7 +273,7 @@ public class ClientDockerPullTest {
       List<OutportInfo> outInfs,
       Callable<LifecycleStore> createLifeCycleStore) {
 
-    DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(compName,id);
+    DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(compName, id);
 
     for (int i = 0; i < inInfs.size(); i++)
       builder.addInport(
@@ -223,34 +298,6 @@ public class ClientDockerPullTest {
     builder.deploySequentially(true);
     DeployableComponent comp = builder.build();
     return comp;
-  }
-
-  static class InportInfo {
-    public final String inportName;
-    public final PortProperties.PortType portType;
-    public final int cardinality;
-    public final int inPort;
-
-    InportInfo(String inportName, PortProperties.PortType portType, int cardinality, int inPort) {
-      this.inportName = inportName;
-      this.portType = portType;
-      this.cardinality = cardinality;
-      this.inPort = inPort;
-    }
-  }
-
-  static class OutportInfo {
-    public final String outportName;
-    public final PortUpdateHandler puHandler;
-    public final int cardinality;
-    public final int min;
-
-    OutportInfo(String outportName, PortUpdateHandler puHandler, int cardinality, int min) {
-      this.outportName = outportName;
-      this.puHandler = puHandler;
-      this.cardinality = cardinality;
-      this.min = min;
-    }
   }
 
   private LifecycleStore createDefaultLifecycleStore() {
@@ -297,83 +344,34 @@ public class ClientDockerPullTest {
   public void testCZookCompDescriptions() {
     List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
     List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
-    buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
+    buildDockerComponent(
+        client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
   }
 
   @Test
   public void testCZookCompDescriptions_lifecycle() {
     List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
     List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
-    buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
-        inInfs, outInfs, new Callable<LifecycleStore>() {
+    buildDeployableComponent(
+        client,
+        zookeeperComponent_lifecycle,
+        zookeeperComponentId_lifecycle,
+        inInfs,
+        outInfs,
+        new Callable<LifecycleStore>() {
           public LifecycleStore call() {
             return createDefaultLifecycleStore();
           }
         });
   }
 
-  private static List<InportInfo> getInPortInfos(String internalInportName) {
-    List<InportInfo> inInfs = new ArrayList<>();
-    InportInfo inInf =
-        new InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
-    inInfs.add(inInf);
-
-    return inInfs;
-  }
-
-  private static List<OutportInfo> getOutPortInfos(String outPortName) {
-    List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
-            outPortName,
-            DeploymentHelper.getEmptyPortUpdateHandler(),
-            1,
-            OutPort.NO_SINKS);
-    outInfs.add(outInf);
-
-    return outInfs;
-  }
-
-  private static DeploymentContext createZookeperContext(LifecycleClient client, ComponentId otherComponentId, String otherInternalInportName, version v) {
-    String internalInportName;
-    int defaultInternalInport;
-    String outportName;
-
-    if(v == version.DOCKER) {
-      internalInportName = zookeeperInternalInportName;
-      defaultInternalInport = defaultZookeeperInternalInport;
-      outportName = zookeeperOutportName;
-    } else if(v == version.LIFECYCLE) {
-      internalInportName = zookeeperInternalInportName_lifecycle;
-      defaultInternalInport = defaultZookeeperInternalInport_lifecycle;
-      outportName = zookeeperOutportName_lifecycle;
-    } else {
-      internalInportName = rubyInternalInportName_remote;
-      defaultInternalInport = defaultRubyInternalInport_remote;
-      outportName = rubyOutportName_remote;
-    }
-
-    DeploymentContext zookeeper_context =
-        client.initDeploymentContext(applicationId, appInstanceId);
-    // saying that we want to use the default port as the actual port number //
-    zookeeper_context.setProperty(
-        internalInportName ,(Object) defaultInternalInport, InPort.class);
-    // saying that we wire this outgoing port to the incoming ports of CASSANDRA //
-    zookeeper_context.setProperty(
-        outportName ,
-        (Object)
-            new PortReference(otherComponentId, otherInternalInportName , PortLinkage.ALL),
-        OutPort.class);
-    return zookeeper_context;
-  }
-
   EntireDockerCommands buildEntireDockerCommands() {
     Random rand = new Random();
     EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
     try {
-      Map<Option,List<String>> createOptionMap = new HashMap<>();
-      createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
-      String  n = Integer.toString(rand.nextInt(65536) + 1);
+      Map<Option, List<String>> createOptionMap = new HashMap<>();
+      createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar", "john=doe"));
+      String n = Integer.toString(rand.nextInt(65536) + 1);
       createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n)));
       createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
       createOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
@@ -385,7 +383,7 @@ public class ClientDockerPullTest {
       cmdsBuilder.setCommand(Type.CREATE, createOsCommandList);
       cmdsBuilder.setArgs(Type.CREATE, createArgsList);
 
-      Map<Option,List<String>> startOptionMap = new HashMap<>();
+      Map<Option, List<String>> startOptionMap = new HashMap<>();
       startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
       cmdsBuilder.setOptions(Type.START, startOptionMap);
     } catch (DockerCommandException ce) {
@@ -415,17 +413,22 @@ public class ClientDockerPullTest {
 
   @Test
   public void testFZookeeperDeploymentContext() {
-    createZookeperContext(client, zookeeperComponentId_lifecycle, zookeeperInternalInportName_lifecycle, version.DOCKER );
+    createZookeperContext(
+        client,
+        zookeeperComponentId_lifecycle,
+        zookeeperInternalInportName_lifecycle,
+        version.DOCKER);
   }
 
   @Test
   public void testFZookeeperDeploymentContext_lifecycle() {
-    createZookeperContext(client, zookeeperComponentId, zookeeperInternalInportName, version.LIFECYCLE);
+    createZookeperContext(
+        client, zookeeperComponentId, zookeeperInternalInportName, version.LIFECYCLE);
   }
 
   @Test
   public void testGLInsertExtDeplContext() {
-    ExternalContextParameters.InPortContext inpC = new InPortContext("sparkJob1Port",9999);
+    ExternalContextParameters.InPortContext inpC = new InPortContext("sparkJob1Port", 9999);
     List<InPortContext> inpCList = new ArrayList<>();
     inpCList.add(inpC);
     ExternalContextParameters.Builder builder = new ExternalContextParameters.Builder();
@@ -450,8 +453,7 @@ public class ClientDockerPullTest {
   @Test
   public void testHRemoteDockerComponent() {
     try {
-      DeploymentContext dummyContext =
-          client.initDeploymentContext(applicationId, appInstanceId);
+      DeploymentContext dummyContext = client.initDeploymentContext(applicationId, appInstanceId);
       List<InportInfo> dummyInInfs = new ArrayList<>();
       /*InportInfo inInf =
           new InportInfo("dummInPort", PortProperties.PortType.INTERNAL_PORT, 2, 888);
@@ -464,8 +466,19 @@ public class ClientDockerPullTest {
               1,
               OutPort.NO_SINKS);
       dummyOutInfs.add(outInf);*/
-      //ssl Port
-      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxxx", 443, true);
+      // ssl Port
+      RemoteDockerComponent rDockerComponent =
+          buildRemoteDockerComponent(
+              client,
+              rubyComponent_remote,
+              rubyComponentId_remote,
+              dummyInInfs,
+              dummyOutInfs,
+              "fh/docker-reg",
+              "latest",
+              "xxxx",
+              443,
+              true);
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");
@@ -477,10 +490,16 @@ public class ClientDockerPullTest {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
       List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
-      DockerComponent zookComp = buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
-      DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId_lifecycle, zookeeperInternalInportName_lifecycle, version.DOCKER );
-      zookId =
-          client.deploy(zookContext, zookComp);
+      DockerComponent zookComp =
+          buildDockerComponent(
+              client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
+      DeploymentContext zookContext =
+          createZookeperContext(
+              client,
+              zookeeperComponentId_lifecycle,
+              zookeeperInternalInportName_lifecycle,
+              version.DOCKER);
+      zookId = client.deploy(zookContext, zookComp);
       boolean isReady = false;
       do {
         System.out.println("zook not ready");
@@ -501,13 +520,21 @@ public class ClientDockerPullTest {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
       List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
-      DeployableComponent zookComp = buildDeployableComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle,
-          inInfs, outInfs, new Callable<LifecycleStore>() {
-            public LifecycleStore call() {
-              return createDefaultLifecycleStore();
-            }
-          });
-      DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId, zookeeperInternalInportName, version.LIFECYCLE);
+      DeployableComponent zookComp =
+          buildDeployableComponent(
+              client,
+              zookeeperComponent_lifecycle,
+              zookeeperComponentId_lifecycle,
+              inInfs,
+              outInfs,
+              new Callable<LifecycleStore>() {
+                public LifecycleStore call() {
+                  return createDefaultLifecycleStore();
+                }
+              });
+      DeploymentContext zookContext =
+          createZookeperContext(
+              client, zookeeperComponentId, zookeeperInternalInportName, version.LIFECYCLE);
       zookId_lifecycle =
           client.deploy(zookContext, zookComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
@@ -522,9 +549,9 @@ public class ClientDockerPullTest {
     do {
       try {
         zookStatus = client.getComponentContainerStatus(zookId, publicIp);
-        zookStatus_lifecycle  = client.getComponentContainerStatus(zookId_lifecycle , publicIp);
+        zookStatus_lifecycle = client.getComponentContainerStatus(zookId_lifecycle, publicIp);
         System.out.println("ZOOKEEPER STATUS:" + zookStatus);
-        System.out.println("ZOOKEEPER STATUS (LIFECYCLE):" + zookStatus_lifecycle );
+        System.out.println("ZOOKEEPER STATUS (LIFECYCLE):" + zookStatus_lifecycle);
         sleep(5000);
       } catch (DeploymentException ex) {
         System.err.println("Exception during deployment!");
@@ -541,6 +568,39 @@ public class ClientDockerPullTest {
       client.undeploy(zookId_lifecycle, true);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
+    }
+  }
+
+private enum version {
+    DOCKER,
+    LIFECYCLE
+  }
+
+  static class InportInfo {
+    public final String inportName;
+    public final PortProperties.PortType portType;
+    public final int cardinality;
+    public final int inPort;
+
+    InportInfo(String inportName, PortProperties.PortType portType, int cardinality, int inPort) {
+      this.inportName = inportName;
+      this.portType = portType;
+      this.cardinality = cardinality;
+      this.inPort = inPort;
+    }
+  }
+
+  static class OutportInfo {
+    public final String outportName;
+    public final PortUpdateHandler puHandler;
+    public final int cardinality;
+    public final int min;
+
+    OutportInfo(String outportName, PortUpdateHandler puHandler, int cardinality, int min) {
+      this.outportName = outportName;
+      this.puHandler = puHandler;
+      this.cardinality = cardinality;
+      this.min = min;
     }
   }
 }

@@ -23,48 +23,50 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
 
 public final class LifecycleStoreBuilder {
 
-    private final LifecycleHandler[] handlers = new LifecycleHandler[LifecycleHandlerType.values().length];
-    private volatile StartDetector startDetector;
-    private volatile StopDetector stopDetector;
-    
-    public LifecycleStoreBuilder() {
-        // empty!
-    }
-    
-    public synchronized LifecycleStoreBuilder setStartDetector(StartDetector start) {
-    	if(startDetector == null || startDetector == start) {
-    		startDetector = start;
-    	} else {
-    		throw new IllegalStateException("start detector has already been set.");
-    	}
-    	return this;
-    }
-    
-    public LifecycleStoreBuilder setHandler(LifecycleHandler h, LifecycleHandlerType t) {
-        if(h == null) 
-        	throw new NullPointerException();
-        Class<?> superClass = t.getTypeClass();
-        Class<?> inheritCla = h.getClass();
-        if(! superClass.isAssignableFrom(inheritCla)) {
-            throw new IllegalArgumentException("handler types do not match: " + h.getClass() + " vs. " + t.getTypeClass());
-        }
-        if(t == LifecycleHandlerType.NEW) {
-            throw new IllegalArgumentException("cannot set a handler for 'NEW'. " + "This event is a system event");
-        }
+  private final LifecycleHandler[] handlers =
+      new LifecycleHandler[LifecycleHandlerType.values().length];
+  private volatile StartDetector startDetector;
+  private volatile StopDetector stopDetector;
 
-        handlers[t.ordinal()] = h;
-        return this;
+  public LifecycleStoreBuilder() {
+    // empty!
+  }
+
+  public synchronized LifecycleStoreBuilder setStartDetector(StartDetector start) {
+    if (startDetector == null || startDetector == start) {
+      startDetector = start;
+    } else {
+      throw new IllegalStateException("start detector has already been set.");
     }
-    
-    public LifecycleStore build() {
-        for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
-            if(handlers[t.ordinal()] == null) {
-                handlers[t.ordinal()] = t.getDefaultImplementation();
-            }
-        }
-        if(startDetector == null) {
-        	throw new NullPointerException("start detector cannot be null");
-        }
-        return new LifecycleStore(handlers, startDetector, stopDetector);
+    return this;
+  }
+
+  public LifecycleStoreBuilder setHandler(LifecycleHandler h, LifecycleHandlerType t) {
+    if (h == null) throw new NullPointerException();
+    Class<?> superClass = t.getTypeClass();
+    Class<?> inheritCla = h.getClass();
+    if (!superClass.isAssignableFrom(inheritCla)) {
+      throw new IllegalArgumentException(
+          "handler types do not match: " + h.getClass() + " vs. " + t.getTypeClass());
     }
+    if (t == LifecycleHandlerType.NEW) {
+      throw new IllegalArgumentException(
+          "cannot set a handler for 'NEW'. " + "This event is a system event");
+    }
+
+    handlers[t.ordinal()] = h;
+    return this;
+  }
+
+  public LifecycleStore build() {
+    for (LifecycleHandlerType t : LifecycleHandlerType.values()) {
+      if (handlers[t.ordinal()] == null) {
+        handlers[t.ordinal()] = t.getDefaultImplementation();
+      }
+    }
+    if (startDetector == null) {
+      throw new NullPointerException("start detector cannot be null");
+    }
+    return new LifecycleStore(handlers, startDetector, stopDetector);
+  }
 }

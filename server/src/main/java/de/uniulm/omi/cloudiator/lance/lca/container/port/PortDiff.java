@@ -18,100 +18,98 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
+import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-
 public final class PortDiff<T> {
 
-    private final OutPort myPort;
-    private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
-    private final Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinks;
-    private final Set<ComponentInstanceId> added;
-    private final Set<ComponentInstanceId> removed;
-    private final Set<ComponentInstanceId> diffSet;
-    
-    PortDiff(Map<ComponentInstanceId, HierarchyLevelState<T>> newSinksParam,
-            Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinksParam,
-            OutPort myPortParam) {
-        
-    	if(myPortParam == null) 
-    		throw new NullPointerException("port cannot be  null");
-        // portName = portNameParam;
-    	oldSinks = oldSinksParam;
-        current = newSinksParam;
-        added  = inFirstNotInSecond(newSinksParam, oldSinksParam);
-        removed = inFirstNotInSecond(oldSinksParam, newSinksParam);
-        diffSet = diffPerElement(oldSinksParam);
-        myPort = myPortParam;
-    }
+  private final OutPort myPort;
+  private final Map<ComponentInstanceId, HierarchyLevelState<T>> current;
+  private final Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinks;
+  private final Set<ComponentInstanceId> added;
+  private final Set<ComponentInstanceId> removed;
+  private final Set<ComponentInstanceId> diffSet;
 
-    private Set<ComponentInstanceId> diffPerElement(Map<ComponentInstanceId, HierarchyLevelState<T>> old) {
-        Set<ComponentInstanceId> diffSetParam = new HashSet<>();
-        for(Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
-            ComponentInstanceId id = entry.getKey();
-            if(added.contains(id)) { 
-                continue;
-            }
-            HierarchyLevelState<T> oldElements = old.get(id);
-            HierarchyLevelState<T> newElements = entry.getValue();
-            if(diffCrititcalElements(oldElements, newElements)) {
-                diffSetParam.add(id);
-            }
-        }
-        return diffSetParam;
-    }
-    
-    /**
-     * 
-     * @param oldElements
-     * @param newElements
-     * @return true if the both elements do differ (are not equal to each other).
-     */
-    private boolean diffCrititcalElements(HierarchyLevelState<T> oldElements, HierarchyLevelState<T> newElements) {
-        if(oldElements == null) 
-            return newElements != null;
-        return !oldElements.equals(newElements);
-    }
-    
-    private static<T> Set<T> inFirstNotInSecond(Map<T,?> first, Map<T,?> second) {
-        Set<T> elements = new HashSet<>();
-        for(T t : first.keySet()) {
-            if(second.containsKey(t)) 
-                continue;
-            elements.add(t);
-        }
-        return elements;
-    }
+  PortDiff(
+      Map<ComponentInstanceId, HierarchyLevelState<T>> newSinksParam,
+      Map<ComponentInstanceId, HierarchyLevelState<T>> oldSinksParam,
+      OutPort myPortParam) {
 
-    public Map<ComponentInstanceId, HierarchyLevelState<T>> getCurrentSinkSet() {
-        return new HashMap<>(current);
-    }
+    if (myPortParam == null) throw new NullPointerException("port cannot be  null");
+    // portName = portNameParam;
+    oldSinks = oldSinksParam;
+    current = newSinksParam;
+    added = inFirstNotInSecond(newSinksParam, oldSinksParam);
+    removed = inFirstNotInSecond(oldSinksParam, newSinksParam);
+    diffSet = diffPerElement(oldSinksParam);
+    myPort = myPortParam;
+  }
 
-    public boolean hasDiffs() {
-        return !(added.isEmpty() && removed.isEmpty() && diffSet.isEmpty());
+  private static <T> Set<T> inFirstNotInSecond(Map<T, ?> first, Map<T, ?> second) {
+    Set<T> elements = new HashSet<>();
+    for (T t : first.keySet()) {
+      if (second.containsKey(t)) continue;
+      elements.add(t);
     }
+    return elements;
+  }
 
-    public OutPort getPort() {
-        return myPort;
+  private Set<ComponentInstanceId> diffPerElement(
+      Map<ComponentInstanceId, HierarchyLevelState<T>> old) {
+    Set<ComponentInstanceId> diffSetParam = new HashSet<>();
+    for (Entry<ComponentInstanceId, HierarchyLevelState<T>> entry : current.entrySet()) {
+      ComponentInstanceId id = entry.getKey();
+      if (added.contains(id)) {
+        continue;
+      }
+      HierarchyLevelState<T> oldElements = old.get(id);
+      HierarchyLevelState<T> newElements = entry.getValue();
+      if (diffCrititcalElements(oldElements, newElements)) {
+        diffSetParam.add(id);
+      }
     }
-    
-    @Override
-    public String toString() {
-    	return "PortDiff ( " + myPort + "): +[" + added + "]; -[" + removed + "]"; 
-    }
+    return diffSetParam;
+  }
 
-	public final Map<ComponentInstanceId, HierarchyLevelState<T>> getOldSinkSet() {
-		return oldSinks;
-	}
+  /**
+   * @param oldElements
+   * @param newElements
+   * @return true if the both elements do differ (are not equal to each other).
+   */
+  private boolean diffCrititcalElements(
+      HierarchyLevelState<T> oldElements, HierarchyLevelState<T> newElements) {
+    if (oldElements == null) return newElements != null;
+    return !oldElements.equals(newElements);
+  }
 
-	boolean portMatches(OutPort thePort) {
-		if(thePort == null) return false;
-		return myPort.equals(thePort);
-	}
+  public Map<ComponentInstanceId, HierarchyLevelState<T>> getCurrentSinkSet() {
+    return new HashMap<>(current);
+  }
+
+  public boolean hasDiffs() {
+    return !(added.isEmpty() && removed.isEmpty() && diffSet.isEmpty());
+  }
+
+  public OutPort getPort() {
+    return myPort;
+  }
+
+  @Override
+  public String toString() {
+    return "PortDiff ( " + myPort + "): +[" + added + "]; -[" + removed + "]";
+  }
+
+  public final Map<ComponentInstanceId, HierarchyLevelState<T>> getOldSinkSet() {
+    return oldSinks;
+  }
+
+  boolean portMatches(OutPort thePort) {
+    if (thePort == null) return false;
+    return myPort.equals(thePort);
+  }
 }

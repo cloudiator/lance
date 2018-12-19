@@ -18,39 +18,39 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
+import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
-import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
-
 class DockerShellWrapper implements Shell {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(Shell.class);
-    
-    final DockerShell shell; 
-    DockerShellWrapper(DockerShell shellParam) { 
-    	shell = shellParam; 
-    }
-    
-    @Override
-    public ExecutionResult executeCommand(String command) {
-        ExecutionResult result = shell.executeCommand(command);
-        checkResult(command, result);
-        return result;
-    }
 
-    @Override
-    public ExecutionResult executeBlockingCommand(String res) {
-        ExecutionResult result = shell.executeBlockingCommand(res);
-        checkResult(res, result);
-        return result;
+  private static final Logger LOGGER = LoggerFactory.getLogger(Shell.class);
+
+  final DockerShell shell;
+
+  DockerShellWrapper(DockerShell shellParam) {
+    shell = shellParam;
+  }
+
+  private static void checkResult(String command, ExecutionResult result) {
+    if (result.isSuccess()) {
+      return;
     }
-    
-    private static void checkResult(String command, ExecutionResult result) {
-        if(result.isSuccess()) {
-            return;
-        }
-        LOGGER.warn("unsuccessful command '" + command + "': " + result.toString());
-    }
+    LOGGER.warn("unsuccessful command '" + command + "': " + result.toString());
+  }
+
+  @Override
+  public ExecutionResult executeCommand(String command) {
+    ExecutionResult result = shell.executeCommand(command);
+    checkResult(command, result);
+    return result;
+  }
+
+  @Override
+  public ExecutionResult executeBlockingCommand(String res) {
+    ExecutionResult result = shell.executeBlockingCommand(res);
+    checkResult(res, result);
+    return result;
+  }
 }

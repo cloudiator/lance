@@ -24,22 +24,23 @@ import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortL
 
 public final class PortReference implements Serializable {
 
-    private static final long serialVersionUID = 1119797058263056373L;
-    private final ComponentId compId;
-    private final String propertyName;
-    // private final PortLinkage linkage;
-    
-    public PortReference(ComponentId compIdParam, String propertyNameParam, @SuppressWarnings("unused") PortLinkage linkageParam) {
-        compId = compIdParam;
-        propertyName = propertyNameParam;
-       // linkage = _linkage;
-    }
+  private static final long serialVersionUID = 1119797058263056373L;
+  private final ComponentId compId;
+  private final String propertyName;
+  // private final PortLinkage linkage;
 
-    public String getPortName() { 
-    	return propertyName; 
-    }
+  public PortReference(ComponentId compIdParam, String propertyNameParam,
+      @SuppressWarnings("unused") PortLinkage linkageParam) {
+    compId = compIdParam;
+    propertyName = propertyNameParam;
+    // linkage = _linkage;
+  }
 
-    public ComponentId getComponentId() { 
-    	return compId; 
-    }
+  public String getPortName() {
+    return propertyName;
+  }
+
+  public ComponentId getComponentId() {
+    return compId;
+  }
 }

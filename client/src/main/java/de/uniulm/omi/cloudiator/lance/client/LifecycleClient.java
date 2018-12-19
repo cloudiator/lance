@@ -49,9 +49,8 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
@@ -81,7 +80,45 @@ import org.slf4j.LoggerFactory;
 
 public final class LifecycleClient {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleClient.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleClient.class);
+  private static final LcaRegistry currentRegistry;
+
+  static {
+    try {
+      currentRegistry = RegistryFactory.createRegistry();
+    } catch (RegistrationException e) {
+      throw new ExceptionInInitializerError(e);
+    }
+  }
+
+  private final LifecycleAgent lifecycleAgent;
+  private LifecycleClient(String serverIp, int rmiTimeout)
+      throws RemoteException, NotBoundException {
+    try {
+      RMISocketFactory.setSocketFactory(
+          new RMISocketFactory() {
+
+            private final RMISocketFactory delegate = RMISocketFactory.getDefaultSocketFactory();
+
+            @Override
+            public Socket createSocket(String host, int port) throws IOException {
+              final Socket socket = delegate.createSocket(host, port);
+              if (rmiTimeout != 0) {
+                socket.setSoTimeout(rmiTimeout);
+              }
+              return socket;
+            }
+
+            @Override
+            public ServerSocket createServerSocket(int i) throws IOException {
+              return delegate.createServerSocket(i);
+            }
+          });
+    } catch (IOException e) {
+      // ignored
+    }
+    this.lifecycleAgent = findLifecycleAgent(serverIp);
+  }
 
   public static LifecycleClient getClient(String serverIp)
       throws RemoteException, NotBoundException {
@@ -98,101 +135,20 @@ public final class LifecycleClient {
     return new LifecycleClient(serverIp, rmiTimeout);
   }
 
-
-  private static final LcaRegistry currentRegistry;
-  private final LifecycleAgent lifecycleAgent;
-
-  private LifecycleClient(String serverIp, int rmiTimeout)
-      throws RemoteException, NotBoundException {
-    try {
-      RMISocketFactory.setSocketFactory(new RMISocketFactory() {
-
-        private final RMISocketFactory delegate =
-            RMISocketFactory.getDefaultSocketFactory();
-
-        @Override
-        public Socket createSocket(String host, int port) throws IOException {
-          final Socket socket = delegate.createSocket(host, port);
-          if (rmiTimeout != 0) {
-            socket.setSoTimeout(rmiTimeout);
-          }
-          return socket;
-        }
-
-        @Override
-        public ServerSocket createServerSocket(int i) throws IOException {
-          return delegate.createServerSocket(i);
-        }
-      });
-    } catch (IOException e) {
-      //ignored
-    }
-    this.lifecycleAgent = findLifecycleAgent(serverIp);
-  }
-
-  static {
-    try {
-      currentRegistry = RegistryFactory.createRegistry();
-    } catch (RegistrationException e) {
-      throw new ExceptionInInitializerError(e);
-    }
-  }
-
-  public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
-      throws DeploymentException {
-
-    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
-
-    Callable<ComponentInstanceId> callable = () -> {
-      LOGGER.info("Trying to deploy Lifecycle component " + comp);
-      return lifecycleAgent
-          .deployDeployableComponent(ctx, comp, os, containerType);
-    };
-
-    return doRetryerCall(retryer, callable);
- }
-
-  public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DockerComponent comp)
-      throws DeploymentException {
-
-    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
-
-    Callable<ComponentInstanceId> callable = () -> {
-      LOGGER.info("Trying to deploy Docker component " + comp);
-      return lifecycleAgent
-          .deployDockerComponent(ctx, comp);
-    };
-
-    return doRetryerCall(retryer, callable);
-  }
-
-  public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final RemoteDockerComponent comp)
-      throws DeploymentException {
-
-    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
-
-    Callable<ComponentInstanceId> callable = () -> {
-      LOGGER.info("Trying to deploy Remote Docker component " + comp);
-      return lifecycleAgent
-          .deployRemoteDockerComponent(ctx, comp);
-    };
-
-    return doRetryerCall(retryer, callable);
-  }
-
   private static Retryer<ComponentInstanceId> buildRetryerComponent() {
-    Retryer<ComponentInstanceId> retryer = RetryerBuilder.<ComponentInstanceId>newBuilder()
-        .retryIfExceptionOfType(RemoteException.class).withWaitStrategy(
-            WaitStrategies.exponentialWait()).withStopStrategy(StopStrategies.stopAfterDelay(5,
-            TimeUnit.MINUTES)).build();
+    Retryer<ComponentInstanceId> retryer =
+        RetryerBuilder.<ComponentInstanceId>newBuilder()
+            .retryIfExceptionOfType(RemoteException.class)
+            .withWaitStrategy(WaitStrategies.exponentialWait())
+            .withStopStrategy(StopStrategies.stopAfterDelay(5, TimeUnit.MINUTES))
+            .build();
 
     return retryer;
   }
 
-  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer, Callable<ComponentInstanceId> callable) throws DeploymentException {
+  private static ComponentInstanceId doRetryerCall(
+      Retryer<ComponentInstanceId> retryer, Callable<ComponentInstanceId> callable)
+      throws DeploymentException {
     try {
       return retryer.call(callable);
     } catch (ExecutionException e) {
@@ -206,12 +162,87 @@ public final class LifecycleClient {
     }
   }
 
-  public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
+  private static Exception handleRemoteException(RemoteException re) {
+    Throwable t = re.getCause();
+    if (t == null) {
+      return new LcaException("network exception occurred", re);
+    }
+    if (t instanceof LcaException) {
+      return (LcaException) t;
+    }
+    if (t instanceof RegistrationException) {
+      return (RegistrationException) t;
+    }
+    return new LcaException("downstream exception occurred.", re);
+  }
+
+  private static synchronized LifecycleAgent findLifecycleAgent(String serverIp)
+      throws RemoteException, NotBoundException {
+
+    Registry reg = LocateRegistry.getRegistry(serverIp);
+    Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
+
+    return (LifecycleAgent) o;
+  }
+
+  public final ComponentInstanceId deploy(
+      final DeploymentContext ctx,
+      final DeployableComponent comp,
+      final OperatingSystem os,
+      final ContainerType containerType)
+      throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable =
+        () -> {
+          LOGGER.info("Trying to deploy Lifecycle component " + comp);
+          return lifecycleAgent.deployDeployableComponent(ctx, comp, os, containerType);
+        };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  public final ComponentInstanceId deploy(final DeploymentContext ctx, final DockerComponent comp)
+      throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable =
+        () -> {
+          LOGGER.info("Trying to deploy Docker component " + comp);
+          return lifecycleAgent.deployDockerComponent(ctx, comp);
+        };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  public final ComponentInstanceId deploy(
+      final DeploymentContext ctx, final RemoteDockerComponent comp) throws DeploymentException {
+
+    final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
+
+    Callable<ComponentInstanceId> callable =
+        () -> {
+          LOGGER.info("Trying to deploy Remote Docker component " + comp);
+          return lifecycleAgent.deployRemoteDockerComponent(ctx, comp);
+        };
+
+    return doRetryerCall(retryer, callable);
+  }
+
+  public void injectExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
     try {
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
-      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS , params.getStatus().toString());
-      //do I need to create a DeploymentContext for this and do setProperty instead?
+      currentRegistry.addComponentProperty(
+          params.getAppId(),
+          params.getcId(),
+          params.getcInstId(),
+          CONTAINER_STATUS,
+          params.getStatus().toString());
+      // do I need to create a DeploymentContext for this and do setProperty instead?
 
       for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
         currentRegistry.addComponentProperty(
@@ -254,8 +285,9 @@ public final class LifecycleClient {
           return;
         }
         if (ContainerStatus.errorStates().contains(componentContainerStatus)) {
-          throw new IllegalStateException(String
-              .format("Container reached illegal state %s while waiting for state %s",
+          throw new IllegalStateException(
+              String.format(
+                  "Container reached illegal state %s while waiting for state %s",
                   componentContainerStatus, ContainerStatus.READY));
         }
         Thread.sleep(10000);
@@ -272,7 +304,7 @@ public final class LifecycleClient {
   public final boolean isReady(ComponentInstanceId cid) {
     try {
       boolean isReady = lifecycleAgent.componentInstanceIsReady(cid);
-      if(isReady) {
+      if (isReady) {
         return true;
       }
       return false;
@@ -282,8 +314,8 @@ public final class LifecycleClient {
     }
   }
 
-  public final boolean undeploy(ComponentInstanceId componentInstanceId,
-      boolean forceRegDel) throws DeploymentException {
+  public final boolean undeploy(ComponentInstanceId componentInstanceId, boolean forceRegDel)
+      throws DeploymentException {
     try {
       return lifecycleAgent.stopComponentInstance(componentInstanceId, forceRegDel);
     } catch (RemoteException e) {
@@ -293,8 +325,11 @@ public final class LifecycleClient {
     }
   }
 
-  public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
-      ComponentInstanceId componentInstanceId)  throws RegistrationException, DeploymentException {
+  public final void unRegisterInstance(
+      ApplicationInstanceId appInstId,
+      ComponentId componentId,
+      ComponentInstanceId componentInstanceId)
+      throws RegistrationException, DeploymentException {
     currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
     updateDownStreamPorts();
   }
@@ -309,59 +344,38 @@ public final class LifecycleClient {
     }
   }
 
-  private static Exception handleRemoteException(RemoteException re) {
-    Throwable t = re.getCause();
-    if (t == null) {
-      return new LcaException("network exception occurred", re);
-    }
-    if (t instanceof LcaException) {
-      return (LcaException) t;
-    }
-    if (t instanceof RegistrationException) {
-      return (RegistrationException) t;
-    }
-    return new LcaException("downstream exception occurred.", re);
-
-  }
-
-  private static synchronized LifecycleAgent findLifecycleAgent(String serverIp)
-      throws RemoteException, NotBoundException {
-
-    Registry reg = LocateRegistry.getRegistry(serverIp);
-    Object o = reg.lookup(LcaConstants.AGENT_REGISTRY_KEY);
-
-    return (LifecycleAgent) o;
-  }
-
   /**
    * @param myInstanceId the instance id
    * @param lsyAppId the aplication id
    * @return true if this application instance has been added successfully. false if it was already
-   * contained in the registry.
+   *     contained in the registry.
    * @throws RegistrationException when an registration error occurs
    */
-  public boolean registerApplicationInstance(ApplicationInstanceId myInstanceId,
-      ApplicationId lsyAppId) throws RegistrationException {
+  public boolean registerApplicationInstance(
+      ApplicationInstanceId myInstanceId, ApplicationId lsyAppId) throws RegistrationException {
     return currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, "<unknown name>");
   }
 
-  public void registerApplicationInstance(ApplicationInstanceId myInstanceId,
-      ApplicationId lsyAppId, String name) throws RegistrationException {
+  public void registerApplicationInstance(
+      ApplicationInstanceId myInstanceId, ApplicationId lsyAppId, String name)
+      throws RegistrationException {
     currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, name);
   }
 
-  public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
-      ComponentId zookeeperComponentId) throws RegistrationException {
+  public void registerComponentForApplicationInstance(
+      ApplicationInstanceId myInstanceId, ComponentId zookeeperComponentId)
+      throws RegistrationException {
     currentRegistry.addComponent(myInstanceId, zookeeperComponentId, "<unknown name>");
   }
 
-  public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
-      ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
+  public void registerComponentForApplicationInstance(
+      ApplicationInstanceId myInstanceId, ComponentId zookeeperComponentId, String componentName)
+      throws RegistrationException {
     currentRegistry.addComponent(myInstanceId, zookeeperComponentId, componentName);
   }
 
-  public DeploymentContext initDeploymentContext(ApplicationId appId,
-      ApplicationInstanceId appInstanceId) {
+  public DeploymentContext initDeploymentContext(
+      ApplicationId appId, ApplicationInstanceId appInstanceId) {
     return new DeploymentContext(appId, appInstanceId, currentRegistry);
   }
 }

@@ -20,7 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 public interface Shell {
 
-    ExecutionResult executeCommand(String command);
+  ExecutionResult executeCommand(String command);
 
-    ExecutionResult executeBlockingCommand(String res);
+  ExecutionResult executeBlockingCommand(String res);
 }

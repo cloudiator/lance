@@ -18,83 +18,100 @@
 
 package de.uniulm.omi.cloudiator.lance.client;
 
-import static org.junit.Assert.*;
-import com.github.rholder.retry.*;
-import de.uniulm.omi.cloudiator.lance.LcaConstants;
+import static org.junit.Assert.assertEquals;
+
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
-import de.uniulm.omi.cloudiator.lance.lca.LcaException;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.util.application.*;
+import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
+import de.uniulm.omi.cloudiator.lance.util.application.AppArchitecture;
+import de.uniulm.omi.cloudiator.lance.util.application.AppArchitectureBuilder;
+import de.uniulm.omi.cloudiator.lance.util.application.ComponentInfo;
+import de.uniulm.omi.cloudiator.lance.util.application.InportInfo;
+import de.uniulm.omi.cloudiator.lance.util.application.OutportInfo;
+import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.HashSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import de.uniulm.omi.cloudiator.lance.lca.RewiringTestAgent;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.RMISocketFactory;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-//Important: Java-re, docker daemon and Lance(remote-testing) must be installed on the VM and related ports must be opened on the vm
-//Install etcd on the vm via install_etcd.sh which can be found in the pinned installation repository
+// Important: Java-re, docker daemon and Lance(remote-testing) must be installed on the VM and
+// related ports must be opened on the vm
+// Install etcd on the vm via install_etcd.sh which can be found in the pinned installation
+// repository
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RewiringClientTest {
 
   private static AppArchitecture arch;
-  //adjust
+  // adjust
   private static String publicIp = "x.x.x.x";
   private static RewiringServerDelegate del;
 
   @BeforeClass
   public static void configureAppContext() {
-    AppArchitectureBuilder builder = new AppArchitectureBuilder("RewiringApp", new ApplicationId(), new ApplicationInstanceId());
-    //cassandra
-    InportInfo cassInportInfo = new InportInfo("CASS_INT_INP", PortProperties.PortType.INTERNAL_PORT, 9160, 0, 1);
+    AppArchitectureBuilder builder =
+        new AppArchitectureBuilder("RewiringApp", new ApplicationId(), new ApplicationInstanceId());
+    // cassandra
+    InportInfo cassInportInfo =
+        new InportInfo("CASS_INT_INP", PortProperties.PortType.INTERNAL_PORT, 9160, 0, 1);
     HashSet<InportInfo> cassInSet = new HashSet<>();
     cassInSet.add(cassInportInfo);
-    ComponentInfo cassCompInfo = new ComponentInfo("cassandra", new ComponentId(), new ComponentInstanceId(), cassInSet, new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
-    //kafka
-    InportInfo kafkaInportInfo = new InportInfo("KAFKA_INP", PortProperties.PortType.PUBLIC_PORT, 9092, 1, 1);
+    ComponentInfo cassCompInfo =
+        new ComponentInfo(
+            "cassandra",
+            new ComponentId(),
+            new ComponentInstanceId(),
+            cassInSet,
+            new HashSet<OutportInfo>(),
+            OperatingSystem.UBUNTU_14_04);
+    // kafka
+    InportInfo kafkaInportInfo =
+        new InportInfo("KAFKA_INP", PortProperties.PortType.PUBLIC_PORT, 9092, 1, 1);
     HashSet<InportInfo> kafkaInSet = new HashSet<>();
     kafkaInSet.add(kafkaInportInfo);
-    //hier! PU-Handler anpassen
-    //OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 1);
-    OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 0);
+    // hier! PU-Handler anpassen
+    // OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT",
+    // DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 1);
+    OutportInfo kafkaOutportInfo =
+        new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 0);
     HashSet<OutportInfo> kafkaOutSet = new HashSet<>();
     kafkaOutSet.add(kafkaOutportInfo);
-    ComponentInfo kafkaCompInfo = new ComponentInfo("kafka", new ComponentId(), new ComponentInstanceId(), kafkaInSet, kafkaOutSet, OperatingSystem.UBUNTU_14_04);
-    //setup Architecture
+    ComponentInfo kafkaCompInfo =
+        new ComponentInfo(
+            "kafka",
+            new ComponentId(),
+            new ComponentInstanceId(),
+            kafkaInSet,
+            kafkaOutSet,
+            OperatingSystem.UBUNTU_14_04);
+    // setup Architecture
     arch = builder.addComponentInfo(kafkaCompInfo).addComponentInfo(cassCompInfo).build();
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
-    //adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts",  "x.x.x.x:4001");
+    // adjust
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
   @Test
   public void testADelegateGetter() {
     try {
-      del = RewiringServerDelegate.getDelegate(publicIp );
+      del = RewiringServerDelegate.getDelegate(publicIp);
     } catch (RemoteException e) {
       e.printStackTrace();
     } catch (NotBoundException e) {
@@ -115,7 +132,7 @@ public class RewiringClientTest {
   public void testCSetUpInitialTopology() {
     try {
       ApplicationInstanceId appId = del.testNewTopology();
-      assertEquals(appId.toString(),arch.getAppInstanceId().toString());
+      assertEquals(appId.toString(), arch.getAppInstanceId().toString());
     } catch (DeploymentException e) {
       e.printStackTrace();
     }
@@ -165,7 +182,8 @@ public class RewiringClientTest {
 
     private RewiringServerDelegate() {};
 
-    public static RewiringServerDelegate getDelegate(String pIp) throws RemoteException, NotBoundException {
+    public static RewiringServerDelegate getDelegate(String pIp)
+        throws RemoteException, NotBoundException {
       if (instance == null) {
         instance = new RewiringServerDelegate();
         publicIp = pIp;
@@ -195,7 +213,7 @@ public class RewiringClientTest {
             return testAgent.testNewTopology(arch, publicIp, currentRegistry);
           };
 
-        return instance.makeRetryerCall(retryer, callable);
+      return instance.makeRetryerCall(retryer, callable);
     }
 
     public void testTraverseBeforeLcc() throws DeploymentException {
@@ -239,4 +257,3 @@ public class RewiringClientTest {
     }
   }
 }
-

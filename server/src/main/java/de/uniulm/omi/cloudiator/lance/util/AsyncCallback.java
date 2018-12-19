@@ -22,5 +22,5 @@ import java.util.concurrent.Future;
 
 public interface AsyncCallback<T> {
 
-    void call(Future<T> future);
+  void call(Future<T> future);
 }

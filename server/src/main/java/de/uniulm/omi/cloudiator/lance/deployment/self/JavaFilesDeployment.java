@@ -25,17 +25,17 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.install.SystemApplicati
 
 public class JavaFilesDeployment {
 
-    private JavaFilesDeployment() {
-        // no instances of this class //
-    }
+  private JavaFilesDeployment() {
+    // no instances of this class //
+  }
 
-    public static CommandSequence createJavaInstallation() {
-        CommandSequenceBuilder b = new CommandSequenceBuilder("install git and Java");
-        
-        b.setPhase(LifecycleHandlerType.INSTALL);
-        b.installSystemPackage(SystemApplication.JAVA_7);
-        //b.installSystemPackage("git");
-        
-        return b.build();
-    }
+  public static CommandSequence createJavaInstallation() {
+    CommandSequenceBuilder b = new CommandSequenceBuilder("install git and Java");
+
+    b.setPhase(LifecycleHandlerType.INSTALL);
+    b.installSystemPackage(SystemApplication.JAVA_7);
+    // b.installSystemPackage("git");
+
+    return b.build();
+  }
 }

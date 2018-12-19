@@ -21,8 +21,9 @@ package de.uniulm.omi.cloudiator.lance.util.state;
 import java.util.concurrent.Future;
 
 @Deprecated
-public interface StateSetter<T extends Enum<?> & State >{
+public interface StateSetter<T extends Enum<?> & State> {
 
-    public void setIntermediateState(T state, Future<?> future);
-    public void setFinalState(T state);
+  public void setIntermediateState(T state, Future<?> future);
+
+  public void setFinalState(T state);
 }

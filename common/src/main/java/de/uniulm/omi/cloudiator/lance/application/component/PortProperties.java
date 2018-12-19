@@ -20,21 +20,21 @@ package de.uniulm.omi.cloudiator.lance.application.component;
 
 public final class PortProperties {
 
-    public static final int INFINITE_CARDINALITY = -1;
-    public static final String LINK_ALL = null;
+  public static final int INFINITE_CARDINALITY = -1;
+  public static final String LINK_ALL = null;
 
-    public enum PortLinkage {
-        ALL,
-        ONE,
-    }
-    
-    public enum PortType {
-        PUBLIC_PORT,
-        INTERNAL_PORT,
-        CLUSTER_PORT,
-    }
-    
-    private PortProperties() {
-        // 
-    }
+  public enum PortLinkage {
+      ALL,
+      ONE,
+  }
+
+  public enum PortType {
+      PUBLIC_PORT,
+      INTERNAL_PORT,
+      CLUSTER_PORT,
+  }
+
+  private PortProperties() {
+      //
+  }
 }

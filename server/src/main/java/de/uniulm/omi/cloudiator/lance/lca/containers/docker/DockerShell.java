@@ -21,11 +21,14 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.ShellLikeInterface;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
-public interface DockerShell extends ShellLikeInterface  {
+public interface DockerShell extends ShellLikeInterface {
 
-    @Override
-    ExecutionResult executeCommand(String command);
-    ExecutionResult executeBlockingCommand(String command);
-    void close();
-    boolean processStillRunning();
+  @Override
+  ExecutionResult executeCommand(String command);
+
+  ExecutionResult executeBlockingCommand(String command);
+
+  void close();
+
+  boolean processStillRunning();
 }

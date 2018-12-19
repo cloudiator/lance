@@ -18,7 +18,7 @@
 
 <configuration>
 
-  <appender name="APPFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+  <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="APPFILE">
     <file>${LOG_DIR:-${user.home}}/lance.out</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
       <!-- Daily rollover with compression -->
@@ -33,7 +33,7 @@
     </encoder>
   </appender>
 
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
@@ -43,9 +43,9 @@
     </encoder>
   </appender>
 
-  <logger name="de.uniulm.omi.cloudiator.lance" level="DEBUG"/>
+  <logger level="DEBUG" name="de.uniulm.omi.cloudiator.lance"/>
 
-  <logger name="sun.rmi" level="TRACE"/>
+  <logger level="TRACE" name="sun.rmi"/>
 
   <root level="WARN">
     <appender-ref ref="APPFILE"/>

@@ -23,20 +23,22 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorFactory;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 
 public final class DefaultDetectorFactories {
-    
-    public static final DetectorFactory<StartDetector> START_DETECTOR_FACTORY = new DetectorFactory<StartDetector>() {
-    	
-        @Override public final StartDetector getDefault() { 
-        	return DefaultDetectorHandlers.DEFAULT_START_DETECTOR; 
+
+  public static final DetectorFactory<StartDetector> START_DETECTOR_FACTORY =
+      new DetectorFactory<StartDetector>() {
+
+        @Override
+        public final StartDetector getDefault() {
+          return DefaultDetectorHandlers.DEFAULT_START_DETECTOR;
         }
 
         @Override
         public StartDetector getDeploymentHandler(Deployment d) {
-            return new StartDetectorHandler(d);
-        } 
-    };
-    
-    private DefaultDetectorFactories() {
-        // no instances of this class //
-    }
+          return new StartDetectorHandler(d);
+        }
+      };
+
+  private DefaultDetectorFactories() {
+    // no instances of this class //
+  }
 }

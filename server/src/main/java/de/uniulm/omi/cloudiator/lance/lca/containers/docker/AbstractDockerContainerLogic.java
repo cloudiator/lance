@@ -21,13 +21,12 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkHandler;
@@ -47,30 +46,21 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//install shell in doInit (todo: rename to doBootstrap as it is called in BootstrapTransitionAction), close shell in preInit
-//install shell before every LifeCycleTransition, close shell after each LifeCycleTransition
-//install shell in preDestroy, close shell in completeShutDown
-//install shell in preprocessDetector, close shell in postProcessDetector
-//install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
-//todo: set dynamic env after it has first been set and along with all settings of the static environment
+// install shell in doInit (todo: rename to doBootstrap as it is called in
+// BootstrapTransitionAction), close shell in preInit
+// install shell before every LifeCycleTransition, close shell after each LifeCycleTransition
+// install shell in preDestroy, close shell in completeShutDown
+// install shell in preprocessDetector, close shell in postProcessDetector
+// install shell in preprocessPortUpdate, close shell in postprocessPortUpdate
+// todo: set dynamic env after it has first been set and along with all settings of the static
+// environment
 abstract class AbstractDockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
-        
-  protected final ComponentInstanceId myId;
-  protected final DockerConnector client;
-
-  protected final DockerShellFactory shellFactory;
-  protected final DeploymentContext deploymentContext;
-
-  protected final NetworkHandler networkHandler;
-  protected final HostContext hostContext;
-
-  protected final Map<String, String> envVarsStatic;
-  protected Map<String, String> envVarsDynamic;
-
-  //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
+  // todo: not needed in post-colosseum version, as the environment-var names should be set
+  // correctly then
   protected static final Map<String, String> translateMap;
+
   static {
     Map<String, String> tmpMap = new HashMap<>();
     tmpMap.put("host.vm.id", "VM_ID");
@@ -78,7 +68,16 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     translateMap = Collections.unmodifiableMap(tmpMap);
   }
 
-  protected AbstractDockerContainerLogic(Builder<?,?> builder) {
+  protected final ComponentInstanceId myId;
+  protected final DockerConnector client;
+  protected final DockerShellFactory shellFactory;
+  protected final DeploymentContext deploymentContext;
+  protected final NetworkHandler networkHandler;
+  protected final HostContext hostContext;
+  protected final Map<String, String> envVarsStatic;
+  protected Map<String, String> envVarsDynamic;
+
+  protected AbstractDockerContainerLogic(Builder<?, ?> builder) {
 
     this.myId = builder.myId;
     final StaticEnvVars instVars = this.myId;
@@ -90,32 +89,32 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     final StaticEnvVars hostVars = this.hostContext;
     this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
-    for(Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
-      envVarsStatic.put(kv.getKey(),kv.getValue());
+    for (Map.Entry<String, String> kv : hostVars.getEnvVars().entrySet()) {
+      envVarsStatic.put(kv.getKey(), kv.getValue());
     }
 
     envVarsDynamic = new HashMap<>();
   }
 
-	@Override
-	public ComponentInstanceId getComponentInstanceId() {
-		return myId;
-	}
-        
+  @Override
+  public ComponentInstanceId getComponentInstanceId() {
+    return myId;
+  }
+
   @Override
   public abstract void doCreate() throws ContainerException;
 
   @Override
-  public void preDestroy() throws ContainerException{
+  public void preDestroy() throws ContainerException {
     DockerShell shell = getShell();
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
-    setStaticEnvironment(shell,visitor);
+    setStaticEnvironment(shell, visitor);
     setDynamicEnvironment(visitor, null);
   }
 
   @Override
   public InportAccessor getPortMapper() {
-    return ( (portName, clientState) -> {
+    return ((portName, clientState) -> {
       try {
         Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
         int mapped = client.getPortMapping(myId, portNumber);
@@ -123,25 +122,27 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
         clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
         clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
         clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
-      } catch(DockerException de) {
+      } catch (DockerException de) {
         throw new ContainerException("coulnd not register all port mappings", de);
       }
     });
   }
 
-  void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
-    doVisit(visitor,shell);
+  void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor)
+      throws ContainerException {
+    doVisit(visitor, shell);
   }
 
-  abstract void setDynamicEnvironment(BashExportBasedVisitor visitor, PortDiff<DownstreamAddress> diff) throws ContainerException;
+  abstract void setDynamicEnvironment(
+      BashExportBasedVisitor visitor, PortDiff<DownstreamAddress> diff) throws ContainerException;
 
-  private void doVisit(BashExportBasedVisitor visitor,DockerShell shell) {
+  private void doVisit(BashExportBasedVisitor visitor, DockerShell shell) {
     visitor.visit("TERM", "DUMB");
 
-    for(Entry<String, String> entry: envVarsStatic.entrySet()) {
-      //todo: not needed in post-colosseum version, as the environment-var names should be set correctly then
-      if(!translateMap.containsKey(entry.getKey()))
-        continue;
+    for (Entry<String, String> entry : envVarsStatic.entrySet()) {
+      // todo: not needed in post-colosseum version, as the environment-var names should be set
+      // correctly then
+      if (!translateMap.containsKey(entry.getKey())) continue;
 
       visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
@@ -151,7 +152,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   public String getLocalAddress() {
     try {
       return client.getContainerIp(myId);
-    } catch(DockerException de) {
+    } catch (DockerException de) {
       // this means that that the container is not
       // up and running; hence, no IP address is
       // available. it is up to the caller to figure
@@ -160,11 +161,11 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     return null;
   }
 
-  //close shell, before opening them again in prepare(...) via LifeCycle-Actions
-	@Override
-	public void preInit() throws ContainerException {
+  // close shell, before opening them again in prepare(...) via LifeCycle-Actions
+  @Override
+  public void preInit() throws ContainerException {
     closeShell();
-	}
+  }
 
   @Override
   public void completeShutDown() throws ContainerException {
@@ -219,7 +220,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     try {
       dshell = client.startContainer(myId);
       BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
-      setStaticEnvironment(dshell,visitor);
+      setStaticEnvironment(dshell, visitor);
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
     }
@@ -238,17 +239,17 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   private void prepareEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
     DockerShell shell = getShell();
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
-    setStaticEnvironment(shell,visitor);
+    setStaticEnvironment(shell, visitor);
     setDynamicEnvironment(visitor, diff);
   }
 
   protected void executeCreation(String target) throws DockerException {
     Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-    //@SuppressWarnings("unused") String dockerId =
+    // @SuppressWarnings("unused") String dockerId =
     client.createContainer(target, myId, portsToSet);
   }
 
-  //used for setting the environment
+  // used for setting the environment
   private DockerShell getShell() throws ContainerException {
     DockerShell shell;
 
@@ -268,7 +269,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   abstract void collectDynamicEnvVars();
 
-  abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
+  abstract static class Builder<T extends AbstractComponent, S extends Builder<T, S>> {
     protected ComponentInstanceId myId;
     protected DockerConnector client;
 

@@ -18,162 +18,166 @@
 
 package de.uniulm.omi.cloudiator.lance.util.state;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.*;
 
 // FIXME: add some nice, generic callback mechanism that can be
 // exploited to update the registry on the fly.
 public final class ErrorAwareStateTransition<T extends Enum<?> & State> {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ErrorAwareStateMachine.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ErrorAwareStateMachine.class);
 
-    private final T from;
-    private final T intermediate;
-    private final T to;
-    private final T error;
-    private final TransitionAction action;
-    private final TransitionErrorHandler<T> errorHandler;
-    private final boolean isAsynchronous;
+  private final T from;
+  private final T intermediate;
+  private final T to;
+  private final T error;
+  private final TransitionAction action;
+  private final TransitionErrorHandler<T> errorHandler;
+  private final boolean isAsynchronous;
 
-    ErrorAwareStateTransition(T fromParam, T intermediateParam, T toParam, T errorParam,
-        TransitionAction actionParam, boolean asynchronous,
-        TransitionErrorHandler<T> errorHandlerParam) {
-        if (toParam == null)
-            throw new NullPointerException();
-        if (fromParam == null)
-            throw new NullPointerException();
-        to = toParam;
-        from = fromParam;
-        action = actionParam;
-        error = errorParam;
-        intermediate = intermediateParam;
-        isAsynchronous = asynchronous;
-        errorHandler = errorHandlerParam;
+  ErrorAwareStateTransition(
+      T fromParam,
+      T intermediateParam,
+      T toParam,
+      T errorParam,
+      TransitionAction actionParam,
+      boolean asynchronous,
+      TransitionErrorHandler<T> errorHandlerParam) {
+    if (toParam == null) throw new NullPointerException();
+    if (fromParam == null) throw new NullPointerException();
+    to = toParam;
+    from = fromParam;
+    action = actionParam;
+    error = errorParam;
+    intermediate = intermediateParam;
+    isAsynchronous = asynchronous;
+    errorHandler = errorHandlerParam;
+  }
+
+  State getSource() {
+    return from;
+  }
+
+  boolean isIntermediateOrEndState(T status) {
+    if (status == null) throw new NullPointerException();
+    return status == to || status == intermediate;
+  }
+
+  boolean isStartState(T status) {
+    if (status == null) throw new NullPointerException();
+    return status == from;
+  }
+
+  Future<?> triggerTransitionExecution(
+      ErrorAwareTransitionState<T> state, Object[] params, ExecutorService executor) {
+    Future<?> f;
+
+    TransitionRunner runner = new TransitionRunner(params, state);
+
+    if (isSynchronous()) {
+      FutureTask<T> ft = new FutureTask<>(runner, null);
+      runner.registerStartAtState(ft);
+      // attention: the transition action is not being executed here
+      f = ft;
+    } else {
+      Future<?> actual = executor.submit(runner);
+      runner.registerStartAtState(actual);
+      f = actual;
+    }
+    return f;
+  }
+
+  void postprocessExecutionTrigger(Future<?> f) {
+    if (isSynchronous()) {
+      FutureTask<T> ft = (FutureTask) f;
+      ft.run();
+      try {
+        ft.get();
+      } catch (InterruptedException e) {
+        LOGGER.error(String.format("%s got interrupted", ft), e);
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {
+        LOGGER.error(String.format("Exception during execution of %s", ft), e.getCause());
+      }
+    } else {
+      // do nothing: transition is already running //
+    }
+  }
+
+  private boolean isSynchronous() {
+    return !isAsynchronous;
+  }
+
+  public boolean hasEndState(T endState) {
+    return to == endState;
+  }
+
+  public boolean hasIntermediateState(T status) {
+    return intermediate == status;
+  }
+
+  @Override
+  public String toString() {
+    return from + (intermediate != null ? ("--> [" + intermediate + "]") : "") + "-->" + to;
+  }
+
+  private class TransitionRunner implements Runnable {
+
+    final Object[] params;
+    final ErrorAwareTransitionState<T> state;
+    final CountDownLatch startSignal = new CountDownLatch(1);
+
+    TransitionRunner(Object[] params, ErrorAwareTransitionState<T> state) {
+      this.params = params;
+      this.state = state;
     }
 
-    State getSource() {
-        return from;
+    void registerStartAtState(Future<?> ft) {
+      if (intermediate != null) {
+        state.transitionStarted(intermediate, ft);
+      } else {
+        state.transitionStarted(from, ft);
+      }
+      startSignal.countDown();
     }
 
-    boolean isIntermediateOrEndState(T status) {
-        if (status == null)
-            throw new NullPointerException();
-        return status == to || status == intermediate;
-    }
-
-    boolean isStartState(T status) {
-        if (status == null)
-            throw new NullPointerException();
-        return status == from;
-    }
-
-    Future<?> triggerTransitionExecution(ErrorAwareTransitionState<T> state, Object[] params,
-        ExecutorService executor) {
-    	Future<?> f;
-    	
-        TransitionRunner runner = new TransitionRunner(params, state);
-
-        if (isSynchronous()) {
-            FutureTask<T> ft = new FutureTask<>(runner, null);
-            runner.registerStartAtState(ft);
-            // attention: the transition action is not being executed here
-            f = ft;
-        } else {
-            Future<?> actual = executor.submit(runner);
-            runner.registerStartAtState(actual);
-            f = actual;
+    void waitForLatch() {
+      while (true) {
+        try {
+          startSignal.await();
+          return;
+        } catch (InterruptedException e) {
+          // TODO implement properly
         }
-        return f;
-    }
-    
-    void postprocessExecutionTrigger(Future<?> f){
-    	if(isSynchronous()) {
-    		FutureTask<T> ft = (FutureTask) f;
-	    	ft.run();
-	        try {
-	            ft.get();
-	        } catch (InterruptedException e) {
-	            LOGGER.error(String.format("%s got interrupted", ft), e);
-	            Thread.currentThread().interrupt();
-	        } catch (ExecutionException e) {
-	            LOGGER.error(String.format("Exception during execution of %s", ft), e.getCause());
-	        }
-    	} else {
-    		// do nothing: transition is already running //
-    	}
-    }
-    
-
-    private boolean isSynchronous() {
-        return !isAsynchronous;
+      }
     }
 
-    public boolean hasEndState(T endState) {
-        return to == endState;
-    }
-
-    public boolean hasIntermediateState(T status) {
-        return intermediate == status;
-    }
-
-    private class TransitionRunner implements Runnable {
-
-        final Object[] params;
-        final ErrorAwareTransitionState<T> state;
-        final CountDownLatch startSignal = new CountDownLatch(1);
-
-        TransitionRunner(Object[] params, ErrorAwareTransitionState<T> state) {
-            this.params = params;
-            this.state = state;
+    @Override
+    public void run() {
+      T stateToSet = null;
+      TransitionException exception = null;
+      try {
+        waitForLatch();
+        action.transit(params);
+        stateToSet = to;
+      } catch (TransitionException te) {
+        LOGGER.debug(
+            "transition runner failed: cannot execute transition: " + TransitionRunner.this, te);
+        if (errorHandler != null) {
+          errorHandler.run(te, from, to);
         }
-
-        void registerStartAtState(Future<?> ft) {
-            if (intermediate != null) {
-                state.transitionStarted(intermediate, ft);
-            } else {
-                state.transitionStarted(from, ft);
-            }
-            startSignal.countDown();
+        if (error != null) {
+          stateToSet = error;
         }
-
-        void waitForLatch() {
-            while (true) {
-                try {
-                    startSignal.await();
-                    return;
-                } catch (InterruptedException e) {
-                    // TODO implement properly
-                }
-            }
-        }
-
-        @Override public void run() {
-            T stateToSet = null;
-            TransitionException exception = null;
-            try {
-                waitForLatch();
-                action.transit(params);
-                stateToSet = to;
-            } catch (TransitionException te) {
-                LOGGER.debug(
-                    "transition runner failed: cannot execute transition: " + TransitionRunner.this,
-                    te);
-                if (errorHandler != null) {
-                    errorHandler.run(te, from, to);
-                }
-                if (error != null) {
-                    stateToSet = error;
-                }
-                exception = te;
-            } finally {
-                state.transitionComplete(stateToSet, exception);
-            }
-        }
+        exception = te;
+      } finally {
+        state.transitionComplete(stateToSet, exception);
+      }
     }
-
-    @Override public String toString() {
-        return from + (intermediate != null ? ("--> [" + intermediate + "]") : "") + "-->" + to;
-    }
+  }
 }

@@ -18,56 +18,69 @@
 
 package de.uniulm.omi.cloudiator.lance.client;
 
-import com.github.rholder.retry.*;
-import de.uniulm.omi.cloudiator.lance.LcaConstants;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.DockerShellTestAgent;
-import de.uniulm.omi.cloudiator.lance.util.application.*;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.util.application.AppArchitecture;
+import de.uniulm.omi.cloudiator.lance.util.application.AppArchitectureBuilder;
+import de.uniulm.omi.cloudiator.lance.util.application.ComponentInfo;
 import de.uniulm.omi.cloudiator.lance.util.application.InportInfo;
 import de.uniulm.omi.cloudiator.lance.util.application.OutportInfo;
+import java.io.IOException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import java.io.IOException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.util.HashSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-
-//Important: Java-re, docker daemon and Lance(remote-testing) must be installed on the VM and related ports must be opened on the vm
-//Install etcd on the vm via install_etcd.sh which can be found in the pinned installation repository
+// Important: Java-re, docker daemon and Lance(remote-testing) must be installed on the VM and
+// related ports must be opened on the vm
+// Install etcd on the vm via install_etcd.sh which can be found in the pinned installation
+// repository
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RemoteDockerShellTest {
 
+  // adjust
+  private static final String publicIp = "x.x.x.x";
   private static AppArchitecture arch;
   private static LifecycleClient client;
-  //adjust
-  private final static String publicIp = "x.x.x.x";
   private static DockerShellServerDelegate del;
 
   @BeforeClass
   public static void configureAppContext() {
-    AppArchitectureBuilder builder = new AppArchitectureBuilder("ShellTestApp", new ApplicationId(), new ApplicationInstanceId());
-    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
+    AppArchitectureBuilder builder =
+        new AppArchitectureBuilder(
+            "ShellTestApp", new ApplicationId(), new ApplicationInstanceId());
+    ComponentInfo zookCompInfo =
+        new ComponentInfo(
+            "zookeeper",
+            new ComponentId(),
+            new ComponentInstanceId(),
+            new HashSet<InportInfo>(),
+            new HashSet<OutportInfo>(),
+            OperatingSystem.UBUNTU_14_04);
     arch = builder.addComponentInfo(zookCompInfo).build();
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
-    //adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts",  "x.x.x.x:4001");
+    // adjust
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
   @Test
@@ -101,8 +114,8 @@ public class RemoteDockerShellTest {
 
   @Test
   public void testDOpenShellAndCreateContainer() {
-    ComponentInfo info = (ComponentInfo)arch.getComponents().toArray()[0];
-    openShellAndCreateContainer(info.getComponentName(), new HashMap<Integer,Integer>());
+    ComponentInfo info = (ComponentInfo) arch.getComponents().toArray()[0];
+    openShellAndCreateContainer(info.getComponentName(), new HashMap<Integer, Integer>());
   }
 
   @Test
@@ -195,7 +208,7 @@ public class RemoteDockerShellTest {
     closeShell();
   }
 
-  void openShellAndCreateContainer(String imageName, Map<Integer,Integer> portMap) {
+  void openShellAndCreateContainer(String imageName, Map<Integer, Integer> portMap) {
     try {
       del.openShellAndCreateContainer(imageName, portMap);
     } catch (DeploymentException e) {
@@ -251,7 +264,8 @@ public class RemoteDockerShellTest {
 
     private DockerShellServerDelegate() {};
 
-    public static DockerShellServerDelegate getDelegate(String pIp) throws RemoteException, NotBoundException {
+    public static DockerShellServerDelegate getDelegate(String pIp)
+        throws RemoteException, NotBoundException {
       if (instance == null) {
         instance = new DockerShellServerDelegate();
         publicIp = pIp;
@@ -284,7 +298,8 @@ public class RemoteDockerShellTest {
       return instance.makeRetryerCall(retryer, callable);
     }
 
-    public void openShellAndCreateContainer(String imageName, Map<Integer,Integer> portMap) throws DeploymentException {
+    public void openShellAndCreateContainer(String imageName, Map<Integer, Integer> portMap)
+        throws DeploymentException {
       try {
         testAgent.openShellAndCreateContainer(imageName, portMap);
       } catch (ContainerException e) {

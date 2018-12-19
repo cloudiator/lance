@@ -18,124 +18,127 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleController;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class DownstreamPortUpdater implements Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHandler.class);
-    
-    private final OutPortHandler outPorts;
-    private final PortRegistryTranslator portAccessor;
-    private final PortHierarchy portHierarchy;
-    private final LifecycleController controller;
-    private final Object portUpdateLock = new Object();
+  private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHandler.class);
 
-    // protected by portUpdateLock
-	private boolean updateInProgress;
-    
-    DownstreamPortUpdater(OutPortHandler outPortParams, PortRegistryTranslator portAccessorParam, 
-                PortHierarchy portHierarchyParam, LifecycleController controllerParam) {
-        outPorts = outPortParams;
-        portAccessor = portAccessorParam;
-        portHierarchy = portHierarchyParam;
-        controller = controllerParam;
-    }
-    
-    private List<PortDiff<DownstreamAddress>> getUpdatedPortSet() throws RegistrationException {
-    	synchronized(portUpdateLock) {
-    		if(updateInProgress) {
-    			LOGGER.info("omitting port update. other update already in progress.");
-    			return null;
-    		}
-    		List<PortDiff<DownstreamAddress>> diffs = outPorts.getUpdatedDownstreamPorts(portAccessor, portHierarchy);
-    		if(! outPorts.requiredDownstreamPortsSet()) {
-    			LOGGER.error("not all downstream ports are available. this may cause some issues");
-    			// FIXME: what should happen is that we return to INSTALL state //
-    			return null;
-    		}
-    		updateInProgress = true;
-    		return diffs;
-    	}
-    }
-    
-    private void handleDiffSet(List<PortDiff<DownstreamAddress>> diffs) {
-    	if(diffs.isEmpty()) {
-    		LOGGER.info("omitting port update. diffSet empty. nothing to update.");
-            return;
+  private final OutPortHandler outPorts;
+  private final PortRegistryTranslator portAccessor;
+  private final PortHierarchy portHierarchy;
+  private final LifecycleController controller;
+  private final Object portUpdateLock = new Object();
+
+  // protected by portUpdateLock
+  private boolean updateInProgress;
+
+  DownstreamPortUpdater(
+      OutPortHandler outPortParams,
+      PortRegistryTranslator portAccessorParam,
+      PortHierarchy portHierarchyParam,
+      LifecycleController controllerParam) {
+    outPorts = outPortParams;
+    portAccessor = portAccessorParam;
+    portHierarchy = portHierarchyParam;
+    controller = controllerParam;
+  }
+
+  static void pollForNeededConnections(
+      OutPortHandler outPorts, PortRegistryTranslator portAccessor, PortHierarchy portHierarchy) {
+    while (true) {
+      try {
+        outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
+        if (outPorts.requiredDownstreamPortsSet()) {
+          return;
         }
-        
-        // now that we got all changed ports, for each of them
-        // call the port update handler
-        for(PortDiff<DownstreamAddress> diff : diffs) {
-            OutPort port = diff.getPort();
-            PortUpdateHandler handler = port.getUpdateHandler();
-            LOGGER.info("calling update handler for port: " + diff);
-            try {
-            	controller.blockingUpdatePorts(port, handler, diff);
-            	LOGGER.info("port update handler for port: " + diff + " done. manifesting changes.");
-            	synchronized(portUpdateLock) {
-            		outPorts.manifestChangeset(diff);
-            	}
-            } catch(ContainerException ce) {
-            	LOGGER.warn("could not update ports: " + diff, ce);
-            }
-          }
+      } catch (RegistrationException e) {
+        LOGGER.warn("could not access registry for retrieving downstream ports", e);
+      }
+      LOGGER.info(
+          "did not find initial values for all required out ports; sleeping for some time... ");
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException ie) {
+        LOGGER.info("thread interrupted (by system?)", ie);
+      }
+    }
+    // throw new IllegalStateException();
+  }
+
+  private List<PortDiff<DownstreamAddress>> getUpdatedPortSet() throws RegistrationException {
+    synchronized (portUpdateLock) {
+      if (updateInProgress) {
+        LOGGER.info("omitting port update. other update already in progress.");
+        return null;
+      }
+      List<PortDiff<DownstreamAddress>> diffs =
+          outPorts.getUpdatedDownstreamPorts(portAccessor, portHierarchy);
+      if (!outPorts.requiredDownstreamPortsSet()) {
+        LOGGER.error("not all downstream ports are available. this may cause some issues");
+        // FIXME: what should happen is that we return to INSTALL state //
+        return null;
+      }
+      updateInProgress = true;
+      return diffs;
+    }
+  }
+
+  private void handleDiffSet(List<PortDiff<DownstreamAddress>> diffs) {
+    if (diffs.isEmpty()) {
+      LOGGER.info("omitting port update. diffSet empty. nothing to update.");
+      return;
     }
 
-    //FIXME: ensure only one update process running at a time
-    // add synchronized section here?
-    private void doRun() throws RegistrationException {
-    	try {
-    		List<PortDiff<DownstreamAddress>> diffs = getUpdatedPortSet();
-    		handleDiffSet(diffs);
-    	} finally {
-    		synchronized(portUpdateLock){
-    			updateInProgress = false;
-    		}
-    	}
-        
-    }
-    
-    @Override
-    public void run() {
-        try {
-            doRun();
-        } catch(RegistrationException ex) {
-            LOGGER.error("cannot access downstream ports. registry not available.", ex);
-        } catch(Exception e) {
-            LOGGER.error("exception occurred.", e);
-        } catch(Error er) {
-            LOGGER.error("error occurred.", er);
-            throw er;
+    // now that we got all changed ports, for each of them
+    // call the port update handler
+    for (PortDiff<DownstreamAddress> diff : diffs) {
+      OutPort port = diff.getPort();
+      PortUpdateHandler handler = port.getUpdateHandler();
+      LOGGER.info("calling update handler for port: " + diff);
+      try {
+        controller.blockingUpdatePorts(port, handler, diff);
+        LOGGER.info("port update handler for port: " + diff + " done. manifesting changes.");
+        synchronized (portUpdateLock) {
+          outPorts.manifestChangeset(diff);
         }
+      } catch (ContainerException ce) {
+        LOGGER.warn("could not update ports: " + diff, ce);
+      }
     }
-    
-    static void pollForNeededConnections(OutPortHandler outPorts, PortRegistryTranslator portAccessor, PortHierarchy portHierarchy) {
-        while(true) {
-            try { 
-                outPorts.updateDownstreamPorts(portAccessor, portHierarchy);
-                if(outPorts.requiredDownstreamPortsSet()) {
-                    return;
-                }
-            } catch (RegistrationException e) {
-                LOGGER.warn("could not access registry for retrieving downstream ports", e);
-            }
-            LOGGER.info("did not find initial values for all required out ports; sleeping for some time... ");
-            try { 
-                Thread.sleep(3000); 
-            } catch(InterruptedException ie) {
-                LOGGER.info("thread interrupted (by system?)", ie);
-            }
-        }
-        // throw new IllegalStateException();
+  }
+
+  // FIXME: ensure only one update process running at a time
+  // add synchronized section here?
+  private void doRun() throws RegistrationException {
+    try {
+      List<PortDiff<DownstreamAddress>> diffs = getUpdatedPortSet();
+      handleDiffSet(diffs);
+    } finally {
+      synchronized (portUpdateLock) {
+        updateInProgress = false;
+      }
     }
+  }
+
+  @Override
+  public void run() {
+    try {
+      doRun();
+    } catch (RegistrationException ex) {
+      LOGGER.error("cannot access downstream ports. registry not available.", ex);
+    } catch (Exception e) {
+      LOGGER.error("exception occurred.", e);
+    } catch (Error er) {
+      LOGGER.error("error occurred.", er);
+      throw er;
+    }
+  }
 }

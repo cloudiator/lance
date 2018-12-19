@@ -18,91 +18,95 @@
 
 package de.uniulm.omi.cloudiator.lance.util.state;
 
-import java.util.concurrent.Future;
-
 import de.uniulm.omi.cloudiator.lance.util.AsyncCallback;
 import de.uniulm.omi.cloudiator.lance.util.AsyncRunner;
 import de.uniulm.omi.cloudiator.lance.util.AsyncRunner.Setter;
+import java.util.concurrent.Future;
 
 // FIXME: add some nice, generic callback mechanism that can be
 // exploited to update the registry on the fly.
 @Deprecated
-public final class StateTransition<T extends Enum<?> & State > {
+public final class StateTransition<T extends Enum<?> & State> {
 
-    private final T from;
-    private final T intermediate;
-    private final T to;
-    private final TransitionAction action;
-    
-    static<T extends Enum<?> & State> StateTransition<T> synchronousTransition(T fromParam, T toParam, TransitionAction actionParam) {
-        return new StateTransition<>(fromParam, null, toParam, actionParam);
-    }
-    
-    static <T extends Enum<?> & State> StateTransition<T> asynchronousTransition(T fromParam, T intermediateParam, T toParam, TransitionAction actionParam) {
-        return new StateTransition<>(fromParam, intermediateParam, toParam, actionParam);
-    }
-    
-    private StateTransition(T fromParam, T intermediateParam, T toParam, TransitionAction actionParam) {
-        to = toParam;
-        from = fromParam;
-        action = actionParam;
-        intermediate = intermediateParam;
-    }
+  private final T from;
+  private final T intermediate;
+  private final T to;
+  private final TransitionAction action;
 
-    State getSource() { 
-    	return from; 
-    }
+  private StateTransition(
+      T fromParam, T intermediateParam, T toParam, TransitionAction actionParam) {
+    to = toParam;
+    from = fromParam;
+    action = actionParam;
+    intermediate = intermediateParam;
+  }
 
-    boolean isIntermediateOrEndState(T status) {
-        if(status == null) 
-            throw new NullPointerException();
-        return status == to || status == intermediate;
-    }
+  static <T extends Enum<?> & State> StateTransition<T> synchronousTransition(
+      T fromParam, T toParam, TransitionAction actionParam) {
+    return new StateTransition<>(fromParam, null, toParam, actionParam);
+  }
 
-    boolean isStartState(T status) {
-        if(status == null) 
-            throw new NullPointerException();
-        return status == from;
-    }
+  static <T extends Enum<?> & State> StateTransition<T> asynchronousTransition(
+      T fromParam, T intermediateParam, T toParam, TransitionAction actionParam) {
+    return new StateTransition<>(fromParam, intermediateParam, toParam, actionParam);
+  }
 
-    void execute(final StateSetter<T> setter, final Object[] params) {
-        if(isSynchronous()) {
-        	try {
-        		action.transit(params);
-        	} catch (TransitionException te) {
-        		throw new RuntimeException(te);
-        	}
-            setter.setFinalState(to);
-        } else {
-            Thread t = AsyncRunner.createWrappedStateRunner(
-                    new Setter() { 
-                        @Override public void set() {
-                        	try {
-                        		action.transit(params);
-                        	} catch (TransitionException te) {
-                        		throw new RuntimeException(te);
-                        	}
-                            setter.setFinalState(to);
-                        } 
-                    },
-                    new AsyncCallback() { @Override public void call(Future future) {
-                        setter.setIntermediateState(intermediate, future);
-                        }
-                    });
-            
-            t.start();
-        }
-    }
-    
-    private boolean isSynchronous() {
-        return intermediate == null;
-    }
+  State getSource() {
+    return from;
+  }
 
-    public boolean hasEndState(T endState) {
-        return to == endState;
-    }
+  boolean isIntermediateOrEndState(T status) {
+    if (status == null) throw new NullPointerException();
+    return status == to || status == intermediate;
+  }
 
-    public boolean hasIntermediateState(T status) {
-        return intermediate == status;
+  boolean isStartState(T status) {
+    if (status == null) throw new NullPointerException();
+    return status == from;
+  }
+
+  void execute(final StateSetter<T> setter, final Object[] params) {
+    if (isSynchronous()) {
+      try {
+        action.transit(params);
+      } catch (TransitionException te) {
+        throw new RuntimeException(te);
+      }
+      setter.setFinalState(to);
+    } else {
+      Thread t =
+          AsyncRunner.createWrappedStateRunner(
+              new Setter() {
+                @Override
+                public void set() {
+                  try {
+                    action.transit(params);
+                  } catch (TransitionException te) {
+                    throw new RuntimeException(te);
+                  }
+                  setter.setFinalState(to);
+                }
+              },
+              new AsyncCallback() {
+                @Override
+                public void call(Future future) {
+                  setter.setIntermediateState(intermediate, future);
+                }
+              });
+
+      t.start();
     }
+  }
+
+  private boolean isSynchronous() {
+    return intermediate == null;
+  }
+
+  public boolean hasEndState(T endState) {
+    return to == endState;
+  }
+
+  public boolean hasIntermediateState(T status) {
+    return intermediate == status;
+  }
 }

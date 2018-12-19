@@ -4,7 +4,7 @@ import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 
 public interface DetectorFactory<T extends Detector> {
 
-	T getDefault();
-	T getDeploymentHandler(Deployment d);
-	
+  T getDefault();
+
+  T getDeploymentHandler(Deployment d);
 }

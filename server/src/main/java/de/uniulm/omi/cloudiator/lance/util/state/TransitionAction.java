@@ -20,13 +20,11 @@ package de.uniulm.omi.cloudiator.lance.util.state;
 
 public interface TransitionAction {
 
-	/**
-	 * 
-	 * @param params the parameters passed on to the action
-	 * @throws TransitionException thrown when an unrecoverable error has happened 
-	 * 	that prevents the transition from being completed. This will trigger the 
-	 * execution of the exception handler if available and pass on to the error
-	 * state (if available).  
-	 */
-    public void transit(Object[] params) throws TransitionException ;
+  /**
+   * @param params the parameters passed on to the action
+   * @throws TransitionException thrown when an unrecoverable error has happened that prevents the
+   *     transition from being completed. This will trigger the execution of the exception handler
+   *     if available and pass on to the error state (if available).
+   */
+  public void transit(Object[] params) throws TransitionException;
 }

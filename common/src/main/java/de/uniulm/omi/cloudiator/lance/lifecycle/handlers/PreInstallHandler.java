@@ -23,25 +23,22 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
-/** 
- * may be used to get service binaries, e.g. 
- * by downloading 
- */
+/** may be used to get service binaries, e.g. by downloading */
 public interface PreInstallHandler extends LifecycleHandler {
-    // marker interface // 
+  // marker interface //
 }
 
 final class PreInstallDeploymentHandler implements PreInstallHandler {
 
-    private static final long serialVersionUID = 6919555061386179348L;
-    private final Deployment d;
-    
-    PreInstallDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = 6919555061386179348L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.PRE_INSTALL, ec);
-    }
+  PreInstallDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.PRE_INSTALL, ec);
+  }
 }

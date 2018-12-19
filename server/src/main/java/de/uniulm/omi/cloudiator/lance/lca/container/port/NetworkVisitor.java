@@ -18,11 +18,11 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
-import java.util.List;
-
 public interface NetworkVisitor {
 
-    void visitNetworkAddress(String name, String address);
-    void visitInPort(String fullPortName, String portNr);
-    void visitOutPort(String name,String sinkValues);
+  void visitNetworkAddress(String name, String address);
+
+  void visitInPort(String fullPortName, String portNr);
+
+  void visitOutPort(String name, String sinkValues);
 }

@@ -11,9 +11,10 @@ public class AbstractComponentDependencies {
 
   public final ComponentInstanceId componentInstanceId;
   public final GlobalRegistryAccessor accessor;
-  public final NetworkHandler networkHandler ;
+  public final NetworkHandler networkHandler;
 
-  public AbstractComponentDependencies(DeploymentContext ctx, AbstractComponent component, HostContext hostContext) {
+  public AbstractComponentDependencies(
+      DeploymentContext ctx, AbstractComponent component, HostContext hostContext) {
     componentInstanceId = new ComponentInstanceId();
     accessor = new GlobalRegistryAccessor(ctx, component, componentInstanceId);
     networkHandler = new NetworkHandler(accessor, component, hostContext);

@@ -18,32 +18,32 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment; 
+import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * may be used to unregister service instance at the load balancer
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface PreStopHandler extends LifecycleHandler {
 
-    // marker interface
+  // marker interface
 }
 
 final class PreStopDeploymentHandler implements PreStopHandler {
 
-    private static final long serialVersionUID = -1489319395602029591L;
-    private final Deployment d;
-    
-    PreStopDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = -1489319395602029591L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.PRE_STOP, ec);
-    }
+  PreStopDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.PRE_STOP, ec);
+  }
 }

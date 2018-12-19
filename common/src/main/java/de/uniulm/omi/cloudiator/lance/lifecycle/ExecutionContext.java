@@ -22,20 +22,19 @@ import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 
 public final class ExecutionContext {
 
-    private final OperatingSystem os;
-    private final ShellFactory shellFactory;
-    
-    public ExecutionContext(OperatingSystem osParam, ShellFactory shellFactoryParam) {
-        os = osParam;
-        shellFactory = shellFactoryParam;
-    }
-    
-    public OperatingSystem getOperatingSystem() {
-        return os;
-    }
+  private final OperatingSystem os;
+  private final ShellFactory shellFactory;
 
-    public Shell getShell() {
-        return shellFactory.createShell();
-    }
+  public ExecutionContext(OperatingSystem osParam, ShellFactory shellFactoryParam) {
+    os = osParam;
+    shellFactory = shellFactoryParam;
+  }
 
+  public OperatingSystem getOperatingSystem() {
+    return os;
+  }
+
+  public Shell getShell() {
+    return shellFactory.createShell();
+  }
 }

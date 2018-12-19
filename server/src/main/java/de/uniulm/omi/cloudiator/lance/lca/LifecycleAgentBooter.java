@@ -26,14 +26,13 @@ import org.slf4j.LoggerFactory;
 
 public final class LifecycleAgentBooter {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentBooter.class);
-  private final static Registrator<LifecycleAgent> reg = Registrator.create(LifecycleAgent.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleAgentBooter.class);
+  private static final Registrator<LifecycleAgent> reg = Registrator.create(LifecycleAgent.class);
   private static volatile LifecycleAgentImpl lca = createAgentImplementation();
   private static volatile LifecycleAgent stub = reg.export(lca, LcaConstants.AGENT_RMI_PORT);
 
   public static void main(String[] args) {
-    LOGGER
-        .info("LifecycleAgentBooter: starting. running version: " + Version.getVersionString());
+    LOGGER.info("LifecycleAgentBooter: starting. running version: " + Version.getVersionString());
 
     // TODO: it might be worth exploiting ways to get rid of this
     // dependency to a registry. note that there does not seem to
@@ -44,12 +43,14 @@ public final class LifecycleAgentBooter {
       Thread idle = new Thread(new IdleRunnable());
       idle.setDaemon(true);
       idle.start();
-      Runtime.getRuntime().addShutdownHook(new Thread(
-          () -> {
-            LOGGER.info("LifecycleAgentBooter is shutting down.");
-            unregister(lca);
-            idle.interrupt();
-          }));
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    LOGGER.info("LifecycleAgentBooter is shutting down.");
+                    unregister(lca);
+                    idle.interrupt();
+                  }));
     } else {
       LOGGER.error("cannot start lifecycle agent; exiting.");
       Runtime.getRuntime().exit(-128);
@@ -86,6 +87,4 @@ public final class LifecycleAgentBooter {
       LOGGER.info("Received interrupt. Ending.");
     }
   }
-
-
 }

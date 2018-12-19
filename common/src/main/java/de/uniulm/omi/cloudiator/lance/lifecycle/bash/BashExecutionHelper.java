@@ -26,53 +26,53 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 
 final class BashExecutionHelper {
-    
-    private BashExecutionHelper() {
-        // no instances of this class //
+
+  private BashExecutionHelper() {
+    // no instances of this class //
+  }
+
+  private static boolean osMatches(OperatingSystem osParam, ExecutionContext ec) {
+    return osParam.equals(ec.getOperatingSystem());
+  }
+
+  private static String buildStringFromCommandLine(String[] cmd) {
+    String res = "";
+    for (String s : cmd) {
+      res = res + " " + s;
     }
-    
-    private static boolean osMatches(OperatingSystem osParam, ExecutionContext ec) {
-        return osParam.equals(ec.getOperatingSystem());
+    return res;
+  }
+
+  static ExecutionResult doExecuteCommand(boolean blocking, String command, Shell shell) {
+    if (blocking) {
+      return shell.executeBlockingCommand(command);
     }
-    
-    private static String buildStringFromCommandLine(String[] cmd) {
-        String res = "";
-        for(String s : cmd) { 
-            res = res + " " + s;
-        }
-        return res;
+    return shell.executeCommand(command);
+  }
+
+  static void executeCommands(
+      OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
+    if (!osMatches(osParam, ec)) return;
+
+    Shell shell = ec.getShell();
+    for (String[] cmd : commands) {
+      String res = buildStringFromCommandLine(cmd);
+      doExecuteCommand(false, res, shell);
     }
-    
-    static ExecutionResult doExecuteCommand(boolean blocking, String command, Shell shell) {
-        if(blocking) {
-            return shell.executeBlockingCommand(command);
-        } 
-        return shell.executeCommand(command); 
+  }
+
+  static void executeBlockingCommands(
+      OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
+    if (!osMatches(osParam, ec)) return;
+
+    Shell shell = ec.getShell();
+    final int commandSize = commands.size();
+    int counter = 0;
+
+    for (String[] cmd : commands) {
+      String res = buildStringFromCommandLine(cmd);
+      counter++;
+      doExecuteCommand(counter == commandSize, res, shell);
     }
-    
-    static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
-          if(!osMatches(osParam, ec))
-              return;
-          
-          Shell shell = ec.getShell();
-          for(String[] cmd : commands) {
-              String res = buildStringFromCommandLine(cmd);
-              doExecuteCommand(false, res, shell);
-          }
-    }
-    
-    static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
-        if(!osMatches(osParam, ec))
-            return;
-        
-        Shell shell = ec.getShell();
-        final int commandSize = commands.size();
-        int counter = 0;
-        
-        for(String[] cmd : commands) {
-            String res = buildStringFromCommandLine(cmd);
-            counter++;
-            doExecuteCommand(counter == commandSize, res, shell);
-        }
-    }
+  }
 }

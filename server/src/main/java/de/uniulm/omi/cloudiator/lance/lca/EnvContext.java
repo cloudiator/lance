@@ -19,7 +19,6 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.util.execution.LoggingScheduledThreadPoolExecutor;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,8 +33,6 @@ import org.slf4j.LoggerFactory;
 
 final class EnvContext implements HostContext {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
-
   // public static final String PUBLIC_IP_KEY = "PUBLIC_IP";
   public static final String PUBLIC_IP_KEY = "host.ip.public";
   public static final String PRIVATE_IP_KEY = "host.ip.private";
@@ -45,14 +42,20 @@ final class EnvContext implements HostContext {
   // public static final String CONTAINER_IP_KEY = "host.ip.container";
   // public static final String HOST_OS_KEY = "host.os";
   public static final String TENANT_ID_KEY = "host.vm.cloud.tenant.id";
-  //public static final String VM_ID_KEY = "VM_ID";
+  // public static final String VM_ID_KEY = "VM_ID";
   public static final String VM_ID_KEY = "host.vm.id";
   public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
-  //public static final String CONTAINER_TYPE = "host.container.type";
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(HostContext.class);
+  // public static final String CONTAINER_TYPE = "host.container.type";
   private static final String[] VALUES =
-       new String[]{PUBLIC_IP_KEY , PRIVATE_IP_KEY , /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY
-  /*, CONTAINER_TYPE*/, CLOUD_ID_KEY};
+      new String[] {
+        PUBLIC_IP_KEY,
+        PRIVATE_IP_KEY, /*HOST_OS_KEY, */
+        TENANT_ID_KEY,
+        VM_ID_KEY
+        /*, CONTAINER_TYPE*/ ,
+        CLOUD_ID_KEY
+      };
 
   private final Map<String, String> hostContext;
   private final ScheduledExecutorService executorService;
@@ -62,11 +65,6 @@ final class EnvContext implements HostContext {
     final ThreadFactory threadFactory =
         new ThreadFactoryBuilder().setNameFormat("EnvContextExecutor-%d").build();
     this.executorService = new LoggingScheduledThreadPoolExecutor(4, threadFactory);
-  }
-
-  private void registerRmiAddress() {
-    LOGGER.info("setting RMI server hostname to: " + getPublicIp());
-    System.setProperty("java.rmi.server.hostname", getPublicIp());
   }
 
   static HostContext fromEnvironment() {
@@ -85,11 +83,15 @@ final class EnvContext implements HostContext {
     return ctx;
   }
 
+  private void registerRmiAddress() {
+    LOGGER.info("setting RMI server hostname to: " + getPublicIp());
+    System.setProperty("java.rmi.server.hostname", getPublicIp());
+  }
+
   @Override
   public String getInternalIp() {
     return hostContext.get(PRIVATE_IP_KEY);
   }
-
 
   @Override
   public String toString() {
@@ -161,12 +163,12 @@ final class EnvContext implements HostContext {
 
   @Override
   public Map<String, String> getEnvVars() {
-    final Map<String,String> vals = new HashMap<>();
-    vals.put(PUBLIC_IP_KEY,getPublicIp());
-    vals.put(PRIVATE_IP_KEY ,getPrivateIp());
-    vals.put(TENANT_ID_KEY ,getTenantId());
-    vals.put(VM_ID_KEY ,getVMIdentifier());
-    vals.put(CLOUD_ID_KEY ,getCloudIdentifier());
+    final Map<String, String> vals = new HashMap<>();
+    vals.put(PUBLIC_IP_KEY, getPublicIp());
+    vals.put(PRIVATE_IP_KEY, getPrivateIp());
+    vals.put(TENANT_ID_KEY, getTenantId());
+    vals.put(VM_ID_KEY, getVMIdentifier());
+    vals.put(CLOUD_ID_KEY, getCloudIdentifier());
     return vals;
   }
 }

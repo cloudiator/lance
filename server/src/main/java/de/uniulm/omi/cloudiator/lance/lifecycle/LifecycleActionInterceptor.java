@@ -26,17 +26,17 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
 
 public interface LifecycleActionInterceptor {
 
-    void prepare(HandlerType type) throws ContainerException;
+  void prepare(HandlerType type) throws ContainerException;
 
-    void postprocess(HandlerType type) throws ContainerException;
+  void postprocess(HandlerType type) throws ContainerException;
 
-	ComponentInstanceId getComponentInstanceId();
+  ComponentInstanceId getComponentInstanceId();
 
-	void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException;
+  void postprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException;
 
-	void preprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException;
+  void preprocessPortUpdate(PortDiff<DownstreamAddress> diff) throws ContainerException;
 
-	void postprocessDetector(DetectorType type) throws ContainerException;
+  void postprocessDetector(DetectorType type) throws ContainerException;
 
-	void preprocessDetector(DetectorType type) throws ContainerException;
+  void preprocessDetector(DetectorType type) throws ContainerException;
 }

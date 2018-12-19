@@ -23,36 +23,37 @@ import java.util.UUID;
 
 public final class ApplicationInstanceId implements Serializable {
 
-    private static final long serialVersionUID = 4619178731984756742L;
-    private final UUID uuid;
-    
-    public ApplicationInstanceId(){
-        uuid = UUID.randomUUID();
+  private static final long serialVersionUID = 4619178731984756742L;
+  private final UUID uuid;
+
+  public ApplicationInstanceId() {
+    uuid = UUID.randomUUID();
+  }
+
+  private ApplicationInstanceId(String s) {
+    uuid = UUID.fromString(s);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof ApplicationInstanceId)) {
+      return false; // captures null
     }
-    
-    private ApplicationInstanceId(String s){
-        uuid = UUID.fromString(s);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if(!(o instanceof ApplicationInstanceId))
-            return false; // captures null
-        ApplicationInstanceId that = (ApplicationInstanceId) o;
-        return this.uuid.equals(that.uuid);
-    }
-    
-    @Override 
-    public int hashCode() {
-        return uuid.hashCode();
-    }
-    
-    @Override
-    public String toString(){
-        return uuid.toString();
-    }
-    
-    public static ApplicationInstanceId fromString(String s){
-        return new ApplicationInstanceId(s);
-    }
+    ApplicationInstanceId that = (ApplicationInstanceId) obj;
+    return this.uuid.equals(that.uuid);
+  }
+
+  @Override
+  public int hashCode() {
+    return uuid.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return uuid.toString();
+  }
+
+  public static ApplicationInstanceId fromString(String s) {
+    return new ApplicationInstanceId(s);
+  }
 }

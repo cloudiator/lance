@@ -28,52 +28,54 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
 
 public class LifecycleStore implements Serializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
-    private static final long serialVersionUID = 1189996149693456690L;
+  private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleStore.class);
+  private static final long serialVersionUID = 1189996149693456690L;
 
-    private final LifecycleHandler[] handlers;
-    private final StartDetector startDetector;
-    private final StopDetector stopDetector;
-    
-    LifecycleStore(LifecycleHandler[] handlersParam, StartDetector startDetectorParam, StopDetector stopDetectorParam) {
-        handlers = handlersParam;
-        assert handlers.length == LifecycleHandlerType.values().length : "array too small";
-        for(LifecycleHandlerType t : LifecycleHandlerType.values()) {
-            LifecycleHandler h = getCastHandler(t);
-            if(h == null) 
-                throw new IllegalStateException("not the correct lifecycle handler");
-        }
-        startDetector = startDetectorParam;
-        stopDetector = stopDetectorParam;
-    }
-    
-    public <T extends LifecycleHandler> T getHandler(LifecycleHandlerType t, Class<T> type) {
-        assert t.getTypeClass() == type : "types do not match";
-        
-        LifecycleHandler h = getCastHandler(t);
-        @SuppressWarnings("unchecked")
-        T tt = (T) h;
-        return tt;
-    }
-    
-    private LifecycleHandler getCastHandler(LifecycleHandlerType t) {
-        LifecycleHandler h = handlers[t.ordinal()];
-        if(h == null) {
-            return null;
-        }
-        try {
-            return t.getTypeClass().cast(h);
-        } catch(ClassCastException cce) {
-            LOGGER.error("could not retrieve correct handler due to incompatible types", cce);
-            return null;
-        }
-    }
+  private final LifecycleHandler[] handlers;
+  private final StartDetector startDetector;
+  private final StopDetector stopDetector;
 
-	public StartDetector getStartDetector() {
-		return startDetector;
-	}
+  LifecycleStore(
+      LifecycleHandler[] handlersParam,
+      StartDetector startDetectorParam,
+      StopDetector stopDetectorParam) {
+    handlers = handlersParam;
+    assert handlers.length == LifecycleHandlerType.values().length : "array too small";
+    for (LifecycleHandlerType t : LifecycleHandlerType.values()) {
+      LifecycleHandler h = getCastHandler(t);
+      if (h == null) throw new IllegalStateException("not the correct lifecycle handler");
+    }
+    startDetector = startDetectorParam;
+    stopDetector = stopDetectorParam;
+  }
 
-	public StopDetector getStopDetector() {
-		return stopDetector;
-	}
+  public <T extends LifecycleHandler> T getHandler(LifecycleHandlerType t, Class<T> type) {
+    assert t.getTypeClass() == type : "types do not match";
+
+    LifecycleHandler h = getCastHandler(t);
+    @SuppressWarnings("unchecked")
+    T tt = (T) h;
+    return tt;
+  }
+
+  private LifecycleHandler getCastHandler(LifecycleHandlerType t) {
+    LifecycleHandler h = handlers[t.ordinal()];
+    if (h == null) {
+      return null;
+    }
+    try {
+      return t.getTypeClass().cast(h);
+    } catch (ClassCastException cce) {
+      LOGGER.error("could not retrieve correct handler due to incompatible types", cce);
+      return null;
+    }
+  }
+
+  public StartDetector getStartDetector() {
+    return startDetector;
+  }
+
+  public StopDetector getStopDetector() {
+    return stopDetector;
+  }
 }
