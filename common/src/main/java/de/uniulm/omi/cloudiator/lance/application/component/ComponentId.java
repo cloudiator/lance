@@ -40,6 +40,11 @@ public final class ComponentId implements Serializable {
     this.id = str;
   }
 
+  public static ComponentId fromString(String str) {
+    checkNotNull(str, "s is null");
+    return new ComponentId(str);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ComponentId)) {
@@ -58,10 +63,5 @@ public final class ComponentId implements Serializable {
   @Override
   public String toString() {
     return id;
-  }
-
-  public static ComponentId fromString(String str) {
-    checkNotNull(str, "s is null");
-    return new ComponentId(str);
   }
 }

@@ -1,8 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
 import com.google.common.net.InetAddresses;
-import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,6 +49,11 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
     vars = new HashMap<>();
   }
 
+  @Override
+  public Map<String, String> getEnvVars() {
+    return vars;
+  }
+
   public void setEnvVars(Map<String, String> vars) {
     for (Entry<String, String> entry : vars.entrySet()) {
       if (func.check(entry.getValue())) this.vars.put(entry.getKey(), entry.getValue());
@@ -62,11 +65,6 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
                 + entry.getValue()
                 + " has wrong format");
     }
-  }
-
-  @Override
-  public Map<String, String> getEnvVars() {
-    return vars;
   }
 
   @Override

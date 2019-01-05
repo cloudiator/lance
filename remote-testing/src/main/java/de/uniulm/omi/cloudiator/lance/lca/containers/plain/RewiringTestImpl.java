@@ -542,6 +542,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
     public boolean stopIt;
     public ErrorAwareContainer<PlainContainerLogic> container;
     public LifecycleController lcc;
+
     FullComponent(
         DeployableComponent comp,
         GlobalRegistryAccessor accessor,
@@ -562,6 +563,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
       this.container = container;
       this.lcc = lcc;
     }
+
     FullComponent(
         DeployableComponent comp,
         GlobalRegistryAccessor accessor,

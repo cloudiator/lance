@@ -31,8 +31,8 @@ final class ContainerContainment implements BasicContainer {
       ContainerManager m = e.getValue();
       if (m == null) continue;
       ContainerController cc = m.getContainer(id);
-      if (cc == null) // not found here //
-      continue;
+      // not found here //
+      if (cc == null) continue;
       if (result != null) {
         LOGGER.error("container id " + id + " found more than one time in different containers.");
         continue;

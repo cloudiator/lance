@@ -30,23 +30,6 @@ public final class OperatingSystemVersion implements Serializable {
     version = s;
   }
 
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((version == null) ? 0 : version.hashCode());
-    return result;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (!(o instanceof OperatingSystemVersion)) {
-      return false;
-    }
-    OperatingSystemVersion that = (OperatingSystemVersion) o;
-    return this.version.equals(that.version);
-  }
-
   /**
    * @param year in 'y' or 'yy' format
    * @param month either 10 or 4
@@ -74,6 +57,23 @@ public final class OperatingSystemVersion implements Serializable {
 
   public static OperatingSystemVersion getWindowsVersion(WindowsVersion version) {
     return new OperatingSystemVersion(version.toString());
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((version == null) ? 0 : version.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof OperatingSystemVersion)) {
+      return false;
+    }
+    OperatingSystemVersion that = (OperatingSystemVersion) o;
+    return this.version.equals(that.version);
   }
 
   public boolean checkFormatting(OSVersionFormat format) {

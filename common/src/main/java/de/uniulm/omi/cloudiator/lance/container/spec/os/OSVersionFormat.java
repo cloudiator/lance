@@ -58,7 +58,7 @@ public abstract class OSVersionFormat implements Serializable {
       };
   private static final long serialVersionUID = -7624377333732191799L;
 
-  public abstract boolean hasCorrectFormat(String format);
-
   OSVersionFormat() {}
+
+  public abstract boolean hasCorrectFormat(String format);
 }

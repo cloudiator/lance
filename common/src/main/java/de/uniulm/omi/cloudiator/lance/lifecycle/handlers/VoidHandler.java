@@ -22,17 +22,16 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 
 /**
- * invoked when the Lifecycle controller starts; 
- * may be used for validating system environment;
- * 
+ * invoked when the Lifecycle controller starts; may be used for validating system environment;
+ *
  * @author Joerg Domaschka
  */
 public final class VoidHandler implements LifecycleHandler {
 
-    private static final long serialVersionUID = 4272500624436850060L;
+  private static final long serialVersionUID = 4272500624436850060L;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        throw new UnsupportedOperationException("method should never be called");
-    }
+  @Override
+  public void execute(ExecutionContext ec) {
+    throw new UnsupportedOperationException("method should never be called");
+  }
 }

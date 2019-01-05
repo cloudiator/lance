@@ -18,9 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
-import java.io.Serializable;
-
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
+import java.io.Serializable;
 
 public final class OutPort implements Serializable {
 
@@ -35,17 +34,19 @@ public final class OutPort implements Serializable {
   private final int max;
 
   /**
-   *
    * @param nameParam
    * @param handlerParam
    * @param cardinalityParam
    * @param minSinksParam
    * @param maxSinksParam
-   *
    * @throws NullPointerException if name is null
-  */
-  OutPort(String nameParam, PortUpdateHandler handlerParam, int cardinalityParam,
-      int minSinksParam, int maxSinksParam) {
+   */
+  OutPort(
+      String nameParam,
+      PortUpdateHandler handlerParam,
+      int cardinalityParam,
+      int minSinksParam,
+      int maxSinksParam) {
     if (nameParam == null) {
       throw new NullPointerException("name has to be set");
     }
@@ -98,12 +99,14 @@ public final class OutPort implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if(!(obj instanceof OutPort)) {
+    if (!(obj instanceof OutPort)) {
       return false;
     }
     OutPort that = (OutPort) obj;
-    return name.equals(that.name) && this.max == that.max
-        && this.min == that.min && this.cardinality == that.cardinality;
+    return name.equals(that.name)
+        && this.max == that.max
+        && this.min == that.min
+        && this.cardinality == that.cardinality;
   }
 
   public boolean namesMatch(OutPort that) {

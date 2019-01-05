@@ -18,21 +18,13 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 
 public final class DefaultDetectorHandlers {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDetectorHandlers.class);
-
-  static Logger getLogger() {
-    return LOGGER;
-  }
-
   public static final StartDetector DEFAULT_START_DETECTOR =
       new StartDetector() {
 
@@ -45,5 +37,9 @@ public final class DefaultDetectorHandlers {
 
   private DefaultDetectorHandlers() {
     // no instances //
+  }
+
+  static Logger getLogger() {
+    return LOGGER;
   }
 }

@@ -17,46 +17,42 @@
  */
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language;
-import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
+import java.util.List;
 
-/** 
- * a command sequence is an application- and component-
- * centric view on a lifecycle. In particular, it is 
- * possible to define the installation and configuration 
- * steps as if this was the only application to be run.
- * 
- * (Hopefully, ) this will enable to mix sequences of 
- * multiple components in one lifecycle.
- * 
- * @author Joerg Domaschka
+/**
+ * a command sequence is an application- and component- centric view on a lifecycle. In particular,
+ * it is possible to define the installation and configuration steps as if this was the only
+ * application to be run.
  *
+ * <p>(Hopefully, ) this will enable to mix sequences of multiple components in one lifecycle.
+ *
+ * @author Joerg Domaschka
  */
 public final class CommandSequence {
 
-    private final List<Command> commands;
-    // private final String myName;
-    
-    CommandSequence(@SuppressWarnings("unused") String myNameParam, List<Command> commandsParam) {
-        commands = commandsParam;
-     //     myName = _myName;
-    }
+  private final List<Command> commands;
+  // private final String myName;
 
-    public boolean hasLifecycleOperations(LifecycleHandlerType type) {
-        for(Command c : commands) {
-            if(c.runsInLifecycle(type)) 
-                return true;
-        }
-        return false;
-    }
+  CommandSequence(@SuppressWarnings("unused") String myNameParam, List<Command> commandsParam) {
+    commands = commandsParam;
+    //     myName = _myName;
+  }
 
-    public void executeCommandsForLifecycle(LifecycleHandlerType type, ExecutionContext ec) {
-        for(Command c : commands) {
-            if(c.runsInLifecycle(type)) {
-                c.execute(ec);
-            }
-        }
+  public boolean hasLifecycleOperations(LifecycleHandlerType type) {
+    for (Command c : commands) {
+      if (c.runsInLifecycle(type)) return true;
     }
+    return false;
+  }
+
+  public void executeCommandsForLifecycle(LifecycleHandlerType type, ExecutionContext ec) {
+    for (Command c : commands) {
+      if (c.runsInLifecycle(type)) {
+        c.execute(ec);
+      }
+    }
+  }
 }

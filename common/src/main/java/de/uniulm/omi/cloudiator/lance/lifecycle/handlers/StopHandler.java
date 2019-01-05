@@ -25,25 +25,25 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * may be used to add manual stop logic
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface StopHandler extends LifecycleHandler {
 
-    // marker interface
+  // marker interface
 }
 
 final class StopDeploymentHandler implements StopHandler {
 
-    private static final long serialVersionUID = -654718342624280976L;
-    private final Deployment d;
-    
-    StopDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = -654718342624280976L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.STOP, ec);
-    }
+  StopDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.STOP, ec);
+  }
 }

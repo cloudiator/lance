@@ -5,8 +5,11 @@ import java.util.Map;
 
 public interface DynamicEnvVars {
 
-  Map<String,String> getEnvVars();
+  Map<String, String> getEnvVars();
+
   void generateDynamicEnvVars();
+
   void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException;
+
   void removeDynamicEnvVars(DynamicEnvVars vars) throws ContainerException;
 }

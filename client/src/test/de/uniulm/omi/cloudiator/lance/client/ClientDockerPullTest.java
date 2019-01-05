@@ -76,7 +76,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClientDockerPullTest {
 
-    private static ApplicationId applicationId;;
+  private static ApplicationId applicationId;;
   private static ApplicationInstanceId appInstanceId;
   private static String zookeeperComponent, zookeeperComponent_lifecycle, rubyComponent_remote;
   private static String zookeeperInternalInportName,
@@ -571,7 +571,7 @@ public class ClientDockerPullTest {
     }
   }
 
-private enum version {
+  private enum version {
     DOCKER,
     LIFECYCLE
   }

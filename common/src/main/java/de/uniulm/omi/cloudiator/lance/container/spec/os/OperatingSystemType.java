@@ -53,18 +53,6 @@ public enum OperatingSystemType {
     format = formatParam;
   }
 
-  public boolean checkVersionString(String versionParam) {
-    return checkVersion(new OperatingSystemVersion(versionParam));
-  }
-
-  public boolean checkVersion(OperatingSystemVersion v) {
-    return v.checkFormatting(this.format);
-  }
-
-  public OperatingSystemFamily getFamily() {
-    return f;
-  }
-
   /**
    * @param name the symbolic name of the operatig system type
    * @return the OperatingSystemType instance, if <i>name</i> matches the toString() representation
@@ -77,6 +65,18 @@ public enum OperatingSystemType {
       }
     }
     return null;
+  }
+
+  public boolean checkVersionString(String versionParam) {
+    return checkVersion(new OperatingSystemVersion(versionParam));
+  }
+
+  public boolean checkVersion(OperatingSystemVersion v) {
+    return v.checkFormatting(this.format);
+  }
+
+  public OperatingSystemFamily getFamily() {
+    return f;
   }
 
   public boolean hasDefaultVersion() {

@@ -1,17 +1,15 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 
 public class DockerComponent extends AbstractComponent {
   private final EntireDockerCommands entireDockerCommands;
@@ -51,6 +49,22 @@ public class DockerComponent extends AbstractComponent {
     }
   }
 
+  private static String buildNameOptionFromId(ComponentInstanceId id) {
+    return "dockering__" + id.toString();
+  }
+
+  private static String buildPrefixString(String str) {
+    String returnStr;
+
+    if (!str.equals("")) {
+      returnStr = str + "/";
+    } else {
+      returnStr = str;
+    }
+
+    return returnStr;
+  }
+
   public EntireDockerCommands getEntireDockerCommands() {
     return this.entireDockerCommands;
   }
@@ -82,25 +96,21 @@ public class DockerComponent extends AbstractComponent {
     return builder.toString();
   }
 
-  public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
-    entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.NAME,
-        buildNameOptionFromId(id));
-    containerName = buildNameOptionFromId(id);
-  }
-
-  public void setPort(Map<Integer,Integer> inPortsParam) throws DockerCommandException {
+  public void setPort(Map<Integer, Integer> inPortsParam) throws DockerCommandException {
     if (inPortsParam.size() > 1) {
-      LOGGER.info("Trying to set multiple ports for Docker Component " +  containerName);
+      LOGGER.info("Trying to set multiple ports for Docker Component " + containerName);
     }
 
-    for (Entry<Integer,Integer> entry : inPortsParam.entrySet()) {
+    for (Entry<Integer, Integer> entry : inPortsParam.entrySet()) {
       Integer hostPort = entry.getKey();
       Integer contPort = entry.getValue();
       if (contPort.intValue() < 0 || contPort.intValue() > 65536) {
         entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, hostPort.toString());
       } else {
-        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, hostPort.toString()
-            + ":" + contPort.toString());
+        entireDockerCommands.setOption(
+            DockerCommand.Type.CREATE,
+            Option.PORT,
+            hostPort.toString() + ":" + contPort.toString());
       }
     }
   }
@@ -109,8 +119,10 @@ public class DockerComponent extends AbstractComponent {
     return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
   }
 
-  private static String buildNameOptionFromId(ComponentInstanceId id) {
-    return "dockering__" + id.toString();
+  public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
+    entireDockerCommands.setOption(
+        DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
+    containerName = buildNameOptionFromId(id);
   }
 
   public String getFullIdentifier(DockerCommand.Type commType) throws IllegalArgumentException {
@@ -148,18 +160,6 @@ public class DockerComponent extends AbstractComponent {
     return builder.toString();
   }
 
-  private static String buildPrefixString(String str) {
-    String returnStr;
-
-    if (!str.equals("")) {
-      returnStr = str + "/";
-    } else {
-      returnStr = str;
-    }
-
-    return returnStr;
-  }
-
   public static class Builder extends AbstractComponent.Builder<Builder> {
     private final EntireDockerCommands entireDockerCommandsParam;
     private final String imageNameParam;
@@ -173,6 +173,18 @@ public class DockerComponent extends AbstractComponent {
       this.imageNameParam = imageName;
     }
 
+    private static void checkSha256(String sha256)
+        throws NoSuchAlgorithmException, UnsupportedEncodingException {
+      MessageDigest crypt = MessageDigest.getInstance("SHA-256");
+      crypt.reset();
+      // Java uses UTF-16 for the internal text representation
+      crypt.update(sha256.getBytes("UTF-16"));
+
+      if (crypt.getDigestLength() != 32) {
+        throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
+      }
+    }
+
     public Builder imageFolder(String imageFolder) {
       this.imageFolderParam = imageFolder;
       return this;
@@ -183,8 +195,8 @@ public class DockerComponent extends AbstractComponent {
       return this;
     }
 
-    public Builder digestSha256(String digestSha256) throws NoSuchAlgorithmException,
-        UnsupportedEncodingException {
+    public Builder digestSha256(String digestSha256)
+        throws NoSuchAlgorithmException, UnsupportedEncodingException {
       checkSha256(digestSha256);
       this.digestSha256Param = digestSha256;
       return this;
@@ -203,18 +215,6 @@ public class DockerComponent extends AbstractComponent {
     @Override
     protected Builder self() {
       return this;
-    }
-
-    private static void checkSha256(String sha256) throws NoSuchAlgorithmException,
-        UnsupportedEncodingException {
-      MessageDigest crypt = MessageDigest.getInstance("SHA-256");
-      crypt.reset();
-      //Java uses UTF-16 for the internal text representation
-      crypt.update(sha256.getBytes("UTF-16"));
-
-      if (crypt.getDigestLength() != 32) {
-        throw new UnsupportedEncodingException("SHA needs to be 256 bits long");
-      }
     }
   }
 }

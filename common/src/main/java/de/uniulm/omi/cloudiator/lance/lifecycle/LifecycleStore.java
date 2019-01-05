@@ -18,13 +18,11 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
-import java.io.Serializable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
+import java.io.Serializable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LifecycleStore implements Serializable {
 

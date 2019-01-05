@@ -22,6 +22,7 @@ import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 
 public interface LifecycleHandlerFactory<T extends LifecycleHandler> {
 
-    T getDefault();
-    T getDeploymentHandler(Deployment d);
+  T getDefault();
+
+  T getDeploymentHandler(Deployment d);
 }

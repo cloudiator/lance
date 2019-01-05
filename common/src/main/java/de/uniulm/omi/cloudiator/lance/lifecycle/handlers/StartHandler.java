@@ -18,32 +18,32 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment; 
+import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * launches the external process; mandatory event
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface StartHandler extends LifecycleHandler {
 
-    // marker interface //
+  // marker interface //
 }
 
 final class StartDeploymentHandler implements StartHandler {
 
-    private static final long serialVersionUID = 3234972440079467510L;
-    private final Deployment d;
-    
-    StartDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = 3234972440079467510L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.START, ec);
-    }
+  StartDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.START, ec);
+  }
 }

@@ -18,12 +18,11 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.bash;
 
-import java.util.List;
-
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
+import java.util.List;
 
 final class BashExecutionHelper {
 

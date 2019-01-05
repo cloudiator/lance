@@ -44,31 +44,6 @@ public final class OperatingSystem implements Serializable {
     version = versionParam;
   }
 
-  public OperatingSystemFamily getFamily() {
-    return type.getFamily();
-  }
-
-  public OperatingSystemType getType() {
-    return type;
-  }
-
-  public String getVersionAsString() {
-    return version.toString();
-  }
-
-  public OperatingSystemVersion getVersion() {
-    return version;
-  }
-
-  @Override
-  public String toString() {
-    return type.toString() + ":" + version.toString();
-  }
-
-  public boolean isLinuxOs() {
-    return type.getFamily() == OperatingSystemFamily.LINUX;
-  }
-
   public static OperatingSystem fromString(String ostype, String osversion) {
     OperatingSystemType t = OperatingSystemType.fromString(ostype);
     if (t == null) {
@@ -101,6 +76,31 @@ public final class OperatingSystem implements Serializable {
             + t
             + " or no "
             + "default version known for this type.");
+  }
+
+  public OperatingSystemFamily getFamily() {
+    return type.getFamily();
+  }
+
+  public OperatingSystemType getType() {
+    return type;
+  }
+
+  public String getVersionAsString() {
+    return version.toString();
+  }
+
+  public OperatingSystemVersion getVersion() {
+    return version;
+  }
+
+  @Override
+  public String toString() {
+    return type.toString() + ":" + version.toString();
+  }
+
+  public boolean isLinuxOs() {
+    return type.getFamily() == OperatingSystemFamily.LINUX;
   }
 
   @Override

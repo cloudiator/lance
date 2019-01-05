@@ -20,50 +20,40 @@ package de.uniulm.omi.cloudiator.lance.lca.container;
 
 import com.google.common.collect.Sets;
 import de.uniulm.omi.cloudiator.lance.util.state.State;
-
 import java.util.Set;
 
 public enum ContainerStatus implements State {
-    /**
-     * it is known to the system that
-     * there shall be container
-     * instance.
-     */
-    NEW, CREATING, /**
-     * the container has been created
-     * on a physical level. yet, the
-     * concrete information about e.g.
-     * internal IP addresses and port
-     * mappings (if applicable are not
-     * know yet.
-     */
-    CREATED, BOOTSTRAPPING, /**
-     * the container has been bootstrapped.
-     * it has acquired all necessary phyiscal
-     * resources and is ready for operation.
-     * Port mappings and IP addresses are
-     * known. Only now will the lifecycle
-     * handling be able to run the lifecycle
-     * for the component instances.
-     */
-    BOOTSTRAPPED, /**
-     * the management platform is running the
-     * lifecycle handling of the component
-     * instance.
-     */
-    INITIALISING, /**
-     * the component instance has been created
-     * and is availalble for use
-     */
-    READY, SHUTTING_DOWN, DESTROYED,
+  /** it is known to the system that there shall be container instance. */
+  NEW,
+  CREATING,
+  /**
+   * the container has been created on a physical level. yet, the concrete information about e.g.
+   * internal IP addresses and port mappings (if applicable are not know yet.
+   */
+  CREATED,
+  BOOTSTRAPPING,
+  /**
+   * the container has been bootstrapped. it has acquired all necessary phyiscal resources and is
+   * ready for operation. Port mappings and IP addresses are known. Only now will the lifecycle
+   * handling be able to run the lifecycle for the component instances.
+   */
+  BOOTSTRAPPED,
+  /** the management platform is running the lifecycle handling of the component instance. */
+  INITIALISING,
+  /** the component instance has been created and is availalble for use */
+  READY,
+  SHUTTING_DOWN,
+  DESTROYED,
 
-    CREATION_FAILED, BOOTSTRAPPING_FAILED, INITIALISATION_FAILED,
+  CREATION_FAILED,
+  BOOTSTRAPPING_FAILED,
+  INITIALISATION_FAILED,
 
-    UNKNOWN,;
+  UNKNOWN,
+  ;
 
-    public static Set<ContainerStatus> errorStates() {
-        return Sets
-            .newHashSet(DESTROYED, CREATION_FAILED, BOOTSTRAPPING_FAILED, INITIALISATION_FAILED,
-                UNKNOWN);
-    }
+  public static Set<ContainerStatus> errorStates() {
+    return Sets.newHashSet(
+        DESTROYED, CREATION_FAILED, BOOTSTRAPPING_FAILED, INITIALISATION_FAILED, UNKNOWN);
+  }
 }

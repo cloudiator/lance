@@ -29,10 +29,8 @@ public final class ComponentInstanceId implements Serializable, StaticEnvVars {
   // FIXME: set fixed value!
   public static final ComponentInstanceId ERROR_ID = new ComponentInstanceId();
   public static final ComponentInstanceId SYSTEM_ID = new ComponentInstanceId();
-
-  private static final long serialVersionUID = -6741646835252735882L;;
-  public static final String INSTANCE_ID_KEY = "INSTANCE_ID";
-
+  public static final String INSTANCE_ID_KEY = "INSTANCE_ID";;
+  private static final long serialVersionUID = -6741646835252735882L;
   private final UUID uuid;
 
   public ComponentInstanceId() {
@@ -41,6 +39,10 @@ public final class ComponentInstanceId implements Serializable, StaticEnvVars {
 
   private ComponentInstanceId(String s) {
     uuid = UUID.fromString(s);
+  }
+
+  public static ComponentInstanceId fromString(String s) {
+    return new ComponentInstanceId(s);
   }
 
   @Override
@@ -60,10 +62,6 @@ public final class ComponentInstanceId implements Serializable, StaticEnvVars {
   @Override
   public String toString() {
     return uuid.toString();
-  }
-
-  public static ComponentInstanceId fromString(String s) {
-    return new ComponentInstanceId(s);
   }
 
   @Override

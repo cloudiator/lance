@@ -18,62 +18,66 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.Command;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
+import java.util.EnumSet;
+import java.util.Set;
 
 public interface SystemServiceCommand extends Command {
 
-    public static class SystemServiceCommandFactory {
-        
-        private final static Set<LifecycleHandlerType> supportedLifecycles;
-        
-        static {
-            supportedLifecycles = EnumSet.of(LifecycleHandlerType.START);
-        }
-        
-        public static SystemServiceCommand create(LifecycleHandlerType inPhase, String serviceName, String command) {
-            if(supportedLifecycles.contains(inPhase)) {
-                return new SystemServiceCommandImpl(inPhase, serviceName, command);
-            }
-            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-        }
-        
-        private SystemServiceCommandFactory() {
-            // no instances so far //
-        }
+  public static class SystemServiceCommandFactory {
+
+    private static final Set<LifecycleHandlerType> supportedLifecycles;
+
+    static {
+      supportedLifecycles = EnumSet.of(LifecycleHandlerType.START);
     }
+
+    private SystemServiceCommandFactory() {
+      // no instances so far //
+    }
+
+    public static SystemServiceCommand create(
+        LifecycleHandlerType inPhase, String serviceName, String command) {
+      if (supportedLifecycles.contains(inPhase)) {
+        return new SystemServiceCommandImpl(inPhase, serviceName, command);
+      }
+      throw new IllegalStateException(
+          "SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+    }
+  }
 }
 
 class SystemServiceCommandImpl implements SystemServiceCommand {
-    
-    private final LifecycleHandlerType type;
-    // private final String serviceName;
-    // private final String command;
-    private final CommandResultReference result = new DefaultCommandResultReference();
 
-    SystemServiceCommandImpl(LifecycleHandlerType typeParam, @SuppressWarnings("unused") String serviceNameParam, @SuppressWarnings("unused") String commandParam) {
-       //  serviceName = serviceNameParam;
-       // command = commandParam;
-        type = typeParam;
-    }
-    
-    @Override
-    public CommandResultReference getResult() {
-        return result;
-    }
-    
-    @Override
-    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
-        return type == typeParam;
-    }
+  private final LifecycleHandlerType type;
+  // private final String serviceName;
+  // private final String command;
+  private final CommandResultReference result = new DefaultCommandResultReference();
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        throw new UnsupportedOperationException();
-    }
+  SystemServiceCommandImpl(
+      LifecycleHandlerType typeParam,
+      @SuppressWarnings("unused") String serviceNameParam,
+      @SuppressWarnings("unused") String commandParam) {
+    //  serviceName = serviceNameParam;
+    // command = commandParam;
+    type = typeParam;
+  }
+
+  @Override
+  public CommandResultReference getResult() {
+    return result;
+  }
+
+  @Override
+  public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+    return type == typeParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    throw new UnsupportedOperationException();
+  }
 }

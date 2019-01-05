@@ -4,5 +4,5 @@ import java.util.Map;
 
 public interface StaticEnvVars {
 
-  Map<String,String> getEnvVars();
+  Map<String, String> getEnvVars();
 }

@@ -40,11 +40,11 @@ public class DockerConfiguration {
 
   private boolean shouldBeUsedButCant() {
     if (!useRegistry) return false;
+    // whatever the right number is
     if (hostname == null
         || hostname.isEmpty()
         || port < 0
-        || port > 65555) // whatever the right number is
-    return true;
+        || port > 65555) return true;
     return false;
   }
 

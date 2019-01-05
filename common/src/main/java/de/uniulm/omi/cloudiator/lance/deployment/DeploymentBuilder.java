@@ -18,10 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.deployment;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 import java.util.ArrayList;
 import java.util.List;
-
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
 
 public final class DeploymentBuilder {
 

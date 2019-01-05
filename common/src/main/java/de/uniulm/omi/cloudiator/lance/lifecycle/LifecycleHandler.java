@@ -20,7 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import java.io.Serializable;
 
-public interface LifecycleHandler extends Serializable  {
-    
-    void execute(ExecutionContext ec) throws LifecycleException;
+public interface LifecycleHandler extends Serializable {
+
+  void execute(ExecutionContext ec) throws LifecycleException;
 }

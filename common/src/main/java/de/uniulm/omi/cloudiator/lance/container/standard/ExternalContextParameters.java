@@ -2,11 +2,9 @@ package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import java.util.List;
-import java.util.Map;
 
 public class ExternalContextParameters {
   private final String name;
@@ -15,7 +13,7 @@ public class ExternalContextParameters {
   private final ComponentInstanceId cInstId;
   private final String publicIp;
   private final List<InPortContext> inpContext;
-  //private final List<OutPortContext> outpContext;
+  // private final List<OutPortContext> outpContext;
   private final ContainerStatus status;
 
   private ExternalContextParameters(Builder builder) {
@@ -25,7 +23,7 @@ public class ExternalContextParameters {
     this.cInstId = builder.cInstId;
     this.publicIp = builder.publicIp;
     this.inpContext = builder.inpContext;
-    //this.outpContext = builder.outpContext;
+    // this.outpContext = builder.outpContext;
     this.status = builder.status_;
   }
 
@@ -98,7 +96,7 @@ public class ExternalContextParameters {
     private ComponentInstanceId cInstId;
     private String publicIp;
     private List<InPortContext> inpContext;
-    //private List<OutPortContext> outpContext;
+    // private List<OutPortContext> outpContext;
     private ContainerStatus status_;
 
     public Builder() {}

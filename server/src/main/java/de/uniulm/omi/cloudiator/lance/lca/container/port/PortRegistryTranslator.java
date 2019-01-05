@@ -39,6 +39,12 @@ public final class PortRegistryTranslator {
   public static final Integer UNSET_PORT = Integer.valueOf(-1);
   public static final String PORT_PREFIX = "ACCESS_";
   public static final String HOST_PREFIX = "HOST_";
+  public static final PortHierarchy PORT_HIERARCHY =
+      new PortHierarchyBuilder()
+          .addLevel(PortRegistryTranslator.PORT_HIERARCHY_0)
+          .addLevel(PortRegistryTranslator.PORT_HIERARCHY_1)
+          .addLevel(PortRegistryTranslator.PORT_HIERARCHY_2)
+          .build();
   private static final Logger LOGGER = LoggerFactory.getLogger(PortRegistryTranslator.class);
   private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
   public static final PortHierarchyLevel PORT_HIERARCHY_0 =
@@ -49,12 +55,6 @@ public final class PortRegistryTranslator {
   private static final String PORT_HIERARCHY_2_NAME = "CONTAINER";
   public static final PortHierarchyLevel PORT_HIERARCHY_2 =
       PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
-  public static final PortHierarchy PORT_HIERARCHY =
-      new PortHierarchyBuilder()
-          .addLevel(PortRegistryTranslator.PORT_HIERARCHY_0)
-          .addLevel(PortRegistryTranslator.PORT_HIERARCHY_1)
-          .addLevel(PORT_HIERARCHY_2)
-          .build();
   private final HostContext hostContext;
   private final GlobalRegistryAccessor accessor;
 

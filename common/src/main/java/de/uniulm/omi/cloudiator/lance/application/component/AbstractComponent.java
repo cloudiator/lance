@@ -18,23 +18,21 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
-import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 public abstract class AbstractComponent implements Serializable, DynamicEnvVars {
 
@@ -65,7 +63,7 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
 
   public List<InPort> getExposedPorts() {
     List<InPort> ports = new ArrayList<>(inPorts.size());
-    for (InPort i: inPorts) {
+    for (InPort i : inPorts) {
       ports.add(i);
     }
     return ports;
@@ -81,7 +79,7 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
   }
 
   public void accept(PropertyVisitor visitor) {
-    for (Entry<String, String> entry: currentEnvVarsDynamic.getEnvVars().entrySet()) {
+    for (Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
       visitor.visit(entry.getKey(), entry.getValue());
     }
   }
@@ -99,8 +97,8 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
     this.ctx = ctx;
   }
 
-  private Map<String,String> getMatchingValsFromDContext() {
-    final Map<String,String> vals = new HashMap<>();
+  private Map<String, String> getMatchingValsFromDContext() {
+    final Map<String, String> vals = new HashMap<>();
 
     for (Entry<String, Class<?>> entry : properties.entrySet()) {
       String propertyName = entry.getKey();
@@ -124,26 +122,26 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
 
   @Override
   public void generateDynamicEnvVars() {
-    final Map<String,String> vals = getMatchingValsFromDContext();
+    final Map<String, String> vals = getMatchingValsFromDContext();
     DynamicEnvVarsImpl impl = DynamicEnvVarsImpl.DEPL_COMPONENT;
     impl.setEnvVars(vals);
     this.currentEnvVarsDynamic = impl;
   }
 
-  //todo: exception handling if wrong enum type
+  // todo: exception handling if wrong enum type
   @Override
   public void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException {
     this.currentEnvVarsDynamic = vars;
   }
 
-  //todo: exception handling if wrong enum type
+  // todo: exception handling if wrong enum type
   @Override
   public void removeDynamicEnvVars(DynamicEnvVars vars) throws ContainerException {
     if (!currentEnvVarsDynamic.equals(vars)) {
       LOGGER.error("Cannot remove vars " + vars + " as they are not currently available.");
     }
 
-    //todo: Check if vars Map in DynamicEnvVarsImpl is reset
+    // todo: Check if vars Map in DynamicEnvVarsImpl is reset
     this.currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
   }
 
@@ -154,6 +152,13 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
     private List<OutPort> outPortsParam = new ArrayList<>();
     private HashMap<String, Class<?>> propertiesParam = new HashMap<>();
     private HashMap<String, Serializable> defaultValuesParam = new HashMap<>();
+
+    private Builder(String nameParam, ComponentId idParam) {
+      this.nameParam = nameParam;
+      this.myIdParam = idParam;
+    }
+
+    Builder() {}
 
     public T name(String name) {
       nameParam = name;
@@ -185,11 +190,6 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
       return self();
     }
 
-    private Builder(String nameParam, ComponentId idParam) {
-      this.nameParam = nameParam;
-      this.myIdParam = idParam;
-    }
-
     public T addInport(String portname, PortType type, int cardinality) {
       inPortsParam.add(new InPort(portname, type, cardinality));
       addProperty(portname, InPort.class);
@@ -203,25 +203,24 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
     }
 
     public T addOutport(String portname, PortUpdateHandler handler, int cardinality) {
-      outPortsParam.add(new OutPort(portname, handler, cardinality, OutPort.NO_SINKS,
-          OutPort.INFINITE_SINKS));
+      outPortsParam.add(
+          new OutPort(portname, handler, cardinality, OutPort.NO_SINKS, OutPort.INFINITE_SINKS));
       addProperty(portname, OutPort.class);
       return self();
     }
 
-    public T addOutport(String portname, PortUpdateHandler handler, int cardinality,
-        int minSinks) {
-      outPortsParam.add(new OutPort(portname, handler, cardinality, minSinks,
-          OutPort.INFINITE_SINKS));
+    public T addOutport(String portname, PortUpdateHandler handler, int cardinality, int minSinks) {
+      outPortsParam.add(
+          new OutPort(portname, handler, cardinality, minSinks, OutPort.INFINITE_SINKS));
       addProperty(portname, OutPort.class);
       return self();
     }
 
-    public T addOutport(String portname, PortUpdateHandler handler, int cardinality,
-        int minSinks, int maxSinks) {
+    public T addOutport(
+        String portname, PortUpdateHandler handler, int cardinality, int minSinks, int maxSinks) {
       if (minSinks < 0 || maxSinks < 1 || minSinks > maxSinks) {
-        throw new IllegalArgumentException("minSinks and maxSinks have non-fitting"
-            + "values: " + minSinks + ", " + maxSinks);
+        throw new IllegalArgumentException(
+            "minSinks and maxSinks have non-fitting" + "values: " + minSinks + ", " + maxSinks);
       }
       outPortsParam.add(new OutPort(portname, handler, cardinality, minSinks, maxSinks));
       addProperty(portname, OutPort.class);
@@ -244,8 +243,6 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
         throw new UnsupportedOperationException("parallel deployment not supported yet.");
       }
     }
-
-    Builder(){}
 
     abstract AbstractComponent build();
 

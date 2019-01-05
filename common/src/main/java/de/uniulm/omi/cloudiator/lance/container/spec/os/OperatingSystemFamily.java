@@ -19,10 +19,9 @@
 package de.uniulm.omi.cloudiator.lance.container.spec.os;
 
 public enum OperatingSystemFamily {
-
-    WINDOWS,
-    LINUX,
-    BSD,
-    OTHER,
-    ;
+  WINDOWS,
+  LINUX,
+  BSD,
+  OTHER,
+  ;
 }

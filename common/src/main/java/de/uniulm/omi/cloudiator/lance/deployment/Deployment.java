@@ -18,13 +18,12 @@
 
 package de.uniulm.omi.cloudiator.lance.deployment;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandSequence;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class Deployment implements Serializable {
 

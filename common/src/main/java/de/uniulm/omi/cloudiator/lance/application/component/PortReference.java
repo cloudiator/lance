@@ -18,9 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
-import java.io.Serializable;
-
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortLinkage;
+import java.io.Serializable;
 
 public final class PortReference implements Serializable {
 
@@ -29,7 +28,9 @@ public final class PortReference implements Serializable {
   private final String propertyName;
   // private final PortLinkage linkage;
 
-  public PortReference(ComponentId compIdParam, String propertyNameParam,
+  public PortReference(
+      ComponentId compIdParam,
+      String propertyNameParam,
       @SuppressWarnings("unused") PortLinkage linkageParam) {
     compId = compIdParam;
     propertyName = propertyNameParam;

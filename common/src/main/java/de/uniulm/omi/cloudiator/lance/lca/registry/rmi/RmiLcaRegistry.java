@@ -18,14 +18,13 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-import java.util.Map;
-
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.Map;
 
 public interface RmiLcaRegistry extends Remote {
   boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name)

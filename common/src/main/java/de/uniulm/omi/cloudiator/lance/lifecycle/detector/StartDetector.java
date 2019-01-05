@@ -24,27 +24,26 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * may be used to notify USM that a started event is ready for use
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface StartDetector extends Detector {
 
-	DetectorState execute(ExecutionContext ec);
+  DetectorState execute(ExecutionContext ec);
 }
-
 
 final class StartDetectorHandler implements StartDetector {
 
-    private static final long serialVersionUID = -7979324437072690746L;
-    private final Deployment d;
-    
-    StartDetectorHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = -7979324437072690746L;
+  private final Deployment d;
 
-    @Override
-    public DetectorState execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.INSTALL, ec);
-        return DetectorState.DETECTED;
-    }
+  StartDetectorHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public DetectorState execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.INSTALL, ec);
+    return DetectorState.DETECTED;
+  }
 }

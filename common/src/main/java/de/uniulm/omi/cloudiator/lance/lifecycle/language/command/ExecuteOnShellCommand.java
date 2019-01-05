@@ -18,9 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
@@ -28,114 +25,124 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.Command;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
+import java.util.EnumSet;
+import java.util.Set;
 
 public interface ExecuteOnShellCommand extends Command {
 
-    public static class ExecuteOnShellCommandFactory {
-            
-        private final static Set<LifecycleHandlerType> supportedLifecycles;
-        
-        static {
-            supportedLifecycles = EnumSet.of(LifecycleHandlerType.INIT,
-                                                LifecycleHandlerType.INSTALL,
-                                                LifecycleHandlerType.POST_INSTALL,
-                                                LifecycleHandlerType.POST_START,
-                                                LifecycleHandlerType.POST_STOP,
-                                                LifecycleHandlerType.PRE_INSTALL,
-                                                LifecycleHandlerType.PRE_START,
-                                                LifecycleHandlerType.PRE_STOP,
-                                                LifecycleHandlerType.START,
-                                                LifecycleHandlerType.STOP);
-        }
+  public static class ExecuteOnShellCommandFactory {
 
-        public static ExecuteOnShellCommand createRootCommand(LifecycleHandlerType inPhase, CommandResultReference f) {
-            if(supportedLifecycles.contains(inPhase)) {
-                return new DeferredExecuteOnShellCommand(inPhase, f, true);
-            }
-            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-        }
-        
-        public static ExecuteOnShellCommand createUserCommand(LifecycleHandlerType inPhase, CommandResultReference f) {
-            if(supportedLifecycles.contains(inPhase)) {
-                return new DeferredExecuteOnShellCommand(inPhase, f, false);
-            }
-            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-        }
-        
-        private ExecuteOnShellCommandFactory() {
-            // no instances so far //
-        }
+    private static final Set<LifecycleHandlerType> supportedLifecycles;
+
+    static {
+      supportedLifecycles =
+          EnumSet.of(
+              LifecycleHandlerType.INIT,
+              LifecycleHandlerType.INSTALL,
+              LifecycleHandlerType.POST_INSTALL,
+              LifecycleHandlerType.POST_START,
+              LifecycleHandlerType.POST_STOP,
+              LifecycleHandlerType.PRE_INSTALL,
+              LifecycleHandlerType.PRE_START,
+              LifecycleHandlerType.PRE_STOP,
+              LifecycleHandlerType.START,
+              LifecycleHandlerType.STOP);
     }
+
+    private ExecuteOnShellCommandFactory() {
+      // no instances so far //
+    }
+
+    public static ExecuteOnShellCommand createRootCommand(
+        LifecycleHandlerType inPhase, CommandResultReference f) {
+      if (supportedLifecycles.contains(inPhase)) {
+        return new DeferredExecuteOnShellCommand(inPhase, f, true);
+      }
+      throw new IllegalStateException(
+          "SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+    }
+
+    public static ExecuteOnShellCommand createUserCommand(
+        LifecycleHandlerType inPhase, CommandResultReference f) {
+      if (supportedLifecycles.contains(inPhase)) {
+        return new DeferredExecuteOnShellCommand(inPhase, f, false);
+      }
+      throw new IllegalStateException(
+          "SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+    }
+  }
 }
 
 final class OnShellCommandResult implements CommandResultReference {
 
-    @Override
-    public String getResult(OperatingSystem os, ExecutionContext ec) {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public String getResult(OperatingSystem os, ExecutionContext ec) {
+    throw new UnsupportedOperationException();
+  }
 }
 
 abstract class AbstractExecuteOnShellCommand implements ExecuteOnShellCommand {
-    
-    protected final boolean useRoot;
-    private final CommandResultReference output = new OnShellCommandResult();
-    
-    AbstractExecuteOnShellCommand(boolean useRootParam) {
-        useRoot = useRootParam;
-    }
-    
-    @Override
-    public final void execute(ExecutionContext ec) {
-        OperatingSystem os = ec.getOperatingSystem();
-        Shell shell = ec.getShell();
-        if(os.isLinuxOs()) {
-            String command = buildLinuxCommand(os);
-            shell.executeCommand(command);
-        } else {
-            throw new IllegalStateException("command line execution not supported for Mac or Windows systems.");
-        }
-    }
 
-    @Override
-    public final CommandResultReference getResult() {
-        return output;
-    }
+  protected final boolean useRoot;
+  private final CommandResultReference output = new OnShellCommandResult();
 
-    protected abstract String buildLinuxCommand(OperatingSystem os);
+  AbstractExecuteOnShellCommand(boolean useRootParam) {
+    useRoot = useRootParam;
+  }
+
+  @Override
+  public final void execute(ExecutionContext ec) {
+    OperatingSystem os = ec.getOperatingSystem();
+    Shell shell = ec.getShell();
+    if (os.isLinuxOs()) {
+      String command = buildLinuxCommand(os);
+      shell.executeCommand(command);
+    } else {
+      throw new IllegalStateException(
+          "command line execution not supported for Mac or Windows systems.");
+    }
+  }
+
+  @Override
+  public final CommandResultReference getResult() {
+    return output;
+  }
+
+  protected abstract String buildLinuxCommand(OperatingSystem os);
 }
 
 final class DeferredExecuteOnShellCommand extends AbstractExecuteOnShellCommand {
 
-    private final LifecycleHandlerType type;
-    private final CommandResultReference input;
-    
-    DeferredExecuteOnShellCommand(LifecycleHandlerType typeParam, CommandResultReference file, boolean useRootParam) {
-        super(useRootParam);
-        input = file;
-        type = typeParam;
-    }
+  private final LifecycleHandlerType type;
+  private final CommandResultReference input;
 
-    @Override
-    public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
-        return type == handlerType;
+  DeferredExecuteOnShellCommand(
+      LifecycleHandlerType typeParam, CommandResultReference file, boolean useRootParam) {
+    super(useRootParam);
+    input = file;
+    type = typeParam;
+  }
+
+  @Override
+  public boolean runsInLifecycle(LifecycleHandlerType handlerType) {
+    return type == handlerType;
+  }
+
+  @Override
+  protected String buildLinuxCommand(OperatingSystem os) {
+    String filename = input.getResult(null, null);
+    if (filename == null) {
+      throw new NullPointerException("no result available");
     }
-    
-    @Override
-    protected String buildLinuxCommand(OperatingSystem os) {
-        String filename = input.getResult(null, null);
-        if(filename == null) {
-            throw new NullPointerException("no result available");
-        }
-        if(! filename.startsWith("/")) {
-            filename = "./" + filename;
-        }
-        if(os.getType() == OperatingSystemType.UBUNTU) {
-            if(useRoot) {
-                return "sudo " + filename;
-            }
-            return filename;
-        }
-        return filename;
+    if (!filename.startsWith("/")) {
+      filename = "./" + filename;
     }
+    if (os.getType() == OperatingSystemType.UBUNTU) {
+      if (useRoot) {
+        return "sudo " + filename;
+      }
+      return filename;
+    }
+    return filename;
+  }
 }

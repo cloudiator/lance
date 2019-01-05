@@ -92,6 +92,7 @@ public final class LifecycleClient {
   }
 
   private final LifecycleAgent lifecycleAgent;
+
   private LifecycleClient(String serverIp, int rmiTimeout)
       throws RemoteException, NotBoundException {
     try {

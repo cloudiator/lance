@@ -18,16 +18,14 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.etcd;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryContainer;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class EtcdRegistryContainer implements RegistryContainer {
 
@@ -40,11 +38,6 @@ public final class EtcdRegistryContainer implements RegistryContainer {
 
   private EtcdRegistryContainer(EtcdRegistryImpl implParam) {
     impl = implParam;
-  }
-
-  @Override
-  public LcaRegistry getRegistry() {
-    return impl;
   }
 
   public static EtcdRegistryContainer create() throws RegistrationException {
@@ -103,5 +96,10 @@ public final class EtcdRegistryContainer implements RegistryContainer {
       LOGGER.warn("problems creating an URI from etcd parameters, ignoring: " + host, ia);
     }
     return null;
+  }
+
+  @Override
+  public LcaRegistry getRegistry() {
+    return impl;
   }
 }

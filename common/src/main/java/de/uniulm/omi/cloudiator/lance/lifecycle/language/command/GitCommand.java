@@ -18,78 +18,80 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
-import java.net.URI;
-import java.util.EnumSet;
-import java.util.Set;
-
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.Command;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
+import java.net.URI;
+import java.util.EnumSet;
+import java.util.Set;
 
 public interface GitCommand extends Command {
-    
-    enum GitSubcommand {
-        CLONE,
-        ;
+
+  enum GitSubcommand {
+    CLONE,
+    ;
+  }
+
+  public static class GitCommandFactory {
+
+    private static final Set<LifecycleHandlerType> supportedLifecycles;
+
+    static {
+      supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
     }
 
-    public static class GitCommandFactory {
-            
-        private final static Set<LifecycleHandlerType> supportedLifecycles;
-        
-        static {
-            supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
-        }
-        
-        public static GitCommand create(LifecycleHandlerType inPhase, GitSubcommand command, URI uri) {
-            if(supportedLifecycles.contains(inPhase)) {
-                return new GitCommandImpl(inPhase, command, uri);
-            }
-            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-        }
-        
-        private GitCommandFactory() {
-            // no instances so far //
-        }
+    private GitCommandFactory() {
+      // no instances so far //
     }
+
+    public static GitCommand create(LifecycleHandlerType inPhase, GitSubcommand command, URI uri) {
+      if (supportedLifecycles.contains(inPhase)) {
+        return new GitCommandImpl(inPhase, command, uri);
+      }
+      throw new IllegalStateException(
+          "SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+    }
+  }
 }
 
 final class GitCommandResult implements CommandResultReference {
 
-    @Override
-    public String getResult(OperatingSystem os, ExecutionContext ec) {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public String getResult(OperatingSystem os, ExecutionContext ec) {
+    throw new UnsupportedOperationException();
+  }
 }
 
 final class GitCommandImpl implements GitCommand {
 
-    private final LifecycleHandlerType type;
-    // private final GitSubcommand command;
-    // private final URI uri;
-    private final CommandResultReference output = new GitCommandResult();
-    
-    
-    public GitCommandImpl(LifecycleHandlerType inPhase, @SuppressWarnings("unused") GitSubcommand commandParam, @SuppressWarnings("unused") URI uriParam) {
-        // command = _command;
-        // uri = _uri;
-        type = inPhase;
-    }
+  private final LifecycleHandlerType type;
+  // private final GitSubcommand command;
+  // private final URI uri;
+  private final CommandResultReference output = new GitCommandResult();
 
-    @Override
-    public CommandResultReference getResult() {
-        return output;
-    }
+  public GitCommandImpl(
+      LifecycleHandlerType inPhase,
+      @SuppressWarnings("unused") GitSubcommand commandParam,
+      @SuppressWarnings("unused") URI uriParam) {
+    // command = _command;
+    // uri = _uri;
+    type = inPhase;
+  }
 
-    @Override
-    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
-        return type == typeParam;
-    }
+  @Override
+  public CommandResultReference getResult() {
+    return output;
+  }
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        throw new UnsupportedOperationException();
-    }
+  @Override
+  public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+    return type == typeParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    throw new UnsupportedOperationException();
+  }
 }

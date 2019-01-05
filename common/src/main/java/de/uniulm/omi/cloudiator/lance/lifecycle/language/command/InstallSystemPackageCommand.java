@@ -18,67 +18,68 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.Command;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.install.SystemApplication;
+import java.util.EnumSet;
+import java.util.Set;
 
 public interface InstallSystemPackageCommand extends Command {
 
-    public static class InstallSystemPackageCommandFactory {
-        
-        private final static Set<LifecycleHandlerType> supportedLifecycles;
-        
-        static {
-            supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
-        }
-        
-        public static InstallSystemPackageCommand create(LifecycleHandlerType inPhase, SystemApplication appParam) {
-            if(supportedLifecycles.contains(inPhase)) {
-                return new InstallSystemPackageCommandImpl(inPhase, appParam);
-            }
-            throw new IllegalStateException("SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
-        }
-        
-        private InstallSystemPackageCommandFactory() {
-            // no instances so far //
-        }
+  public static class InstallSystemPackageCommandFactory {
+
+    private static final Set<LifecycleHandlerType> supportedLifecycles;
+
+    static {
+      supportedLifecycles = EnumSet.of(LifecycleHandlerType.INSTALL);
     }
+
+    private InstallSystemPackageCommandFactory() {
+      // no instances so far //
+    }
+
+    public static InstallSystemPackageCommand create(
+        LifecycleHandlerType inPhase, SystemApplication appParam) {
+      if (supportedLifecycles.contains(inPhase)) {
+        return new InstallSystemPackageCommandImpl(inPhase, appParam);
+      }
+      throw new IllegalStateException(
+          "SystemServiceCommand cannot be executed at Lifecylce Phase " + inPhase);
+    }
+  }
 }
 
 class InstallSystemPackageCommandImpl implements InstallSystemPackageCommand {
 
-    private final LifecycleHandlerType type;
-    // private final String packageName;
-    private final SystemApplication application;
-    private final CommandResultReference result = new DefaultCommandResultReference();
+  private final LifecycleHandlerType type;
+  // private final String packageName;
+  private final SystemApplication application;
+  private final CommandResultReference result = new DefaultCommandResultReference();
 
-    InstallSystemPackageCommandImpl(LifecycleHandlerType typeParam, SystemApplication appParam) {
-        application = appParam;
-        type = typeParam;
-    }
-    
-    @Override
-    public CommandResultReference getResult() {
-        return result;
-    }
+  InstallSystemPackageCommandImpl(LifecycleHandlerType typeParam, SystemApplication appParam) {
+    application = appParam;
+    type = typeParam;
+  }
 
-    @Override
-    public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
-        return type == typeParam;
-    }
+  @Override
+  public CommandResultReference getResult() {
+    return result;
+  }
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        OperatingSystem os = ec.getOperatingSystem();
-        String command = application.getPackageName(os);
-        command = os.getNonBlockingPackageInstallerCommand() + " " + command;
-        
-        ec.getShell().executeCommand(command);
-    }
+  @Override
+  public boolean runsInLifecycle(LifecycleHandlerType typeParam) {
+    return type == typeParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    OperatingSystem os = ec.getOperatingSystem();
+    String command = application.getPackageName(os);
+    command = os.getNonBlockingPackageInstallerCommand() + " " + command;
+
+    ec.getShell().executeCommand(command);
+  }
 }

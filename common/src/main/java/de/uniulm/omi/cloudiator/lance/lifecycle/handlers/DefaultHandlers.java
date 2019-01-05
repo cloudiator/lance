@@ -18,24 +18,18 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
-import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
-
 public final class DefaultHandlers implements LifecycleHandler {
 
+  public static final VoidHandler DEFAULT_VOID_HANDLER = new VoidHandler();
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHandlers.class);
-  private static final long serialVersionUID = -9123613719962377068L;
-
-  static Logger getLogger() {
-    return LOGGER;
-  }
-
   public static final InitHandler DEFAULT_INIT_HANDLER =
       new InitHandler() {
 
@@ -45,7 +39,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT InitHandler doing nothing");
         }
       };
-
   public static final InstallHandler DEFAULT_INSTALL_HANDLER =
       new InstallHandler() {
 
@@ -54,7 +47,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT InstallHandler doing nothing");
         }
       };
-
   public static final PostInstallHandler DEFAULT_POST_INSTALL_HANDLER =
       new PostInstallHandler() {
 
@@ -63,7 +55,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT PostInstallHandler doing nothing");
         }
       };
-
   public static final PostStartHandler DEFAULT_POST_START_HANDLER =
       new PostStartHandler() {
 
@@ -72,7 +63,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT PostStartHandler doing nothing");
         }
       };
-
   public static final PostStopHandler DEFAULT_POST_STOP_HANDLER =
       new PostStopHandler() {
 
@@ -81,7 +71,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT PostStopHandler doing nothing");
         }
       };
-
   public static final PreInstallHandler DEFAULT_PRE_INSTALL_HANDLER =
       new PreInstallHandler() {
 
@@ -90,7 +79,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT PreInstallHandler doing nothing");
         }
       };
-
   public static final PreStartHandler DEFAULT_PRE_START_HANDLER =
       new PreStartHandler() {
 
@@ -99,7 +87,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT PreStartHandler doing nothing");
         }
       };
-
   public static final PreStopHandler DEFAULT_PRE_STOP_HANDLER =
       new PreStopHandler() {
 
@@ -108,7 +95,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT PreStopHandler doing nothing");
         }
       };
-
   public static final StartHandler DEFAULT_START_HANDLER =
       new StartHandler() {
 
@@ -117,7 +103,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT StartHandler doing nothing");
         }
       };
-
   public static final StopHandler DEFAULT_STOP_HANDLER =
       new StopHandler() {
 
@@ -126,7 +111,6 @@ public final class DefaultHandlers implements LifecycleHandler {
           getLogger().info("DEFAULT StopHandler doing nothing");
         }
       };
-
   public static final StartDetector DEFAULT_START_DETECTOR =
       new StartDetector() {
 
@@ -136,11 +120,14 @@ public final class DefaultHandlers implements LifecycleHandler {
           return DetectorState.DETECTED;
         }
       };
-
-  public static final VoidHandler DEFAULT_VOID_HANDLER = new VoidHandler();
+  private static final long serialVersionUID = -9123613719962377068L;
 
   private DefaultHandlers() {
     // no instances //
+  }
+
+  static Logger getLogger() {
+    return LOGGER;
   }
 
   @Override

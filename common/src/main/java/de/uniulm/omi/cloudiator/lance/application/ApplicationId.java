@@ -34,6 +34,10 @@ public final class ApplicationId implements Serializable {
     uuid = UUID.fromString(s);
   }
 
+  public static ApplicationId fromString(String str) {
+    return new ApplicationId(str);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ApplicationId)) {
@@ -51,9 +55,5 @@ public final class ApplicationId implements Serializable {
   @Override
   public String toString() {
     return uuid.toString();
-  }
-
-  public static ApplicationId fromString(String str) {
-    return new ApplicationId(str);
   }
 }

@@ -18,35 +18,22 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryContainer;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 public final class RmiRegistryContainer implements RegistryContainer {
 
+  private static final int AGENT_LIFECYCLE_REGISTRY_PORT = 33034;
   private final RemoteRegistryImpl reg = new RemoteRegistryImpl();
   private final RmiLcaRegistry exportedRegistry;
   private final RmiWrapper wrapper;
 
-  private static final int AGENT_LIFECYCLE_REGISTRY_PORT = 33034;
-
-  private RmiLcaRegistry initComponentRegistry() throws RemoteException {
-    RmiLcaRegistry re =
-        (RmiLcaRegistry) UnicastRemoteObject.exportObject(reg, AGENT_LIFECYCLE_REGISTRY_PORT);
-    return re;
-  }
-
   private RmiRegistryContainer() throws RemoteException {
     exportedRegistry = initComponentRegistry();
     wrapper = new RmiWrapper(exportedRegistry);
-  }
-
-  @Override
-  public LcaRegistry getRegistry() {
-    return wrapper;
   }
 
   public static RegistryContainer create() throws RegistrationException {
@@ -55,5 +42,16 @@ public final class RmiRegistryContainer implements RegistryContainer {
     } catch (RemoteException re) {
       throw new RegistrationException("cannot create registry", re);
     }
+  }
+
+  private RmiLcaRegistry initComponentRegistry() throws RemoteException {
+    RmiLcaRegistry re =
+        (RmiLcaRegistry) UnicastRemoteObject.exportObject(reg, AGENT_LIFECYCLE_REGISTRY_PORT);
+    return re;
+  }
+
+  @Override
+  public LcaRegistry getRegistry() {
+    return wrapper;
   }
 }

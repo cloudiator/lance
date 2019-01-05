@@ -18,9 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.application.component;
 
-import java.io.Serializable;
-
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortType;
+import java.io.Serializable;
 
 public final class InPort implements Serializable {
 

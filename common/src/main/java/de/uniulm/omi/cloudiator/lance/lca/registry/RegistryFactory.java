@@ -18,12 +18,11 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.registry.etcd.EtcdRegistryContainer;
 import de.uniulm.omi.cloudiator.lance.lca.registry.rmi.RmiRegistryContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public enum RegistryFactory {
   RMI_REGISTRY {
@@ -39,14 +38,10 @@ public enum RegistryFactory {
     }
   };
 
-  abstract RegistryContainer create() throws RegistrationException;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
-
   public static final String LCA_REGISTRY_CONFIG_KEY = "lca.client.config.registry";
   public static final String LCA_REGISTRY_CONFIG_RMI_VALUE = "rmiregistry";
   public static final String LCA_REGISTRY_CONFIG_ETCD_VALUE = "etcdregistry";
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(LcaRegistry.class);
   private static RegistryContainer container = null;
 
   public static synchronized LcaRegistry createRegistry() throws RegistrationException {
@@ -75,4 +70,6 @@ public enum RegistryFactory {
     LOGGER.warn("registry creation failed: falling back to RMI.");
     return RMI_REGISTRY.create();
   }
+
+  abstract RegistryContainer create() throws RegistrationException;
 }

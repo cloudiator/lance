@@ -18,32 +18,32 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
-import de.uniulm.omi.cloudiator.lance.deployment.Deployment; 
+import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 /**
  * may be used to release external resources
- * 
+ *
  * @author Joerg Domaschka
  */
 public interface PostStopHandler extends LifecycleHandler {
-    
-    // marker interface //
+
+  // marker interface //
 }
 
 final class PostStopDeploymentHandler implements PostStopHandler {
 
-    private static final long serialVersionUID = 2397092465419287154L;
-    private final Deployment d;
-    
-    PostStopDeploymentHandler(Deployment deploymentParam) {
-        d = deploymentParam;
-    }
+  private static final long serialVersionUID = 2397092465419287154L;
+  private final Deployment d;
 
-    @Override
-    public void execute(ExecutionContext ec) {
-        d.execute(LifecycleHandlerType.POST_STOP, ec);
-    }
+  PostStopDeploymentHandler(Deployment deploymentParam) {
+    d = deploymentParam;
+  }
+
+  @Override
+  public void execute(ExecutionContext ec) {
+    d.execute(LifecycleHandlerType.POST_STOP, ec);
+  }
 }

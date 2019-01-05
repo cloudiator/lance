@@ -18,10 +18,9 @@
 
 package de.uniulm.omi.cloudiator.lance.application;
 
-import java.io.Serializable;  
-import java.util.HashMap;
-
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
+import java.io.Serializable;
+import java.util.HashMap;
 
 public final class DeploymentContext implements Serializable {
 
@@ -30,11 +29,10 @@ public final class DeploymentContext implements Serializable {
   private final ApplicationInstanceId myInstanceId;
   private final LcaRegistry registry;
 
-  private final HashMap<String,Object> properties = new HashMap<>();
-  private final HashMap<String,Class<?>> propertyTypes = new HashMap<>();
+  private final HashMap<String, Object> properties = new HashMap<>();
+  private final HashMap<String, Class<?>> propertyTypes = new HashMap<>();
 
-  public DeploymentContext(ApplicationId appId, ApplicationInstanceId instanceId,
-      LcaRegistry re) {
+  public DeploymentContext(ApplicationId appId, ApplicationInstanceId instanceId, LcaRegistry re) {
     myAppId = appId;
     myInstanceId = instanceId;
     registry = re;

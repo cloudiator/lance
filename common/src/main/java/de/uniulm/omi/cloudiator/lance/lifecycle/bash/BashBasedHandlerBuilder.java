@@ -18,9 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.bash;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
@@ -29,12 +26,19 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
-import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.*;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.InstallHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PostInstallHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreInstallHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.PreStopHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StopHandler;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class BashBasedHandlerBuilder {
 
-  private volatile OperatingSystem os;
   private final List<String[]> commands = new ArrayList<>();
+  private volatile OperatingSystem os;
 
   public BashBasedHandlerBuilder() {
     //

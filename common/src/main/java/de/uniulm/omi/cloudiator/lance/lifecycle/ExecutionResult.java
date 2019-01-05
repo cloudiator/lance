@@ -45,12 +45,6 @@ public final class ExecutionResult {
     return new ExecutionResult(Status.SYSTEM_FAILURE, -1, "", error);
   }
 
-  enum Status {
-    SUCCESS,
-    COMMAND_FAILURE,
-    SYSTEM_FAILURE,
-  }
-
   public boolean isSuccess() {
     return status == Status.SUCCESS;
   }
@@ -62,5 +56,11 @@ public final class ExecutionResult {
   @Override
   public String toString() {
     return "[" + exitCode + "-> {" + stdout + "},{" + stderr + "}]";
+  }
+
+  enum Status {
+    SUCCESS,
+    COMMAND_FAILURE,
+    SYSTEM_FAILURE,
   }
 }

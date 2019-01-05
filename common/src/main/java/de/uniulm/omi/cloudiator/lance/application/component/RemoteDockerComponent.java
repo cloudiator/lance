@@ -2,11 +2,11 @@ package de.uniulm.omi.cloudiator.lance.application.component;
 
 import java.io.Serializable;
 
-public class RemoteDockerComponent  extends DockerComponent {
+public class RemoteDockerComponent extends DockerComponent {
 
   private final DockerRegistry dockerReg;
 
-  //todo: Better construct a Builder that fits into the Class Hierarchy
+  // todo: Better construct a Builder that fits into the Class Hierarchy
   public RemoteDockerComponent(DockerComponent.Builder builder, DockerRegistry dockerReg) {
     super(builder);
     this.dockerReg = dockerReg;
@@ -49,8 +49,12 @@ public class RemoteDockerComponent  extends DockerComponent {
     public final String password;
     public final boolean useCredentialsParam;
 
-    public DockerRegistry(String hostNameParam, int portParam, String userNameParam,
-        String passwordParam, boolean useCredentialsParam) {
+    public DockerRegistry(
+        String hostNameParam,
+        int portParam,
+        String userNameParam,
+        String passwordParam,
+        boolean useCredentialsParam) {
       this.hostName = hostNameParam;
       this.port = portParam;
       this.userName = userNameParam;

@@ -19,6 +19,6 @@
 package de.uniulm.omi.cloudiator.lance.util.state;
 
 public interface State {
-    // a simple marker interface //
-	// boolean isErrorState();
+  // a simple marker interface //
+  // boolean isErrorState();
 }
