@@ -26,7 +26,7 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
   {
     try {
       int n = Integer.parseInt(str);
-      if(n<0 || n>65535)
+      if(n<-1 || n>65535)
         return false;
       else
         return true;
