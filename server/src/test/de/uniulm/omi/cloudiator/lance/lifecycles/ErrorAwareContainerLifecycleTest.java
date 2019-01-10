@@ -52,7 +52,7 @@ public class ErrorAwareContainerLifecycleTest {
 		
 		ErrorAwareContainer<DummyContainer> containerWrapper = 
 				new ErrorAwareContainer<>(CoreElements.componentInstanceId, container,
-						core.networkHandler, lcc, core.accessor);
+						core.networkHandler, lcc, core.accessor, false);
 		return containerWrapper;
 	}
 

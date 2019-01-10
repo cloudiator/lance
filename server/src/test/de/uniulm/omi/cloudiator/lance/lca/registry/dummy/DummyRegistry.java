@@ -92,4 +92,10 @@ public class DummyRegistry implements LcaRegistry {
 		}
 	}
 
+  @Override
+  public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
+      ComponentInstanceId cinstId) throws RegistrationException {
+
+  }
+
 }

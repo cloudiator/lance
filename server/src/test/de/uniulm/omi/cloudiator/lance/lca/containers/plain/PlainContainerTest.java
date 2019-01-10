@@ -69,7 +69,7 @@ public class PlainContainerTest {
 
             controller =
                 new ErrorAwareContainer<PlainContainerLogic>(CoreElements.componentInstanceId, containerLogic, networkHandler,
-                    lifecycleController, accessor);
+                    lifecycleController, accessor, false);
 
             controller.create();
         }
