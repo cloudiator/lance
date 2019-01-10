@@ -101,7 +101,7 @@ public class DockerCommand implements Serializable {
     if(!cmdType.possibleOptions.contains(opt))
       throw new DockerCommandException("Option " + opt.name() + " does not exist for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
 
-    List<String> lst = new ArrayList<>(setOptions.get(opt));
+    List<String> lst = setOptions.get(opt);
 
     if(lst == null) {
       lst = new ArrayList<>();
