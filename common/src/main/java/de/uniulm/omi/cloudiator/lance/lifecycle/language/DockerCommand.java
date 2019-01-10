@@ -101,10 +101,12 @@ public class DockerCommand implements Serializable {
     if(!cmdType.possibleOptions.contains(opt))
       throw new DockerCommandException("Option " + opt.name() + " does not exist for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
 
-    List<String> lst = setOptions.get(opt);
+    List<String> lst;
 
-    if(lst == null) {
+    if(setOptions.get(opt) == null) {
       lst = new ArrayList<>();
+    } else {
+      lst = new ArrayList<>(setOptions.get(opt));
     }
 
     lst.add(arg);
@@ -115,11 +117,14 @@ public class DockerCommand implements Serializable {
     if(!cmdType.possibleOptions.contains(Option.ENVIRONMENT))
       throw new DockerCommandException(cmdType.name() + "cannot have environmental variables set");
 
-    List<String> lst = new ArrayList<>(setOptions.get(Option.ENVIRONMENT));
+    List<String> lst;
 
-    if(lst == null) {
-      throw new DockerCommandException("Cannot override an environmental variable with " + envVar + " when there are no variables set yet");
+    if (setOptions.get(Option.ENVIRONMENT) == null) {
+      throw new DockerCommandException( "Cannot override an environmental variable with " + envVar
+              + " when there are no variables set yet");
     }
+
+    lst = new ArrayList<>(setOptions.get(Option.ENVIRONMENT));
 
     //todo: escape regex special-chars in String
     int index = getEnvVarIndex(setOptions.get(Option.ENVIRONMENT), envVar);
