@@ -31,7 +31,7 @@ public class CoreElements {
 
 	public volatile static ApplicationInstanceId appInstanceId;
 	public volatile static ApplicationId appId;
-	public volatile static DeployableComponentBuilder componentBuilder;
+	public volatile static DeployableComponent.Builder componentBuilder;
 	public volatile static ComponentInstanceId componentInstanceId;
 	public volatile static ComponentId componentId;
 	public volatile static HostContext context;
@@ -69,7 +69,7 @@ public class CoreElements {
 		context = EnvContextWrapper.create();
 		componentInstanceId = new ComponentInstanceId();
 		componentId = new ComponentId();
-		componentBuilder = DeployableComponentBuilder.createBuilder("jUnitTestComponent", CoreElements.componentId);
+		componentBuilder = DeployableComponent.Builder.createBuilder("jUnitTestComponent", CoreElements.componentId);
 		componentBuilder.addInport(GHOST_IN_PORT_NAME, PortType.PUBLIC_PORT, PortProperties.INFINITE_CARDINALITY, GHOST_DEFAULT_IN_PORT);
 	}
 }

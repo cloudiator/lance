@@ -125,10 +125,10 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder();
+		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(OperatingSystem.UBUNTU_14_04);
 		//split for better readability
 		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
-				deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04).
+				deplComp(core.comp).deplContext(core.ctx).
 				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
 				hostContext(new FakeHostContext()).build();
 		logic.doCreate();
@@ -142,10 +142,10 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder();
+		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(OperatingSystem.UBUNTU_14_04);
 		//split for better readability
 		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
-				deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04).
+				deplComp(core.comp).deplContext(core.ctx).
 				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
 				hostContext(new FakeHostContext()).build();
 		logic.doCreate();
@@ -153,10 +153,10 @@ public class DockerSnapshottingTest {
 		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
 		logic.doDestroy(true, false);
 
-		LifecycleDockerContainerLogic.Builder builder2 = new LifecycleDockerContainerLogic.Builder();
+		LifecycleDockerContainerLogic.Builder builder2 = new LifecycleDockerContainerLogic.Builder(OperatingSystem.UBUNTU_14_04);
 		//split for better readability
 		AbstractDockerContainerLogic logic2 = builder2.cInstId(core.componentInstanceId).dockerConnector(client).
-				deplComp(core.comp).deplContext(core.ctx).osParam(OperatingSystem.UBUNTU_14_04).
+				deplComp(core.comp).deplContext(core.ctx).
 				nwHandler(core.networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
 				hostContext(new FakeHostContext()).build();
 	}

@@ -11,9 +11,15 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
@@ -38,13 +44,16 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     
     envVarsStaticPrev = new HashMap<>(envVarsStatic);
     envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
-    initRedeployDockerCommand();
+    //doesn't copy lance internal env-vars, just the docker ones
+    //lance internal env-vars will be copied when an environment-variable changes a value and redeployment is triggered
+    initRedeployDockerCommands();
   }
 
   @Override
   public void doCreate() throws ContainerException {
     try {
       imageHandler.doPullImages(myId, myComponent.getFullImageName());
+      resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
       //myComponent.setPort(portsToSet);
@@ -60,7 +69,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
-  private void initRedeployDockerCommand() {
+  private void initRedeployDockerCommands() {
+    //stop and remove command (part of redeployment) do not need to be initialised
     DockerCommand origCmd = myComponent.getEntireDockerCommands().getCreate();
     DockerCommand redeplCmd = myComponent.getEntireDockerCommands().getRun();
     try {
@@ -74,6 +84,12 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
   @Override
   void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
+    Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
+
+    executeEnvSetting(EnvType.STATIC, envVarsStaticTmp);
+  }
+
+  private Map<String,String> buildTranslatedStaticEnvMap() {
     Map<String,String> envVarsStaticTmp = new HashMap<>();
 
     for(Entry<String, String> entry: envVarsStatic.entrySet()) {
@@ -84,7 +100,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       envVarsStaticTmp.put(translateMap.get(entry.getKey()),entry.getValue());
     }
 
-    executeEnvSetting(EnvType.STATIC, envVarsStaticTmp);
+    return envVarsStaticTmp;
   }
 
   @Override
@@ -173,11 +189,58 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private void doRedeploy() throws ContainerException {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
+      resolveDockerEnvVars(runCmd);
       copyEnvIntoCommand(runCmd);
     } catch (DockerCommandException e) {
       throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
     }
     executeGenericRedeploy();
+  }
+
+  //Needed if a Docker env-var depends on a lance-internal env-var, e.g. PUBLIC_ReqPort=134.60.64.1:3302
+  private void resolveDockerEnvVars(DockerCommand cmd) throws DockerCommandException {
+    Map<Option, List<String>> setOptions = cmd.getSetOptions();
+    List<String> setDockerEnvVars = setOptions.get(Option.ENVIRONMENT);
+
+    //Map entry for ENV_DOCK=$ENV_LANCE: entry.key()=="ENV_DOCK", entry.val()=="ENV_LANCE"
+    Map<String,String> filterNeedResolveDockerVarNames = getFilterNeedResolveDockerVarNames(setDockerEnvVars);
+
+    for(Entry<String, String> vars: filterNeedResolveDockerVarNames.entrySet()) {
+      String resolvedVarVal = findVarVal(vars.getValue().trim());
+      String newEnvVar = vars.getKey() + "=" + resolvedVarVal;
+      //todo: escape regex special-chars in String
+      cmd.replaceEnvVar(newEnvVar);
+    }
+  }
+
+  //checks only lance-inernal (static/dynamic) env-vars
+  private String findVarVal(String needResolveVarName) {
+    //concatenate static and dynamic env vars
+    Map<String,String> concatMap = buildTranslatedStaticEnvMap();
+    concatMap.putAll(envVarsDynamic);
+
+    for(Entry<String, String> var: concatMap.entrySet()) {
+      if (var.getKey().equals(needResolveVarName)) {
+        return var.getValue();
+      }
+    }
+
+    return "";
+  }
+
+  private static Map<String,String> getFilterNeedResolveDockerVarNames(List<String> setDockerEnvVars) {
+    Map<String,String> needResolveDockerVarNames = new HashMap<>();
+    //todo: make pattern more general, e.g. "$..." ,"${...}"
+    Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+)=\\$([^\\s]+)[\\s]*$");
+
+    for(String envVar: setDockerEnvVars) {
+      Matcher matcher = pattern.matcher(envVar);
+      if (matcher.find()) {
+        needResolveDockerVarNames.put(matcher.group(1),matcher.group(2));
+      }
+    }
+
+    return needResolveDockerVarNames;
   }
 
   private void executeGenericRedeploy() throws ContainerException {
@@ -193,7 +256,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   private void copyEnvIntoCommand(DockerCommand dCmd) throws DockerCommandException {
-    for(Entry<String, String> var: envVarsStatic.entrySet()) {
+    Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
+
+    for(Entry<String, String> var: envVarsStaticTmp.entrySet()) {
       dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
     }
     for(Entry<String, String> var: envVarsDynamic.entrySet()) {

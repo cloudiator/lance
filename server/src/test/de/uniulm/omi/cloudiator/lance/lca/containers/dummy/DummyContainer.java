@@ -54,8 +54,8 @@ public class DummyContainer implements ContainerLogic {
 
 	}
 
-	@Override
-	public void doDestroy(boolean forceShutdown) throws ContainerException {
+  @Override
+	public void doDestroy(boolean forceShutdown, boolean remove) throws ContainerException {
 		invocationCounter++;
 		callStack.add(ContainerCalls.OTHER);
 		throw new UnsupportedOperationException();

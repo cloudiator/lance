@@ -10,8 +10,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class DockerCommand implements Serializable{
+public class DockerCommand implements Serializable {
 
   public enum Option {
     NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY;
@@ -99,7 +101,7 @@ public class DockerCommand implements Serializable{
     if(!cmdType.possibleOptions.contains(opt))
       throw new DockerCommandException("Option " + opt.name() + " does not exist for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
 
-    List<String> lst = setOptions.get(opt);
+    List<String> lst = new ArrayList<>(setOptions.get(opt));
 
     if(lst == null) {
       lst = new ArrayList<>();
@@ -107,6 +109,45 @@ public class DockerCommand implements Serializable{
 
     lst.add(arg);
     setOptions.put(opt,lst);
+  }
+
+  public void replaceEnvVar(String envVar) throws DockerCommandException {
+    if(!cmdType.possibleOptions.contains(Option.ENVIRONMENT))
+      throw new DockerCommandException(cmdType.name() + "cannot have environmental variables set");
+
+    List<String> lst = new ArrayList<>(setOptions.get(Option.ENVIRONMENT));
+
+    if(lst == null) {
+      throw new DockerCommandException("Cannot override an environmental variable with " + envVar + " when there are no variables set yet");
+    }
+
+    //todo: escape regex special-chars in String
+    int index = getEnvVarIndex(setOptions.get(Option.ENVIRONMENT), envVar);
+
+    if(index == -1) {
+      throw new DockerCommandException("Cannot override an environmental variable with " + envVar + ", because it does not exist.");
+    }
+
+    lst.set(index, envVar);
+    setOptions.put(Option.ENVIRONMENT,lst);
+  }
+
+  private static int getEnvVarIndex(List<String> envVars, String replaceVar) {
+    String[] parts = replaceVar.split("=");
+    String replaceVarName = parts[0];
+    //todo: make pattern more general, e.g. "$..." ,"${...}"
+    //todo: escape regex special-chars in replaceVarName
+    final String regexStr = "^[\\s]*" + replaceVarName +"=.*$";
+    Pattern pattern = Pattern.compile(regexStr);
+
+    for(int i=0; i<envVars.size(); ++i) {
+      Matcher matcher = pattern.matcher(envVars.get(i));
+      if (matcher.find()) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 
   public void setOsCommand(OsCommand cmd) throws DockerCommandException {
