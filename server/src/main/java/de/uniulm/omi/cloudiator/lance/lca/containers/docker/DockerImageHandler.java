@@ -18,10 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerCertificateException;
-import com.spotify.docker.client.messages.RegistryAuth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,7 +205,7 @@ final class DockerImageHandler {
       return null;
     }
 
-    private String getImageFromPrivateRepository(String imageName) {
+    private String getImageFromPrivateRepository(String imageName) throws DockerException {
         if (!dockerConfig.registryCanBeUsed()) {
             return null;
         }
@@ -221,33 +217,16 @@ final class DockerImageHandler {
         boolean useCredentials = dockerConfig.useCredentials();
         String hostName = DockerConfiguration.DockerConfigurationFields.getHostname();
         int port = DockerConfiguration.DockerConfigurationFields.getPort();
-        int statusCode = 404;
+        String endPoint = hostName + (!(port < 0) && port < 65555 ? ":" + Integer.toString(port) : "");
 
-        try {
-          if (!useCredentials) {
-            result = doGetSingleImage(regExpandedImageName);
-          } else {
-            RegistryAuth registryAuth =
-                RegistryAuth.builder()
-                    .username(userName)
-                    .password(password)
-                    .serverAddress(hostName + (!(port < 0) && port < 65555 ? ":" + Integer.toString(port) : ""))
-                    .build();
+        if (useCredentials) {
+          client.loginReg(userName, password, endPoint);
+        }
 
-            DockerClient dClient = DefaultDockerClient.fromEnv().dockerAuth(false).registryAuth(registryAuth).build();
-            statusCode = dClient.auth(registryAuth);
-            dClient.pull(regExpandedImageName);
-            result = regExpandedImageName;
-          }
-        } catch (InterruptedException e) {
-            LOGGER.error("Problems with DockerClient. Cannot pull image " + regExpandedImageName + " from private registry");
-        } catch (com.spotify.docker.client.exceptions.DockerException e) {
-            LOGGER.error("Problems with DockerClient. Cannot pull image " + regExpandedImageName + " from private registry");
-            LOGGER.error("Auth status to registry is: " + Integer.toString(statusCode));
-        } catch (DockerException e) {
-            LOGGER.error("Cannot pull image " + regExpandedImageName + " from private registry");
-        } catch (DockerCertificateException e) {
-            LOGGER.error("Cannot pull image " + regExpandedImageName + " from private registry");
+        result = doGetSingleImage(regExpandedImageName);
+
+        if (useCredentials) {
+          client.logoutReg(endPoint);
         }
 
         if(result != null) {
