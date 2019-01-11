@@ -58,4 +58,8 @@ public interface DockerConnector {
   String executeSingleDockerCommand(String fullDockerCommand) throws DockerException;
 
   DockerShell executeProgressingDockerCommand(String fullDockerCommand) throws DockerException;
+
+  String loginReg(String userName, String password, String host) throws DockerException;
+
+  String logoutReg(String host) throws DockerException;
 }

@@ -262,4 +262,33 @@ public final class ProcessBasedConnector implements DockerConnector {
         //todo: Insert here the instance-id
         throw new DockerException("cannot start Docker container; return value: " + result.exitCode() + "; " + result.getError() + ";" + result.getOutput());
     }
+
+  @Override
+  public String loginReg(String userName, String password, String host) throws DockerException {
+    final String loginCmd = "login --username " + userName + " --password " + password + " " + host;
+
+    String result = executeSingleDockerCommand(loginCmd);
+    String[] responseParts = result.split(":");
+
+    if(responseParts[0].matches("^[\\s]*[Ee]rror.*$")) {
+      throw new DockerException("Cannot login to registry: " + host + ". Error message is:\\n" + result);
+    }
+
+    return result;
+  }
+
+  @Override
+  public String logoutReg(String host) throws DockerException {
+    final String logoutCmd = "logout " + host;
+
+    String result = executeSingleDockerCommand(logoutCmd);
+    String[] responseParts = result.split(":");
+
+    if(responseParts[0].matches("^[\\s]*[Ee]rror.*$")) {
+      throw new DockerException("Cannot logout of registry: " + host + ". Error message is:\\n" + result
+      + "\\nThis might be a security issue as the credentials keep being persistently saved on the machine");
+    }
+
+    return result;
+  }
 }
