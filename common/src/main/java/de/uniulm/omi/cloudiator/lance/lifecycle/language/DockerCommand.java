@@ -5,6 +5,7 @@ import static de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Os
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,25 +42,32 @@ public class DockerCommand implements Serializable {
     private final Set<Option> possibleOptions;
     private final Set<OsCommand> possibleCommands;
 
+    private static Map<DockerCommand.Type,String> cmdStringMap;
+
+    static {
+      cmdStringMap = new HashMap<>();
+      cmdStringMap.put(DockerCommand.Type.CREATE, createCommandName);
+      cmdStringMap.put(DockerCommand.Type.START, startCommandName);
+      cmdStringMap.put(DockerCommand.Type.STOP, stopCommandName);
+      cmdStringMap.put(DockerCommand.Type.RUN, runCommandName);
+      cmdStringMap.put(DockerCommand.Type.REMOVE, removeCommandName);
+      cmdStringMap = Collections.unmodifiableMap(cmdStringMap);
+    }
+
     Type(Option[] opts, OsCommand[] commands) {
       possibleOptions = new HashSet<>(Arrays.asList(opts));
       possibleCommands = new HashSet<>(Arrays.asList(commands));
     }
 
     public static String mapCommandToString(DockerCommand.Type cType) throws IllegalArgumentException {
-      if(cType==DockerCommand.Type.CREATE)
-        return createCommandName;
-      if(cType==DockerCommand.Type.START)
-        return startCommandName;
-      if(cType==DockerCommand.Type.STOP)
-        return stopCommandName;
-      if(cType==DockerCommand.Type.RUN)
-        return runCommandName;
-      if(cType==DockerCommand.Type.REMOVE)
-        return removeCommandName;
-      else
-        //todo insert String representation of DockerCommand in exception String
+      String res = cmdStringMap.get(cType);
+
+      if (res == null) {
+        // todo insert String representation of DockerCommand in exception String
         throw new IllegalArgumentException("No mapping for this Docker Command available");
+      }
+
+      return res;
     }
   };
 
