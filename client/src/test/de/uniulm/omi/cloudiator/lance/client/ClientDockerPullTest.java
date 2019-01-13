@@ -28,7 +28,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -128,9 +128,9 @@ public class ClientDockerPullTest {
       String tag, boolean isRemote) {
     DockerComponent.Builder builder;
     if (isRemote) {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName_remote);
+      builder = new DockerComponent.Builder(buildDockerCommandStack(), imageName_remote);
     } else {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
+      builder = new DockerComponent.Builder(buildDockerCommandStack(), imageName);
     }
     builder.name(compName);
     builder.imageFolder(imageFolder);
@@ -367,9 +367,9 @@ public class ClientDockerPullTest {
     return zookeeper_context;
   }
 
-  EntireDockerCommands buildEntireDockerCommands() {
+  DockerCommandStack buildDockerCommandStack() {
     Random rand = new Random();
-    EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
+    DockerCommandStack.Builder cmdsBuilder = new DockerCommandStack.Builder();
     try {
       Map<Option,List<String>> createOptionMap = new HashMap<>();
       createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
@@ -395,7 +395,7 @@ public class ClientDockerPullTest {
     return cmdsBuilder.build();
   }
 
-  private void printCommandParts(EntireDockerCommands cmds) {
+  private void printCommandParts(DockerCommandStack cmds) {
     try {
       System.out.println(cmds.getSetOptionsString(DockerCommand.Type.CREATE));
       System.out.println(cmds.getSetOsCommandString(DockerCommand.Type.CREATE));

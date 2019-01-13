@@ -14,7 +14,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandStack;
 import de.uniulm.omi.cloudiator.lance.util.application.AppArchitecture;
 import de.uniulm.omi.cloudiator.lance.util.application.ComponentInfo;
 import java.rmi.RemoteException;
@@ -123,7 +123,7 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
   protected void init(AppArchitecture arch) throws ContainerException {
     if (info == null) throw new ContainerException("ComponentInfo not set");
 
-    DockerComponent.Builder builder = new DockerComponent.Builder(new EntireDockerCommands(), info.getComponentName());
+    DockerComponent.Builder builder = new DockerComponent.Builder(new DockerCommandStack(), info.getComponentName());
     builder.deploySequentially(true);
     comp = builder.build();
   }

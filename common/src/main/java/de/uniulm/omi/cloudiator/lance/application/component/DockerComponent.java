@@ -6,7 +6,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandStack;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,7 +20,7 @@ public class DockerComponent extends AbstractComponent {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
 
-  private final EntireDockerCommands entireDockerCommands;
+  private final DockerCommandStack dockerCommandStack;
   private final String imageName;
   private final String imageFolder;
   private final String tag;
@@ -29,7 +29,7 @@ public class DockerComponent extends AbstractComponent {
 
   public DockerComponent(Builder builder) {
     super(builder);
-    entireDockerCommands = builder.entireDockerCommandsParam;
+    dockerCommandStack = builder.dockerCommandStackParam;
     imageName = builder.imageNameParam;
 
     if(builder.imageFolderParam == null)
@@ -53,8 +53,8 @@ public class DockerComponent extends AbstractComponent {
       this.containerName = builder.containerNameParam;
   }
 
-  public EntireDockerCommands getEntireDockerCommands() {
-    return this.entireDockerCommands;
+  public DockerCommandStack getDockerCommandStack() {
+    return this.dockerCommandStack;
   }
 
   public String getImageFolder() {
@@ -76,16 +76,17 @@ public class DockerComponent extends AbstractComponent {
   public String getFullDockerCommand(DockerCommand.Type cType) throws DockerCommandException {
     StringBuilder builder = new StringBuilder();
     builder.append(DockerCommand.Type.mapCommandToString(cType) + " ");
-    builder.append(entireDockerCommands.getSetOptionsString(cType) + " ");
+    builder.append(dockerCommandStack.getSetOptionsString(cType) + " ");
     builder.append(getFullIdentifier(cType) + " ");
-    builder.append(entireDockerCommands.getSetOsCommandString(cType) + " ");
-    builder.append(entireDockerCommands.getSetArgsString(cType));
+    builder.append(dockerCommandStack.getSetOsCommandString(cType) + " ");
+    builder.append(dockerCommandStack.getSetArgsString(cType));
 
     return builder.toString();
   }
 
   public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
-    entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
+    //todo: better, overwrite option
+    dockerCommandStack.appendOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
     containerName = buildNameOptionFromId(id);
   }
 
@@ -98,16 +99,18 @@ public class DockerComponent extends AbstractComponent {
       Integer i = entry.getKey();
       Integer j = entry.getValue();
       if(j.intValue() < 0 || j.intValue() > 65536) {
-        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, i.toString());
+        //todo: better, overwrite option
+        dockerCommandStack.appendOption(DockerCommand.Type.CREATE, Option.PORT, i.toString());
       } else {
-        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, i.toString() + ":" + j.toString());
+        //todo: better, overwrite option
+        dockerCommandStack.appendOption(DockerCommand.Type.CREATE, Option.PORT, i.toString() + ":" + j.toString());
       }
     }
   }
 
 
   public String getContainerName() throws DockerCommandException {
-    return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
+    return dockerCommandStack.getContainerName(DockerCommand.Type.CREATE);
   }
 
   private static String buildNameOptionFromId(ComponentInstanceId id) {
@@ -160,15 +163,15 @@ public class DockerComponent extends AbstractComponent {
   }
 
   public static class Builder extends AbstractComponent.Builder<Builder> {
-    private final EntireDockerCommands entireDockerCommandsParam;
+    private final DockerCommandStack dockerCommandStackParam;
     private final String imageNameParam;
     private String imageFolderParam;
     private String tagParam;
     private String digestSHA256Param;
     private String containerNameParam;
 
-    public Builder(EntireDockerCommands entireDockerCommands, String imageName) {
-      this.entireDockerCommandsParam = entireDockerCommands;
+    public Builder(DockerCommandStack dockerCommandStack, String imageName) {
+      this.dockerCommandStackParam = dockerCommandStack;
       this.imageNameParam = imageName;
     }
 

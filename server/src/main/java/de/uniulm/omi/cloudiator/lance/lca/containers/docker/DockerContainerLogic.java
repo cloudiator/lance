@@ -10,7 +10,8 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandUtils;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandStack;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public void doCreate() throws ContainerException {
     try {
       imageHandler.doPullImages(myId, myComponent.getFullImageName());
-      resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
+      resolveDockerEnvVars(myComponent.getDockerCommandStack().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
       //myComponent.setPort(portsToSet);
@@ -71,12 +72,12 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
   private void initRedeployDockerCommands() {
     //stop and remove command (part of redeployment) do not need to be initialised
-    DockerCommand origCmd = myComponent.getEntireDockerCommands().getCreate();
-    DockerCommand redeplCmd = myComponent.getEntireDockerCommands().getRun();
+    DockerCommand origCmd = myComponent.getDockerCommandStack().getCreate();
+    DockerCommand redeplCmd = myComponent.getDockerCommandStack().getRun();
     try {
-      EntireDockerCommands.copyCmdOptions(origCmd, redeplCmd);
-      EntireDockerCommands.copyCmdOsCommand(origCmd, redeplCmd);
-      EntireDockerCommands.copyCmdArgs(origCmd, redeplCmd);
+      DockerCommandStack.copyCmdOptions(origCmd, redeplCmd);
+      DockerCommandStack.copyCmdOsCommand(origCmd, redeplCmd);
+      DockerCommandStack.copyCmdArgs(origCmd, redeplCmd);
     } catch (DockerCommandException ex) {
       LOGGER.error(ex.getMessage());
     }
@@ -187,7 +188,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   private void doRedeploy() throws ContainerException {
-    DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
+    DockerCommand runCmd = myComponent.getDockerCommandStack().getRun();
     try {
       resolveDockerEnvVars(runCmd);
       copyEnvIntoCommand(runCmd);
@@ -199,7 +200,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
   //Needed if a Docker env-var depends on a lance-internal env-var, e.g. PUBLIC_ReqPort=134.60.64.1:3302
   private void resolveDockerEnvVars(DockerCommand cmd) throws DockerCommandException {
-    Map<Option, List<String>> setOptions = cmd.getSetOptions();
+    Map<Option, List<String>> setOptions = cmd.getUsedOptions();
     List<String> setDockerEnvVars = setOptions.get(Option.ENVIRONMENT);
 
     //Map entry for ENV_DOCK=$ENV_LANCE: entry.key()=="ENV_DOCK", entry.val()=="ENV_LANCE"
@@ -209,7 +210,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
       String newEnvVar = vars.getKey() + "=" + resolvedVarVal;
       //todo: escape regex special-chars in String
-      cmd.replaceEnvVar(newEnvVar);
+      cmd = DockerCommandUtils.replaceEnvVar(cmd, newEnvVar);
     }
   }
 
@@ -259,10 +260,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
 
     for(Entry<String, String> var: envVarsStaticTmp.entrySet()) {
-      dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
     }
+
     for(Entry<String, String> var: envVarsDynamic.entrySet()) {
-      dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
     }
   }
 
