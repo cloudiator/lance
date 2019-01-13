@@ -266,8 +266,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     shellFactory.closeShell();
   }
 
-  abstract void collectDynamicEnvVars();
-
   abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
     protected ComponentInstanceId myId;
     protected DockerConnector client;

@@ -52,6 +52,26 @@ public class DockerCommandStack implements Serializable {
     return remove;
   }
 
+  public void setCreate(DockerCommand create) {
+    this.create = create;
+  }
+
+  public void setStart(DockerCommand start) {
+    this.start = start;
+  }
+
+  public void setStop(DockerCommand stop) {
+    this.stop = stop;
+  }
+
+  public void setRun(DockerCommand run) {
+    this.run = run;
+  }
+
+  public void setRemove(DockerCommand remove) {
+    this.remove = remove;
+  }
+
   public void appendOption(DockerCommand.Type cType, Option opt, String arg) throws DockerCommandException {
     if (cType == DockerCommand.Type.CREATE) {
       create = DockerCommandUtils.appendOption(create, opt, arg);
