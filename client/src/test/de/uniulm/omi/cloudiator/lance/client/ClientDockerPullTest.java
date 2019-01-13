@@ -381,13 +381,13 @@ public class ClientDockerPullTest {
       createOsCommandList.add(OsCommand.BASH);
       List<String> createArgsList = new ArrayList<>();
       createArgsList.add("--noediting");
-      cmdsBuilder.setOptions(Type.CREATE, createOptionMap);
-      cmdsBuilder.setCommand(Type.CREATE, createOsCommandList);
-      cmdsBuilder.setArgs(Type.CREATE, createArgsList);
+      cmdsBuilder.usedOptions(Type.CREATE, createOptionMap);
+      cmdsBuilder.osCommand(Type.CREATE, createOsCommandList);
+      cmdsBuilder.usedArgs(Type.CREATE, createArgsList);
 
       Map<Option,List<String>> startOptionMap = new HashMap<>();
       startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      cmdsBuilder.setOptions(Type.START, startOptionMap);
+      cmdsBuilder.usedOptions(Type.START, startOptionMap);
     } catch (DockerCommandException ce) {
       System.err.println("Error in creating docker commands");
     }

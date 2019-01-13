@@ -193,11 +193,7 @@ public class DockerCommandStack implements Serializable {
   }
 
   public static class Builder {
-    private final DockerCommand.Builder createCmdBuilder;
-    private final DockerCommand.Builder startCmdBuilder;
-    private final DockerCommand.Builder stopCmdBuilder;
-    private final DockerCommand.Builder runCmdBuilder;
-    private final DockerCommand.Builder removeCmdBuilder;
+    private final DockerCommand.Builder createCmdBuilder, startCmdBuilder, stopCmdBuilder, runCmdBuilder, removeCmdBuilder;
 
     private DockerCommand createCmd;
     private DockerCommand startCmd;
@@ -214,7 +210,7 @@ public class DockerCommandStack implements Serializable {
       this.removeCmdBuilder = new DockerCommand.Builder(Type.REMOVE);
     }
 
-    public Builder setOptions(DockerCommand.Type type, Map<Option,List<String>> opts) throws DockerCommandException  {
+    public Builder usedOptions(DockerCommand.Type type, Map<Option,List<String>> opts) throws DockerCommandException  {
       if(type == Type.CREATE) {
         createCmdBuilder.usedOptions(opts);
       }
@@ -230,7 +226,7 @@ public class DockerCommandStack implements Serializable {
       return this;
     }
 
-    public Builder setCommand(DockerCommand.Type type, List<OsCommand> cmd) throws DockerCommandException {
+    public Builder osCommand(DockerCommand.Type type, List<OsCommand> cmd) throws DockerCommandException {
       if(type == Type.CREATE) {
         createCmdBuilder.osCommand(cmd);
       }
@@ -246,7 +242,7 @@ public class DockerCommandStack implements Serializable {
       return this;
     }
 
-    public Builder setArgs(DockerCommand.Type type, List<String> args) throws DockerCommandException {
+    public Builder usedArgs(DockerCommand.Type type, List<String> args) throws DockerCommandException {
       if(type == Type.CREATE) {
         createCmdBuilder.usedArgs(args);
       }
