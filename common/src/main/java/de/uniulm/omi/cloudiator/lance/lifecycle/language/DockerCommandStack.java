@@ -15,6 +15,7 @@ public class DockerCommandStack implements Serializable {
   private static final long serialVersionUID = -5675613485138618094L;
   private static final String wrongCmdMessage = "DockerCommand must be either CREATE, START, STOP";
   private DockerCommand create, start, stop, run, remove;
+  private final Map<DockerCommand.Type, DockerCommand> typeInstanceMap;
 
   public DockerCommandStack() {
     create = new DockerCommand.Builder(Type.CREATE).build();
@@ -22,6 +23,9 @@ public class DockerCommandStack implements Serializable {
     stop = new DockerCommand.Builder(Type.STOP).build();
     run =  new DockerCommand.Builder(Type.RUN).build();
     remove =  new DockerCommand.Builder(Type.REMOVE).build();
+
+    typeInstanceMap = new HashMap<>();
+    initTypeInstanceMap();
   }
 
   private DockerCommandStack(Builder builder) {
@@ -30,6 +34,17 @@ public class DockerCommandStack implements Serializable {
     stop =  builder.stopCmd;
     run =  builder.runCmd;
     remove =  builder.removeCmd;
+
+    typeInstanceMap = new HashMap<>();
+    initTypeInstanceMap();
+  }
+
+  private final void initTypeInstanceMap() {
+    typeInstanceMap.put(Type.CREATE, create);
+    typeInstanceMap.put(Type.START, start);
+    typeInstanceMap.put(Type.STOP, stop);
+    typeInstanceMap.put(Type.RUN, run);
+    typeInstanceMap.put(Type.REMOVE, remove);
   }
 
   public DockerCommand getCreate() {
@@ -54,135 +69,66 @@ public class DockerCommandStack implements Serializable {
 
   public void setCreate(DockerCommand create) {
     this.create = create;
+    typeInstanceMap.put(Type.CREATE, create);
   }
 
   public void setStart(DockerCommand start) {
     this.start = start;
+    typeInstanceMap.put(Type.START, start);
   }
 
   public void setStop(DockerCommand stop) {
     this.stop = stop;
+    typeInstanceMap.put(Type.STOP, stop);
   }
 
   public void setRun(DockerCommand run) {
     this.run = run;
+    typeInstanceMap.put(Type.RUN, run);
   }
 
   public void setRemove(DockerCommand remove) {
     this.remove = remove;
+    typeInstanceMap.put(Type.REMOVE, remove);
   }
 
   public void appendOption(DockerCommand.Type cType, Option opt, String arg) throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      create = DockerCommandUtils.appendOption(create, opt, arg);
-    } else if (cType == DockerCommand.Type.START) {
-      start = DockerCommandUtils.appendOption(start, opt, arg);
-    } else if (cType == DockerCommand.Type.STOP) {
-      stop = DockerCommandUtils.appendOption(stop, opt, arg);
-    } else if (cType == DockerCommand.Type.RUN) {
-      run = DockerCommandUtils.appendOption(run, opt, arg);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      remove = DockerCommandUtils.appendOption(remove, opt, arg);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    cmd = DockerCommandUtils.appendOption(cmd, opt, arg);
+    setDockerCommand(cType, cmd);
   }
 
   public void setOsCommand(DockerCommand.Type cType, OsCommand osCmd) throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      create.setOsCommand(osCmd);
-    } else if (cType == DockerCommand.Type.START) {
-      start.setOsCommand(osCmd);
-    } else if (cType == DockerCommand.Type.STOP) {
-      stop.setOsCommand(osCmd);
-    } else if (cType == DockerCommand.Type.RUN) {
-      run.setOsCommand(osCmd);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      remove.setOsCommand(osCmd);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    cmd.setOsCommand(osCmd);
+    setDockerCommand(cType, cmd);
   }
 
   public void appendArg(DockerCommand.Type cType, String arg) throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      create = DockerCommandUtils.appendArg(create, arg);
-    } else if (cType == DockerCommand.Type.START) {
-      start = DockerCommandUtils.appendArg(start, arg);
-    } else if (cType == DockerCommand.Type.STOP) {
-      stop = DockerCommandUtils.appendArg(stop, arg);
-    } else if (cType == DockerCommand.Type.RUN) {
-      run = DockerCommandUtils.appendArg(run, arg);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      remove = DockerCommandUtils.appendArg(remove, arg);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    cmd = DockerCommandUtils.appendArg(cmd, arg);
+    setDockerCommand(cType, cmd);
   }
 
   public String getSetOptionsString(DockerCommand.Type cType) throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      return DockerCommandUtils.getSetOptionsString(create);
-    } else if (cType == DockerCommand.Type.START) {
-      return DockerCommandUtils.getSetOptionsString(start);
-    } else if (cType == DockerCommand.Type.STOP) {
-      return DockerCommandUtils.getSetOptionsString(stop);
-    } else if (cType == DockerCommand.Type.RUN) {
-      return DockerCommandUtils.getSetOptionsString(run);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      return DockerCommandUtils.getSetOptionsString(remove);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    return DockerCommandUtils.getSetOptionsString(cmd);
   }
 
   public String getSetOsCommandString(DockerCommand.Type cType)  throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      return DockerCommandUtils.getSetOsCommandString(create);
-    } else if (cType == DockerCommand.Type.START) {
-      return DockerCommandUtils.getSetOsCommandString(start);
-    } else if (cType == DockerCommand.Type.STOP) {
-      return DockerCommandUtils.getSetOsCommandString(stop);
-    } else if (cType == DockerCommand.Type.RUN) {
-      return DockerCommandUtils.getSetOsCommandString(run);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      return DockerCommandUtils.getSetOsCommandString(remove);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    return DockerCommandUtils.getSetOsCommandString(cmd);
   }
 
   public String getSetArgsString(DockerCommand.Type cType)  throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      return DockerCommandUtils.getSetArgsString(create);
-    } else if (cType == DockerCommand.Type.START) {
-      return DockerCommandUtils.getSetArgsString(start);
-    } else if (cType == DockerCommand.Type.STOP) {
-      return DockerCommandUtils.getSetArgsString(stop);
-    } else if (cType == DockerCommand.Type.RUN) {
-      return DockerCommandUtils.getSetArgsString(run);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      return DockerCommandUtils.getSetArgsString(remove);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    return DockerCommandUtils.getSetArgsString(cmd);
   }
 
   //"helper-method" to get the Name for commands: START, STOP
   public String getContainerName(DockerCommand.Type cType) throws DockerCommandException {
-    if (cType == DockerCommand.Type.CREATE) {
-      return DockerCommandUtils.getContainerName(create);
-    } else if (cType == DockerCommand.Type.START) {
-      return DockerCommandUtils.getContainerName(start);
-    } else if (cType == DockerCommand.Type.STOP) {
-      return DockerCommandUtils.getContainerName(stop);
-    } else if (cType == DockerCommand.Type.RUN) {
-      return DockerCommandUtils.getContainerName(run);
-    } else if (cType == DockerCommand.Type.REMOVE) {
-      return DockerCommandUtils.getContainerName(remove);
-    } else {
-      throw new DockerCommandException(wrongCmdMessage);
-    }
+    DockerCommand cmd = getCommandFromMap(cType);
+    return DockerCommandUtils.getContainerName(cmd);
   }
 
   public static void copyCmdOptions(DockerCommand from, DockerCommand to) throws DockerCommandException {
@@ -210,6 +156,38 @@ public class DockerCommandStack implements Serializable {
 
     List<String> usedArgsFrom = new ArrayList<>(from.getUsedArgs());
     to.setUsedArgs(usedArgsFrom);
+  }
+
+  //todo: check for allowed mappings
+  private void setDockerCommand(DockerCommand.Type cType, DockerCommand cmd) throws DockerCommandException{
+    if (cType == DockerCommand.Type.CREATE) {
+      create = cmd;
+      typeInstanceMap.put(Type.CREATE, create);
+    } else if (cType == DockerCommand.Type.START) {
+      start = cmd;
+      typeInstanceMap.put(Type.START, start);
+    } else if (cType == DockerCommand.Type.STOP) {
+      stop = cmd;
+      typeInstanceMap.put(Type.STOP, stop);
+    } else if (cType == DockerCommand.Type.RUN) {
+      run = cmd;
+      typeInstanceMap.put(Type.RUN, run);
+    } else if (cType == DockerCommand.Type.REMOVE) {
+      remove = cmd;
+      typeInstanceMap.put(Type.REMOVE, remove);
+    } else {
+      throw new DockerCommandException(wrongCmdMessage);
+    }
+  }
+
+  private DockerCommand getCommandFromMap(DockerCommand.Type cType) throws DockerCommandException {
+    DockerCommand cmd = typeInstanceMap.get(cType);
+
+    if(cmd == null) {
+      throw new DockerCommandException(wrongCmdMessage);
+    }
+
+    return cmd;
   }
 
   public static class Builder {
