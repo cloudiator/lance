@@ -247,6 +247,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     try {
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
+      final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
+      LOGGER.debug(String
+          .format("Redeploying container %s with docker cli command: %s.", myId, cmdStr));
       client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
     } catch (DockerException de) {
       throw new ContainerException("cannot redeploy container: " + myId, de);
