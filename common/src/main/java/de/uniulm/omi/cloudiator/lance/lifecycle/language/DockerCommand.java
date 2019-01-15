@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,9 +17,7 @@ import java.util.regex.Pattern;
 public class DockerCommand implements Serializable {
 
   public enum Option {
-    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY;
-  }
-
+    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY, DETACH};
   public enum OsCommand {
     EMPTY, BASH
   }
@@ -28,8 +27,8 @@ public class DockerCommand implements Serializable {
         Option.NETWORK, Option.TTY}, new OsCommand[]{OsCommand.BASH}),
     START(new Option[]{Option.INTERACTIVE}, new OsCommand[]{}),
     STOP(new Option[]{}, new OsCommand[]{}),
-    RUN(new Option[]{Option.NAME, Option.PORT, Option.RESTART,Option.INTERACTIVE, Option.ENVIRONMENT,
-        Option.NETWORK, Option.TTY}, new OsCommand[]{OsCommand.BASH}),
+    RUN(new Option[]{Option.NAME, Option.PORT, Option.INTERACTIVE, Option.ENVIRONMENT,
+        Option.NETWORK, Option.DETACH}, new OsCommand[]{}),
     REMOVE(new Option[]{}, new OsCommand[]{});
 
     private static final String createCommandName = "create";
@@ -61,15 +60,30 @@ public class DockerCommand implements Serializable {
         //todo insert String representation of DockerCommand in exception String
         throw new IllegalArgumentException("No mapping for this Docker Command available");
     }
+
+    public boolean isAllowedOpt(DockerCommand.Option opt) {
+      if(possibleOptions.contains(opt)) {
+        return true;
+      }
+
+      return false;
+    }
+
+    public boolean isAllowedOsCommand(DockerCommand.OsCommand osCmd) {
+      if(possibleCommands.contains(osCmd)) {
+        return true;
+      }
+
+      return false;
+    }
   };
 
   private static final long serialVersionUID = -8890385235481216602L;
 
-
   public final Type cmdType;
-  private final Map<Option, List<String>> setOptions;
-  private final List<OsCommand> setCommand;
-  private final List<String> setArgs;
+  private Map<Option, List<String>> setOptions;
+  private List<OsCommand> setCommand;
+  private List<String> setArgs;
 
   public Map<Option, List<String>> getSetOptions() {
     return setOptions;
@@ -95,6 +109,41 @@ public class DockerCommand implements Serializable {
     setOptions = builder.setOptions;
     setCommand = builder.setCommand;
     setArgs = builder.setArgs;
+  }
+
+  public void setSetOptions(
+      Map<Option, List<String>> setOptions) throws DockerCommandException {
+    for (Entry<Option, List<String>> optEntry : setOptions.entrySet()) {
+      DockerCommand.Option opt = optEntry.getKey();
+      if (!cmdType.possibleOptions.contains(opt))
+        throw new DockerCommandException(
+            "Option "
+                + opt.name()
+                + " does not exist for '"
+                + DockerCommand.Type.mapCommandToString(cmdType)
+                + "' command");
+    }
+
+    this.setOptions = setOptions;
+  }
+
+  public void setSetCommand(
+      List<OsCommand> setCommand) throws DockerCommandException {
+    for (OsCommand cmd : setCommand) {
+      if (!cmdType.possibleCommands.contains(cmd))
+        throw new DockerCommandException("Command " + cmd.name() + " does not exist for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
+    }
+    this.setCommand = setCommand;
+  }
+
+  public void setSetArgs(List<String> setArgs) throws DockerCommandException {
+    if(!argsAllowed())
+      throw new DockerCommandException("Args not allowed for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
+
+    if(setCommand.size() == 0)
+      throw new DockerCommandException("Args cannot be set when there is no Os Command set");
+
+    this.setArgs = setArgs;
   }
 
   public void setOption(Option opt, String arg) throws DockerCommandException {
@@ -170,6 +219,9 @@ public class DockerCommand implements Serializable {
     if(!argsAllowed())
       throw new DockerCommandException("Arg " + arg + " not allowed for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
 
+    if(setCommand.size() == 0)
+      throw new DockerCommandException("Cannot set an arg, when there is no Os Command set for" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
+
     setArgs.add(arg);
   }
 
@@ -224,6 +276,8 @@ public class DockerCommand implements Serializable {
         return "--network";
       case ENVIRONMENT:
         return "--env";
+      case DETACH:
+        return "--detach";
       default:
         return "";
     }

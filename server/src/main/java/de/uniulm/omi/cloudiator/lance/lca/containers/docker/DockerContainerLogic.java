@@ -74,9 +74,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand origCmd = myComponent.getEntireDockerCommands().getCreate();
     DockerCommand redeplCmd = myComponent.getEntireDockerCommands().getRun();
     try {
-      EntireDockerCommands.copyCmdOptions(origCmd, redeplCmd);
-      EntireDockerCommands.copyCmdOsCommand(origCmd, redeplCmd);
-      EntireDockerCommands.copyCmdArgs(origCmd, redeplCmd);
+      redeplCmd.setOption(Option.DETACH,"");
+      redeplCmd = EntireDockerCommands.copyCmdOptions(origCmd, redeplCmd);
+      redeplCmd = EntireDockerCommands.copyCmdOsCommand(origCmd, redeplCmd);
+      redeplCmd = EntireDockerCommands.copyCmdArgs(origCmd, redeplCmd);
     } catch (DockerCommandException ex) {
       LOGGER.error(ex.getMessage());
     }
@@ -250,7 +251,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
       LOGGER.debug(String
           .format("Redeploying container %s with docker cli command: %s.", myId, cmdStr));
-      client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
     } catch (DockerException de) {
       throw new ContainerException("cannot redeploy container: " + myId, de);
     } catch(DockerCommandException ce) {
