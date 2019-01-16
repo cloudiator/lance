@@ -208,7 +208,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
     for(Entry<String, String> vars: filterNeedResolveDockerVarNames.entrySet()) {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
-      String newEnvVar = vars.getKey() + "=" + resolvedVarVal;
+      String newEnvVar = vars.getKey().trim() + "=" + resolvedVarVal.trim();
       //todo: escape regex special-chars in String
       cmd.replaceEnvVar(newEnvVar);
     }
@@ -267,10 +267,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
 
     for(Entry<String, String> var: envVarsStaticTmp.entrySet()) {
-      dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+      dCmd.setOption(Option.ENVIRONMENT,var.getKey().trim() + "=" + var.getValue().trim());
     }
     for(Entry<String, String> var: envVarsDynamic.entrySet()) {
-      dCmd.setOption(Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+      dCmd.setOption(Option.ENVIRONMENT,var.getKey().trim() + "=" + var.getValue().trim());
     }
   }
 
@@ -282,16 +282,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       return false;
 
     return true;
-  }
-
-  private String buildEnvString(Map<String,String> vars) {
-    StringBuilder builder = new StringBuilder();
-
-    for(Entry<String, String> var: vars.entrySet()) {
-      builder.append("-e " + var.getKey()+"="+var.getValue() + " ");
-    }
-
-    return builder.toString();
   }
 
   public static class Builder extends AbstractDockerContainerLogic.Builder<DockerComponent,Builder> {
