@@ -234,6 +234,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     //todo: make pattern more general, e.g. "$..." ,"${...}"
     Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+)=\\$([^\\s]+)[\\s]*$");
 
+    if(setDockerEnvVars == null) {
+      return needResolveDockerVarNames;
+    }
+
     for(String envVar: setDockerEnvVars) {
       Matcher matcher = pattern.matcher(envVar);
       if (matcher.find()) {
