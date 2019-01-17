@@ -13,7 +13,7 @@ import java.util.Set;
 public class DockerCommand implements Serializable {
 
   public enum Option {
-    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY;
+    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY, DETACH;
 
     private static Map<DockerCommand.Option,String> optionStringMap;
 
@@ -26,6 +26,7 @@ public class DockerCommand implements Serializable {
       optionStringMap.put(DockerCommand.Option.NETWORK, "--network");
       optionStringMap.put(DockerCommand.Option.ENVIRONMENT, "--env");
       optionStringMap.put(DockerCommand.Option.TTY, "--tty");
+      optionStringMap.put(DockerCommand.Option.DETACH, "--detach");
       optionStringMap = Collections.unmodifiableMap(optionStringMap);
     }
 
@@ -68,8 +69,8 @@ public class DockerCommand implements Serializable {
         Option.NETWORK, Option.TTY}, new OsCommand[]{OsCommand.BASH}),
     START(new Option[]{Option.INTERACTIVE}, new OsCommand[]{}),
     STOP(new Option[]{}, new OsCommand[]{}),
-    RUN(new Option[]{Option.NAME, Option.PORT, Option.RESTART,Option.INTERACTIVE, Option.ENVIRONMENT,
-        Option.NETWORK, Option.TTY}, new OsCommand[]{OsCommand.BASH}),
+    RUN(new Option[]{Option.NAME, Option.PORT, Option.INTERACTIVE, Option.ENVIRONMENT,
+        Option.NETWORK, Option.DETACH}, new OsCommand[]{}),
     REMOVE(new Option[]{}, new OsCommand[]{});
 
     private static final String createCommandName = "create";
@@ -115,6 +116,22 @@ public class DockerCommand implements Serializable {
 
     public Set<OsCommand> getPossibleOsCommands() {
       return possibleCommands;
+    }
+
+    public boolean isAllowedOpt(DockerCommand.Option opt) {
+      if(possibleOptions.contains(opt)) {
+        return true;
+      }
+
+      return false;
+    }
+
+    public boolean isAllowedOsCommand(DockerCommand.OsCommand osCmd) {
+      if(possibleCommands.contains(osCmd)) {
+        return true;
+      }
+
+      return false;
     }
   };
 

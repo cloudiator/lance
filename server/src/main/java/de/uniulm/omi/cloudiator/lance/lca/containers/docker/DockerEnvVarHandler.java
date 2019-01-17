@@ -61,11 +61,11 @@ public class DockerEnvVarHandler {
     Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
 
     for(Entry<String, String> var: envVarsStaticTmp.entrySet()) {
-      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey().trim() + "=" + var.getValue().trim());
     }
 
     for(Entry<String, String> var: envVarsDynamic.entrySet()) {
-      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey() + "=" + var.getValue());
+      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey().trim() + "=" + var.getValue().trim());
     }
 
     return dCmd;
@@ -81,7 +81,7 @@ public class DockerEnvVarHandler {
 
     for(Entry<String, String> vars: filterNeedResolveDockerVarNames.entrySet()) {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
-      String newEnvVar = vars.getKey() + "=" + resolvedVarVal;
+      String newEnvVar = vars.getKey().trim() + "=" + resolvedVarVal.trim();
       //todo: escape regex special-chars in String
       cmd = DockerCommandUtils.replaceEnvVar(cmd, newEnvVar);
     }
@@ -147,5 +147,4 @@ public class DockerEnvVarHandler {
 
     return envVarsStaticTmp;
   }
-
 }

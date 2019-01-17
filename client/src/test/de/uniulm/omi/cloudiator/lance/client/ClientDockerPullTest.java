@@ -465,7 +465,8 @@ public class ClientDockerPullTest {
               OutPort.NO_SINKS);
       dummyOutInfs.add(outInf);*/
       //ssl Port
-      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs, "fh/docker-reg", "latest","xxxx", 443, true);
+      RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs,
+          "fh/cdocker-reg", "latest","xxxx", 443, true);
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");

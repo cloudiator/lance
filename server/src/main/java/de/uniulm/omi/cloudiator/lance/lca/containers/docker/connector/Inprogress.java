@@ -205,12 +205,14 @@ class Inprogress implements DockerShell {
     }
 
     @Override public void setEnvironmentVariable(String name, String value) {
-        ExecutionResult result = executeCommand("export " + name + "=" + value);
+      final String trimmedName = name.trim();
+      final String trimmedValue = value.trim();
+        ExecutionResult result = executeCommand("export " + trimmedName  + "=" + trimmedValue);
         if (result.isSuccess()) {
-            executeCommand("echo export " + name + "=" + value);
+            executeCommand("echo export " + trimmedName + "=" + trimmedValue);
             return;
         }
         throw new IllegalStateException(
-            "could not set environment variables: " + name + "=" + value + ": " + result);
+            "could not set environment variables: " + trimmedName + "=" + trimmedValue + ": " + result);
     }
 }

@@ -127,13 +127,8 @@ final class DockerImageHandler {
             return key;
         }
    
-        try {      	
-            client.pullImage(key); 
-            return key; 
-        } catch(DockerException de) {
-            LOGGER.debug("could not pull image: " + key + " creating a new one.");
-            return null; 
-        }
+        client.pullImage(key);
+        return key;
     }
     
     /**
@@ -223,10 +218,13 @@ final class DockerImageHandler {
           client.loginReg(userName, password, endPoint);
         }
 
-        result = doGetSingleImage(regExpandedImageName);
-
-        if (useCredentials) {
-          client.logoutReg(endPoint);
+        try {
+          result = doGetSingleImage(regExpandedImageName);
+        } finally {
+          //if Execption occured while trying to access private registry always delete credentials from local fs
+          if (useCredentials) {
+            client.logoutReg(endPoint);
+          }
         }
 
         if(result != null) {

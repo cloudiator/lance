@@ -10,6 +10,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerExce
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandStack;
 
@@ -66,6 +67,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand origCmd = myComponent.getDockerCommandStack().getCreate();
     DockerCommand redeplCmd = myComponent.getDockerCommandStack().getRun();
     try {
+      myComponent.getDockerCommandStack().appendOption(Type.RUN, Option.DETACH, "");
       DockerCommandStack.copyCmdOptions(origCmd, redeplCmd);
       DockerCommandStack.copyCmdOsCommand(origCmd, redeplCmd);
       DockerCommandStack.copyCmdArgs(origCmd, redeplCmd);
