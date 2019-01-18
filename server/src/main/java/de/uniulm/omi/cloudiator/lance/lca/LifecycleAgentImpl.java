@@ -240,9 +240,11 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         LOGGER.info(String.format("Awaiting Initialisation of %s.", cc));
         cc.awaitInitialisation();
       } catch (ContainerException e) {
-        LOGGER.error("Error occurred in container controller " + cc + " for Lifecycle Component", e);
+        LOGGER.error("Error occurred in container controller " + cc + " for "
+            + "Component without Lifecycle Store", e);
       } catch (Exception e) {
-        LOGGER.error("Unexpected exception occured in container controller " + cc + " for Lifecycle Component", e);
+        LOGGER.error("Unexpected exception occured in container controller " + cc + " for "
+            + "Component without Lifecycle Store", e);
       }
     });
   }
