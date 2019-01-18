@@ -199,7 +199,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   //Needed if a Docker env-var depends on a lance-internal env-var, e.g. PUBLIC_ReqPort=134.60.64.1:3302
-  private void resolveDockerEnvVars(DockerCommand cmd) throws DockerCommandException {
+  protected void resolveDockerEnvVars(DockerCommand cmd) throws DockerCommandException {
     Map<Option, List<String>> setOptions = cmd.getSetOptions();
     List<String> setDockerEnvVars = setOptions.get(Option.ENVIRONMENT);
 
