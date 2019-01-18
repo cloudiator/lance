@@ -52,13 +52,13 @@ public interface ContainerLogic {
 
     void preDestroy() throws ContainerException;
 
-    /**
-     *
-     * @return null if no address is available;
-     * otherwise a stringified form of an IP address
-     * @throws ContainerException when a container-specific exception occurs
-     */
-    String getLocalAddress() throws ContainerException;
+  /**
+   *
+   * @return null if no address is available;
+   * otherwise a stringified form of an IP address
+   * @throws ContainerException when a container-specific exception occurs
+   */
+  String getLocalAddress() throws ContainerException;
 
-    InportAccessor getPortMapper();
+  InportAccessor getPortMapper();
 }

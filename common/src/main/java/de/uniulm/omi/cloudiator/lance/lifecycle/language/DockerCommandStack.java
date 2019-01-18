@@ -131,28 +131,60 @@ public class DockerCommandStack implements Serializable {
     return DockerCommandUtils.getContainerName(cmd);
   }
 
+  //only copying options that are allowed for both commands
   public static void copyCmdOptions(DockerCommand from, DockerCommand to) throws DockerCommandException {
-    if(!(from.cmdType == to.cmdType) && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN)))
+    if (!(from.cmdType == to.cmdType)
+        && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN))) {
       throw new DockerCommandException("Cannot convert from " + from.cmdType + " to " + to.cmdType);
+    }
 
     Map<DockerCommand.Option, List<String>> usedOptsFrom = new HashMap<>(from.getUsedOptions());
-    to.setUsedOptions(usedOptsFrom);
+    Map<DockerCommand.Option, List<String>> allowedOptsFrom = new HashMap<>();
+
+    for (Entry<DockerCommand.Option, List<String>> optEntry : usedOptsFrom.entrySet()) {
+      DockerCommand.Option opt = optEntry.getKey();
+      List<String> lst = optEntry.getValue();
+
+      if (!to.cmdType.isAllowedOpt(opt)) {
+        continue;
+      }
+
+      allowedOptsFrom.put(opt, lst);
+    }
+
+    to.setUsedOptions(allowedOptsFrom);
   }
 
+  //only copying OsCommand that is allowed for both commands
+  //only the last command in the list will be set
   public static void copyCmdOsCommand(DockerCommand from, DockerCommand to) throws DockerCommandException {
-    if(!(from.cmdType == to.cmdType) && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN)))
+    if (!(from.cmdType == to.cmdType)
+        && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN))) {
       throw new DockerCommandException("Cannot convert from " + from.cmdType + " to " + to.cmdType);
+    }
 
     List<OsCommand> setOsCommandFrom = new ArrayList<>(from.getOsCommand());
 
     for(OsCommand osCmd: setOsCommandFrom) {
+      if (!to.cmdType.isAllowedOsCommand(osCmd)) {
+        continue;
+      }
+
       to.setOsCommand(osCmd);
     }
   }
 
+  //todo: merge this method with copyCmdOsCommand method, because args can only be set in conjunction with OsCommand
+  //only copying if OsCommand is set
   public static void copyCmdArgs(DockerCommand from, DockerCommand to) throws DockerCommandException {
-    if(!(from.cmdType == to.cmdType) && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN)))
+    if (!(from.cmdType == to.cmdType)
+        && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN))) {
       throw new DockerCommandException("Cannot convert from " + from.cmdType + " to " + to.cmdType);
+    }
+
+    if(to.getOsCommand().size() != 1) {
+      return;
+    }
 
     List<String> usedArgsFrom = new ArrayList<>(from.getUsedArgs());
     to.setUsedArgs(usedArgsFrom);

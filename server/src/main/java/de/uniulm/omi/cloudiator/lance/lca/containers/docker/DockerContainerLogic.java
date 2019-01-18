@@ -4,6 +4,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerEnvVarHandler.EnvType;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
@@ -13,19 +14,19 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandStack;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandUtils;
+import java.util.HashMap;
+import java.util.Map;
 
 //todo: there might be a problem, that the env-vars are appended, but not copied each time a value changed
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
-  private final DockerEnvVarHandler envVarHandler;
-  protected final DockerImageHandler imageHandler;
+  protected final DockerEnvVarHandler envVarHandler;
 
   public DockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(new DockerOperatingSystemTranslator(),
-        builder.client, builder.myComponent, builder.dockerConfig);
 
     try {
       myComponent.setContainerName(this.myId);
@@ -42,19 +43,22 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      DockerCommand createCmd = myComponent.getDockerCommandStack().getCreate();
-      imageHandler.doPullImages(myId, myComponent.getFullImageName());
+      DockerCommandStack dockerCommandStack = myComponent.getDockerCommandStack();
+      DockerCommand createCmd = dockerCommandStack.getCreate();
+
+      execHandler.doPullImages(myComponent.getFullImageName());
       //do Not copy lance environment in create command
-      createCmd = envVarHandler.resolveDockerEnvVars(myComponent.getDockerCommandStack().getCreate());
-      myComponent.getDockerCommandStack().setCreate(createCmd);
+      createCmd = envVarHandler.resolveDockerEnvVars(createCmd);
+      dockerCommandStack.setCreate(createCmd);
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
       //myComponent.setPort(portsToSet);
-      final String createCommand = myComponent.getFullDockerCommand(DockerCommand.Type.CREATE);
+      final String createCmdString = DockerCommandUtils.getFullDockerCommandString(dockerCommandStack,
+          Type.CREATE, myComponent.getFullIdentifier(Type.CREATE));
       //todo: better log this in DockerConnectorClass
       LOGGER.debug(String
-          .format("Creating container %s with docker cli command: %s.", myId, createCommand));
-      client.executeSingleDockerCommand(createCommand);
+          .format("Creating container %s with docker cli command: %s.", myId, createCmdString));
+      execHandler.executeSingleDockerCommand(createCmdString);
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
     } catch(DockerCommandException ce) {
@@ -122,9 +126,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
   private void executeGenericRedeploy() throws ContainerException {
     try {
-      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
-      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
-      client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
+      DockerCommandStack dStack = myComponent.getDockerCommandStack();
+      execHandler.executeRedeploy(dStack, getCmdFullIdentifierMap());
     } catch (DockerException de) {
       throw new ContainerException("cannot redeploy container: " + myId, de);
     } catch(DockerCommandException ce) {
@@ -149,9 +152,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public void doDestroy(boolean force, boolean remove) throws ContainerException {
     /* currently docker ignores force flag */
     try {
-      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
-      if(remove)
-        client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
+      DockerCommandStack dockerCommandStack = myComponent.getDockerCommandStack();
+      execHandler.destroyContainer(dockerCommandStack, getCmdFullIdentifierMap(), remove);
     } catch (DockerException de) {
       throw new ContainerException(de);
     } catch(DockerCommandException ce) {
@@ -159,10 +161,22 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
+  private Map<Type,String> getCmdFullIdentifierMap() {
+    Map<Type,String> cmdFullIdentifierMap = new HashMap<>();
+
+    cmdFullIdentifierMap.put(Type.CREATE, myComponent.getFullIdentifier(Type.CREATE));
+    cmdFullIdentifierMap.put(Type.START, myComponent.getFullIdentifier(Type.START));
+    cmdFullIdentifierMap.put(Type.STOP, myComponent.getFullIdentifier(Type.STOP));
+    cmdFullIdentifierMap.put(Type.RUN, myComponent.getFullIdentifier(Type.RUN));
+    cmdFullIdentifierMap.put(Type.REMOVE, myComponent.getFullIdentifier(Type.REMOVE));
+
+    return cmdFullIdentifierMap;
+  }
+
   @Override
   void postPreInstall() {
     try {
-      imageHandler.runPostInstallAction(myId);
+      execHandler.runPostInstallAction();
     } catch (DockerException de) {
       LOGGER.warn("could not update finalise image handling.", de);
     }
@@ -171,7 +185,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private DockerShell executeGenericStart() throws ContainerException {
     final DockerShell dshell;
     try {
-      dshell = client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.START));
+      DockerCommandStack dockerCommandStack = myComponent.getDockerCommandStack();
+      final String startCmdStr = DockerCommandUtils.getFullDockerCommandString(dockerCommandStack,
+          Type.START, myComponent.getFullIdentifier(Type.START));
+      dshell = execHandler.executeProgressingDockerCommand(startCmdStr);
       BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
       setStaticEnvironment(dshell, visitor);
       //Setting Dynamic-Envvars here fails, because pub-ip would be set to <unknown> which is invalid bash syntax

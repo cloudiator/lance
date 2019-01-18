@@ -14,15 +14,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class DockerComponent extends AbstractComponent {
-    /*DockerComponent(String nameParam, ComponentId idParam, List<InPort> inPortsParam,
-        List<OutPort> outPortsParam, Map<String, Class<?>> propertiesParam,
-        HashMap<String, ? extends Serializable> propertyValuesParam) {
-        super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
-    }*/
-
   private final DockerCommandStack dockerCommandStack;
   private final String imageName;
-  private final String imageFolder;
+  private final String nameSpace;
   private final String tag;
   private final String digestSHA256;
   private String containerName;
@@ -33,9 +27,9 @@ public class DockerComponent extends AbstractComponent {
     imageName = builder.imageNameParam;
 
     if(builder.imageFolderParam == null)
-      this.imageFolder = "";
+      this.nameSpace = "";
     else
-      this.imageFolder = builder.imageFolderParam;
+      this.nameSpace = builder.imageFolderParam;
 
     if(builder.tagParam == null)
       this.tag = "";
@@ -58,7 +52,7 @@ public class DockerComponent extends AbstractComponent {
   }
 
   public String getImageFolder() {
-    return this.imageFolder;
+    return this.nameSpace;
   }
 
   public String getImageName () {
@@ -71,17 +65,6 @@ public class DockerComponent extends AbstractComponent {
 
   public String getDigestSHA256 () {
     return this.digestSHA256;
-  }
-
-  public String getFullDockerCommand(DockerCommand.Type cType) throws DockerCommandException {
-    StringBuilder builder = new StringBuilder();
-    builder.append(DockerCommand.Type.mapCommandToString(cType) + " ");
-    builder.append(dockerCommandStack.getSetOptionsString(cType) + " ");
-    builder.append(getFullIdentifier(cType) + " ");
-    builder.append(dockerCommandStack.getSetOsCommandString(cType) + " ");
-    builder.append(dockerCommandStack.getSetArgsString(cType));
-
-    return builder.toString();
   }
 
   public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
@@ -129,7 +112,7 @@ public class DockerComponent extends AbstractComponent {
   public String getFullImageName() throws IllegalArgumentException {
     StringBuilder builder = new StringBuilder();
 
-    builder.append(buildPrefixString(imageFolder));
+    builder.append(buildPrefixString(nameSpace));
     builder.append(imageName);
 
     if(tag.equals("") && !digestSHA256.equals(""))
@@ -175,8 +158,8 @@ public class DockerComponent extends AbstractComponent {
       this.imageNameParam = imageName;
     }
 
-    public Builder imageFolder(String imageFolder) {
-      this.imageFolderParam = imageFolder;
+    public Builder nameSpace(String nameSpace) {
+      this.imageFolderParam = nameSpace;
       return this;
     }
 

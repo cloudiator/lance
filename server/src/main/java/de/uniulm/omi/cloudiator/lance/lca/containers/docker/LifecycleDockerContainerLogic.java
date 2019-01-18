@@ -59,7 +59,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     /* currently docker ignores both flags */
     try {
       //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
-      client.stopContainer(myId);
+      execHandler.stopContainer(myId);
     } catch (DockerException de) {
       throw new ContainerException(de);
     }

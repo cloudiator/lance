@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DockerEnvVarHandler {
+class DockerEnvVarHandler {
   private Map<String,String> envVarsStatic;
   private Map<String,String> envVarsDynamic;
   //Needed to check for redeployment
@@ -93,6 +93,10 @@ public class DockerEnvVarHandler {
     Map<String,String> needResolveDockerVarNames = new HashMap<>();
     //todo: make pattern more general, e.g. "$..." ,"${...}"
     Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+)=\\$([^\\s]+)[\\s]*$");
+
+    if(setDockerEnvVars == null) {
+      return needResolveDockerVarNames;
+    }
 
     for(String envVar: setDockerEnvVars) {
       Matcher matcher = pattern.matcher(envVar);

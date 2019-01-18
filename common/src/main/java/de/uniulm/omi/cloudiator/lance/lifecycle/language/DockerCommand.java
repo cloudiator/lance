@@ -161,36 +161,46 @@ public class DockerCommand implements Serializable {
     return new ArrayList<>(usedArgs);
   }
 
-  //1.) Ersetze setOption und setArg calls mit append calls und baue diese in Utils [check]
-  //2.) Lösche setOption und setArg Methoden hier und ersetze überall in code calls zu setOption und setArg mit appendCalls
-  //3.) Baue hier die  usedOptions und usedArgs setter Methoden
-  //4.) Rufe die neuen Setter Methoden in Utils Klasse auf: z.B. params.usedOptions.put(Option.ENVIRONMENT,lst);
   public void setUsedOptions(Map<DockerCommand.Option, List<String>> opts) throws DockerCommandException {
     checkMapKeysInSet(opts, cmdType.possibleOptions, cmdType);
     this.usedOptions = opts;
   }
 
   public void setOsCommand(OsCommand cmd) throws DockerCommandException {
-    if(!cmdType.possibleCommands.contains(cmd))
-      throw new DockerCommandException("Command " + cmd.name() + " does not exist for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
+    if (!cmdType.possibleCommands.contains(cmd)) {
+      throw new DockerCommandException(
+          "Command "
+              + cmd.name()
+              + " does not exist for '"
+              + DockerCommand.Type.mapCommandToString(cmdType)
+              + "' command");
+    }
 
-    //only one OsCommand allowed
-    if(osCommand.size()>0)
-      osCommand.remove(osCommand.size()-1);
+    // only one OsCommand allowed
+    if (osCommand.size() > 0) {
+      osCommand.remove(osCommand.size() - 1);
+    }
 
     osCommand.add(cmd);
   }
 
   public void setUsedArgs(List<String> usedArgs) throws DockerCommandException {
-    if(!argsAllowed(cmdType))
-      throw new DockerCommandException("Args not allowed for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
+    if (!argsAllowed(cmdType)) {
+      throw new DockerCommandException(
+          "Args not allowed for '" + DockerCommand.Type.mapCommandToString(cmdType) + "' command");
+    }
+
+    if (osCommand.size() != 1) {
+      throw new DockerCommandException("Args cannot be set when there are " + osCommand.size() +  " Os Commands set");
+    }
 
     this.usedArgs = usedArgs;
   }
 
   public static boolean argsAllowed(DockerCommand.Type cType) {
-    if(cType==Type.CREATE || cType==Type.RUN)
+    if (cType == Type.CREATE || cType == Type.RUN) {
       return true;
+    }
 
     return false;
   }

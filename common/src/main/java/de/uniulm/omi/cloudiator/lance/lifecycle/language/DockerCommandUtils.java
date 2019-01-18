@@ -162,6 +162,18 @@ public class DockerCommandUtils {
     return builder.toString();
   }
 
+  public static String getFullDockerCommandString(DockerCommandStack dStack, DockerCommand.Type cType, String fullIdentifier) throws DockerCommandException {
+    StringBuilder builder = new StringBuilder();
+    builder.append(DockerCommand.Type.mapCommandToString(cType) + " ");
+    builder.append(dStack.getSetOptionsString(cType) + " ");
+    builder.append(fullIdentifier + " ");
+    builder.append(dStack.getSetOsCommandString(cType) + " ");
+    builder.append(dStack.getSetArgsString(cType));
+
+    return builder.toString();
+  }
+
+
   //"helper-method" to get the Name for commands: START, STOP
   public static String getContainerName(DockerCommand cmd) throws DockerCommandException {
     DockerCommandParams params = new DockerCommandParams(cmd);

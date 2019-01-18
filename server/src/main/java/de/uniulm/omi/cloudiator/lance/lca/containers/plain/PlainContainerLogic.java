@@ -24,6 +24,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExecHandler;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -54,7 +55,8 @@ import org.slf4j.LoggerFactory;
  * Created by Daniel Seybold on 10.08.2015. Refactored by fh 20.09.2018
  */
 //todo: set dynamic env after it has first been set and along with all settings of the static environment
-public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
+public class PlainContainerLogic implements ContainerLogic, LifecycleActionInterceptor,
+    ExecHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlainContainerLogic.class);
 

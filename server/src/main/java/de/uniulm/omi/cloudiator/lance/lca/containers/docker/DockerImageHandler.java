@@ -259,12 +259,12 @@ final class DockerImageHandler {
     void runPostInstallAction(ComponentInstanceId myId) throws DockerException {
         if(initSource == ImageCreationType.OPERATING_SYSTEM) {
         	String componentInstallId = createComponentInstallId();
-            String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
-            // we probably will not need this return value
-            // let's keep it for debugging purposes, though
-            // @SuppressWarnings("unused") String imageSnapshot = 
-            client.createSnapshotImage(myId, target);
-            client.pushImage(target);
+          String target = buildImageTagName(ImageCreationType.COMPONENT, componentInstallId);
+          // we probably will not need this return value
+          // let's keep it for debugging purposes, though
+          // @SuppressWarnings("unused") String imageSnapshot =
+          client.createSnapshotImage(myId, target);
+          client.pushImage(target);
         }
     }
     

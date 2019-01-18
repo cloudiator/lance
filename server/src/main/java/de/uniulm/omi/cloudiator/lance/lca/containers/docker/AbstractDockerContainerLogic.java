@@ -58,7 +58,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   protected static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
         
   protected final ComponentInstanceId myId;
-  protected final DockerConnector client;
+  protected final DockerExecHandler execHandler;
 
   protected final DockerShellFactory shellFactory;
   protected final DeploymentContext deploymentContext;
@@ -79,10 +79,11 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   }
 
   protected AbstractDockerContainerLogic(Builder<?,?> builder) {
-
     this.myId = builder.myId;
+    DockerImageHandler imageHandler =  new DockerImageHandler(new DockerOperatingSystemTranslator(),
+        builder.client, builder.myComponent, builder.dockerConfig);
+    this.execHandler = new DockerExecHandler(builder.myId, builder.deploymentContext, builder.client, imageHandler);
     final StaticEnvVars instVars = this.myId;
-    this.client = builder.client;
     this.deploymentContext = builder.deploymentContext;
     this.shellFactory = builder.shellFactory;
     this.networkHandler = builder.networkHandler;
@@ -113,22 +114,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     setDynamicEnvironment(visitor, null);
   }
 
-  @Override
-  public InportAccessor getPortMapper() {
-    return ( (portName, clientState) -> {
-      try {
-        Integer portNumber = (Integer) deploymentContext.getProperty(portName, InPort.class);
-        int mapped = client.getPortMapping(myId, portNumber);
-        Integer i = Integer.valueOf(mapped);
-        clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_0, i);
-        clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_1, i);
-        clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
-      } catch(DockerException de) {
-        throw new ContainerException("coulnd not register all port mappings", de);
-      }
-    });
-  }
-
   void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
     doVisit(visitor,shell);
   }
@@ -145,19 +130,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
       visitor.visit(translateMap.get(entry.getKey()), entry.getValue());
     }
-  }
-
-  @Override
-  public String getLocalAddress() {
-    try {
-      return client.getContainerIp(myId);
-    } catch(DockerException de) {
-      // this means that that the container is not
-      // up and running; hence, no IP address is
-      // available. it is up to the caller to figure
-      // out the semantics of this state
-    }
-    return null;
   }
 
   //close shell, before opening them again in prepare(...) via LifeCycle-Actions
@@ -217,7 +189,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   protected void doStartContainer() throws ContainerException {
     final DockerShell dshell;
     try {
-      dshell = client.startContainer(myId);
+      dshell = execHandler.startContainer();
       BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
       setStaticEnvironment(dshell,visitor);
     } catch (DockerException de) {
@@ -245,7 +217,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   protected void executeCreation(String target) throws DockerException {
     Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
     //@SuppressWarnings("unused") String dockerId =
-    client.createContainer(target, myId, portsToSet);
+    execHandler.createContainer(target, portsToSet);
   }
 
   //used for setting the environment
@@ -253,7 +225,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     DockerShell shell;
 
     try {
-      shell = client.getSideShell(myId);
+      shell = execHandler.getSideShell();
       shellFactory.installDockerShell(shell);
     } catch (DockerException de) {
       throw new ContainerException("Cannot get side shell");
@@ -264,6 +236,16 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   private void closeShell() {
     shellFactory.closeShell();
+  }
+
+  @Override
+  public String getLocalAddress() throws ContainerException {
+    return execHandler.getLocalAddress();
+  }
+
+  @Override
+  public InportAccessor getPortMapper() {
+    return execHandler.getPortMapper();
   }
 
   abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
