@@ -132,6 +132,7 @@ public class DockerCommandStack implements Serializable {
   }
 
   //only copying options that are allowed for both commands
+  //Set options will get overwritten
   public static void copyCmdOptions(DockerCommand from, DockerCommand to) throws DockerCommandException {
     if (!(from.cmdType == to.cmdType)
         && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN))) {
@@ -152,11 +153,14 @@ public class DockerCommandStack implements Serializable {
       allowedOptsFrom.put(opt, lst);
     }
 
-    to.setUsedOptions(allowedOptsFrom);
+    Map<DockerCommand.Option,List<String>> mergedMap = new HashMap<>(to.getUsedOptions());
+    //overwrite set values in to-Options
+    mergedMap.putAll(allowedOptsFrom);
+    to.setUsedOptions(mergedMap);
   }
 
   //only copying OsCommand that is allowed for both commands
-  //only the last command in the list will be set
+  //only the last command in the list will be used to overwrite, if List is empty, nothing changes
   public static void copyCmdOsCommand(DockerCommand from, DockerCommand to) throws DockerCommandException {
     if (!(from.cmdType == to.cmdType)
         && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN))) {
@@ -175,7 +179,7 @@ public class DockerCommandStack implements Serializable {
   }
 
   //todo: merge this method with copyCmdOsCommand method, because args can only be set in conjunction with OsCommand
-  //only copying if OsCommand is set
+  //only copying if OsCommand is set, appending args
   public static void copyCmdArgs(DockerCommand from, DockerCommand to) throws DockerCommandException {
     if (!(from.cmdType == to.cmdType)
         && !((from.cmdType == Type.CREATE) && (to.cmdType == Type.RUN))) {
@@ -187,7 +191,9 @@ public class DockerCommandStack implements Serializable {
     }
 
     List<String> usedArgsFrom = new ArrayList<>(from.getUsedArgs());
-    to.setUsedArgs(usedArgsFrom);
+    List<String> joinedArgs = new ArrayList<>(to.getUsedArgs());
+    joinedArgs.addAll(usedArgsFrom);
+    to.setUsedArgs(joinedArgs);
   }
 
   //todo: check for allowed mappings

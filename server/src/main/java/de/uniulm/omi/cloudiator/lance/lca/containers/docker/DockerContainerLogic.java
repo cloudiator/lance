@@ -71,7 +71,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand origCmd = myComponent.getDockerCommandStack().getCreate();
     DockerCommand redeplCmd = myComponent.getDockerCommandStack().getRun();
     try {
-      myComponent.getDockerCommandStack().appendOption(Type.RUN, Option.DETACH, "");
+      redeplCmd = DockerCommandUtils.appendOption(redeplCmd, Option.DETACH, "");
       DockerCommandStack.copyCmdOptions(origCmd, redeplCmd);
       DockerCommandStack.copyCmdOsCommand(origCmd, redeplCmd);
       DockerCommandStack.copyCmdArgs(origCmd, redeplCmd);

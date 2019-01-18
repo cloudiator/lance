@@ -133,7 +133,7 @@ public class ClientDockerPullTest {
       builder = new DockerComponent.Builder(buildDockerCommandStack(), imageName);
     }
     builder.name(compName);
-    builder.imageFolder(imageFolder);
+    builder.nameSpace(imageFolder);
     builder.tag(tag);
     builder.myId(id);
 
