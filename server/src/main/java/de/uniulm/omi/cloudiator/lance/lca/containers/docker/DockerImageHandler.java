@@ -205,17 +205,13 @@ final class DockerImageHandler {
             return null;
         }
 
+        String endPoint =  dockerConfig.prependRegistry("");
         String regExpandedImageName = dockerConfig.prependRegistry(imageName);
         String result = null;
-        String userName = dockerConfig.getUserName();
-        String password = dockerConfig.getPassword();
         boolean useCredentials = dockerConfig.useCredentials();
-        String hostName = DockerConfiguration.DockerConfigurationFields.getHostname();
-        int port = DockerConfiguration.DockerConfigurationFields.getPort();
-        String endPoint = hostName + (!(port < 0) && port < 65555 ? ":" + Integer.toString(port) : "");
 
         if (useCredentials) {
-          client.loginReg(userName, password, endPoint);
+          client.loginReg(dockerConfig.getUserName(), dockerConfig.getPassword(), endPoint);
         }
 
         try {
