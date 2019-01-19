@@ -107,8 +107,8 @@ class DockerExecHandler implements ExecHandler {
     client.stopContainer(myId);
   }
 
-  DockerShell startContainer() throws DockerException {
-    DockerShell dShell = client.startContainer(myId);
+  DockerShell startLifecycleContainer() throws DockerException {
+    DockerShell dShell = client.startLifecycleContainer(myId);
     return dShell;
   }
 

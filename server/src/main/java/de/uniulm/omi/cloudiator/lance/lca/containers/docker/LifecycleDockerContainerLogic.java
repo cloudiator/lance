@@ -8,6 +8,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import java.util.Map;
 
 public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic {
   private final DeployableComponent myComponent;
@@ -46,7 +47,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
       try {
         //Environment still set (in logic.doInit call in BootstrapTransitionAction)
         //could return a shell
-        doStartContainer();
+        doStartLifecycleContainer();
       } catch (ContainerException ce) {
         throw ce;
       } catch (Exception ex) {
@@ -71,6 +72,23 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
       imageHandler.runPostInstallAction(myId);
     } catch (DockerException de) {
       LOGGER.warn("could not update finalise image handling.", de);
+    }
+  }
+
+  protected void executeCreation(String target) throws DockerException {
+    Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+    //@SuppressWarnings("unused") String dockerId =
+    execHandler.createLifecycleContainer(target, portsToSet);
+  }
+
+  private void doStartLifecycleContainer() throws ContainerException {
+    final DockerShell dshell;
+    try {
+      dshell = execHandler.startLifecycleContainer();
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
+      setStaticEnvironment(dshell,visitor);
+    } catch (DockerException de) {
+      throw new ContainerException("cannot start container: " + myId, de);
     }
   }
 

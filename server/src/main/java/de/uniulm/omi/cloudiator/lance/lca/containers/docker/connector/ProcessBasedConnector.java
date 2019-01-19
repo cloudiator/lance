@@ -168,7 +168,7 @@ public final class ProcessBasedConnector implements DockerConnector {
     }
     
     @Override
-    public DockerShell startContainer(ComponentInstanceId myId) throws DockerException {
+    public DockerShell startLifecycleContainer(ComponentInstanceId myId) throws DockerException {
         Inprogress pw = ProcessWrapper.progressingDockerCommand("start", "-i", buildContainerName(myId));
 
         if(pw.processStillRunning()) { 

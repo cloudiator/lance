@@ -28,7 +28,7 @@ public interface DockerConnector {
 
     // public final String LIFECYCLE_DIRECTORY = "/lifecycle";
     
-    DockerShell startContainer(ComponentInstanceId myId) throws DockerException;
+    DockerShell startLifecycleContainer(ComponentInstanceId myId) throws DockerException;
 
     void pullImage(String target) throws DockerException;
 

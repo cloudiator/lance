@@ -186,17 +186,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     closeShell();
   }
 
-  protected void doStartContainer() throws ContainerException {
-    final DockerShell dshell;
-    try {
-      dshell = execHandler.startContainer();
-      BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
-      setStaticEnvironment(dshell,visitor);
-    } catch (DockerException de) {
-      throw new ContainerException("cannot start container: " + myId, de);
-    }
-  }
-
   private void preInstallAction() throws ContainerException {
     prepareEnvironment();
   }
@@ -212,12 +201,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
     setStaticEnvironment(shell,visitor);
     setDynamicEnvironment(visitor, diff);
-  }
-
-  protected void executeCreation(String target) throws DockerException {
-    Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-    //@SuppressWarnings("unused") String dockerId =
-    execHandler.createLifecycleContainer(target, portsToSet);
   }
 
   //used for setting the environment
