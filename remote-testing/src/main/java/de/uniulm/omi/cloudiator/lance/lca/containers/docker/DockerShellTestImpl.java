@@ -56,7 +56,7 @@ public class DockerShellTestImpl extends TestImpl implements DockerShellTestAgen
     if (info == null) throw new ContainerException("ComponentInfo not set");
 
     try {
-      connector.createContainer(imageName, info.getComponentInstanceId(), portMap);
+      connector.createLifecycleContainer(imageName, info.getComponentInstanceId(), portMap);
     } catch (DockerException de) {
       throw new ContainerException("Cannot stop container");
     }

@@ -217,7 +217,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   protected void executeCreation(String target) throws DockerException {
     Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
     //@SuppressWarnings("unused") String dockerId =
-    execHandler.createContainer(target, portsToSet);
+    execHandler.createLifecycleContainer(target, portsToSet);
   }
 
   //used for setting the environment

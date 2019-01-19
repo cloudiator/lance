@@ -41,7 +41,7 @@ public interface DockerConnector {
      */
     String createSnapshotImage(ComponentInstanceId containerId, String key) throws DockerException;
 
-    String createContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> portsToSet) throws DockerException;
+    String createLifecycleContainer(String image, ComponentInstanceId myId, Map<Integer, Integer> portsToSet) throws DockerException;
 
     String findImage(String target) throws DockerException ;
 

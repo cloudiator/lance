@@ -63,6 +63,46 @@ class DockerExecHandler implements ExecHandler {
     return null;
   }
 
+  public void creatContainer(DockerCommandStack dStack, DockerEnvVarHandler envVarHandler,
+      String fullImageName, String fullIdentifier) throws DockerException {
+    DockerCommand createCmd = dStack.getCreate();
+    imageHandler.doPullImages(myId, fullImageName);
+    //do Not copy lance environment in create command
+    try {
+      createCmd = envVarHandler.resolveDockerEnvVars(createCmd);
+      dStack.setCreate(createCmd);
+      //todo: Create function to check, if these ports match the ports given in docker command
+      //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
+      //myComponent.setPort(portsToSet);
+      final String createCmdString = DockerCommandUtils.getFullDockerCommandString(dStack,
+          Type.CREATE, fullIdentifier);
+
+      //todo: better log this in DockerConnectorClass
+      LOGGER.debug(String
+          .format("Creating container %s with docker cli command: %s.", myId, createCmdString));
+      client.executeSingleDockerCommand(createCmdString);
+    } catch (DockerCommandException dCmdEx) {
+      throw new DockerException(String
+          .format("Error in building docker create command for container %s.", myId));
+    }
+  }
+
+  public DockerShell executeStart(DockerCommandStack dStack, String fullIdentifier)
+      throws DockerException {
+    DockerShell dShell;
+    final String startCmdStr;
+    try {
+      startCmdStr = DockerCommandUtils.getFullDockerCommandString(dStack,
+          Type.START, fullIdentifier);
+    } catch (DockerCommandException e) {
+      throw new DockerException(String
+          .format("Error in building docker start command for container %s.", myId));
+    }
+
+    dShell = client.executeProgressingDockerCommand(startCmdStr);
+    return dShell;
+  }
+
   public void stopContainer(ComponentInstanceId myId) throws DockerException {
     client.stopContainer(myId);
   }
@@ -72,8 +112,8 @@ class DockerExecHandler implements ExecHandler {
     return dShell;
   }
 
-  void createContainer(String target, Map<Integer,Integer> portsToSet) throws DockerException {
-    client.createContainer(target, myId, portsToSet);
+  void createLifecycleContainer(String target, Map<Integer,Integer> portsToSet) throws DockerException {
+    client.createLifecycleContainer(target, myId, portsToSet);
   }
 
   DockerShell getSideShell() throws DockerException {

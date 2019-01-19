@@ -4,7 +4,6 @@ import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.InportAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerEnvVarHandler.EnvType;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
@@ -44,25 +43,12 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public void doCreate() throws ContainerException {
     try {
       DockerCommandStack dockerCommandStack = myComponent.getDockerCommandStack();
-      DockerCommand createCmd = dockerCommandStack.getCreate();
+      final String fullImageName = myComponent.getFullImageName();
+      final String fullIdentifier = myComponent.getFullIdentifier(Type.CREATE);
 
-      execHandler.doPullImages(myComponent.getFullImageName());
-      //do Not copy lance environment in create command
-      createCmd = envVarHandler.resolveDockerEnvVars(createCmd);
-      dockerCommandStack.setCreate(createCmd);
-      //todo: Create function to check, if these ports match the ports given in docker command
-      //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
-      //myComponent.setPort(portsToSet);
-      final String createCmdString = DockerCommandUtils.getFullDockerCommandString(dockerCommandStack,
-          Type.CREATE, myComponent.getFullIdentifier(Type.CREATE));
-      //todo: better log this in DockerConnectorClass
-      LOGGER.debug(String
-          .format("Creating container %s with docker cli command: %s.", myId, createCmdString));
-      execHandler.executeSingleDockerCommand(createCmdString);
+      execHandler.creatContainer(dockerCommandStack, envVarHandler, fullImageName, fullIdentifier);
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
-    } catch(DockerCommandException ce) {
-      throw new ContainerException(ce);
     }
   }
 
@@ -186,17 +172,13 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     final DockerShell dshell;
     try {
       DockerCommandStack dockerCommandStack = myComponent.getDockerCommandStack();
-      final String startCmdStr = DockerCommandUtils.getFullDockerCommandString(dockerCommandStack,
-          Type.START, myComponent.getFullIdentifier(Type.START));
-      dshell = execHandler.executeProgressingDockerCommand(startCmdStr);
+      final String fullIdentifier = myComponent.getFullIdentifier(Type.START);
+      dshell = execHandler.executeStart(dockerCommandStack, fullIdentifier);
       BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
       setStaticEnvironment(dshell, visitor);
-      //Setting Dynamic-Envvars here fails, because pub-ip would be set to <unknown> which is invalid bash syntax
-      //setDynamicEnvironment(visitor, null);
+      //Todo: Check why dynamic env setting sets additional values of other container(s)
     } catch (DockerException de) {
       throw new ContainerException("cannot start container: " + myId, de);
-    } catch(DockerCommandException ce) {
-      throw new ContainerException(ce);
     }
 
     return dshell;

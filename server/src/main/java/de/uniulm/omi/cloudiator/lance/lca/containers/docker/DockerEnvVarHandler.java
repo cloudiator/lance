@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class DockerEnvVarHandler {
+public class DockerEnvVarHandler {
   private Map<String,String> envVarsStatic;
   private Map<String,String> envVarsDynamic;
   //Needed to check for redeployment

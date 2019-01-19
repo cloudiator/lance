@@ -149,7 +149,7 @@ public final class ProcessBasedConnector implements DockerConnector {
     }
         
     @Override
-    public String createContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> inPortsParam) throws DockerException {
+    public String createLifecycleContainer(String image, ComponentInstanceId myId, Map<Integer,Integer> inPortsParam) throws DockerException {
         List<String> args = new ArrayList<>();
         args.add("create"); 
         args.add("--name=" + buildContainerName(myId));
