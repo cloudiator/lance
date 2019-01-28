@@ -119,6 +119,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
         //Environment still set (in logic.doInit call in BootstrapTransitionAction)
         //could return a shell
         executeGenericStart();
+
       } catch (ContainerException ce) {
         throw ce;
       } catch (Exception ex) {
@@ -155,21 +156,23 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     envVarsDynamic.putAll(networkHandler.getEnvVars());
   }
 
-  private DockerShell executeGenericStart() throws ContainerException {
-    final DockerShell dshell;
+  private void executeGenericStart() throws ContainerException {
+    DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
-      dshell = client.executeProgressingDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.START));
-      BashExportBasedVisitor visitor = new BashExportBasedVisitor(dshell);
-      setStaticEnvironment(dshell, visitor);
-      //Setting Dynamic-Envvars here fails, because pub-ip would be set to <unknown> which is invalid bash syntax
-      //setDynamicEnvironment(visitor, null);
+      resolveDockerEnvVars(runCmd);
+      copyEnvIntoCommand(runCmd);
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
+      final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
+      LOGGER.debug(String
+      .format("Redeploying container %s with docker cli command: %s.", myId, cmdStr));
+      client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
+      BashExportBasedVisitor visitor = new BashExportBasedVisitor(null);
+      setDynamicEnvironment(visitor, null);
     } catch (DockerException de) {
-      throw new ContainerException("cannot start container: " + myId, de);
-    } catch(DockerCommandException ce) {
-      throw new ContainerException(ce);
+      throw new ContainerException("cannot redeploy container: " + myId, de);
+    } catch (DockerCommandException e) {
+      throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
     }
-
-    return dshell;
   }
 
   private void executeEnvSetting(EnvType eType, Map<String,String> vars) throws ContainerException {
@@ -208,6 +211,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
     for(Entry<String, String> vars: filterNeedResolveDockerVarNames.entrySet()) {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
+      if(resolvedVarVal.equals("")) {
+        continue;
+      }
       String newEnvVar = vars.getKey() + "=" + resolvedVarVal;
       //todo: escape regex special-chars in String
       cmd.replaceEnvVar(newEnvVar);
