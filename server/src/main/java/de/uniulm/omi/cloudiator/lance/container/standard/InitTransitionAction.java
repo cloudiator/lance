@@ -26,16 +26,20 @@ final class InitTransitionAction implements TransitionAction {
             theContainer.preInitAction();
             theContainer.postInitAction();
             theContainer.registerStatus(ContainerStatus.READY);
-            AbstractComponent myComp = theContainer.logic.getComponent();
-            if(myComp.isDynamicComponent()) {
-              theContainer.registerKeyValPair(myComp.dynGroupKey,myComp.getDynamicGroup());
-            }
+            resgisterDynamicProperties();
         } catch (ContainerException | LifecycleException | RegistrationException ce) {
         	ErrorAwareContainer.getLogger().error("could not initialise container;", ce); 
         }
     }
 
-	public static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
+  private void resgisterDynamicProperties() throws ContainerException, RegistrationException {
+    AbstractComponent myComp = theContainer.logic.getComponent();
+    if(myComp.isDynamicComponent()) {
+      theContainer.registerKeyValPair(myComp.dynGroupKey,myComp.getDynamicGroup());
+    }
+  }
+
+  public static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,
 			ErrorAwareContainer<?> container) {
 		
 		InitTransitionAction action = new InitTransitionAction(container);
