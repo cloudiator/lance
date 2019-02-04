@@ -538,8 +538,8 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      client.undeploy(zookId, true);
-      client.undeploy(zookId_lifecycle, true);
+      client.undeploy(zookId, false);
+      client.undeploy(zookId_lifecycle, false);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     }

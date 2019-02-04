@@ -11,7 +11,17 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 public class DeployableComponent extends AbstractComponent {
     private final LifecycleStore lifecycle;
 
-    public static class Builder extends AbstractComponent.Builder<Builder> {
+  @Override
+  public boolean isDynamicComponent() {
+    return false;
+  }
+
+  @Override
+  public boolean isDynamicHandler() {
+    return false;
+  }
+
+  public static class Builder extends AbstractComponent.Builder<Builder> {
       private volatile LifecycleStore lifecycle;
 
       public Builder(String name, ComponentId id) {

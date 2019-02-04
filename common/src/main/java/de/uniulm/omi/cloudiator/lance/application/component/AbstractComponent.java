@@ -146,6 +146,10 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
       this.currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
   }
 
+  abstract boolean isDynamicComponent();
+
+  abstract boolean isDynamicHandler();
+
   abstract static class Builder<T extends Builder<T>> {
       protected String nameParam;
       protected ComponentId myIdParam;

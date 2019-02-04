@@ -10,6 +10,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,11 +21,16 @@ public class DockerComponent extends AbstractComponent {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
 
+  private final static String dynGroupKey = "dynamicgroup";
+  private final static String dynHandlerKey = "dynamichandler";
+
   private final EntireDockerCommands entireDockerCommands;
   private final String imageName;
   private final String imageFolder;
   private final String tag;
   private final String digestSHA256;
+  private final String dynGroupVal;
+  private final String dynHandlerVal;
   private String containerName;
 
   public DockerComponent(Builder builder) {
@@ -51,6 +57,22 @@ public class DockerComponent extends AbstractComponent {
       this.containerName = "<unknown container>";
     else
       this.containerName = builder.containerNameParam;
+
+    List<String> createEnv = builder.entireDockerCommandsParam.getCreate().getSetOptions().get(Option.ENVIRONMENT);
+    dynGroupVal = filterEnvVal(createEnv, dynGroupKey);
+    dynHandlerVal = filterEnvVal(createEnv, dynHandlerKey);
+  }
+
+  private static String filterEnvVal(List<String> envStrings, String envKey) {
+    for(String envStr: envStrings) {
+      String[] content = envStr.split("=");
+
+      if(content.length==2 && content[0].equals(envKey)) {
+        return content[1];
+      }
+    }
+
+    return "";
   }
 
   public EntireDockerCommands getEntireDockerCommands() {
@@ -149,14 +171,49 @@ public class DockerComponent extends AbstractComponent {
   }
 
   private static String buildPrefixString(String str) {
-      String returnStr;
+    String returnStr;
 
-    if(!str.equals(""))
+    if (!str.equals("")) {
       returnStr = str + "/";
-    else
+    } else {
       returnStr = str;
+    }
 
     return returnStr;
+  }
+
+  @Override
+  public boolean isDynamicComponent() {
+    if (dynGroupVal.equals("")) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public boolean isDynamicHandler() {
+    if (dynHandlerVal.equals("")) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public String getDynamicGroup() {
+    if (!isDynamicComponent()) {
+      LOGGER.error("Retrieving a Dynamic group String, which is not set");
+    }
+
+    return dynGroupVal;
+  }
+
+  public String getDynamicHandler() {
+    if (!isDynamicHandler()) {
+      LOGGER.error("Retrieving a Dynamic handler String, which is not set");
+    }
+
+    return dynHandlerVal;
   }
 
   public static class Builder extends AbstractComponent.Builder<Builder> {
