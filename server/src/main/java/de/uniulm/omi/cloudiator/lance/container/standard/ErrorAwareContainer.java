@@ -262,4 +262,13 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	}
     	throw new UnexpectedContainerStateException("unexpected state reached: " + stat, stateMachine.collectExceptions());
     }
+
+  public void registerKeyValPair(String key, String val) throws RegistrationException {
+      if(!logic.isValidDynamicProperty(key)) {
+        throw new RegistrationException(String
+            .format("Setting key %s in registry for Component Instance %s is not allowed.", key, containerId));
+      }
+
+    accessor.addLocalProperty(key, val);
+  }
 }

@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.dummy;
 
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -87,7 +88,17 @@ public class DummyContainer implements ContainerLogic {
         });
 	}
 
-	public void setStaticEnvironment() throws ContainerException {
+  @Override
+  public AbstractComponent getComponent() {
+    return null;
+  }
+
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    return false;
+  }
+
+  public void setStaticEnvironment() throws ContainerException {
 
 	}
 

@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
@@ -139,6 +140,22 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     } catch(DockerCommandException ce) {
       throw new ContainerException(ce);
     }
+  }
+
+  @Override
+  public AbstractComponent getComponent() {
+    return myComponent;
+  }
+
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    if(key.equals(myComponent.dynGroupKey)) {
+      return true;
+    } else if(key.equals(myComponent.dynHandlerKey))  {
+      return true;
+    }
+
+    return false;
   }
 
   @Override

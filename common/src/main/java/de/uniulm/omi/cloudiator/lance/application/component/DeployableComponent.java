@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 import java.io.Serializable;
@@ -19,6 +20,16 @@ public class DeployableComponent extends AbstractComponent {
   @Override
   public boolean isDynamicHandler() {
     return false;
+  }
+
+  @Override
+  public String getDynamicGroup() throws ContainerException {
+    throw new ContainerException("Deployable Component cannot be in a dynamic group");
+  }
+
+  @Override
+  public String getDynamicHandler() throws ContainerException {
+    throw new ContainerException("Deployable Component cannot be a dynamic group handler");
   }
 
   public static class Builder extends AbstractComponent.Builder<Builder> {

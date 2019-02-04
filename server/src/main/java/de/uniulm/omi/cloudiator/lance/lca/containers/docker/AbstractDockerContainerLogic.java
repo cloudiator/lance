@@ -268,6 +268,12 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   abstract void collectDynamicEnvVars();
 
+  @Override
+  public abstract AbstractComponent getComponent();
+
+  @Override
+  public abstract boolean isValidDynamicProperty(String key);
+
   abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
     protected ComponentInstanceId myId;
     protected DockerConnector client;

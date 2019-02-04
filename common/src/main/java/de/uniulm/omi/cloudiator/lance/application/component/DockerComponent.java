@@ -1,6 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
@@ -20,9 +21,6 @@ public class DockerComponent extends AbstractComponent {
         HashMap<String, ? extends Serializable> propertyValuesParam) {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
-
-  private final static String dynGroupKey = "dynamicgroup";
-  private final static String dynHandlerKey = "dynamichandler";
 
   private final EntireDockerCommands entireDockerCommands;
   private final String imageName;
@@ -200,17 +198,19 @@ public class DockerComponent extends AbstractComponent {
     return true;
   }
 
-  public String getDynamicGroup() {
+  public String getDynamicGroup() throws ContainerException {
     if (!isDynamicComponent()) {
-      LOGGER.error("Retrieving a Dynamic group String, which is not set");
+      throw new ContainerException(String.format(
+          "No dynamic group name set for Docker component %s.", containerName));
     }
 
     return dynGroupVal;
   }
 
-  public String getDynamicHandler() {
+  public String getDynamicHandler() throws ContainerException {
     if (!isDynamicHandler()) {
-      LOGGER.error("Retrieving a Dynamic handler String, which is not set");
+      throw new ContainerException(String.format(
+          "No dynamic group name associated with dynamic handler for Docker component %s.", containerName));
     }
 
     return dynHandlerVal;

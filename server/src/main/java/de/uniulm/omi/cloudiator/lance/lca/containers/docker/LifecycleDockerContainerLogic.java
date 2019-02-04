@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -78,6 +79,17 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   void collectDynamicEnvVars() {
     envVarsDynamic.putAll(myComponent.getEnvVars());
     envVarsDynamic.putAll(networkHandler.getEnvVars());
+  }
+
+  @Override
+  public AbstractComponent getComponent() {
+    return myComponent;
+  }
+
+  //No dynamic properties settable for LifecycleComponents
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    return false;
   }
 
   String getFullImageName() {

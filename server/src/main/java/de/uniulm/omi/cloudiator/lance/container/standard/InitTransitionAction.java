@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
@@ -25,6 +26,10 @@ final class InitTransitionAction implements TransitionAction {
             theContainer.preInitAction();
             theContainer.postInitAction();
             theContainer.registerStatus(ContainerStatus.READY);
+            AbstractComponent myComp = theContainer.logic.getComponent();
+            if(myComp.isDynamicComponent()) {
+              theContainer.registerKeyValPair(myComp.dynGroupKey,myComp.getDynamicGroup());
+            }
         } catch (ContainerException | LifecycleException | RegistrationException ce) {
         	ErrorAwareContainer.getLogger().error("could not initialise container;", ce); 
         }

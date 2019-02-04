@@ -159,6 +159,17 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     });
   }
 
+  @Override
+  public AbstractComponent getComponent() {
+    return deployableComponent;
+  }
+
+  //No dynamic properties settable for Plain-Container
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    return false;
+  }
+
   PlainShell setDynamicEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {
     this.deployableComponent.injectDeploymentContext(this.deploymentContext);
     networkHandler.generateDynamicEnvVars(diff);

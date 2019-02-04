@@ -38,6 +38,7 @@ public interface ContainerLogic {
     void doInit(LifecycleStore store) throws ContainerException;
     
     void preInit() throws ContainerException;
+
     void completeShutDown() throws ContainerException;
 
     /**
@@ -61,4 +62,8 @@ public interface ContainerLogic {
     String getLocalAddress() throws ContainerException;
 
     InportAccessor getPortMapper();
+
+    AbstractComponent getComponent();
+
+    boolean isValidDynamicProperty(String key);
 }
