@@ -1,6 +1,9 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
@@ -35,7 +38,7 @@ final class InitTransitionAction implements TransitionAction {
   private void resgisterDynamicProperties() throws ContainerException, RegistrationException {
     AbstractComponent myComp = theContainer.logic.getComponent();
     if(myComp.isDynamicComponent()) {
-      theContainer.registerKeyValPair(myComp.dynGroupKey,myComp.getDynamicGroup());
+      theContainer.registerKeyValPair(LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY), myComp.getDynamicGroup());
     }
   }
 

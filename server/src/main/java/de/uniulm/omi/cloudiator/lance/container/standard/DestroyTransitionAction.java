@@ -1,14 +1,22 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerConfigurationException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareTransitionBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 
 final class DestroyTransitionAction implements TransitionAction {
 
+  private final static int synchronPollTime = 10;
+  private final static int synchronTimeOut = 2000;
   private final ErrorAwareContainer<?> theContainer;
 
   private DestroyTransitionAction(ErrorAwareContainer<?> container) {
@@ -27,6 +35,7 @@ final class DestroyTransitionAction implements TransitionAction {
         forceShutdown = true;
       }
       theContainer.logic.preDestroy();
+      waitForDynamicSynchonisation();
       theContainer.logic.doDestroy(forceShutdown, theContainer.shouldBeRemoved());
       theContainer.registerStatus(ContainerStatus.DESTROYED);
     } catch (ContainerException | RegistrationException ce) {
@@ -49,6 +58,48 @@ final class DestroyTransitionAction implements TransitionAction {
         ErrorAwareContainer.getLogger().error("could not shutdown shell;", e);
       }
     }
+  }
+
+  /* This function waits for the dynamic handler to realize and take action of the state stopped.
+  After the handler finished, he sets the COMPONENT_INSTANCE back to PRE_STOP and the waiting ends.
+  To stay consistent, this function eventually sets the state back to STOP
+   */
+  //todo: better "threading this" via ExecutorService, because of possible failure if reg access in while
+  //loop takes a lot of time
+  private void waitForDynamicSynchonisation() throws RegistrationException {
+    AbstractComponent myComp = theContainer.logic.getComponent();
+    if(!myComp.isDynamicComponent()) {
+      return;
+  }
+
+    long startTime = System.currentTimeMillis();
+    while((System.currentTimeMillis()-startTime) < synchronTimeOut) {
+      try {
+        String cInstanceStatus = theContainer.readValFromRegistry(
+            Identifiers.COMPONENT_INSTANCE_STATUS);
+
+        //Sync-point here
+        if(cInstanceStatus == LifecycleHandlerType.PRE_STOP.toString()) {
+          theContainer.registerKeyValPair(LcaRegistryConstants.regEntries.get(
+              Identifiers.COMPONENT_INSTANCE_STATUS), LifecycleHandlerType.STOP.toString());
+          return;
+        }
+
+        Thread.sleep(synchronPollTime);
+      } catch (ContainerConfigurationException e) {
+        throw new RegistrationException(String
+            .format("Cannot read key: %s from registry for Component Instance %s.", LcaRegistryConstants.regEntries
+                .get(Identifiers.COMPONENT_INSTANCE_STATUS), theContainer.containerId) , e);
+      } catch (InterruptedException e) {
+        throw new RegistrationException(String
+            .format("Component Instance: %s got interrupted while waiting for its Component_Instance_Stateto get synchronized.",
+                theContainer.containerId) , e);
+      }
+    }
+
+    ErrorAwareContainer.getLogger().error(String
+        .format("Timeout in Dynamic Component Instance: %s, while waiting for Dynamic Handler Instance to synchronize"
+            + "the DELETION State.", theContainer.containerId));
   }
 
   static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder, ErrorAwareContainer<?> container) {

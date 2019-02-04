@@ -1,7 +1,12 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
+
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
@@ -149,9 +154,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
   @Override
   public boolean isValidDynamicProperty(String key) {
-    if(key.equals(myComponent.dynGroupKey)) {
+    if(key.equals(LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY))) {
       return true;
-    } else if(key.equals(myComponent.dynHandlerKey))  {
+    } else if(key.equals(LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY))) {
+      return true;
+    } else if(key.equals(LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS))) {
       return true;
     }
 

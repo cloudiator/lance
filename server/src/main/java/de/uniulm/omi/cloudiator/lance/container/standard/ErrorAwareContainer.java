@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,6 +200,20 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         }
     }
 
+    public String readValFromRegistry(LcaRegistryConstants.Identifiers identifier) throws ContainerConfigurationException {
+      String retVal = null;
+      try {
+        retVal = accessor.getComponentInstanceProperty(containerId, LcaRegistryConstants.regEntries.get(identifier));
+      } catch (RegistrationException e) {
+        throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
+      }
+
+      if(retVal==null)
+        retVal = "";
+
+      return retVal;
+    }
+
     void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();
         try {
@@ -263,7 +278,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     	throw new UnexpectedContainerStateException("unexpected state reached: " + stat, stateMachine.collectExceptions());
     }
 
-  public void registerKeyValPair(String key, String val) throws RegistrationException {
+    public void registerKeyValPair(String key, String val) throws RegistrationException {
       if(!logic.isValidDynamicProperty(key)) {
         throw new RegistrationException(String
             .format("Setting key %s in registry for Component Instance %s is not allowed.", key, containerId));

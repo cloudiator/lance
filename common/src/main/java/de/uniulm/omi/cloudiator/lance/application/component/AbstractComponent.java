@@ -41,8 +41,6 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponent.class);
     private static final long serialVersionUID = -8078692212700712671L;
-    public static final String dynGroupKey = "dynamicgroup";
-    public static final String dynHandlerKey = "dynamichandler";
 
 
     private final String name;

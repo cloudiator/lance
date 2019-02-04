@@ -18,7 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.*;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
 import java.util.Map;
 
@@ -54,21 +55,23 @@ public final class GlobalRegistryAccessor {
     
     public final void init(ComponentInstanceId myId) throws RegistrationException {
         reg.addComponentInstance(appInstId, compId, myId);
-        reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, LifecycleHandlerType.NEW.toString());
+        reg.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), LifecycleHandlerType.NEW.toString());
     }
     
     public final void updateInstanceState(ComponentInstanceId myId, LifecycleHandlerType type) throws RegistrationException {
-        reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, type.toString());
+        reg.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), type.toString());
     }
     
     public final void updateContainerState(ComponentInstanceId myId, ContainerStatus type) throws RegistrationException {
-        reg.addComponentProperty(appInstId, compId, myId, CONTAINER_STATUS, type.toString());
+        reg.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.regEntries.get(CONTAINER_STATUS), type.toString());
     }
     
     public static boolean dumpMapHasContainerStatus(Map<String, String> map, ContainerStatus type) {
     	if(type == null) 
     		throw new NullPointerException("type has to be set");
-    	return type.toString().equals(map.get(CONTAINER_STATUS));
+
+    	final String contStatus = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+    	return type.toString().equals(map.get(contStatus));
     }
 
     public final void deleteComponentInstance() throws RegistrationException {

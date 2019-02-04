@@ -37,7 +37,7 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.CONTAINER_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
@@ -58,6 +58,7 @@ import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParamete
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -210,7 +211,8 @@ public final class LifecycleClient {
     try {
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
-      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(), CONTAINER_STATUS , params.getStatus().toString());
+      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
+          LcaRegistryConstants.regEntries.get(CONTAINER_STATUS) , params.getStatus().toString());
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
       for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {

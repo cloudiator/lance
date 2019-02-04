@@ -1,8 +1,11 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
+
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
@@ -57,8 +60,8 @@ public class DockerComponent extends AbstractComponent {
       this.containerName = builder.containerNameParam;
 
     List<String> createEnv = builder.entireDockerCommandsParam.getCreate().getSetOptions().get(Option.ENVIRONMENT);
-    dynGroupVal = filterEnvVal(createEnv, dynGroupKey);
-    dynHandlerVal = filterEnvVal(createEnv, dynHandlerKey);
+    dynGroupVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY));
+    dynHandlerVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY));
   }
 
   private static String filterEnvVal(List<String> envStrings, String envKey) {
