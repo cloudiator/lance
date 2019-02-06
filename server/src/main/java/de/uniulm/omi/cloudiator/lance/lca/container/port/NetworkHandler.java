@@ -73,7 +73,11 @@ public final class NetworkHandler implements DynamicEnvVars {
         currentEnvVarsDynamic = new HashSet<>();
     }
 
-    //todo: exception handling if wrong enum type
+  public PortRegistryTranslator getPortAccessor() {
+    return portAccessor;
+  }
+
+  //todo: exception handling if wrong enum type
     public void injectDynamicEnvVars(DynamicEnvVarsImpl vars) throws ContainerException {
         this.currentEnvVarsDynamic.add(vars);
     }

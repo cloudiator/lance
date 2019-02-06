@@ -23,6 +23,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -273,6 +274,12 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   @Override
   public abstract boolean isValidDynamicProperty(String key);
+
+  @Override
+  public abstract void doStartDynHandling(GlobalRegistryAccessor accessor) throws ContainerException;
+
+  @Override
+  public abstract void doStopDynHandling() throws ContainerException ;
 
   abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
     protected ComponentInstanceId myId;

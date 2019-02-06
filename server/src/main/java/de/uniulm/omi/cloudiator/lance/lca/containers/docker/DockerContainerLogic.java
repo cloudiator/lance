@@ -6,6 +6,7 @@ import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifier
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
@@ -29,11 +30,12 @@ import java.util.stream.Stream;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
+  protected final DockerImageHandler imageHandler;
   //Needed to check for redeployment
   private Map<String, String> envVarsStaticPrev;
   //Needed to check for redeployment
   private Map<String, String> envVarsDynamicPrev;
-  protected final DockerImageHandler imageHandler;
+  private DockerDynHandler dynHandler;
 
   private enum EnvType {STATIC, DYNAMIC};
 
@@ -47,9 +49,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     } catch (DockerCommandException ce) {
       LOGGER.error("Cannot set name for Docker container for component:" + myId, ce);
     }
-    
+
     envVarsStaticPrev = new HashMap<>(envVarsStatic);
     envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
+    //Getting initialized dynamically
+    dynHandler = null;
     //doesn't copy lance internal env-vars, just the docker ones
     //lance internal env-vars will be copied when an environment-variable changes a value and redeployment is triggered
     initRedeployDockerCommands();
@@ -163,6 +167,23 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
 
     return false;
+  }
+
+  @Override
+  public void doStartDynHandling(GlobalRegistryAccessor accessor) throws ContainerException {
+    try {
+      dynHandler = new DockerDynHandler(myComponent.getContainerName(), myComponent.getDynamicHandler(), myComponent
+          .getUpdateScriptFilePath(), client);
+      dynHandler.setAccessor(accessor);
+      dynHandler.run();
+    } catch (DockerCommandException e) {
+      throw new ContainerException("Cannot initialize Dyn Handler. Problems setting the correct container name...", e);
+    }
+  }
+
+  @Override
+  public void doStopDynHandling() throws ContainerException {
+    dynHandler.setRunning(false);
   }
 
   @Override

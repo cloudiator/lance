@@ -19,13 +19,16 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CLOUD_IP;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CLOUD_PORT;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_IP;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_PORT;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.INSTANCE_NR;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.PUBLIC_IP;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.PUBLIC_PORT;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +37,8 @@ import java.util.Map;
 public final class LcaRegistryConstants {
 
     public enum Identifiers { CONTAINER_STATUS, COMPONENT_INSTANCE_STATUS,
-    PUBLIC_IP, CLOUD_IP, CONTAINER_IP, DYN_GROUP_KEY, DYN_HANDLER_KEY, INSTANCE_NR};
+      PUBLIC_IP, CLOUD_IP, CONTAINER_IP, PUBLIC_PORT, CLOUD_PORT, CONTAINER_PORT,
+      DYN_GROUP_KEY, DYN_HANDLER_KEY, INSTANCE_NR};
 
     public static final Map<Identifiers, String> regEntries;
     static {
@@ -44,6 +48,9 @@ public final class LcaRegistryConstants {
       aMap.put(PUBLIC_IP, "HOST_PUBLIC_IP");
       aMap.put(CLOUD_IP, "HOST_CLOUD_IP");
       aMap.put(CONTAINER_IP, "HOST_CONTAINER_IP");
+      aMap.put(PUBLIC_PORT, "HOST_PUBLIC_PORT");
+      aMap.put(CLOUD_PORT, "HOST_CLOUD_PORT");
+      aMap.put(CONTAINER_PORT, "HOST_CONTAINER_PORT");
       aMap.put(DYN_GROUP_KEY, "dynamicgroup");
       aMap.put(DYN_HANDLER_KEY, "dynamichandler");
       aMap.put(INSTANCE_NR, "Instance_Number");

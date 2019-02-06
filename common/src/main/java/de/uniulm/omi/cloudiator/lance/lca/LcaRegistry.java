@@ -18,7 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import java.io.Serializable; 
+import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -40,14 +41,15 @@ public interface LcaRegistry extends Serializable {
      * in the registry.
      * @throws RegistrationException when a registration error occurs.
      */
-    public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
-    public void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
-    public void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
+    boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException;
+    void addComponent(ApplicationInstanceId instId, ComponentId cid, String name) throws RegistrationException;
+    void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
     void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException;
-    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
-    public String getComponentProperty(ApplicationInstanceId appInstId,
+    Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
+    List<Map<String, String>> dumpAllRegComponents(ApplicationInstanceId instId) throws RegistrationException;
+    String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
-    public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
+    boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
     boolean applicationComponentExists(ApplicationInstanceId appInstId, ComponentId compId) throws RegistrationException;
     void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
 }

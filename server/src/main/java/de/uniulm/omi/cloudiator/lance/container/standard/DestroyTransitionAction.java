@@ -36,6 +36,7 @@ final class DestroyTransitionAction implements TransitionAction {
       }
       theContainer.logic.preDestroy();
       waitForDynamicSynchonisation();
+      stopDynamicHandlerThread();
       theContainer.logic.doDestroy(forceShutdown, theContainer.shouldBeRemoved());
       theContainer.registerStatus(ContainerStatus.DESTROYED);
     } catch (ContainerException | RegistrationException ce) {
@@ -100,6 +101,20 @@ final class DestroyTransitionAction implements TransitionAction {
     ErrorAwareContainer.getLogger().error(String
         .format("Timeout in Dynamic Component Instance: %s, while waiting for Dynamic Handler Instance to synchronize"
             + "the DELETION State.", theContainer.containerId));
+  }
+
+  private void stopDynamicHandlerThread() {
+    AbstractComponent myComp = theContainer.logic.getComponent();
+    if(!myComp.isDynamicHandler()) {
+      return;
+    }
+
+    try {
+      theContainer.logic.doStopDynHandling();
+    } catch (ContainerException e) {
+      ErrorAwareContainer.getLogger().error(String
+          .format("Error in shutting down the worker thread of the Dynamic Handler: %s", theContainer.containerId));
+    }
   }
 
   static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder, ErrorAwareContainer<?> container) {

@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -88,7 +89,13 @@ public final class RmiWrapper implements LcaRegistry {
         }
     }
 
-    @Override
+  @Override
+  public List<Map<String, String>> dumpAllRegComponents(ApplicationInstanceId instId)
+      throws RegistrationException {
+    throw new RegistrationException("operation not implemented.");
+  }
+
+  @Override
     public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String name)
             throws RegistrationException {
          try { 

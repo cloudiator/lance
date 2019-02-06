@@ -1,6 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
@@ -29,17 +30,22 @@ final class InitTransitionAction implements TransitionAction {
             theContainer.preInitAction();
             theContainer.postInitAction();
             theContainer.registerStatus(ContainerStatus.READY);
-            resgisterDynamicProperties();
+            initializeDynamicProperties();
         } catch (ContainerException | LifecycleException | RegistrationException ce) {
         	ErrorAwareContainer.getLogger().error("could not initialise container;", ce); 
         }
     }
 
-  private void resgisterDynamicProperties() throws ContainerException, RegistrationException {
+  private void initializeDynamicProperties() throws ContainerException, RegistrationException {
     AbstractComponent myComp = theContainer.logic.getComponent();
     if(myComp.isDynamicComponent()) {
       theContainer.registerKeyValPair(LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY), myComp.getDynamicGroup());
     }
+    if(myComp.isDynamicHandler()) {
+      theContainer.registerKeyValPair(LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY), myComp.getDynamicHandler());
+      theContainer.logic.doStartDynHandling(theContainer.getAccessor());
+    }
+
   }
 
   public static void create(ErrorAwareTransitionBuilder<ContainerStatus> transitionBuilder,

@@ -21,6 +21,8 @@ package de.uniulm.omi.cloudiator.lance.lca;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -196,7 +198,22 @@ public final class GlobalRegistryAccessor {
     public Map<ComponentInstanceId, Map<String, String>> retrieveComponentDump(PortReference sinkReference) throws RegistrationException {
         return reg.dumpComponent(appInstId, sinkReference.getComponentId());
     }
-    
+
+
+    public List<Map<String,String>> getReadyDumps() throws RegistrationException {
+      List<Map<String,String>> retVal = new ArrayList<>();
+      List<Map<String,String>> compDumps = reg.dumpAllRegComponents(appInstId);
+      final String statusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+
+      for(Map<String,String> dump: compDumps) {
+        if(dump.get(statusKey) == ContainerStatus.READY.toString()) {
+          retVal.add(dump);
+        }
+      }
+
+      return retVal;
+    }
+
     public void addLocalProperty(String key, String value) throws RegistrationException {
         reg.addComponentProperty(appInstId, compId, localId, key, value);
     }

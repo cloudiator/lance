@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.PowershellExportBasedVisitor;
@@ -66,4 +67,8 @@ public interface ContainerLogic {
     AbstractComponent getComponent();
 
     boolean isValidDynamicProperty(String key);
+
+    void doStartDynHandling(GlobalRegistryAccessor accessor) throws ContainerException;
+
+    void doStopDynHandling() throws ContainerException ;
 }

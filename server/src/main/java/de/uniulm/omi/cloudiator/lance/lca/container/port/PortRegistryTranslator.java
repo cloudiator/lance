@@ -85,7 +85,11 @@ public final class PortRegistryTranslator {
         hostContext = context;
     }
 
-    public void registerLocalPortAtLevel(String portName, PortHierarchyLevel level, Integer value) throws RegistrationException {
+  public GlobalRegistryAccessor getAccessor() {
+    return accessor;
+  }
+
+  public void registerLocalPortAtLevel(String portName, PortHierarchyLevel level, Integer value) throws RegistrationException {
         String key = buildFullPortName(portName, level);
         accessor.addLocalProperty(key, value.toString());
     }
@@ -185,7 +189,7 @@ public final class PortRegistryTranslator {
         }
     }
     
-    private static String getHierarchicalHostname(PortHierarchyLevel level, Map<String, String> dump) throws RegistrationException {
+    public static String getHierarchicalHostname(PortHierarchyLevel level, Map<String, String> dump) throws RegistrationException {
         String key = buildFullHostName(level);
         String value = dump.get(key);
         if(value == null) {

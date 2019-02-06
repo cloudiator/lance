@@ -85,7 +85,11 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
       isReady = false;
     }
 
-    @Override
+  public GlobalRegistryAccessor getAccessor() {
+    return accessor;
+  }
+
+  @Override
     public ComponentInstanceId getId() {
         return containerId;
     }
@@ -100,12 +104,12 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
       return shouldBeRemovedParam;
     }
 
-  @Override
-  public void setShouldBeRemoved(boolean shouldBeRemoved) {
-    this.shouldBeRemovedParam = shouldBeRemoved;
-  }
+    @Override
+    public void setShouldBeRemoved(boolean shouldBeRemoved) {
+      this.shouldBeRemovedParam = shouldBeRemoved;
+    }
 
-  @Override
+    @Override
     public void create() {
         stateMachine.transit(ContainerStatus.NEW, ContainerStatus.CREATED, new Object[]{});
     }

@@ -24,6 +24,7 @@ public class DockerComponent extends AbstractComponent {
         HashMap<String, ? extends Serializable> propertyValuesParam) {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
+  private final static String updateScriptKey = "updatescript";
 
   private final EntireDockerCommands entireDockerCommands;
   private final String imageName;
@@ -32,6 +33,7 @@ public class DockerComponent extends AbstractComponent {
   private final String digestSHA256;
   private final String dynGroupVal;
   private final String dynHandlerVal;
+  private final String updateScriptFilePath;
   private String containerName;
 
   public DockerComponent(Builder builder) {
@@ -62,6 +64,7 @@ public class DockerComponent extends AbstractComponent {
     List<String> createEnv = builder.entireDockerCommandsParam.getCreate().getSetOptions().get(Option.ENVIRONMENT);
     dynGroupVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY));
     dynHandlerVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY));
+    updateScriptFilePath = filterEnvVal(createEnv, updateScriptKey);
   }
 
   private static String filterEnvVal(List<String> envStrings, String envKey) {
@@ -133,6 +136,10 @@ public class DockerComponent extends AbstractComponent {
     return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
   }
 
+  public String getUpdateScriptFilePath() {
+    return updateScriptFilePath;
+  }
+
   private static String buildNameOptionFromId(ComponentInstanceId id) {
     return "dockering__"+ id.toString();
   }
@@ -201,6 +208,7 @@ public class DockerComponent extends AbstractComponent {
     return true;
   }
 
+  @Override
   public String getDynamicGroup() throws ContainerException {
     if (!isDynamicComponent()) {
       throw new ContainerException(String.format(
@@ -210,6 +218,7 @@ public class DockerComponent extends AbstractComponent {
     return dynGroupVal;
   }
 
+  @Override
   public String getDynamicHandler() throws ContainerException {
     if (!isDynamicHandler()) {
       throw new ContainerException(String.format(
