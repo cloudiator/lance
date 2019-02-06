@@ -36,6 +36,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   //Needed to check for redeployment
   private Map<String, String> envVarsDynamicPrev;
   private DockerDynHandler dynHandler;
+  private Thread dynThread;
 
   private enum EnvType {STATIC, DYNAMIC};
 
@@ -54,6 +55,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
     //Getting initialized dynamically
     dynHandler = null;
+    //todo: check if must be initialised in doStart method
+    dynThread = new Thread(dynHandler);
     //doesn't copy lance internal env-vars, just the docker ones
     //lance internal env-vars will be copied when an environment-variable changes a value and redeployment is triggered
     initRedeployDockerCommands();
@@ -175,7 +178,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       dynHandler = new DockerDynHandler(myComponent.getContainerName(), myComponent.getDynamicHandler(), myComponent
           .getUpdateScriptFilePath(), client);
       dynHandler.setAccessor(accessor);
-      dynHandler.run();
+      //todo: check if must be initialised in doStart method
+      dynThread.start();
     } catch (DockerCommandException e) {
       throw new ContainerException("Cannot initialize Dyn Handler. Problems setting the correct container name...", e);
     }
