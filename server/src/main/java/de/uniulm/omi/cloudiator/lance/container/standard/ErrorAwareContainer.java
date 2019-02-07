@@ -288,6 +288,6 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
             .format("Setting key %s in registry for Component Instance %s is not allowed.", key, containerId));
       }
 
-    accessor.addLocalProperty(key, val);
-  }
+      accessor.addLocalProperty(key, val);
+    }
 }

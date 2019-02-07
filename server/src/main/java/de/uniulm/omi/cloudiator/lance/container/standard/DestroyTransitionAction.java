@@ -80,9 +80,9 @@ final class DestroyTransitionAction implements TransitionAction {
             Identifiers.COMPONENT_INSTANCE_STATUS);
 
         //Sync-point here
-        if(cInstanceStatus == LifecycleHandlerType.PRE_STOP.toString()) {
+        if(cInstanceStatus.equals(LifecycleHandlerType.PRE_STOP.name())) {
           theContainer.registerKeyValPair(LcaRegistryConstants.regEntries.get(
-              Identifiers.COMPONENT_INSTANCE_STATUS), LifecycleHandlerType.STOP.toString());
+              Identifiers.COMPONENT_INSTANCE_STATUS), LifecycleHandlerType.STOP.name());
           return;
         }
 

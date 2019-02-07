@@ -21,7 +21,10 @@ package de.uniulm.omi.cloudiator.lance.lca;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +83,17 @@ public final class GlobalRegistryAccessor {
         reg.deleteComponentInstance(appInstId, compId, localId);
     }
 
-    /* 
+    /* This method initializes the synchronisation between a Dynamic handler and a dynamic component.
+       The handler calls this method, which sets the Container_Status of the blocked dynamic component to
+       PRE_STOP. This unblocks the Dynamic Component.
+    */
+    public final void syncDynamicDestructionStatus(ComponentInstanceId cId) throws RegistrationException {
+      final String statusKey = LcaRegistryConstants.regEntries.get(Identifiers.CONTAINER_STATUS);
+      final LifecycleHandlerType statusType = LifecycleHandlerType.PRE_STOP;
+      addLocalProperty(statusKey, statusType.name());
+    }
+
+    /*
     @Deprecated
     public final String getProperty(ComponentInstanceId myId, String name) throws RegistrationException {
         try {
@@ -200,16 +213,20 @@ public final class GlobalRegistryAccessor {
     }
 
 
-    public List<Map<String,String>> getReadyDumps() throws RegistrationException {
-      List<Map<String,String>> retVal = new ArrayList<>();
-      List<Map<String,String>> compDumps = reg.dumpAllRegComponents(appInstId);
+    public Map<ComponentInstanceId, Map<String,String>> getReadyDumps() throws RegistrationException {
+      Map<ComponentInstanceId, Map<String,String>> retVal = new HashMap<>();
+      Map<ComponentInstanceId, Map<String,String>> compDumps = reg.dumpAllAppComponents(appInstId);
       final String statusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
       final String readyVal = ContainerStatus.READY.name();
 
-      for(Map<String,String> dump: compDumps) {
-       final  String dumpVal = dump.get(statusKey);
+      for(Map.Entry<ComponentInstanceId, Map<String,String>> dump: compDumps.entrySet()) {
+        if(dump.getValue() == null || dump.getValue().get(statusKey) == null) {
+          continue;
+        }
+        Map<String,String> dumpMap = dump.getValue();
+        final String dumpVal = dumpMap.get(statusKey);
         if(dumpVal.equals(readyVal)) {
-          retVal.add(dump);
+          retVal.put(dump.getKey(),dump.getValue());
         }
       }
 

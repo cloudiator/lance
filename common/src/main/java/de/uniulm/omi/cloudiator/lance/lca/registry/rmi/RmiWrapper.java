@@ -79,7 +79,14 @@ public final class RmiWrapper implements LcaRegistry {
         }
     }
 
-    @Override
+  @Override
+  public void addComponentProperty(ApplicationInstanceId instId, ComponentInstanceId cinstId,
+      String property, Object value) throws RegistrationException {
+    //todo: implement, though this is legacy code
+    throw new RegistrationException("Overloaded addComponentProperty method not implemented in Rmi Registry.");
+  }
+
+  @Override
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(
             ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         try { 
@@ -90,8 +97,8 @@ public final class RmiWrapper implements LcaRegistry {
     }
 
   @Override
-  public List<Map<String, String>> dumpAllRegComponents(ApplicationInstanceId instId)
-      throws RegistrationException {
+  public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(
+      ApplicationInstanceId instId) throws RegistrationException {
     throw new RegistrationException("operation not implemented.");
   }
 
@@ -127,5 +134,6 @@ public final class RmiWrapper implements LcaRegistry {
     public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
         ComponentInstanceId cinstId) throws RegistrationException {
        //todo: implement, though this is legacy code
+      throw new RegistrationException("Delete Component Instance not implemented in Rmi Registry.");
     }
 }

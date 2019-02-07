@@ -572,9 +572,20 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      sleep(120000);
-      client.undeploy(zookId, false);
+      sleep(2000);
+      Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            client.undeploy(zookId, false);
+          } catch (DeploymentException e) {
+            System.err.println("Exception during deployment!");
+          };
+        }
+      });
+      t.start();
       client.undeploy(zookId_lifecycle, false);
+      t.join();
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
     } catch (InterruptedException ex) {

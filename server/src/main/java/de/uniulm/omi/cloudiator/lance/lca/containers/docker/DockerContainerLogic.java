@@ -159,6 +159,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     return myComponent;
   }
 
+  //todo: Put this check into DockerDynHandler
   @Override
   public boolean isValidDynamicProperty(String key) {
     if(key.equals(LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY))) {
