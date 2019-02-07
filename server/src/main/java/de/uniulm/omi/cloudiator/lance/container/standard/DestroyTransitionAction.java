@@ -83,6 +83,9 @@ final class DestroyTransitionAction implements TransitionAction {
         if(cInstanceStatus.equals(LifecycleHandlerType.PRE_STOP.name())) {
           theContainer.registerKeyValPair(LcaRegistryConstants.regEntries.get(
               Identifiers.COMPONENT_INSTANCE_STATUS), LifecycleHandlerType.STOP.name());
+          ErrorAwareContainer.getLogger().info(String
+              .format("Syncing done: Setting Dynamic Component Instance %s Component_Status back "
+                      + "to its consistent state: %s", theContainer.containerId, LifecycleHandlerType.STOP.name()));
           return;
         }
 
@@ -93,7 +96,7 @@ final class DestroyTransitionAction implements TransitionAction {
                 .get(Identifiers.COMPONENT_INSTANCE_STATUS), theContainer.containerId) , e);
       } catch (InterruptedException e) {
         throw new RegistrationException(String
-            .format("Component Instance: %s got interrupted while waiting for its Component_Instance_Stateto get synchronized.",
+            .format("Component Instance: %s got interrupted while waiting for its Component_Instance_State to get synchronized.",
                 theContainer.containerId) , e);
       }
     }

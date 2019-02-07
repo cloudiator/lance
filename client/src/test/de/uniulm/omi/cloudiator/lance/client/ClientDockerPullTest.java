@@ -572,7 +572,7 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      sleep(2000);
+      sleep(120000);
       Thread t = new Thread(new Runnable() {
         @Override
         public void run() {

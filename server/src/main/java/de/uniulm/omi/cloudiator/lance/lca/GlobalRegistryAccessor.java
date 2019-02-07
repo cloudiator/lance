@@ -90,7 +90,7 @@ public final class GlobalRegistryAccessor {
     public final void syncDynamicDestructionStatus(ComponentInstanceId cId) throws RegistrationException {
       final String statusKey = LcaRegistryConstants.regEntries.get(Identifiers.CONTAINER_STATUS);
       final LifecycleHandlerType statusType = LifecycleHandlerType.PRE_STOP;
-      addLocalProperty(statusKey, statusType.name());
+      reg.addComponentProperty(appInstId, cId, statusKey, statusType.name());
     }
 
     /*
