@@ -377,7 +377,7 @@ public class ClientDockerPullTest {
       Map<Option,List<String>> createOptionMap = new HashMap<>();
       createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
       if (isDynComp) {
-        createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe,dynamicgroup=group1"));
+        createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe","dynamicgroup=group1"));
       }
       if (isDynHandler) {
         createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe","dynamichandler=group1","updatescript=/the/script.sh"));
@@ -572,10 +572,13 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
+      sleep(120000);
       client.undeploy(zookId, false);
       client.undeploy(zookId_lifecycle, false);
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
     }
   }
 }

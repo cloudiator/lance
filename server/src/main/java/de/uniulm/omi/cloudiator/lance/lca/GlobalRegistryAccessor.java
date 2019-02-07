@@ -204,9 +204,11 @@ public final class GlobalRegistryAccessor {
       List<Map<String,String>> retVal = new ArrayList<>();
       List<Map<String,String>> compDumps = reg.dumpAllRegComponents(appInstId);
       final String statusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+      final String readyVal = ContainerStatus.READY.name();
 
       for(Map<String,String> dump: compDumps) {
-        if(dump.get(statusKey) == ContainerStatus.READY.toString()) {
+       final  String dumpVal = dump.get(statusKey);
+        if(dumpVal.equals(readyVal)) {
           retVal.add(dump);
         }
       }

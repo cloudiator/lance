@@ -121,7 +121,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
 
     @Override
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
-        
+
         Map<ComponentInstanceId, Map<String, String>> retVal = null;
         String dirName = generateComponentDirectory(instId, compId);
         EtcdKeysResponse ccc = null;
@@ -148,7 +148,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
     public List<Map<String, String>> dumpAllRegComponents(ApplicationInstanceId instId)
         throws RegistrationException {
 
-      List<Map<String, String>> retVal = null;
+      List<Map<String, String>> retVal = new ArrayList<>();
       String dirName = generateApplicationInstanceDirectory(instId);
       EtcdKeysResponse ccc = null;
       try {

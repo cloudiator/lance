@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 /* Executes a script inside the container, that processes the 'ip:port'
 vaLues of associated dyngroup components inside the registry */
-class DockerDynHandler implements Runnable {
+class DockerDynHandler extends Thread {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
 
   private final String dynHandlerVal;
@@ -56,6 +56,8 @@ class DockerDynHandler implements Runnable {
 
     this.running = true;
     List<Map<String,String>> readyDumps = new ArrayList<>();
+    LOGGER.info(String
+        .format("Starting dynamic Handler: %s.", containerName));
 
     do {
       try {
@@ -94,7 +96,7 @@ class DockerDynHandler implements Runnable {
     final String dynGroupKey = LcaRegistryConstants.regEntries.get(Identifiers.DYN_GROUP_KEY);
     for(Map<String,String> compDump: readyDumps) {
       String dynGroupVal = compDump.get(dynGroupKey);
-      if(dynGroupVal==dynHandlerVal) {
+      if(dynGroupVal != null && dynGroupVal.equals(dynHandlerVal)) {
         socks.add(buildSocket(compDump));
       }
     }
@@ -112,8 +114,8 @@ class DockerDynHandler implements Runnable {
     }
 
     final String socketsStr = sb.toString();
-    final String commandStr = "exec -ti " + containerName + " " + updateScriptFilePath
-        + " " + updateScriptFilePath;
+    final String commandStr = "exec -ti " + containerName + " " + updateScriptFilePath + " "
+        + socketsStr;
 
     return commandStr;
   }

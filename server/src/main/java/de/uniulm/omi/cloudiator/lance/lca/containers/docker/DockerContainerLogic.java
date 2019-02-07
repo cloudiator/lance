@@ -56,7 +56,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     //Getting initialized dynamically
     dynHandler = null;
     //todo: check if must be initialised in doStart method
-    dynThread = new Thread(dynHandler);
+    dynThread = null;
     //doesn't copy lance internal env-vars, just the docker ones
     //lance internal env-vars will be copied when an environment-variable changes a value and redeployment is triggered
     initRedeployDockerCommands();
@@ -179,6 +179,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
           .getUpdateScriptFilePath(), client);
       dynHandler.setAccessor(accessor);
       //todo: check if must be initialised in doStart method
+      dynThread = new Thread(dynHandler);
       dynThread.start();
     } catch (DockerCommandException e) {
       throw new ContainerException("Cannot initialize Dyn Handler. Problems setting the correct container name...", e);
@@ -188,6 +189,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doStopDynHandling() throws ContainerException {
     dynHandler.setRunning(false);
+    try {
+      dynThread.join();
+    } catch (InterruptedException e) {
+      throw new ContainerException("Dyn Handling was interrupted while waiting for the handler thread to finish.");
+    }
   }
 
   @Override
