@@ -584,7 +584,7 @@ public class ClientDockerPullTest {
         }
       });
       t.start();
-      sleep(10000);
+      sleep(150000);
       client.undeploy(zookId_lifecycle, false);
       t.join();
     } catch (DeploymentException ex) {

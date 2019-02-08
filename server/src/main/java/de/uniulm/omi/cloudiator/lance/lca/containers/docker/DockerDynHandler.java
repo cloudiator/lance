@@ -130,7 +130,9 @@ class DockerDynHandler extends Thread {
 
       if(found==false) {
         final ComponentInstanceId cId = socketBefore.getKey();
-        if (isNotStop(runningDumps.get(cId))) {
+        /* component with compatible dynamic group and running not a valid
+         * socket anymore (e.g. port was dynamically set to -1) -> lorphaned */
+        if (runningDumps.get(cId)!=null) {
           socketsOrphaned.put(socketBefore.getKey(), socketBefore.getValue());
           LOGGER.warn("Got orphaned socket %s",socketBefore.getValue());
         } else {
@@ -156,22 +158,6 @@ class DockerDynHandler extends Thread {
     return diff;
   }
 
-  private static boolean isNotStop(Map<String, String> dumpMap) {
-    String key = LcaRegistryConstants.regEntries.get(Identifiers.COMPONENT_INSTANCE_STATUS);
-    LifecycleHandlerType type = LifecycleHandlerType.STOP;
-
-    if(dumpMap==null || dumpMap.get(key)==null) {
-      LOGGER.error(String
-          .format("Cannot process Map entires."));
-    }
-
-    if(dumpMap.get(key)==type.name()) {
-      return false;
-    }
-
-    return true;
-  }
-
   private Map<ComponentInstanceId, String> filterHandlerGroupSocks(Map<ComponentInstanceId,Map<String, String>> readyDumps) throws RegistrationException {
     Map<ComponentInstanceId, String> socks = new HashMap<>();
     final String dynGroupKey = LcaRegistryConstants.regEntries.get(Identifiers.DYN_GROUP_KEY);
@@ -183,8 +169,11 @@ class DockerDynHandler extends Thread {
 
       Map<String,String> dumpMap = compDump.getValue();
       String dynGroupVal = dumpMap.get(dynGroupKey);
-      if(dynGroupVal.equals(dynHandlerVal) && isValidPort(dumpMap)) {
-        socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
+      if(dynGroupVal.equals(dynHandlerVal)) {
+        final String socket = buildSocket(dumpMap, containerName);
+        if (!socket.equals("")) {
+          socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
+        }
       }
     }
 
@@ -208,25 +197,25 @@ class DockerDynHandler extends Thread {
     return commandStr;
   }
 
+  //todo: check port values: i.e. convert to int
   private static String buildSocket(Map<String, String> compDump, String cName) throws RegistrationException {
-    final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_0, compDump);
+    final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_1, compDump);
     final String portVal = getPortVal(compDump);
-    String socket = "";
-    if(portVal.equals("-1")) {
+
+    if(!isValidPort(portVal)) {
       LOGGER.warn(String
-          .format("Found port value -1 for a socket in Dynamic Handler %s. Skipping it"
-              + "...", cName));
-    } else {
-      socket = ipVal + ":" + portVal;
+        .format("Found port value -1 for a socket in Dynamic Handler %s. Skipping it"
+          + "...", cName));
+        return "";
     }
 
+    final String socket = ipVal + ":" + portVal;
     return socket;
   }
 
   //todo: check port values: i.e. convert to int
-  private static boolean isValidPort(Map<String, String> dumpMap) throws RegistrationException {
-    final String portVal = getPortVal(dumpMap);
-    if(portVal.equals("-1")) {
+  private static boolean isValidPort(String port) {
+    if(port.equals("-1")) {
       return false;
     }
 
@@ -238,10 +227,10 @@ class DockerDynHandler extends Thread {
     String retVal = "";
     for(Map.Entry<String,String> entry: compDump.entrySet()) {
       final String key = entry.getKey();
-      if(key.matches("^[^\\s]*PUBLIC[^\\s]+Port$")) {
+      if(key.matches("^[^\\s]*CLOUD[^\\s]+Port$")) {
         retVal = entry.getValue();
       }
-      if(key.matches("^[^\\s]*PUBLIC[^\\s]+I[Nn][Pp]$")) {
+      if(key.matches("^[^\\s]*CLOUD[^\\s]+I[Nn][Pp]$")) {
         retVal = entry.getValue();
       }
     }
