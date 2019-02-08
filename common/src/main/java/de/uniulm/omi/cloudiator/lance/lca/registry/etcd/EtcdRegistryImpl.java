@@ -20,11 +20,16 @@ package de.uniulm.omi.cloudiator.lance.lca.registry.etcd;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import mousio.etcd4j.EtcdClient;
 import mousio.etcd4j.responses.EtcdException;
 import mousio.etcd4j.responses.EtcdKeysResponse;
@@ -115,9 +120,22 @@ final class EtcdRegistryImpl implements LcaRegistry {
         setPropertyInDirectory(dirName, property, value.toString());
     }
 
+    /* todo: Refactor code that uses this method and make it call the overloaded method as this method isn't entirely consistent
+    as it breaks the uniqueness of the hierarchy: appId, cId, cInstanceId */
+    @Override
+    public void addComponentProperty(ApplicationInstanceId instId, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException {
+      ComponentId cId = getFirstLevelDir(instId, cinstId);
+
+      if(cId==null) {
+        throw new RegistrationException(String
+            .format("Cannot add Component Instance Property as there is no parent Component dir."));
+      }
+
+      addComponentProperty(instId, cId, cinstId, property, value);
+    }
+
     @Override
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
-        
         Map<ComponentInstanceId, Map<String, String>> retVal = null;
         String dirName = generateComponentDirectory(instId, compId);
         EtcdKeysResponse ccc = null;
@@ -139,14 +157,26 @@ final class EtcdRegistryImpl implements LcaRegistry {
         }
         return retVal;
     }
-    
+
+    @Override
+    public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(ApplicationInstanceId instId)
+        throws RegistrationException {
+      Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
+      List<ComponentId> cIds = readFirstLevelDirs(instId);
+      for(ComponentId cId: cIds) {
+        Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(instId, cId);
+        retVal.putAll(cInstDumps);
+      }
+
+      return retVal;
+    }
+
     @Override
     public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String property) throws RegistrationException {
         String dirName = generateComponentInstanceDirectory(appInstId, compId, myId);
         return readPropertyFromDirectory(dirName, property);
     }
     
-
     @Override
     public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
         final String dirName = generateApplicationInstanceDirectory(appInstId);
@@ -158,7 +188,19 @@ final class EtcdRegistryImpl implements LcaRegistry {
         String dirName = generateComponentDirectory(appInstId, compId);
         return directoryDoesExist(dirName); 
     }
-    
+
+    private ComponentId getFirstLevelDir(ApplicationInstanceId appInstId, ComponentInstanceId compId) throws RegistrationException {
+      ComponentId retVal = null;
+      List<ComponentId> cIds = readFirstLevelDirs(appInstId);
+      for(ComponentId cId: cIds) {
+        Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(appInstId, cId);
+        if(cInstDumps.get(compId) != null) {
+          retVal = cId;
+        }
+      }
+      return retVal;
+    }
+
     /**
      * @return true if this directory has been created successfully. false if it was already 
      *             contained in the registry.
@@ -269,7 +311,44 @@ final class EtcdRegistryImpl implements LcaRegistry {
         }
         return retVal;
     }
-    
+
+    private static List<ComponentId> readFirstLevelDirs(EtcdNode root) {
+      Set<ComponentId> idSet = new HashSet<>();
+      for(EtcdNode node : root.nodes) {
+        if(! node.dir)
+          continue;
+        String[] split = node.key.split("/");
+        int size = split.length;
+        if(size == 4) { // component instance element //
+          final String key = split[3];
+          idSet.add(ComponentId.fromString(key));
+        } else {
+          throw new IllegalStateException("invalid directory structure for key");
+        }
+      }
+
+      List<ComponentId> retVal = new ArrayList<>();
+      retVal.addAll(idSet);
+      return retVal;
+    }
+
+  private List<ComponentId> readFirstLevelDirs(ApplicationInstanceId appInstId) throws RegistrationException {
+    List<ComponentId> retVal = new ArrayList<>();
+    String dirName = generateApplicationInstanceDirectory(appInstId);
+    EtcdKeysResponse ccc = null;
+    try {
+      ccc = etcd.getDir(dirName).recursive().sorted().send().get();
+      retVal = readFirstLevelDirs(ccc.node);
+    } catch(IOException ioe) {
+      throw new RegistrationException(ioe);
+    } catch (java.util.concurrent.TimeoutException e) {
+      throw new RegistrationException(e);
+    } catch (EtcdException e) {
+      throw new RegistrationException(e);
+    }
+    return retVal;
+  }
+
     private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
         final String mainDir = root.key;
         final int length = mainDir.length() + 1;

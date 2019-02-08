@@ -18,8 +18,14 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
-import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.*;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -54,28 +60,40 @@ public final class GlobalRegistryAccessor {
     
     public final void init(ComponentInstanceId myId) throws RegistrationException {
         reg.addComponentInstance(appInstId, compId, myId);
-        reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, LifecycleHandlerType.NEW.toString());
+        reg.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), LifecycleHandlerType.NEW.toString());
     }
     
     public final void updateInstanceState(ComponentInstanceId myId, LifecycleHandlerType type) throws RegistrationException {
-        reg.addComponentProperty(appInstId, compId, myId, COMPONENT_INSTANCE_STATUS, type.toString());
+        reg.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), type.toString());
     }
     
     public final void updateContainerState(ComponentInstanceId myId, ContainerStatus type) throws RegistrationException {
-        reg.addComponentProperty(appInstId, compId, myId, CONTAINER_STATUS, type.toString());
+        reg.addComponentProperty(appInstId, compId, myId, LcaRegistryConstants.regEntries.get(CONTAINER_STATUS), type.toString());
     }
     
     public static boolean dumpMapHasContainerStatus(Map<String, String> map, ContainerStatus type) {
     	if(type == null) 
     		throw new NullPointerException("type has to be set");
-    	return type.toString().equals(map.get(CONTAINER_STATUS));
+
+    	final String contStatus = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+    	return type.toString().equals(map.get(contStatus));
     }
 
     public final void deleteComponentInstance() throws RegistrationException {
         reg.deleteComponentInstance(appInstId, compId, localId);
     }
 
-    /* 
+    /* This method initializes the synchronisation between a Dynamic handler and a dynamic component.
+       The handler calls this method, which sets the Instance_Status of the blocked dynamic component to
+       PRE_STOP. This unblocks the Dynamic Component.
+    */
+    public final void syncDynamicDestructionStatus(ComponentInstanceId cId) throws RegistrationException {
+      final String statusKey = LcaRegistryConstants.regEntries.get(Identifiers.COMPONENT_INSTANCE_STATUS);
+      final LifecycleHandlerType statusType = LifecycleHandlerType.PRE_STOP;
+      reg.addComponentProperty(appInstId, cId, statusKey, statusType.name());
+    }
+
+    /*
     @Deprecated
     public final String getProperty(ComponentInstanceId myId, String name) throws RegistrationException {
         try {
@@ -193,7 +211,36 @@ public final class GlobalRegistryAccessor {
     public Map<ComponentInstanceId, Map<String, String>> retrieveComponentDump(PortReference sinkReference) throws RegistrationException {
         return reg.dumpComponent(appInstId, sinkReference.getComponentId());
     }
-    
+
+    /* RUNNING == (READY && (START || POST_START)) */
+    public Map<ComponentInstanceId, Map<String,String>> getRunningDumps() throws RegistrationException {
+      Map<ComponentInstanceId, Map<String,String>> retVal = new HashMap<>();
+      Map<ComponentInstanceId, Map<String,String>> compDumps = reg.dumpAllAppComponents(appInstId);
+
+      final String contStatusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+      final String instStatusKey = LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS);
+      final String readyVal = ContainerStatus.READY.name();
+      final String startVal = LifecycleHandlerType.START.name();
+      final String postStartVal = LifecycleHandlerType.POST_START.name();
+
+      for(Map.Entry<ComponentInstanceId, Map<String,String>> dump: compDumps.entrySet()) {
+        if(dump.getValue() == null || dump.getValue().get(contStatusKey) == null
+            || dump.getValue().get(instStatusKey) == null) {
+          continue;
+        }
+
+        Map<String,String> dumpMap = dump.getValue();
+        final String dumpCStatusVal = dumpMap.get(contStatusKey);
+        final String dumpIStatusVal = dumpMap.get(instStatusKey);
+        if(dumpCStatusVal.equals(readyVal) && (dumpIStatusVal.equals(startVal)
+          || dumpIStatusVal.equals(postStartVal))) {
+          retVal.put(dump.getKey(),dump.getValue());
+        }
+      }
+
+      return retVal;
+    }
+
     public void addLocalProperty(String key, String value) throws RegistrationException {
         reg.addComponentProperty(appInstId, compId, localId, key, value);
     }

@@ -24,6 +24,7 @@ import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -157,6 +158,27 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
       clientState.registerValueAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, portNumber);
 
     });
+  }
+
+  @Override
+  public AbstractComponent getComponent() {
+    return deployableComponent;
+  }
+
+  //No dynamic properties settable for Plain-Container
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    return false;
+  }
+
+  @Override
+  public void doStartDynHandling(GlobalRegistryAccessor accessor) throws ContainerException {
+    throw new ContainerException("No dynamic handling possible for PlainContainer");
+  }
+
+  @Override
+  public void doStopDynHandling() throws ContainerException {
+    throw new ContainerException("No dynamic handling possible for LifecycleDockerContainer");
   }
 
   PlainShell setDynamicEnvironment(PortDiff<DownstreamAddress> diff) throws ContainerException {

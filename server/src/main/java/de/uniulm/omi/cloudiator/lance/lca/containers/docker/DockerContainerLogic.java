@@ -1,6 +1,13 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
+
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
@@ -23,11 +30,13 @@ import java.util.stream.Stream;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
+  protected final DockerImageHandler imageHandler;
   //Needed to check for redeployment
   private Map<String, String> envVarsStaticPrev;
   //Needed to check for redeployment
   private Map<String, String> envVarsDynamicPrev;
-  protected final DockerImageHandler imageHandler;
+  private DockerDynHandler dynHandler;
+  private Thread dynThread;
 
   private enum EnvType {STATIC, DYNAMIC};
 
@@ -41,9 +50,13 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     } catch (DockerCommandException ce) {
       LOGGER.error("Cannot set name for Docker container for component:" + myId, ce);
     }
-    
+
     envVarsStaticPrev = new HashMap<>(envVarsStatic);
     envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
+    //Getting initialized dynamically
+    dynHandler = null;
+    //todo: check if must be initialised in doStart method
+    dynThread = null;
     //doesn't copy lance internal env-vars, just the docker ones
     //lance internal env-vars will be copied when an environment-variable changes a value and redeployment is triggered
     initRedeployDockerCommands();
@@ -138,6 +151,49 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       throw new ContainerException(de);
     } catch(DockerCommandException ce) {
       throw new ContainerException(ce);
+    }
+  }
+
+  @Override
+  public AbstractComponent getComponent() {
+    return myComponent;
+  }
+
+  //todo: Put this check into DockerDynHandler
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    if(key.equals(LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY))) {
+      return true;
+    } else if(key.equals(LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY))) {
+      return true;
+    } else if(key.equals(LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  @Override
+  public void doStartDynHandling(GlobalRegistryAccessor accessor) throws ContainerException {
+    try {
+      dynHandler = new DockerDynHandler(myComponent.getContainerName(), myComponent.getDynamicHandler(), myComponent
+          .getUpdateScriptFilePath(), client);
+      dynHandler.setAccessor(accessor);
+      //todo: check if must be initialised in doStart method
+      dynThread = new Thread(dynHandler);
+      dynThread.start();
+    } catch (DockerCommandException e) {
+      throw new ContainerException("Cannot initialize Dyn Handler. Problems setting the correct container name...", e);
+    }
+  }
+
+  @Override
+  public void doStopDynHandling() throws ContainerException {
+    dynHandler.setRunning(false);
+    try {
+      dynThread.join();
+    } catch (InterruptedException e) {
+      throw new ContainerException("Dyn Handling was interrupted while waiting for the handler thread to finish.");
     }
   }
 

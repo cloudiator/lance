@@ -1,7 +1,11 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
+
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
@@ -10,6 +14,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -19,12 +24,16 @@ public class DockerComponent extends AbstractComponent {
         HashMap<String, ? extends Serializable> propertyValuesParam) {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
+  private final static String updateScriptKey = "updatescript";
 
   private final EntireDockerCommands entireDockerCommands;
   private final String imageName;
   private final String imageFolder;
   private final String tag;
   private final String digestSHA256;
+  private final String dynGroupVal;
+  private final String dynHandlerVal;
+  private final String updateScriptFilePath;
   private String containerName;
 
   public DockerComponent(Builder builder) {
@@ -51,6 +60,23 @@ public class DockerComponent extends AbstractComponent {
       this.containerName = "<unknown container>";
     else
       this.containerName = builder.containerNameParam;
+
+    List<String> createEnv = builder.entireDockerCommandsParam.getCreate().getSetOptions().get(Option.ENVIRONMENT);
+    dynGroupVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY));
+    dynHandlerVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY));
+    updateScriptFilePath = filterEnvVal(createEnv, updateScriptKey);
+  }
+
+  private static String filterEnvVal(List<String> envStrings, String envKey) {
+    for(String envStr: envStrings) {
+      String[] content = envStr.split("=");
+
+      if(content.length==2 && content[0].equals(envKey)) {
+        return content[1];
+      }
+    }
+
+    return "";
   }
 
   public EntireDockerCommands getEntireDockerCommands() {
@@ -110,6 +136,10 @@ public class DockerComponent extends AbstractComponent {
     return entireDockerCommands.getContainerName(DockerCommand.Type.CREATE);
   }
 
+  public String getUpdateScriptFilePath() {
+    return updateScriptFilePath;
+  }
+
   private static String buildNameOptionFromId(ComponentInstanceId id) {
     return "dockering__"+ id.toString();
   }
@@ -149,14 +179,53 @@ public class DockerComponent extends AbstractComponent {
   }
 
   private static String buildPrefixString(String str) {
-      String returnStr;
+    String returnStr;
 
-    if(!str.equals(""))
+    if (!str.equals("")) {
       returnStr = str + "/";
-    else
+    } else {
       returnStr = str;
+    }
 
     return returnStr;
+  }
+
+  @Override
+  public boolean isDynamicComponent() {
+    if (dynGroupVal.equals("")) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public boolean isDynamicHandler() {
+    if (dynHandlerVal.equals("")) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public String getDynamicGroup() throws ContainerException {
+    if (!isDynamicComponent()) {
+      throw new ContainerException(String.format(
+          "No dynamic group name set for Docker component %s.", containerName));
+    }
+
+    return dynGroupVal;
+  }
+
+  @Override
+  public String getDynamicHandler() throws ContainerException {
+    if (!isDynamicHandler()) {
+      throw new ContainerException(String.format(
+          "No dynamic group name associated with dynamic handler for Docker component %s.", containerName));
+    }
+
+    return dynHandlerVal;
   }
 
   public static class Builder extends AbstractComponent.Builder<Builder> {

@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +85,11 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
       isReady = false;
     }
 
-    @Override
+  public GlobalRegistryAccessor getAccessor() {
+    return accessor;
+  }
+
+  @Override
     public ComponentInstanceId getId() {
         return containerId;
     }
@@ -99,12 +104,12 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
       return shouldBeRemovedParam;
     }
 
-  @Override
-  public void setShouldBeRemoved(boolean shouldBeRemoved) {
-    this.shouldBeRemovedParam = shouldBeRemoved;
-  }
+    @Override
+    public void setShouldBeRemoved(boolean shouldBeRemoved) {
+      this.shouldBeRemovedParam = shouldBeRemoved;
+    }
 
-  @Override
+    @Override
     public void create() {
         stateMachine.transit(ContainerStatus.NEW, ContainerStatus.CREATED, new Object[]{});
     }
@@ -199,6 +204,20 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
         }
     }
 
+    public String readValFromRegistry(LcaRegistryConstants.Identifiers identifier) throws ContainerConfigurationException {
+      String retVal = null;
+      try {
+        retVal = accessor.getComponentInstanceProperty(containerId, LcaRegistryConstants.regEntries.get(identifier));
+      } catch (RegistrationException e) {
+        throw new ContainerConfigurationException("Cannot delete container " + containerId + "out of registry");
+      }
+
+      if(retVal==null)
+        retVal = "";
+
+      return retVal;
+    }
+
     void setNetworking() throws ContainerException {
         String address = logic.getLocalAddress();
         try {
@@ -261,5 +280,14 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     		throw new ContainerConfigurationException("generic error state reached: " + stat, stateMachine.collectExceptions());
     	}
     	throw new UnexpectedContainerStateException("unexpected state reached: " + stat, stateMachine.collectExceptions());
+    }
+
+    public void registerKeyValPair(String key, String val) throws RegistrationException {
+      if(!logic.isValidDynamicProperty(key)) {
+        throw new RegistrationException(String
+            .format("Setting key %s in registry for Component Instance %s is not allowed.", key, containerId));
+      }
+
+      accessor.addLocalProperty(key, val);
     }
 }

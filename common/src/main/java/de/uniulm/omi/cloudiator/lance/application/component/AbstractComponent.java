@@ -42,6 +42,7 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponent.class);
     private static final long serialVersionUID = -8078692212700712671L;
 
+
     private final String name;
     private final ComponentId myId;
     private final List<InPort> inPorts;
@@ -145,6 +146,14 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
       //todo: Check if vars Map in DynamicEnvVarsImpl is reset
       this.currentEnvVarsDynamic = DynamicEnvVarsImpl.NETWORK_PORTS;
   }
+
+  abstract public boolean isDynamicComponent();
+
+  abstract public boolean isDynamicHandler();
+
+  abstract public String getDynamicGroup() throws ContainerException;
+
+  abstract public String getDynamicHandler() throws ContainerException;
 
   abstract static class Builder<T extends Builder<T>> {
       protected String nameParam;

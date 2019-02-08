@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.INSTANCE_NR;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,7 +90,7 @@ final class ComponentInstanceContainer {
             throw new IllegalArgumentException("alread exists: " + cinstId);
         Map<String,Object> map = new HashMap<>();
         Integer i = Integer.valueOf(counter.incrementAndGet());
-        map.put(LcaRegistryConstants.INSTANCE_NR, i);
+        map.put(LcaRegistryConstants.regEntries.get(INSTANCE_NR), i);
         instances.put(cinstId, map);
         
         LOGGER.info("LcaRegistry: added component instance: " + this + "/" + cinstId);

@@ -1,7 +1,9 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedVisitor;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
@@ -78,6 +80,27 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   void collectDynamicEnvVars() {
     envVarsDynamic.putAll(myComponent.getEnvVars());
     envVarsDynamic.putAll(networkHandler.getEnvVars());
+  }
+
+  @Override
+  public AbstractComponent getComponent() {
+    return myComponent;
+  }
+
+  //No dynamic properties settable for LifecycleComponents
+  @Override
+  public boolean isValidDynamicProperty(String key) {
+    return false;
+  }
+
+  @Override
+  public void doStartDynHandling(GlobalRegistryAccessor accessor) throws ContainerException {
+    throw new ContainerException("No dynamic handling possible for LifecycleDockerContainer");
+  }
+
+  @Override
+  public void doStopDynHandling() throws ContainerException {
+    throw new ContainerException("No dynamic handling possible for LifecycleDockerContainer");
   }
 
   String getFullImageName() {

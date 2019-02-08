@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca.registry.rmi;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Map;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -78,7 +79,14 @@ public final class RmiWrapper implements LcaRegistry {
         }
     }
 
-    @Override
+  @Override
+  public void addComponentProperty(ApplicationInstanceId instId, ComponentInstanceId cinstId,
+      String property, Object value) throws RegistrationException {
+    //todo: implement, though this is legacy code
+    throw new RegistrationException("Overloaded addComponentProperty method not implemented in Rmi Registry.");
+  }
+
+  @Override
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(
             ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         try { 
@@ -88,7 +96,13 @@ public final class RmiWrapper implements LcaRegistry {
         }
     }
 
-    @Override
+  @Override
+  public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(
+      ApplicationInstanceId instId) throws RegistrationException {
+    throw new RegistrationException("operation not implemented.");
+  }
+
+  @Override
     public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId, String name)
             throws RegistrationException {
          try { 
@@ -120,5 +134,6 @@ public final class RmiWrapper implements LcaRegistry {
     public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
         ComponentInstanceId cinstId) throws RegistrationException {
        //todo: implement, though this is legacy code
+      throw new RegistrationException("Delete Component Instance not implemented in Rmi Registry.");
     }
 }

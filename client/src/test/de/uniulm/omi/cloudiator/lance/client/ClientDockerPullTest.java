@@ -125,12 +125,13 @@ public class ClientDockerPullTest {
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
       String imageFolder,
-      String tag, boolean isRemote) {
+      String tag, boolean isRemote,
+      boolean isDynComp, boolean isDynHandler) {
     DockerComponent.Builder builder;
     if (isRemote) {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName_remote);
+      builder = new DockerComponent.Builder(buildEntireDockerCommands(isDynComp, isDynHandler), imageName_remote);
     } else {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
+      builder = new DockerComponent.Builder(buildEntireDockerCommands(isDynComp, isDynHandler), imageName);
     }
     builder.name(compName);
     builder.imageFolder(imageFolder);
@@ -162,9 +163,10 @@ public class ClientDockerPullTest {
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
-      String tag, boolean isRemote) {
+      String tag, boolean isRemote,
+    boolean isDynComp, boolean isDynHandler) {
 
-    return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, isRemote);
+    return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, isRemote, isDynComp, isDynHandler);
   }
 
   private DockerComponent buildDockerComponent(
@@ -173,9 +175,10 @@ public class ClientDockerPullTest {
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
-      String tag) {
+      String tag,
+      boolean isDynComp, boolean isDynHandler) {
 
-    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false);
+    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false, isDynComp, isDynHandler);
     DockerComponent comp = builder.build();
     return comp;
   }
@@ -183,7 +186,7 @@ public class ClientDockerPullTest {
   private RemoteDockerComponent buildRemoteDockerComponent( LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs,
       List<OutportInfo> outInfs, String imageFolder, String tag, String hostName, int port, boolean useCredentials) {
 
-    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true);
+    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true, false, false);
     RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, port, "xxxxx", "xxxxx", useCredentials);
     RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
 
@@ -297,7 +300,7 @@ public class ClientDockerPullTest {
   public void testCZookCompDescriptions() {
     List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
     List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
-    buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
+    buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12", true, false);
   }
 
   @Test
@@ -367,12 +370,18 @@ public class ClientDockerPullTest {
     return zookeeper_context;
   }
 
-  EntireDockerCommands buildEntireDockerCommands() {
+  EntireDockerCommands buildEntireDockerCommands(boolean isDynComp, boolean isDynHandler) {
     Random rand = new Random();
     EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
     try {
       Map<Option,List<String>> createOptionMap = new HashMap<>();
       createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
+      if (isDynComp) {
+        createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe","dynamicgroup=group1"));
+      }
+      if (isDynHandler) {
+        createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe","dynamichandler=group1","updatescript=/the/script.sh"));
+      }
       String  n = Integer.toString(rand.nextInt(65536) + 1);
       createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n)));
       createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
@@ -478,8 +487,8 @@ public class ClientDockerPullTest {
     try {
       List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName);
       List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName);
-      DockerComponent zookComp = buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12");
-      DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId_lifecycle, zookeeperInternalInportName_lifecycle, version.DOCKER );
+      DockerComponent zookComp = buildDockerComponent( client, zookeeperComponent, zookeeperComponentId, inInfs, outInfs, "3.4.12", true, false);
+      DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId, zookeeperInternalInportName, version.DOCKER );
       zookId =
           client.deploy(zookContext, zookComp);
       boolean isReady = false;
@@ -497,6 +506,7 @@ public class ClientDockerPullTest {
     System.out.println("zook is ready");
   }
 
+  @Ignore
   @Test
   public void testIZookDeploy_lifecycle() {
     try {
@@ -514,6 +524,30 @@ public class ClientDockerPullTest {
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy lifecycle component");
     }
+  }
+
+  @Test
+  public void testIZookDeploy_latest() {
+    try {
+      List<InportInfo> inInfs = getInPortInfos(zookeeperInternalInportName_lifecycle);
+      List<OutportInfo> outInfs = getOutPortInfos(zookeeperOutportName_lifecycle);
+      DockerComponent zookComp = buildDockerComponent( client, zookeeperComponent_lifecycle, zookeeperComponentId_lifecycle, inInfs, outInfs, "latest", false, true);
+      DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId_lifecycle, zookeeperInternalInportName_lifecycle, version.LIFECYCLE );
+      zookId_lifecycle =
+          client.deploy(zookContext, zookComp);
+      boolean isReady = false;
+      do {
+        System.out.println("zook latest not ready");
+        isReady = client.isReady(zookId_lifecycle);
+        sleep(50);
+      } while (isReady != true);
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy docker zookeeper component");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
+    }
+
+    System.out.println("zook latest is ready");
   }
 
   @Test
@@ -538,10 +572,25 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      client.undeploy(zookId, true);
-      client.undeploy(zookId_lifecycle, true);
+      sleep(2000);
+      Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            client.undeploy(zookId, false);
+          } catch (DeploymentException e) {
+            System.err.println("Exception during deployment!");
+          };
+        }
+      });
+      t.start();
+      sleep(10000);
+      client.undeploy(zookId_lifecycle, false);
+      t.join();
     } catch (DeploymentException ex) {
       System.err.println("Exception during deployment!");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
     }
   }
 }
