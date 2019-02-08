@@ -52,7 +52,7 @@ class DockerDynHandler extends Thread {
   @Override
   public void run() {
     this.running = true;
-    Map<ComponentInstanceId,Map<String,String>> readyDumps = new HashMap<>();
+    Map<ComponentInstanceId,Map<String,String>> runningDumps = new HashMap<>();
     LOGGER.info(String
         .format("Starting dynamic Handler: %s.", containerName));
 
@@ -63,8 +63,8 @@ class DockerDynHandler extends Thread {
           return;
         }
 
-        readyDumps = accessor.getReadyDumps();
-        socketsAfter = filterHandlerGroupSocks(readyDumps);
+        runningDumps = accessor.getRunningDumps();
+        socketsAfter = filterHandlerGroupSocks(runningDumps);
         final SocketsDiff socketsDiff = calcSocketsDiff();
 
         if(socketsDiff.hasDiff()) {

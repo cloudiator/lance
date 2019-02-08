@@ -212,20 +212,28 @@ public final class GlobalRegistryAccessor {
         return reg.dumpComponent(appInstId, sinkReference.getComponentId());
     }
 
-
-    public Map<ComponentInstanceId, Map<String,String>> getReadyDumps() throws RegistrationException {
+    /* RUNNING == (READY && (START || POST_START)) */
+    public Map<ComponentInstanceId, Map<String,String>> getRunningDumps() throws RegistrationException {
       Map<ComponentInstanceId, Map<String,String>> retVal = new HashMap<>();
       Map<ComponentInstanceId, Map<String,String>> compDumps = reg.dumpAllAppComponents(appInstId);
-      final String statusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+
+      final String contStatusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
+      final String instStatusKey = LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS);
       final String readyVal = ContainerStatus.READY.name();
+      final String startVal = LifecycleHandlerType.START.name();
+      final String postStartVal = LifecycleHandlerType.POST_START.name();
 
       for(Map.Entry<ComponentInstanceId, Map<String,String>> dump: compDumps.entrySet()) {
-        if(dump.getValue() == null || dump.getValue().get(statusKey) == null) {
+        if(dump.getValue() == null || dump.getValue().get(contStatusKey) == null
+            || dump.getValue().get(instStatusKey) == null) {
           continue;
         }
+
         Map<String,String> dumpMap = dump.getValue();
-        final String dumpVal = dumpMap.get(statusKey);
-        if(dumpVal.equals(readyVal)) {
+        final String dumpCStatusVal = dumpMap.get(contStatusKey);
+        final String dumpIStatusVal = dumpMap.get(instStatusKey);
+        if(dumpCStatusVal.equals(readyVal) && (dumpIStatusVal.equals(startVal)
+          || dumpIStatusVal.equals(postStartVal))) {
           retVal.put(dump.getKey(),dump.getValue());
         }
       }
