@@ -572,7 +572,7 @@ public class ClientDockerPullTest {
   @Test
   public void testMStopContainers() {
     try {
-      sleep(120000);
+      sleep(2000);
       Thread t = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -584,6 +584,7 @@ public class ClientDockerPullTest {
         }
       });
       t.start();
+      sleep(10000);
       client.undeploy(zookId_lifecycle, false);
       t.join();
     } catch (DeploymentException ex) {

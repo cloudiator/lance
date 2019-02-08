@@ -84,11 +84,11 @@ public final class GlobalRegistryAccessor {
     }
 
     /* This method initializes the synchronisation between a Dynamic handler and a dynamic component.
-       The handler calls this method, which sets the Container_Status of the blocked dynamic component to
+       The handler calls this method, which sets the Instance_Status of the blocked dynamic component to
        PRE_STOP. This unblocks the Dynamic Component.
     */
     public final void syncDynamicDestructionStatus(ComponentInstanceId cId) throws RegistrationException {
-      final String statusKey = LcaRegistryConstants.regEntries.get(Identifiers.CONTAINER_STATUS);
+      final String statusKey = LcaRegistryConstants.regEntries.get(Identifiers.COMPONENT_INSTANCE_STATUS);
       final LifecycleHandlerType statusType = LifecycleHandlerType.PRE_STOP;
       reg.addComponentProperty(appInstId, cId, statusKey, statusType.name());
     }

@@ -16,7 +16,7 @@ import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 final class DestroyTransitionAction implements TransitionAction {
 
   private final static int synchronPollTime = 10;
-  private final static int synchronTimeOut = 2000;
+  private final static int synchronTimeOut = 10000;
   private final ErrorAwareContainer<?> theContainer;
 
   private DestroyTransitionAction(ErrorAwareContainer<?> container) {
