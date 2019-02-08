@@ -158,7 +158,7 @@ class DockerDynHandler extends Thread {
       Map<String,String> dumpMap = compDump.getValue();
       String dynGroupVal = dumpMap.get(dynGroupKey);
       if(dynGroupVal.equals(dynHandlerVal)) {
-        socks.put(compDump.getKey(), buildSocket(dumpMap));
+        socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
       }
     }
 
@@ -182,11 +182,18 @@ class DockerDynHandler extends Thread {
     return commandStr;
   }
 
-  private static String buildSocket(Map<String, String> compDump) throws RegistrationException {
+  private static String buildSocket(Map<String, String> compDump, String cName) throws RegistrationException {
     final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_0, compDump);
     final String portVal = getPortVal(compDump);
-    final String socket = ipVal + ":" + portVal;
-    
+    String socket = "";
+    if(portVal.equals("-1")) {
+      LOGGER.warn(String
+          .format("Found port value -1 for a socket in Dynamic Handler %s. Skipping it"
+              + "...", cName));
+    } else {
+      socket = ipVal + ":" + portVal;
+    }
+
     return socket;
   }
 
@@ -195,6 +202,9 @@ class DockerDynHandler extends Thread {
     for(Map.Entry<String,String> entry: compDump.entrySet()) {
       final String key = entry.getKey();
       if(key.matches("^[^\\s]*PUBLIC[^\\s]+Port$")) {
+        retVal = entry.getValue();
+      }
+      if(key.matches("^[^\\s]*PUBLIC[^\\s]+I[Nn][Pp]$")) {
         retVal = entry.getValue();
       }
     }
