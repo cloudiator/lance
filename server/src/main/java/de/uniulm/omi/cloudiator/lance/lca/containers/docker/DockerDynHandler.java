@@ -8,6 +8,8 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +67,7 @@ class DockerDynHandler extends Thread {
 
         runningDumps = accessor.getRunningDumps();
         socketsAfter = filterHandlerGroupSocks(runningDumps);
-        final SocketsDiff socketsDiff = calcSocketsDiff();
+        final SocketsDiff socketsDiff = calcSocketsDiff(runningDumps);
 
         if(socketsDiff.hasDiff()) {
           executeUpdate();
@@ -105,10 +107,11 @@ class DockerDynHandler extends Thread {
     client.executeSingleDockerCommand(execString);
   }
 
-  private SocketsDiff calcSocketsDiff() {
+  private SocketsDiff calcSocketsDiff(Map<ComponentInstanceId,Map<String,String>> runningDumps) {
     Map<ComponentInstanceId, String> socketsKept = new HashMap<>();
     Map<ComponentInstanceId, String> socketsNew = new HashMap<>();
     Map<ComponentInstanceId, String> socketsDestroyed = new HashMap<>();
+    Map<ComponentInstanceId, String> socketsOrphaned = new HashMap<>();
 
     for (Map.Entry<ComponentInstanceId, String> socketBefore : socketsBefore.entrySet()) {
       boolean found = false;
@@ -126,7 +129,13 @@ class DockerDynHandler extends Thread {
       }
 
       if(found==false) {
-        socketsDestroyed.put(socketBefore.getKey(),socketBefore.getValue());
+        final ComponentInstanceId cId = socketBefore.getKey();
+        if (isNotStop(runningDumps.get(cId))) {
+          socketsOrphaned.put(socketBefore.getKey(), socketBefore.getValue());
+          LOGGER.warn("Got orphaned socket %s",socketBefore.getValue());
+        } else {
+          socketsDestroyed.put(socketBefore.getKey(), socketBefore.getValue());
+        }
       }
     }
 
@@ -142,8 +151,25 @@ class DockerDynHandler extends Thread {
     diff.socketsKept = socketsKept;
     diff.socketsNew = socketsNew;
     diff.socketsDestroyed = socketsDestroyed;
+    diff.socketsOrphaned = socketsOrphaned;
 
     return diff;
+  }
+
+  private static boolean isNotStop(Map<String, String> dumpMap) {
+    String key = LcaRegistryConstants.regEntries.get(Identifiers.COMPONENT_INSTANCE_STATUS);
+    LifecycleHandlerType type = LifecycleHandlerType.STOP;
+
+    if(dumpMap==null || dumpMap.get(key)==null) {
+      LOGGER.error(String
+          .format("Cannot process Map entires."));
+    }
+
+    if(dumpMap.get(key)==type.name()) {
+      return false;
+    }
+
+    return true;
   }
 
   private Map<ComponentInstanceId, String> filterHandlerGroupSocks(Map<ComponentInstanceId,Map<String, String>> readyDumps) throws RegistrationException {
@@ -157,7 +183,7 @@ class DockerDynHandler extends Thread {
 
       Map<String,String> dumpMap = compDump.getValue();
       String dynGroupVal = dumpMap.get(dynGroupKey);
-      if(dynGroupVal.equals(dynHandlerVal)) {
+      if(dynGroupVal.equals(dynHandlerVal) && isValidPort(dumpMap)) {
         socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
       }
     }
@@ -197,6 +223,17 @@ class DockerDynHandler extends Thread {
     return socket;
   }
 
+  //todo: check port values: i.e. convert to int
+  private static boolean isValidPort(Map<String, String> dumpMap) throws RegistrationException {
+    final String portVal = getPortVal(dumpMap);
+    if(portVal.equals("-1")) {
+      return false;
+    }
+
+    return true;
+  }
+
+
   private static String getPortVal(Map<String, String> compDump) throws RegistrationException {
     String retVal = "";
     for(Map.Entry<String,String> entry: compDump.entrySet()) {
@@ -230,11 +267,16 @@ class DockerDynHandler extends Thread {
     public Map<ComponentInstanceId,String> socketsKept;
     public Map<ComponentInstanceId,String> socketsNew;
     public Map<ComponentInstanceId,String> socketsDestroyed;
+    /* If socket disappeared, but has STATUS!=STOP -> orphaned, could be because PORT has
+     * become -1 and socket was hence filtered out in method filterHandlerGroupSocks
+     * -> isValidPort */
+    public Map<ComponentInstanceId,String> socketsOrphaned;
 
     private SocketsDiff() {
       socketsKept = new HashMap<>();
       socketsNew = new HashMap<>();
       socketsDestroyed = new HashMap<>();
+      socketsOrphaned = new HashMap<>();
     }
 
     /* Did smth change between two iterations? */
