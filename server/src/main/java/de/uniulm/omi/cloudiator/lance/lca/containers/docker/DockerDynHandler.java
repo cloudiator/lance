@@ -8,6 +8,8 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +67,7 @@ class DockerDynHandler extends Thread {
 
         runningDumps = accessor.getRunningDumps();
         socketsAfter = filterHandlerGroupSocks(runningDumps);
-        final SocketsDiff socketsDiff = calcSocketsDiff();
+        final SocketsDiff socketsDiff = calcSocketsDiff(runningDumps);
 
         if(socketsDiff.hasDiff()) {
           executeUpdate();
@@ -105,10 +107,11 @@ class DockerDynHandler extends Thread {
     client.executeSingleDockerCommand(execString);
   }
 
-  private SocketsDiff calcSocketsDiff() {
+  private SocketsDiff calcSocketsDiff(Map<ComponentInstanceId,Map<String,String>> runningDumps) {
     Map<ComponentInstanceId, String> socketsKept = new HashMap<>();
     Map<ComponentInstanceId, String> socketsNew = new HashMap<>();
     Map<ComponentInstanceId, String> socketsDestroyed = new HashMap<>();
+    Map<ComponentInstanceId, String> socketsOrphaned = new HashMap<>();
 
     for (Map.Entry<ComponentInstanceId, String> socketBefore : socketsBefore.entrySet()) {
       boolean found = false;
@@ -126,7 +129,15 @@ class DockerDynHandler extends Thread {
       }
 
       if(found==false) {
-        socketsDestroyed.put(socketBefore.getKey(),socketBefore.getValue());
+        final ComponentInstanceId cId = socketBefore.getKey();
+        /* component with compatible dynamic group and running not a valid
+         * socket anymore (e.g. port was dynamically set to -1) -> lorphaned */
+        if (runningDumps.get(cId)!=null) {
+          socketsOrphaned.put(socketBefore.getKey(), socketBefore.getValue());
+          LOGGER.warn("Got orphaned socket %s",socketBefore.getValue());
+        } else {
+          socketsDestroyed.put(socketBefore.getKey(), socketBefore.getValue());
+        }
       }
     }
 
@@ -142,6 +153,7 @@ class DockerDynHandler extends Thread {
     diff.socketsKept = socketsKept;
     diff.socketsNew = socketsNew;
     diff.socketsDestroyed = socketsDestroyed;
+    diff.socketsOrphaned = socketsOrphaned;
 
     return diff;
   }
@@ -158,7 +170,10 @@ class DockerDynHandler extends Thread {
       Map<String,String> dumpMap = compDump.getValue();
       String dynGroupVal = dumpMap.get(dynGroupKey);
       if(dynGroupVal.equals(dynHandlerVal)) {
-        socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
+        final String socket = buildSocket(dumpMap, containerName);
+        if (!socket.equals("")) {
+          socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
+        }
       }
     }
 
@@ -182,29 +197,40 @@ class DockerDynHandler extends Thread {
     return commandStr;
   }
 
+  //todo: check port values: i.e. convert to int
   private static String buildSocket(Map<String, String> compDump, String cName) throws RegistrationException {
-    final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_0, compDump);
+    final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_1, compDump);
     final String portVal = getPortVal(compDump);
-    String socket = "";
-    if(portVal.equals("-1")) {
+
+    if(!isValidPort(portVal)) {
       LOGGER.warn(String
-          .format("Found port value -1 for a socket in Dynamic Handler %s. Skipping it"
-              + "...", cName));
-    } else {
-      socket = ipVal + ":" + portVal;
+        .format("Found port value -1 for a socket in Dynamic Handler %s. Skipping it"
+          + "...", cName));
+        return "";
     }
 
+    final String socket = ipVal + ":" + portVal;
     return socket;
   }
+
+  //todo: check port values: i.e. convert to int
+  private static boolean isValidPort(String port) {
+    if(port.equals("-1")) {
+      return false;
+    }
+
+    return true;
+  }
+
 
   private static String getPortVal(Map<String, String> compDump) throws RegistrationException {
     String retVal = "";
     for(Map.Entry<String,String> entry: compDump.entrySet()) {
       final String key = entry.getKey();
-      if(key.matches("^[^\\s]*PUBLIC[^\\s]+Port$")) {
+      if(key.matches("^[^\\s]*CLOUD[^\\s]+Port$")) {
         retVal = entry.getValue();
       }
-      if(key.matches("^[^\\s]*PUBLIC[^\\s]+I[Nn][Pp]$")) {
+      if(key.matches("^[^\\s]*CLOUD[^\\s]+I[Nn][Pp]$")) {
         retVal = entry.getValue();
       }
     }
@@ -230,11 +256,16 @@ class DockerDynHandler extends Thread {
     public Map<ComponentInstanceId,String> socketsKept;
     public Map<ComponentInstanceId,String> socketsNew;
     public Map<ComponentInstanceId,String> socketsDestroyed;
+    /* If socket disappeared, but has STATUS!=STOP -> orphaned, could be because PORT has
+     * become -1 and socket was hence filtered out in method filterHandlerGroupSocks
+     * -> isValidPort */
+    public Map<ComponentInstanceId,String> socketsOrphaned;
 
     private SocketsDiff() {
       socketsKept = new HashMap<>();
       socketsNew = new HashMap<>();
       socketsDestroyed = new HashMap<>();
+      socketsOrphaned = new HashMap<>();
     }
 
     /* Did smth change between two iterations? */
