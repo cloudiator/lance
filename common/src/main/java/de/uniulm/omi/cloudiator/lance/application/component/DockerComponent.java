@@ -25,7 +25,6 @@ public class DockerComponent extends AbstractComponent {
         super(nameParam, idParam, inPortsParam, outPortsParam, propertiesParam, propertyValuesParam);
     }*/
   private final static String updateScriptKey = "updatescript";
-  private static final long serialVersionUID = -1145375438483791542L;
 
   private final EntireDockerCommands entireDockerCommands;
   private final String imageName;
