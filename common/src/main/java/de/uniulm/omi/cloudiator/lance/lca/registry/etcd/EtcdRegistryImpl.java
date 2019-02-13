@@ -141,13 +141,14 @@ final class EtcdRegistryImpl implements LcaRegistry {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         Map<ComponentInstanceId, Map<String, String>> retVal = null;
         String dirName = generateComponentDirectory(instId, compId);
+        LOGGER.debug(String.format("Building dir: %s", dirName));
         EtcdKeysResponse ccc = null;
         try {
             ccc = etcd.getDir(dirName).recursive().sorted().send().get();
             retVal = dumpFirstLevelKeys(ccc.node);
             for(Entry<ComponentInstanceId, Map<String, String>> entry : retVal.entrySet()) {
                 ComponentInstanceId id = entry.getKey();
-                String secondLevelDir = generateComponentInstanceDirectory(instId, compId, id); 
+                String secondLevelDir = generateComponentInstanceDirectory(instId, compId, id);
                 ccc = etcd.getDir(secondLevelDir).recursive().sorted().send().get();
                 dumpSecondLevelKeys(ccc.node, entry.getValue());
             }
@@ -376,6 +377,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
             return Collections.emptyMap();
         if(NAME.equals(key)) 
             return Collections.emptyMap();
+        LOGGER.debug(String.format("Build c-id from string: %s", key));
         ComponentInstanceId inst = ComponentInstanceId.fromString(key);
         Map<String, String> map = retVal.get(inst);
         if(map == null) {
