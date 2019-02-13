@@ -40,9 +40,12 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class EtcdRegistryImpl implements LcaRegistry {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EtcdRegistryImpl.class);
     private static final long serialVersionUID = -7017922645290003357L;
     private static String DESCRIPTION = "Description";
     private static String NAME = "Name";
@@ -138,13 +141,14 @@ final class EtcdRegistryImpl implements LcaRegistry {
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         Map<ComponentInstanceId, Map<String, String>> retVal = null;
         String dirName = generateComponentDirectory(instId, compId);
+        LOGGER.debug(String.format("Building dir: %s", dirName));
         EtcdKeysResponse ccc = null;
         try {
             ccc = etcd.getDir(dirName).recursive().sorted().send().get();
             retVal = dumpFirstLevelKeys(ccc.node);
             for(Entry<ComponentInstanceId, Map<String, String>> entry : retVal.entrySet()) {
                 ComponentInstanceId id = entry.getKey();
-                String secondLevelDir = generateComponentInstanceDirectory(instId, compId, id); 
+                String secondLevelDir = generateComponentInstanceDirectory(instId, compId, id);
                 ccc = etcd.getDir(secondLevelDir).recursive().sorted().send().get();
                 dumpSecondLevelKeys(ccc.node, entry.getValue());
             }
@@ -164,6 +168,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
       Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
       List<ComponentId> cIds = readFirstLevelDirs(instId);
       for(ComponentId cId: cIds) {
+        LOGGER.debug(String.format("dumb Component: %s", cId));
         Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(instId, cId);
         retVal.putAll(cInstDumps);
       }
@@ -372,6 +377,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
             return Collections.emptyMap();
         if(NAME.equals(key)) 
             return Collections.emptyMap();
+        LOGGER.debug(String.format("Build c-id from string: %s", key));
         ComponentInstanceId inst = ComponentInstanceId.fromString(key);
         Map<String, String> map = retVal.get(inst);
         if(map == null) {
