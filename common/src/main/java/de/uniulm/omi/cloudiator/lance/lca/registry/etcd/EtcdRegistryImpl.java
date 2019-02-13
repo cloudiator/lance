@@ -40,9 +40,12 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class EtcdRegistryImpl implements LcaRegistry {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EtcdRegistryImpl.class);
     private static final long serialVersionUID = -7017922645290003357L;
     private static String DESCRIPTION = "Description";
     private static String NAME = "Name";
@@ -164,6 +167,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
       Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
       List<ComponentId> cIds = readFirstLevelDirs(instId);
       for(ComponentId cId: cIds) {
+        LOGGER.debug(String.format("dumb Component: %s", cId));
         Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(instId, cId);
         retVal.putAll(cInstDumps);
       }
