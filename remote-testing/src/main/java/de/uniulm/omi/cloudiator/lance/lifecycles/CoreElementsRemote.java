@@ -87,6 +87,6 @@ public class CoreElementsRemote {
     public Map<ComponentInstanceId, Map<String, String>> checkBasicRegistryValues(ComponentId cId) throws RegistrationException {
         assert reg.applicationInstanceExists(arch.getAppInstanceId());
         assert reg.applicationComponentExists(arch.getAppInstanceId(), cId);
-        return reg.dumpComponent(arch.getAppInstanceId(), cId, false);
+        return reg.dumpComponent(arch.getAppInstanceId(), cId);
     }
 }

@@ -138,12 +138,9 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
 
     @Override
-    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId, boolean usesComponentString) throws RegistrationException {
+    public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         Map<ComponentInstanceId, Map<String, String>> retVal = null;
         String dirName = generateComponentDirectory(instId, compId);
-        if (usesComponentString) {
-          dirName = generateComponentDirectory(instId, compId, getComponentString(dirName));
-        }
         LOGGER.debug(String.format("Building dir: %s", dirName));
         EtcdKeysResponse ccc = null;
         try {
@@ -165,37 +162,14 @@ final class EtcdRegistryImpl implements LcaRegistry {
         return retVal;
     }
 
-    private String getComponentString(String dirName) {
-      EtcdKeysResponse ccc = null;
-      try {
-        ccc = etcd.getDir(dirName).recursive().sorted().send().get();
-        for (EtcdNode node : ccc.node.nodes) {
-          if (!node.dir) continue;
-          String key = node.key;
-          String[] split = key.split("/");
-          // todo: check split size
-          if (split.length != 0) {
-            return split[0];
-          }
-        }
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (EtcdException e) {
-        e.printStackTrace();
-      } catch (TimeoutException e) {
-        e.printStackTrace();
-      }
-      return "";
-    }
-
     @Override
-    public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(ApplicationInstanceId instId, boolean usesComponentString)
+    public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(ApplicationInstanceId instId)
         throws RegistrationException {
       Map<ComponentInstanceId, Map<String, String>> retVal = new HashMap<>();
       List<ComponentId> cIds = readFirstLevelDirs(instId);
       for(ComponentId cId: cIds) {
         LOGGER.debug(String.format("dumb Component: %s", cId));
-        Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(instId, cId, usesComponentString);
+        Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(instId, cId);
         retVal.putAll(cInstDumps);
       }
 
@@ -224,7 +198,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
       ComponentId retVal = null;
       List<ComponentId> cIds = readFirstLevelDirs(appInstId);
       for(ComponentId cId: cIds) {
-        Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(appInstId, cId, true);
+        Map<ComponentInstanceId, Map<String, String>> cInstDumps = dumpComponent(appInstId, cId);
         if(cInstDumps.get(compId) != null) {
           retVal = cId;
         }
@@ -308,21 +282,13 @@ final class EtcdRegistryImpl implements LcaRegistry {
     }
 
     private final static String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid) {
-      return generateApplicationInstanceDirectory(instId) + "/" + cid.toString();
-    }
-
-    private final static String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid, String componentString) {
-        return generateApplicationInstanceDirectory(instId) + "/" + componentString + "/" + cid.toString();
+        return generateApplicationInstanceDirectory(instId) + "/" + cid.toString();
     }
 
     private final static String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) {
-      return generateComponentDirectory(instId, cid) + "/" + cinstId.toString();
+        return generateComponentDirectory(instId, cid) + "/" + cinstId.toString();
     }
 
-    private final static String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String componentString) {
-        return generateComponentDirectory(instId, cid, componentString) + "/" + cinstId.toString();
-    }
-    
     private static void fillMapWithValue(String key, String value, Map<String, String> map) {
         if(DESCRIPTION.equals(key))
             return;

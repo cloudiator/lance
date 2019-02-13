@@ -209,13 +209,13 @@ public final class GlobalRegistryAccessor {
     */
     
     public Map<ComponentInstanceId, Map<String, String>> retrieveComponentDump(PortReference sinkReference) throws RegistrationException {
-        return reg.dumpComponent(appInstId, sinkReference.getComponentId(), false);
+        return reg.dumpComponent(appInstId, sinkReference.getComponentId());
     }
 
     /* RUNNING == (READY && (START || POST_START)) */
     public Map<ComponentInstanceId, Map<String,String>> getRunningDumps() throws RegistrationException {
       Map<ComponentInstanceId, Map<String,String>> retVal = new HashMap<>();
-      Map<ComponentInstanceId, Map<String,String>> compDumps = reg.dumpAllAppComponents(appInstId, true);
+      Map<ComponentInstanceId, Map<String,String>> compDumps = reg.dumpAllAppComponents(appInstId);
 
       final String contStatusKey = LcaRegistryConstants.regEntries.get(CONTAINER_STATUS);
       final String instStatusKey = LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS);

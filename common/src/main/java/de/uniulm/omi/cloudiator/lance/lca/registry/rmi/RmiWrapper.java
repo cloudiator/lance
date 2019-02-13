@@ -88,7 +88,7 @@ public final class RmiWrapper implements LcaRegistry {
 
   @Override
     public Map<ComponentInstanceId, Map<String, String>> dumpComponent(
-            ApplicationInstanceId instId, ComponentId compId, boolean usesComponentString) throws RegistrationException {
+            ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
         try { 
             return delegate.dumpComponent(instId, compId);  
         } catch(RemoteException re){
@@ -98,7 +98,7 @@ public final class RmiWrapper implements LcaRegistry {
 
   @Override
   public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(
-      ApplicationInstanceId instId, boolean usesComponentString) throws RegistrationException {
+      ApplicationInstanceId instId) throws RegistrationException {
     throw new RegistrationException("operation not implemented.");
   }
 
