@@ -325,7 +325,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
         String[] split = node.key.split("/");
         int size = split.length;
         if(size == 4) { // component instance element //
-          final String key = split[3];
+          final String key = split[2] + "/" + split[3];
           idSet.add(ComponentId.fromString(key));
         } else {
           throw new IllegalStateException("invalid directory structure for key");
