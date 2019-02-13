@@ -66,6 +66,7 @@ class DockerDynHandler extends Thread {
         }
 
         runningDumps = accessor.getRunningDumps();
+        debugRunningDumps(runningDumps);
         socketsAfter = filterHandlerGroupSocks(runningDumps);
         final SocketsDiff socketsDiff = calcSocketsDiff(runningDumps);
 
@@ -169,8 +170,10 @@ class DockerDynHandler extends Thread {
 
       Map<String,String> dumpMap = compDump.getValue();
       String dynGroupVal = dumpMap.get(dynGroupKey);
+      debugDynComparison(dynGroupVal, dynHandlerVal);
       if(dynGroupVal.equals(dynHandlerVal)) {
         final String socket = buildSocket(dumpMap, containerName);
+        debugPortParse(socket);
         if (!socket.equals("")) {
           socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
         }
@@ -249,6 +252,41 @@ class DockerDynHandler extends Thread {
 
   public boolean isRunning() {
     return running;
+  }
+
+  //debugging
+  private static void debugRunningDumps(Map<ComponentInstanceId,Map<String,String>> dumps) {
+    if(dumps == null || dumps.size() == 0) {
+      LOGGER.debug(String.format("Running dumps is empty!"));
+      return;
+    }
+
+    for(Map.Entry<ComponentInstanceId,Map<String,String>> entry: dumps.entrySet()) {
+      if(entry.getValue() == null) {
+        LOGGER.debug(String.format("Got empty map for Component instance: %s"), entry.getKey());
+        continue;
+      }
+
+      Map<String,String> dumpMap = entry.getValue();
+
+      for(Map.Entry<String,String> strMap: dumpMap.entrySet()) {
+        LOGGER.debug(String.format("Found key: %s, value: %s for running instance %s."), strMap.getKey(),
+            strMap.getValue(), entry.getKey());
+      }
+    }
+  }
+
+  private static void debugDynComparison(String str1, String str2) {
+    LOGGER.debug(String.format("Comparing Strings: %s, %s"), str1, str2);
+    if(str1.equals(str2)) {
+      LOGGER.debug(String.format("Strings are euqal!"));
+    } else {
+      LOGGER.debug(String.format("Strings are not euqal!"));
+    }
+  }
+
+  private void debugPortParse(String socket) {
+    LOGGER.debug(String.format("Found valid socket: %s!"), socket);
   }
 
   /* Provides info about the diff in the available sockets */
