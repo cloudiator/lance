@@ -46,8 +46,8 @@ public interface LcaRegistry extends Serializable {
     void addComponentInstance(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) throws RegistrationException;
     void addComponentProperty(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException;
     void addComponentProperty(ApplicationInstanceId instId, ComponentInstanceId cinstId, String property, Object value) throws RegistrationException;
-    Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId, boolean usesComponentString) throws RegistrationException;
-    Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(ApplicationInstanceId instId, boolean usesComponentString) throws RegistrationException;
+    Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException;
+    Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(ApplicationInstanceId instId) throws RegistrationException;
     String getComponentProperty(ApplicationInstanceId appInstId,
             ComponentId compId, ComponentInstanceId myId, String name) throws RegistrationException;
     boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException;
