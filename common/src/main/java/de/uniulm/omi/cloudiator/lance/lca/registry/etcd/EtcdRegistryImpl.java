@@ -317,33 +317,44 @@ final class EtcdRegistryImpl implements LcaRegistry {
         return retVal;
     }
 
-    private static List<ComponentId> readFirstLevelDirs(EtcdNode root) {
-      Set<ComponentId> idSet = new HashSet<>();
+    private static List<String> getTailDirString(EtcdNode root) {
+      Set<String> strSet = new HashSet<>();
       for(EtcdNode node : root.nodes) {
         if(! node.dir)
           continue;
         String[] split = node.key.split("/");
         int size = split.length;
-        if(size == 4) { // component instance element //
-          final String key = split[2] + "/" + split[3];
-          idSet.add(ComponentId.fromString(key));
+        if(size > 0) { // component instance element //
+          final String key = split[size-1];
+          strSet.add(key);
         } else {
           throw new IllegalStateException("invalid directory structure for key");
         }
       }
 
-      List<ComponentId> retVal = new ArrayList<>();
-      retVal.addAll(idSet);
+      List<String> retVal = new ArrayList<>();
+      retVal.addAll(strSet);
       return retVal;
     }
 
   private List<ComponentId> readFirstLevelDirs(ApplicationInstanceId appInstId) throws RegistrationException {
     List<ComponentId> retVal = new ArrayList<>();
-    String dirName = generateApplicationInstanceDirectory(appInstId);
+    String dirNameApp = generateApplicationInstanceDirectory(appInstId);
     EtcdKeysResponse ccc = null;
     try {
-      ccc = etcd.getDir(dirName).recursive().sorted().send().get();
-      retVal = readFirstLevelDirs(ccc.node);
+      ccc = etcd.getDir(dirNameApp).recursive().sorted().send().get();
+      List<String> retValHead = getTailDirString(ccc.node);
+
+      if(retValHead.size() != 1) {
+        throw new RegistrationException("Top dir of ComponentIds must be unique!");
+      }
+
+      String dirNameCompIdTop = generateComponentDirectory(appInstId, ComponentId.fromString(retValHead.get(0)));
+
+      ccc = etcd.getDir(dirNameCompIdTop).recursive().sorted().send().get();
+      List<String> retValTail = getTailDirString(ccc.node);
+      retVal = buildFullComponentIds(retValHead, retValTail);
+
     } catch(IOException ioe) {
       throw new RegistrationException(ioe);
     } catch (java.util.concurrent.TimeoutException e) {
@@ -354,7 +365,22 @@ final class EtcdRegistryImpl implements LcaRegistry {
     return retVal;
   }
 
-    private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
+    private static List<ComponentId> buildFullComponentIds(List<String> retValHead, List<String> retValTail)
+      throws RegistrationException {
+      List<ComponentId> cIds = new ArrayList<>();
+      if(retValHead.size() != 1) {
+        throw new RegistrationException("Top dir of ComponentIds must be unique!");
+      }
+
+      for(String str: retValTail) {
+        final String fullCidStr = retValHead.get(0) + "/" + str;
+        cIds.add(ComponentId.fromString(fullCidStr));
+      }
+
+      return cIds;
+    }
+
+  private static void dumpSecondLevelKeys(EtcdNode root, Map<String, String> map) {
         final String mainDir = root.key;
         final int length = mainDir.length() + 1;
         for(EtcdNode node : root.nodes) {
