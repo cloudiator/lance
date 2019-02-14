@@ -263,21 +263,21 @@ class DockerDynHandler extends Thread {
 
     for(Map.Entry<ComponentInstanceId,Map<String,String>> entry: dumps.entrySet()) {
       if(entry.getValue() == null) {
-        LOGGER.debug(String.format("Got empty map for Component instance: %s"), entry.getKey());
+        LOGGER.debug(String.format("Got empty map for Component instance: %s", entry.getKey()));
         continue;
       }
 
       Map<String,String> dumpMap = entry.getValue();
 
       for(Map.Entry<String,String> strMap: dumpMap.entrySet()) {
-        LOGGER.debug("Found key: " + strMap.getKey() + " , value: " + strMap.getValue() +
-            " for running instance " + entry.getKey() + ".");
+        LOGGER.debug(String.format("Found key: %s, value: %s, for running instance %s.", strMap.getKey(),
+            strMap.getValue(), entry.getKey()));
       }
     }
   }
 
   private static void debugDynComparison(String str1, String str2) {
-    LOGGER.debug(String.format("Comparing Strings: %s, %s"), str1, str2);
+    LOGGER.debug(String.format("Comparing Strings: %s, %s", str1, str2));
     if(str1.equals(str2)) {
       LOGGER.debug(String.format("Strings are euqal!"));
     } else {
@@ -286,7 +286,7 @@ class DockerDynHandler extends Thread {
   }
 
   private void debugPortParse(String socket) {
-    LOGGER.debug(String.format("Found valid socket: %s!"), socket);
+    LOGGER.debug(String.format("Found valid socket: %s!", socket));
   }
 
   /* Provides info about the diff in the available sockets */
