@@ -201,7 +201,7 @@ class DockerDynHandler extends Thread {
 
   //todo: check port values: i.e. convert to int
   private static String buildSocket(Map<String, String> compDump, String cName) throws RegistrationException {
-    final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_1, compDump);
+    final String ipVal = PortRegistryTranslator.getHierarchicalHostname(PortRegistryTranslator.PORT_HIERARCHY_0, compDump);
     final String portVal = getPortVal(compDump);
 
     if(!isValidPort(portVal)) {
