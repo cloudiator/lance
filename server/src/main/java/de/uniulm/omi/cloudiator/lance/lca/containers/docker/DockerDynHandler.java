@@ -8,7 +8,6 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import java.util.ArrayList;
@@ -85,6 +84,8 @@ class DockerDynHandler extends Thread {
       } catch (DockerException e) {
         LOGGER.error(String
             .format("Cannot execute dynamic update inside Dyn Handler container: %s.", containerName));
+        LOGGER.error(String
+            .format("Error message: %s.", e.getMessage()));
       }
     } while (running);
   }
@@ -105,9 +106,7 @@ class DockerDynHandler extends Thread {
     final String execString = buildExecInsideContainerString(socketsAfter, updateScriptFilePath);
     LOGGER.info(String
         .format("Starting dynamic update via docker cli command: %s.", execString));
-    String result = client.executeSingleDockerCommand(execString);
-    LOGGER.info(String
-        .format("Got result for dynamic update from docker daemon:\n%s.", result));
+    client.executeSingleDockerCommand(execString);
   }
 
   private SocketsDiff calcSocketsDiff(Map<ComponentInstanceId,Map<String,String>> runningDumps) {
