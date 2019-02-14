@@ -270,8 +270,8 @@ class DockerDynHandler extends Thread {
       Map<String,String> dumpMap = entry.getValue();
 
       for(Map.Entry<String,String> strMap: dumpMap.entrySet()) {
-        LOGGER.debug(String.format("Found key: %s, value: %s for running instance %s."), strMap.getKey(),
-            strMap.getValue(), entry.getKey());
+        LOGGER.debug("Found key: " + strMap.getKey() + " , value: " + strMap.getValue() +
+            " for running instance " + entry.getKey() + ".");
       }
     }
   }
