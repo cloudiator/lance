@@ -193,7 +193,7 @@ class DockerDynHandler extends Thread {
     }
 
     final String socketsStr = sb.toString();
-    final String commandStr = "exec -ti " + containerName + " " + updateScriptFilePath + " "
+    final String commandStr = "exec -i " + containerName + " " + updateScriptFilePath + " "
         + socketsStr;
 
     return commandStr;
