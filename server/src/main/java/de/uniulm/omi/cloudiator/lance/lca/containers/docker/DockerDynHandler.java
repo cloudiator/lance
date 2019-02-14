@@ -66,7 +66,6 @@ class DockerDynHandler extends Thread {
         }
 
         runningDumps = accessor.getRunningDumps();
-        debugRunningDumps(runningDumps);
         socketsAfter = filterHandlerGroupSocks(runningDumps);
         final SocketsDiff socketsDiff = calcSocketsDiff(runningDumps);
 
@@ -170,10 +169,8 @@ class DockerDynHandler extends Thread {
 
       Map<String,String> dumpMap = compDump.getValue();
       String dynGroupVal = dumpMap.get(dynGroupKey);
-      debugDynComparison(dynGroupVal, dynHandlerVal);
       if(dynGroupVal.equals(dynHandlerVal)) {
         final String socket = buildSocket(dumpMap, containerName);
-        debugPortParse(socket);
         if (!socket.equals("")) {
           socks.put(compDump.getKey(), buildSocket(dumpMap, containerName));
         }
