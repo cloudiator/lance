@@ -315,8 +315,8 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   public void preprocessPortUpdate(PortDiff<DownstreamAddress> diff)
       throws ContainerException {
 
-    PlainShell pShell = setDynamicEnvironment(diff);
-    setStaticEnvironment(pShell);
+    setStaticEnvironment();
+    setDynamicEnvironment(diff);
   }
 
   @Override
