@@ -44,14 +44,6 @@ class Inprogress implements DockerShell {
         stdIn = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
     }
     
-    /*private String readInLine() {
-        try {
-            return stdOut.readLine();
-        } catch(IOException ioe) {
-            logger.warn("IOExeception when reading line from external process", ioe);
-            return null;
-        }
-    }*/
 
     private static final char BELL_CHAR = (char) 7;
 
