@@ -179,7 +179,6 @@ final class ErrorAwareStateMachineState<T extends Enum<?> & State>
             handleExecutionException(f, ee);
         }
         return getCurrentState();
-        //}
     }
 
     private synchronized void handleExecutionException(Future<?> thisFuture,
