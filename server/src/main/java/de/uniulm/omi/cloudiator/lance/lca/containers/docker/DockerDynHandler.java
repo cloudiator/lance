@@ -27,6 +27,7 @@ vaLues of associated dyngroup components inside the registry */
 class DockerDynHandler extends Thread {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
   private static final int idleTime = 100;
+  private static final int debugBound = 6;
 
   private final String dynHandlerVal;
   private final String updateScriptFilePath;
@@ -67,6 +68,7 @@ class DockerDynHandler extends Thread {
         }
 
         runningDumps = accessor.getRunningDumps();
+        debugRunningDumps(runningDumps, debugBound);
         socketsAfter = filterHandlerGroupSocks(runningDumps);
         final SocketsDiff socketsDiff = calcSocketsDiff(runningDumps);
 
@@ -138,7 +140,7 @@ class DockerDynHandler extends Thread {
       if(found==false) {
         final ComponentInstanceId cId = socketBefore.getKey();
         /* component with compatible dynamic group and running not a valid
-         * socket anymore (e.g. port was dynamically set to -1) -> lorphaned */
+         * socket anymore (e.g. port was dynamically set to -1) -> orphaned */
         if (runningDumps.get(cId)!=null) {
           socketsOrphaned.put(socketBefore.getKey(), socketBefore.getValue());
           LOGGER.warn("Got orphaned socket %s",socketBefore.getValue());
@@ -256,7 +258,11 @@ class DockerDynHandler extends Thread {
   }
 
   //debugging
-  private static void debugRunningDumps(Map<ComponentInstanceId,Map<String,String>> dumps) {
+  private static void debugRunningDumps(Map<ComponentInstanceId,Map<String,String>> dumps, int lowerBound) {
+    if(dumps.size() < lowerBound) {
+      return;
+    }
+
     if(dumps == null || dumps.size() == 0) {
       LOGGER.debug(String.format("Running dumps is empty!"));
       return;
