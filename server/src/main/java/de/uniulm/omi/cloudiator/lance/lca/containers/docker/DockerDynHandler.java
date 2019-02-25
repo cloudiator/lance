@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 vaLues of associated dyngroup components inside the registry */
 class DockerDynHandler extends Thread {
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
+  private static final int idleTime = 100;
 
   private final String dynHandlerVal;
   private final String updateScriptFilePath;
@@ -78,6 +79,7 @@ class DockerDynHandler extends Thread {
         }
 
         socketsBefore = socketsAfter;
+        Thread.sleep(idleTime);
       } catch (RegistrationException e) {
         LOGGER.error(String
             .format("Cannot access registry properly in Dyn Handler component."));
@@ -86,6 +88,9 @@ class DockerDynHandler extends Thread {
             .format("Cannot execute dynamic update inside Dyn Handler container: %s.", containerName));
         LOGGER.error(String
             .format("Error message: %s.", e.getMessage()));
+      } catch (InterruptedException e) {
+        LOGGER.error(String
+            .format("Got interrupted while waiting to start the next poll round."));
       }
     } while (running);
   }
