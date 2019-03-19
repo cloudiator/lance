@@ -328,11 +328,13 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   @Override
   public void postprocessDetector(DetectorType type) {
     LOGGER.error("postprocessDetector is not implemented for plain container");
+    plainShellFactory.closeShell();
   }
 
   @Override
   public void preprocessDetector(DetectorType type) throws ContainerException {
     LOGGER.error("preprocessDetector is not implemented for plain container");
+    setStaticEnvironment();
     setDynamicEnvironment(null);
   }
 
