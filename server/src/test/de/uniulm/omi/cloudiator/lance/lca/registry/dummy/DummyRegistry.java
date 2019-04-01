@@ -54,7 +54,13 @@ public class DummyRegistry implements LcaRegistry {
 		}	
 	}
 
-	@Override
+  @Override
+  public void addComponentProperty(ApplicationInstanceId instId, ComponentInstanceId cinstId,
+      String property, Object value) throws RegistrationException {
+    throw new RegistrationException("Method not implemented!");
+  }
+
+  @Override
 	public Map<ComponentInstanceId, Map<String, String>> dumpComponent(ApplicationInstanceId instId, ComponentId compId) throws RegistrationException {
 		try {
 			return reg.dumpComponent(instId, compId);
@@ -63,7 +69,13 @@ public class DummyRegistry implements LcaRegistry {
 		}	
 	}
 
-	@Override
+  @Override
+  public Map<ComponentInstanceId, Map<String, String>> dumpAllAppComponents(
+      ApplicationInstanceId instId) throws RegistrationException {
+    return null;
+  }
+
+  @Override
 	public String getComponentProperty(ApplicationInstanceId appInstId, ComponentId compId, ComponentInstanceId myId,
 			String name) throws RegistrationException {
 		try {
@@ -95,7 +107,6 @@ public class DummyRegistry implements LcaRegistry {
   @Override
   public void deleteComponentInstance(ApplicationInstanceId instId, ComponentId cid,
       ComponentInstanceId cinstId) throws RegistrationException {
-
+    throw new RegistrationException("Method not implemented!");
   }
-
 }

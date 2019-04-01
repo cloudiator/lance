@@ -74,7 +74,6 @@ import java.lang.Exception;
 public class ClientDockerPullTest {
 
   private enum version { DOCKER, LIFECYCLE };
-
   private static ApplicationId applicationId;
   private static ApplicationInstanceId appInstanceId;
 
@@ -97,7 +96,7 @@ public class ClientDockerPullTest {
     Random rand = new Random();
     zookeeperComponent = "zookeeper";
     zookeeperComponent_lifecycle = "zookeeper_lifecycle";
-    rubyComponent_remote = "ruby_remote";
+    rubyComponent_remote = "fail-test";
     zookeeperInternalInportName = "ZOOK_INT_INP";
     zookeeperInternalInportName_lifecycle = "ZOOK_INT_INP_LIFECYCLE";
     rubyInternalInportName_remote = "RUBY_INT_INP_REMOTE";
@@ -475,7 +474,7 @@ public class ClientDockerPullTest {
       dummyOutInfs.add(outInf);*/
       //ssl Port
       RemoteDockerComponent rDockerComponent = buildRemoteDockerComponent( client, rubyComponent_remote, rubyComponentId_remote, dummyInInfs, dummyOutInfs,
-          "fh/docker-reg", "latest","xxxx", 443, true);
+          "fh/docker-reg", "latest","xxxxx", 443, true);
       client.deploy(dummyContext, rDockerComponent);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy remote docker zookeeper component");
@@ -525,6 +524,7 @@ public class ClientDockerPullTest {
     }
   }
 
+  @Ignore
   @Test
   public void testIZookDeploy_latest() {
     try {

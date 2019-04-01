@@ -5,6 +5,7 @@ import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifier
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerConfigurationException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
@@ -32,7 +33,8 @@ final class InitTransitionAction implements TransitionAction {
             theContainer.registerStatus(ContainerStatus.READY);
             initializeDynamicProperties();
         } catch (ContainerException | LifecycleException | RegistrationException ce) {
-        	ErrorAwareContainer.getLogger().error("could not initialise container;", ce); 
+        	ErrorAwareContainer.getLogger().error("could not initialise container;", ce);
+          throw new TransitionException(ce);
         }
     }
 

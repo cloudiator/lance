@@ -27,6 +27,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     try {
       String target = imageHandler.doPullImages(myId);
       executeCreation(target);
+      checkContainerStatus("created");
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
     }
@@ -49,6 +50,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
         //Environment still set (in logic.doInit call in BootstrapTransitionAction)
         //could return a shell
         doStartContainer();
+        checkContainerStatus("running");
       } catch (ContainerException ce) {
         throw ce;
       } catch (Exception ex) {
@@ -62,6 +64,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     try {
       //Environment still set (in logic.preDestroy call in DestroyTransitionAction)
       client.stopContainer(myId);
+      checkContainerStatus("exited");
     } catch (DockerException de) {
       throw new ContainerException(de);
     }
@@ -74,6 +77,17 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     } catch (DockerException de) {
       LOGGER.warn("could not update finalise image handling.", de);
     }
+  }
+
+  @Override
+  protected void checkContainerStatus(String status) throws DockerException {
+    LOGGER.warn("Method getContainerId not implemented for Docker Lifecycle Component");
+  }
+
+  @Override
+  protected String getContainerId() throws DockerException {
+    LOGGER.warn("Method getContainerId not implemented for Docker Lifecycle Component");
+    return "";
   }
 
   @Override

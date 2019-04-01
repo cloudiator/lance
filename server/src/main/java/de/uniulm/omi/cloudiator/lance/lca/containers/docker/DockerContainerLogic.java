@@ -75,6 +75,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       LOGGER.debug(String
           .format("Creating container %s with docker cli command: %s.", myId, createCommand));
       client.executeSingleDockerCommand(createCommand);
+      checkContainerStatus("created");
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
     } catch(DockerCommandException ce) {
@@ -132,6 +133,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
         //Environment still set (in logic.doInit call in BootstrapTransitionAction)
         //could return a shell
         executeGenericStart();
+        checkContainerStatus("running");
 
       } catch (ContainerException ce) {
         throw ce;
@@ -145,6 +147,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     /* currently docker ignores force flag */
     try {
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.STOP));
+      checkContainerStatus("exited");
       if(remove)
         client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
     } catch (DockerException de) {
@@ -207,6 +210,44 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   @Override
+  protected void checkContainerStatus(String status) throws DockerException {
+      final String containerId = getContainerId();
+      final String cmdString = String.format("ps --all --quiet --filter=status=%s"
+          + " --filter=id=%s", status, containerId);
+      final String stdOutStr = client.executeSingleDockerCommand(cmdString);
+      if(containerId.equals(stdOutStr)) {
+        return;
+      }
+
+      final String cmdStringDebug =
+          String.format("ps --all --filter=id=%s --format \"{{.Status}}\"", containerId);
+      final String stdOutStrDebug = client.executeSingleDockerCommand(cmdStringDebug);
+      throw new DockerException(String.format("Container with id %s has wrong state \'%s\'."
+          + "Should be in %s.", myId, stdOutStrDebug, status));
+  }
+
+  @Override
+  protected String getContainerId() throws DockerException {
+    String containerName;
+    String id;
+    try {
+      containerName = myComponent.getContainerName();
+      final String cmdStr = "ps --all --filter=name=" + containerName + " --format \"{{.ID}}:{{.Names}}\"";
+      String stdOutString = client.executeSingleDockerCommand(cmdStr);
+      stdOutString = stdOutString.replaceAll("[\"']","");
+      final String[] splitArr = stdOutString.split(":");
+      if (splitArr.length != 2) {
+        throw new DockerException("Cannot query container id.");
+      } else {
+        id = splitArr[0];
+        return id;
+      }
+    } catch (DockerCommandException e) {
+      throw new DockerException("Cannot resolve the correct container name", e);
+    }
+  }
+
+  @Override
   void collectDynamicEnvVars() {
     envVarsDynamic.putAll(myComponent.getEnvVars());
     envVarsDynamic.putAll(networkHandler.getEnvVars());
@@ -249,8 +290,11 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private void doRedeploy() throws ContainerException {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
+      checkContainerStatus("running");
       resolveDockerEnvVars(runCmd);
       copyEnvIntoCommand(runCmd);
+    } catch (DockerException de) {
+      throw new ContainerException(de);
     } catch (DockerCommandException e) {
       throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
     }
@@ -344,16 +388,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       return false;
 
     return true;
-  }
-
-  private String buildEnvString(Map<String,String> vars) {
-    StringBuilder builder = new StringBuilder();
-
-    for(Entry<String, String> var: vars.entrySet()) {
-      builder.append("-e " + var.getKey()+"="+var.getValue() + " ");
-    }
-
-    return builder.toString();
   }
 
   public static class Builder extends AbstractDockerContainerLogic.Builder<DockerComponent,Builder> {

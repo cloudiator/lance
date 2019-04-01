@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +132,13 @@ public final class StandardContainer<T extends ContainerLogic> implements Contai
        network.startPortUpdaters(controller);
     }
 
-    @Override
+  @Override
+  public void registerErrorState(ContainerStatus bootstrappingFailed)
+      throws ContainerConfigurationException {
+    throw  new ContainerConfigurationException("Method not implemented");
+  }
+
+  @Override
     public void init(LifecycleStore store) {
         stateMachine.transit(ContainerStatus.BOOTSTRAPPED, new Object[]{store});
     }

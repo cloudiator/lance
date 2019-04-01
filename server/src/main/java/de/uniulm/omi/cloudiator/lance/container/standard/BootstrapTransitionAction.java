@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerConfigurationException;
 import java.util.Arrays;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -25,8 +26,8 @@ final class BootstrapTransitionAction implements TransitionAction {
 			theContainer.postBootstrapAction();
 			theContainer.registerStatus(ContainerStatus.BOOTSTRAPPED);
 		} catch (ContainerException | RegistrationException ce) {
-			ErrorAwareContainer.getLogger().error("could not initialise container", ce); 
-			throw new TransitionException(ce);
+			ErrorAwareContainer.getLogger().error("could not initialise container", ce);
+      throw new TransitionException(ce);
 		}
 	}
 	

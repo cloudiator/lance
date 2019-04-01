@@ -76,14 +76,18 @@ public final class ProcessWrapper {
 
       for(String s : args) {
         if (!matchingStart) {
-          Matcher matcher = patternStart.matcher(s);
-          matchingStart = matcher.matches();
+          Matcher matcherStart = patternStart.matcher(s);
+          matchingStart = matcherStart.matches();
+          //If String without tabs/spaces is quoted
+          Matcher matcherEnd = patternEnd.matcher(s);
+          boolean matchingEnd = matcherEnd.matches();
 
-          if(matchingStart) {
+          if(matchingStart && !matchingEnd) {
             builder = new StringBuilder();
             builder.append(s + " ");
           } else {
             l.add(s);
+            matchingStart = false;
           }
         } else {
           builder.append(s + " ");

@@ -51,4 +51,6 @@ public interface ContainerController {
 	boolean isReady();
 
 	void startPortUpdaters();
+
+  void registerErrorState(ContainerStatus failedState) throws ContainerConfigurationException;
 }

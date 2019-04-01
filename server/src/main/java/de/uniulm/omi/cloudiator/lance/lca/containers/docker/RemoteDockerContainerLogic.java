@@ -31,6 +31,7 @@ public class RemoteDockerContainerLogic extends DockerContainerLogic {
       LOGGER.debug(String
           .format("Creating container %s with docker cli command: %s.", myId, createCommand));
       client.executeSingleDockerCommand(createCommand);
+      checkContainerStatus("created");
     } catch(DockerException de) {
       throw new ContainerException("docker problems. cannot create container " + myId, de);
     } catch (DockerCommandException ce) {

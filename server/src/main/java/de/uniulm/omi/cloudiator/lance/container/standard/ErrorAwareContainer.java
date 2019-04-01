@@ -121,7 +121,8 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     		return;
     	}
     	if(CreateTransitionAction.isKnownErrorState(stat)) {
-    		throw new ContainerOperationException("container creation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
+        registerErrorState(stat);
+        throw new ContainerOperationException("container creation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
     }
@@ -138,6 +139,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     		return;
     	}
     	if(BootstrapTransitionAction.isKnownErrorState(stat)) {
+        registerErrorState(stat);
     		throw new ContainerOperationException("container bootstrap failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
@@ -165,6 +167,7 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     		return;
     	}
     	if(InitTransitionAction.isKnownErrorState(stat)) {
+        registerErrorState(stat);
     		throw new ContainerOperationException("container initialisation failed. container is now in error state: " + stat, stateMachine.collectExceptions());
     	}
     	throwExceptionIfGenericErrorStateOrOtherState(stat);
@@ -196,7 +199,29 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
 
     }
 
-    private void deleteInRegistry() throws ContainerConfigurationException {
+  @Override
+  public void registerErrorState(ContainerStatus failedState)
+      throws ContainerConfigurationException {
+      ContainerStatus sMState = stateMachine.waitForEndOfCurrentTransition();
+
+      if(!ContainerStatus.errorStates().contains(failedState)) {
+        throw new ContainerConfigurationException(String.format("Cannot register state: "
+            + "%s as this is not an error state.", failedState));
+      }
+
+      if(sMState != failedState) {
+        throw new ContainerConfigurationException(String.format("Inconsistent error states: State to "
+            + "set for registry: %s; State of State machine: %s", failedState, sMState));
+      }
+
+    try {
+      registerStatus(failedState);
+    } catch (RegistrationException e) {
+     throw new ContainerConfigurationException("Cannot set correct error state in registry,", e);
+    }
+  }
+
+  private void deleteInRegistry() throws ContainerConfigurationException {
         try {
           accessor.deleteComponentInstance();
         } catch (RegistrationException e) {

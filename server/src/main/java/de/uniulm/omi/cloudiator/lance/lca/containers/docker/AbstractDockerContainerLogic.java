@@ -110,6 +110,11 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   public void preDestroy() throws ContainerException{
     DockerShell shell = getShell();
     BashExportBasedVisitor visitor = new BashExportBasedVisitor(shell);
+    try {
+      checkContainerStatus("running");
+    } catch (DockerException e) {
+      throw new ContainerException(e);
+    }
     setStaticEnvironment(shell,visitor);
     setDynamicEnvironment(visitor, null);
   }
@@ -185,6 +190,11 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   @Override
   public void preprocessPortUpdate(PortDiff<DownstreamAddress> diffSet) throws ContainerException {
+    try {
+      checkContainerStatus("running");
+    } catch (DockerException e) {
+      throw new ContainerException(e);
+    }
     prepareEnvironment(diffSet);
   }
 
@@ -205,6 +215,11 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   @Override
   public void preprocessDetector(DetectorType type) throws ContainerException {
+    try {
+      checkContainerStatus("running");
+    } catch (DockerException e) {
+     throw new ContainerException(e);
+    }
     // nothing special to do; just create a shell and prepare an environment //
     prepareEnvironment();
   }
@@ -266,6 +281,10 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   private void closeShell() {
     shellFactory.closeShell();
   }
+
+  protected abstract void checkContainerStatus(String status) throws DockerException;
+
+  protected abstract String getContainerId() throws DockerException;
 
   abstract void collectDynamicEnvVars();
 

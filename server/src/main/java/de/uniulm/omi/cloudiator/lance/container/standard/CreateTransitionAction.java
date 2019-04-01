@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.ContainerConfigurationException;
 import java.util.Arrays;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
