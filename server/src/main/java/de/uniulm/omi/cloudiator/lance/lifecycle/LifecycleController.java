@@ -106,11 +106,8 @@ public final class LifecycleController {
             LOGGER
                 .warn("Exception when executing state transition. this is not thoroughly handled.",
                     ce);
-            try {
-              machine.setStateToGenericError();
-            } finally{
-              updateStateInRegistry(machine.getState());
-            }
+            machine.setStateToGenericError();
+            updateStateInRegistry(machine.getState());
         }
     }
 
