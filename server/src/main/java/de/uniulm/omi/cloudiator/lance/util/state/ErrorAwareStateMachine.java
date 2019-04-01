@@ -96,6 +96,14 @@ public final class ErrorAwareStateMachine<T extends Enum<?> & State> {
         return handle.waitForTransitionEnd();
     }
 
+    public void setStateToGenericError() {
+      waitForEndOfCurrentTransition();
+
+      synchronized (localState) {
+        transit(localState.getCurrentState(),localState.getGenericErrorState());
+      }
+    }
+
     private ErrorAwareStateTransition<T> findTransition(T fromState, T toState) {
 
         ErrorAwareStateTransition<T> found = null;

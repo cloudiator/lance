@@ -31,6 +31,14 @@ final class ErrorAwareStateMachineState<T extends Enum<?> & State>
 
     }
 
+  public T getStatus() {
+    return status;
+  }
+
+  public T getGenericErrorState() {
+      return genericErrorState;
+    }
+
     @Override public void transitionStarted(T intermediate, Future<?> object) {
         synchronized (this) {
             status = intermediate;

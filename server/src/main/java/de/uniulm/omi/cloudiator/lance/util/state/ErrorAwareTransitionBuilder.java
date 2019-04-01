@@ -8,12 +8,14 @@ public final class ErrorAwareTransitionBuilder<T extends Enum<?> & State > {
     private T intermediate;
     private T to;
     private T error;
+    private T genericError;
     private TransitionAction action;
     private TransitionErrorHandler errorHandler;
     private boolean isAsynchronous = false;
 	
-	ErrorAwareTransitionBuilder(ErrorAwareStateMachineBuilder<T> b) {
+	ErrorAwareTransitionBuilder(ErrorAwareStateMachineBuilder<T> b, T genericError) {
 		builder = b;
+		this.genericError = genericError;
 	}
 
 	public ErrorAwareTransitionBuilder<T> setStartState(T start) {
@@ -85,5 +87,9 @@ public final class ErrorAwareTransitionBuilder<T extends Enum<?> & State > {
 	    ErrorAwareStateTransition<T> t = new ErrorAwareStateTransition<>(from, intermediate, 
 	    		to, error, action, isAsynchronous, errorHandler);
 	    builder.addTransition(t);
+	    //Add a generic error transition
+      ErrorAwareStateTransition<T> tGeneric = new ErrorAwareStateTransition<>(from, intermediate,
+          genericError, error, null, isAsynchronous, null);
+      builder.addTransition(tGeneric);
 	}
 }

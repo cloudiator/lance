@@ -60,7 +60,7 @@ public final class ErrorAwareStateMachineBuilder<T extends Enum<?> & State > {
     }
 
 	public ErrorAwareTransitionBuilder<T> getTransitionBuilder() {
-		return new ErrorAwareTransitionBuilder<>(this);
+		return new ErrorAwareTransitionBuilder<>(this, errorState);
 	}
 
 }

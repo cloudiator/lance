@@ -106,9 +106,11 @@ public final class LifecycleController {
             LOGGER
                 .warn("Exception when executing state transition. this is not thoroughly handled.",
                     ce);
-            throw new IllegalStateException("wrong state: should be in error state", ce);
-            // set error state
-            // updateStateInRegistry(type);
+            try {
+              machine.setStateToGenericError();
+            } finally{
+              updateStateInRegistry(machine.getState());
+            }
         }
     }
 
@@ -173,22 +175,25 @@ public final class LifecycleController {
 
     public synchronized void blockingUpdatePorts(OutPort port, PortUpdateHandler handler, PortDiff<DownstreamAddress> diff) throws ContainerException {
         boolean preprocessed = false;
+        boolean gotError =  false;
         try {
             interceptor.preprocessPortUpdate(diff);
             preprocessed = true;
             getLogger().info("updating ports via port handler.");
             handler.execute(ec);
         } catch (ContainerException ce) {
-        	getLogger()
+            getLogger()
                 .warn("Exception when executing state transition. this is not thoroughly handled.",
                     ce);
-            throw new IllegalStateException("wrong state: should be in error state?", ce);
-            // set error state
-            // updateStateInRegistry(LifecycleHandlerType.START);
+            machine.setStateToGenericError();
+            gotError = true;
         } finally {
             if (preprocessed) {
                 interceptor.postprocessPortUpdate(diff);
                 updateStateInRegistry(LifecycleHandlerType.START);
+            }
+            if(gotError) {
+              updateStateInRegistry(machine.getState());
             }
         }
     }
