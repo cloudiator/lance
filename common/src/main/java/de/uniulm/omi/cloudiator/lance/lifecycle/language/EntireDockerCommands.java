@@ -146,7 +146,7 @@ public class EntireDockerCommands implements Serializable {
       throw new DockerCommandException(wrongCmdMessage);
   }
 
-  //"helper-method" to get the Name for commands: START, STOP
+  //"helper-method" to get the Name for commands: START, RUN, STOP
   public String getContainerName(DockerCommand.Type cType) throws DockerCommandException {
     if(cType==DockerCommand.Type.CREATE)
       return create.getContainerName();
