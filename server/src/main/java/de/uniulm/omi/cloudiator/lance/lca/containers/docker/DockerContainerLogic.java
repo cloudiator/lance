@@ -18,15 +18,12 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private final DockerComponent myComponent;
