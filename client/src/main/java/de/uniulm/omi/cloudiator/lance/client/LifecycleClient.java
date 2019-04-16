@@ -49,9 +49,8 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
@@ -67,6 +66,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.NotBoundException;
@@ -116,6 +116,8 @@ public final class LifecycleClient {
           final Socket socket = delegate.createSocket(host, port);
           if (rmiTimeout != 0) {
             socket.setSoTimeout(rmiTimeout);
+            socket.setSoLinger(false, 0);
+            socket.connect(new InetSocketAddress(host, port), rmiTimeout);
           }
           return socket;
         }
@@ -152,7 +154,7 @@ public final class LifecycleClient {
     };
 
     return doRetryerCall(retryer, callable);
- }
+  }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
       final DockerComponent comp)
@@ -193,7 +195,8 @@ public final class LifecycleClient {
     return retryer;
   }
 
-  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer, Callable<ComponentInstanceId> callable) throws DeploymentException {
+  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer,
+      Callable<ComponentInstanceId> callable) throws DeploymentException {
     try {
       return retryer.call(callable);
     } catch (ExecutionException e) {
@@ -207,12 +210,13 @@ public final class LifecycleClient {
     }
   }
 
-  public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
+  public void injectExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
     try {
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
-          LcaRegistryConstants.regEntries.get(CONTAINER_STATUS) , params.getStatus().toString());
+          LcaRegistryConstants.regEntries.get(CONTAINER_STATUS), params.getStatus().toString());
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
       for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
@@ -274,7 +278,7 @@ public final class LifecycleClient {
   public final boolean isReady(ComponentInstanceId cid) {
     try {
       boolean isReady = lifecycleAgent.componentInstanceIsReady(cid);
-      if(isReady) {
+      if (isReady) {
         return true;
       }
       return false;
@@ -296,7 +300,7 @@ public final class LifecycleClient {
   }
 
   public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
-      ComponentInstanceId componentInstanceId)  throws RegistrationException, DeploymentException {
+      ComponentInstanceId componentInstanceId) throws RegistrationException, DeploymentException {
     currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
     updateDownStreamPorts();
   }
