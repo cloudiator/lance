@@ -286,8 +286,6 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
   protected abstract String getContainerId() throws DockerException;
 
-  abstract void collectDynamicEnvVars();
-
   @Override
   public abstract AbstractComponent getComponent();
 

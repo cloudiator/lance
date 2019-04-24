@@ -90,7 +90,6 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
     return "";
   }
 
-  @Override
   void collectDynamicEnvVars() {
     envVarsDynamic.putAll(myComponent.getEnvVars());
     envVarsDynamic.putAll(networkHandler.getEnvVars());

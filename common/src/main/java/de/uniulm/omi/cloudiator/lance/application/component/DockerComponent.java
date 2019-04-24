@@ -62,7 +62,7 @@ public class DockerComponent extends AbstractComponent {
     else
       this.containerName = builder.containerNameParam;
 
-    List<String> createEnv = builder.entireDockerCommandsParam.getCreate().getSetOptions().get(Option.ENVIRONMENT);
+    List<String> createEnv = builder.entireDockerCommandsParam.getCreate().getUsedOptions().get(Option.ENVIRONMENT);
     dynGroupVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_GROUP_KEY));
     dynHandlerVal = filterEnvVal(createEnv, LcaRegistryConstants.regEntries.get(DYN_HANDLER_KEY));
     updateScriptFilePath = filterEnvVal(createEnv, updateScriptKey);
