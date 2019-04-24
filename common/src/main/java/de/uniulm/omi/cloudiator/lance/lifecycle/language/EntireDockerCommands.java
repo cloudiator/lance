@@ -112,7 +112,7 @@ public class EntireDockerCommands implements Serializable {
 
   public String getSetOptionsString(DockerCommand.Type cType) throws DockerCommandException {
     DockerCommand cmd = getCommandFromMap(cType);
-    DockerCommandUtils.getSetOptionsString(cmd);
+    return DockerCommandUtils.getSetOptionsString(cmd);
   }
 
   public String getSetOsCommandString(DockerCommand.Type cType)  throws DockerCommandException {

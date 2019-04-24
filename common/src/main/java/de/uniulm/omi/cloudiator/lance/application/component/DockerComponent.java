@@ -112,8 +112,9 @@ public class DockerComponent extends AbstractComponent {
   }
 
   public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
-    entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
-    //todo: also set for run cmooand?
+    //todo: better, overwrite option
+    entireDockerCommands.appendOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
+    //todo: also set for run command?
     containerName = buildNameOptionFromId(id);
   }
 
@@ -126,11 +127,15 @@ public class DockerComponent extends AbstractComponent {
       Integer i = entry.getKey();
       Integer j = entry.getValue();
       if(j.intValue() < 0 || j.intValue() > 65536) {
-        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, i.toString());
-        //todo: also set for run cmooand?
+        //todo: better, overwrite option
+        entireDockerCommands.
+            appendOption(DockerCommand.Type.CREATE, Option.PORT, i.toString());
+        //todo: also set for run command?
       } else {
-        entireDockerCommands.setOption(DockerCommand.Type.CREATE, Option.PORT, i.toString() + ":" + j.toString());
-        //todo: also set for run cmooand?
+        //todo: better, overwrite option
+        entireDockerCommands.
+            appendOption(DockerCommand.Type.CREATE, Option.PORT, i.toString() + ":" + j.toString());
+        //todo: also set for run command?
       }
     }
   }
