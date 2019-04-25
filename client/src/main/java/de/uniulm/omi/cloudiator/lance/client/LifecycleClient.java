@@ -49,9 +49,8 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
@@ -67,6 +66,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.NotBoundException;
@@ -99,8 +99,11 @@ public final class LifecycleClient {
     return new LifecycleClient(serverIp, rmiTimeout);
   }
 
+  public static LifecycleClientRegistryWrapper getRegWrapper() {
+    return regWrapper;
+  }
 
-  private static final LcaRegistry currentRegistry;
+  private static final LifecycleClientRegistryWrapper regWrapper;
   private final LifecycleAgent lifecycleAgent;
 
   private LifecycleClient(String serverIp, int rmiTimeout)
@@ -116,6 +119,8 @@ public final class LifecycleClient {
           final Socket socket = delegate.createSocket(host, port);
           if (rmiTimeout != 0) {
             socket.setSoTimeout(rmiTimeout);
+            socket.setSoLinger(false, 0);
+            socket.connect(new InetSocketAddress(host, port), rmiTimeout);
           }
           return socket;
         }
@@ -132,11 +137,7 @@ public final class LifecycleClient {
   }
 
   static {
-    try {
-      currentRegistry = RegistryFactory.createRegistry();
-    } catch (RegistrationException e) {
-      throw new ExceptionInInitializerError(e);
-    }
+   regWrapper = LifecycleClientRegistryWrapper.getInstance();
   }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
@@ -152,7 +153,7 @@ public final class LifecycleClient {
     };
 
     return doRetryerCall(retryer, callable);
- }
+  }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
       final DockerComponent comp)
@@ -193,7 +194,8 @@ public final class LifecycleClient {
     return retryer;
   }
 
-  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer, Callable<ComponentInstanceId> callable) throws DeploymentException {
+  private static ComponentInstanceId doRetryerCall(Retryer<ComponentInstanceId> retryer,
+      Callable<ComponentInstanceId> callable) throws DeploymentException {
     try {
       return retryer.call(callable);
     } catch (ExecutionException e) {
@@ -207,32 +209,9 @@ public final class LifecycleClient {
     }
   }
 
-  public void injectExternalDeploymentContext(ExternalContextParameters params) throws DeploymentException {
-    try {
-      currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
-      currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
-      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
-          LcaRegistryConstants.regEntries.get(CONTAINER_STATUS) , params.getStatus().toString());
-      //do I need to create a DeploymentContext for this and do setProperty instead?
-
-      for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
-        currentRegistry.addComponentProperty(
-            params.getAppId(),
-            params.getcId(),
-            params.getcInstId(),
-            inPortC.getFullPortName(),
-            inPortC.getInernalInPortNmbr().toString());
-      }
-
-      currentRegistry.addComponentProperty(
-          params.getAppId(),
-          params.getcId(),
-          params.getcInstId(),
-          params.getFullHostName(),
-          params.getPublicIp());
-    } catch (RegistrationException e) {
-      e.printStackTrace();
-    }
+  public void injectExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
+    regWrapper.injectExternalDeploymentContext(params);
   }
 
   public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
@@ -274,7 +253,7 @@ public final class LifecycleClient {
   public final boolean isReady(ComponentInstanceId cid) {
     try {
       boolean isReady = lifecycleAgent.componentInstanceIsReady(cid);
-      if(isReady) {
+      if (isReady) {
         return true;
       }
       return false;
@@ -296,9 +275,8 @@ public final class LifecycleClient {
   }
 
   public final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
-      ComponentInstanceId componentInstanceId)  throws RegistrationException, DeploymentException {
-    currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
-    updateDownStreamPorts();
+      ComponentInstanceId componentInstanceId) throws RegistrationException, DeploymentException {
+    regWrapper.unRegisterInstance(appInstId, componentId, componentInstanceId);
   }
 
   public final void updateDownStreamPorts() throws DeploymentException {
@@ -344,26 +322,26 @@ public final class LifecycleClient {
    */
   public boolean registerApplicationInstance(ApplicationInstanceId myInstanceId,
       ApplicationId lsyAppId) throws RegistrationException {
-    return currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, "<unknown name>");
+    return regWrapper.registerApplicationInstance(myInstanceId, lsyAppId);
   }
 
   public void registerApplicationInstance(ApplicationInstanceId myInstanceId,
       ApplicationId lsyAppId, String name) throws RegistrationException {
-    currentRegistry.addApplicationInstance(myInstanceId, lsyAppId, name);
+    regWrapper.registerApplicationInstance(myInstanceId, lsyAppId, name);
   }
 
   public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
       ComponentId zookeeperComponentId) throws RegistrationException {
-    currentRegistry.addComponent(myInstanceId, zookeeperComponentId, "<unknown name>");
+    regWrapper.registerComponentForApplicationInstance(myInstanceId, zookeeperComponentId);
   }
 
   public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
       ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
-    currentRegistry.addComponent(myInstanceId, zookeeperComponentId, componentName);
+    regWrapper.registerComponentForApplicationInstance(myInstanceId, zookeeperComponentId, componentName);
   }
 
   public DeploymentContext initDeploymentContext(ApplicationId appId,
       ApplicationInstanceId appInstanceId) {
-    return new DeploymentContext(appId, appInstanceId, currentRegistry);
+    return new DeploymentContext(appId, appInstanceId, regWrapper.getCurrentRegistry());
   }
 }
