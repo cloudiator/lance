@@ -67,31 +67,34 @@ public class DockerCommandUtils {
     return modifiedCmd;
   }
 
-  public static DockerCommand replaceEnvVar(DockerCommand cmd, String envVar) throws DockerCommandException {
+  public static DockerCommand replaceOptionVar(DockerCommand cmd, DockerCommand.Option opt, String varValPair) throws DockerCommandException {
     DockerCommandParams params = new DockerCommandParams(cmd);
 
-    if(!params.type.getPossibleOptions().contains(Option.ENVIRONMENT))
-      throw new DockerCommandException(params.type.name() + "cannot have environmental variables set");
+    if (!params.type.getPossibleOptions().contains(opt)) {
+      throw new DockerCommandException(String.format(
+          "%s cannot have Option: %s set", params.type.name(), opt));
+      }
 
     List<String> lst;
 
-    if (params.usedOptions.get(Option.ENVIRONMENT) == null) {
-      throw new DockerCommandException( "Cannot override an environmental variable with " + envVar
-          + " when there are no variables set yet");
+    if (params.usedOptions.get(opt) == null) {
+      throw new DockerCommandException(String.format(
+          "Cannot override Option: %s with value: %s, when the option is not yet set", opt, varValPair));
     }
 
-    lst = new ArrayList<>(params.usedOptions.get(Option.ENVIRONMENT));
+    lst = new ArrayList<>(params.usedOptions.get(opt));
 
     //todo: escape regex special-chars in String
-    int index = getEnvVarIndex(lst, envVar);
+    int index = getEnvVarIndex(lst, varValPair);
 
     if(index == -1) {
-      throw new DockerCommandException("Cannot override an environmental variable with " + envVar + ", because it does not exist.");
+      throw new DockerCommandException(String.format(
+          "Cannot override Option %s 's variable %s, because it does not exist.", opt, varValPair));
     }
 
-    lst.set(index, envVar);
+    lst.set(index, varValPair);
     Map<DockerCommand.Option, List<String>> modOpts = new HashMap<>(params.usedOptions);
-    modOpts.put(Option.ENVIRONMENT,lst);
+    modOpts.put(opt,lst);
 
     DockerCommand.Builder builder = new Builder(params.type);
     DockerCommand modifiedCmd = builder.usedOptions(modOpts).osCommand(params.osCommand)

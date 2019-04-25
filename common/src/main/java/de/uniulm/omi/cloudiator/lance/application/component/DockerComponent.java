@@ -10,6 +10,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandUtils;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -112,8 +113,13 @@ public class DockerComponent extends AbstractComponent {
   }
 
   public void setContainerName(ComponentInstanceId id) throws DockerCommandException {
-    //todo: better, overwrite option
-    entireDockerCommands.appendOption(DockerCommand.Type.CREATE, Option.NAME, buildNameOptionFromId(id));
+    DockerCommand createCmd = entireDockerCommands.getCreate();
+    if (DockerCommandUtils.optAndValIsSet(createCmd, Option.NAME, buildNameOptionFromId(id))) {
+      createCmd = DockerCommandUtils.replaceOptionVar(createCmd, Option.NAME, buildNameOptionFromId(id));
+    } else {
+      createCmd = DockerCommandUtils.appendOption(createCmd, Option.NAME, buildNameOptionFromId(id));
+    }
+    entireDockerCommands.setCreate(createCmd);
     //todo: also set for run command?
     containerName = buildNameOptionFromId(id);
   }
@@ -126,17 +132,24 @@ public class DockerComponent extends AbstractComponent {
     for(Entry<Integer, Integer> entry : inPortsParam.entrySet()) {
       Integer i = entry.getKey();
       Integer j = entry.getValue();
+      DockerCommand createCmd = entireDockerCommands.getCreate();
       if(j.intValue() < 0 || j.intValue() > 65536) {
-        //todo: better, overwrite option
-        entireDockerCommands.
-            appendOption(DockerCommand.Type.CREATE, Option.PORT, i.toString());
+        if (DockerCommandUtils.optAndValIsSet(createCmd, Option.PORT, i.toString())) {
+          createCmd = DockerCommandUtils.replaceOptionVar(createCmd, Option.PORT, i.toString());
+        } else {
+          createCmd = DockerCommandUtils.appendOption(createCmd, Option.PORT, i.toString());
+        }
         //todo: also set for run command?
       } else {
-        //todo: better, overwrite option
-        entireDockerCommands.
-            appendOption(DockerCommand.Type.CREATE, Option.PORT, i.toString() + ":" + j.toString());
+        final String hostContainerPortPair =  i.toString() + ":" + j.toString();
+        if (DockerCommandUtils.optAndValIsSet(createCmd, Option.PORT, hostContainerPortPair)) {
+          createCmd = DockerCommandUtils.replaceOptionVar(createCmd, Option.PORT, hostContainerPortPair);
+        } else {
+          createCmd = DockerCommandUtils.appendOption(createCmd, Option.PORT, hostContainerPortPair);
+        }
         //todo: also set for run command?
       }
+      entireDockerCommands.setCreate(createCmd);
     }
   }
 

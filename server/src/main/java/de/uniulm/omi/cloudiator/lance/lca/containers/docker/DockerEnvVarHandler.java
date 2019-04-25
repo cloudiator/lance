@@ -65,7 +65,7 @@ public class DockerEnvVarHandler {
     for(Entry<String, String> var: concatMap.entrySet()) {
       final String envVarString = var.getKey().trim() + "=" + var.getValue().trim();
       if (DockerCommandUtils.optAndValIsSet(dCmd, Option.ENVIRONMENT, envVarString)) {
-        dCmd = DockerCommandUtils.replaceEnvVar(dCmd, envVarString);
+        dCmd = DockerCommandUtils.replaceOptionVar(dCmd, Option.ENVIRONMENT, envVarString);
       } else {
         dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT, envVarString);
       }
@@ -88,7 +88,7 @@ public class DockerEnvVarHandler {
       }
       String newEnvVar = vars.getKey().trim() + "=" + resolvedVarVal.trim();
       //todo: escape regex special-chars in String
-      cmd = DockerCommandUtils.replaceEnvVar(cmd, newEnvVar);
+      cmd = DockerCommandUtils.replaceOptionVar(cmd, Option.ENVIRONMENT, newEnvVar);
     }
 
     return cmd;
