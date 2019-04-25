@@ -100,6 +100,31 @@ public class DockerCommandUtils {
     return modifiedCmd;
   }
 
+  public static boolean optIsSet(DockerCommand cmd, DockerCommand.Option opt) {
+    DockerCommandParams params = new DockerCommandParams(cmd);
+
+    if(params.usedOptions.get(opt) == null) {
+      return false;
+    }
+    return true;
+  }
+
+  public static boolean optAndValIsSet(DockerCommand cmd, DockerCommand.Option opt, String val) {
+    DockerCommandParams params = new DockerCommandParams(cmd);
+
+    if(params.usedOptions.get(opt) == null) {
+      return false;
+    }
+
+    List<String> lst = new ArrayList<>(params.usedOptions.get(opt));
+
+    for(String str: lst) {
+      if(str.trim().equals(val.trim()))
+         return true;
+    }
+    return false;
+  }
+
   private static int getEnvVarIndex(List<String> envVars, String replaceVar) {
     String[] parts = replaceVar.split("=");
     String replaceVarName = parts[0];

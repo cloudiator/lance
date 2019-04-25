@@ -85,7 +85,7 @@ public class ClientDockerPullTest {
   private static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
   private static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
   // adjust
-  private static String publicIp = "x.x.x.x";
+  private static String publicIp = "134.60.244.25";
   private static LifecycleClient client;
 
   @BeforeClass
@@ -114,7 +114,7 @@ public class ClientDockerPullTest {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.244.25:4001");
   }
 
   private DockerComponent.Builder buildDockerComponentBuilder(
@@ -389,13 +389,13 @@ public class ClientDockerPullTest {
       createOsCommandList.add(OsCommand.BASH);
       List<String> createArgsList = new ArrayList<>();
       createArgsList.add("--noediting");
-      cmdsBuilder.setOptions(Type.CREATE, createOptionMap);
-      cmdsBuilder.setCommand(Type.CREATE, createOsCommandList);
-      cmdsBuilder.setArgs(Type.CREATE, createArgsList);
+      cmdsBuilder.usedOptions(Type.CREATE, createOptionMap);
+      cmdsBuilder.osCommand(Type.CREATE, createOsCommandList);
+      cmdsBuilder.usedArgs(Type.CREATE, createArgsList);
 
       Map<Option,List<String>> startOptionMap = new HashMap<>();
       startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      cmdsBuilder.setOptions(Type.START, startOptionMap);
+      cmdsBuilder.usedOptions(Type.START, startOptionMap);
     } catch (DockerCommandException ce) {
       System.err.println("Error in creating docker commands");
     }

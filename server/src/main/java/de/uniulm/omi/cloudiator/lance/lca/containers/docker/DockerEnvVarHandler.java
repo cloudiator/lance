@@ -58,16 +58,18 @@ public class DockerEnvVarHandler {
   }
 
   public DockerCommand copyLanceEnvIntoCommand(DockerCommand dCmd) throws DockerCommandException {
-    Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
+    //concatenate static and dynamic env vars
+    Map<String,String> concatMap = buildTranslatedStaticEnvMap();
+    concatMap.putAll(envVarsDynamic);
 
-    for(Entry<String, String> var: envVarsStaticTmp.entrySet()) {
-      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey().trim() + "=" + var.getValue().trim());
+    for(Entry<String, String> var: concatMap.entrySet()) {
+      final String envVarString = var.getKey().trim() + "=" + var.getValue().trim();
+      if (DockerCommandUtils.optAndValIsSet(dCmd, Option.ENVIRONMENT, envVarString)) {
+        dCmd = DockerCommandUtils.replaceEnvVar(dCmd, envVarString);
+      } else {
+        dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT, envVarString);
+      }
     }
-
-    for(Entry<String, String> var: envVarsDynamic.entrySet()) {
-      dCmd = DockerCommandUtils.appendOption(dCmd, Option.ENVIRONMENT,var.getKey().trim() + "=" + var.getValue().trim());
-    }
-
     return dCmd;
   }
 
