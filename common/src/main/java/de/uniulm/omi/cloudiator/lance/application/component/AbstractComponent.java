@@ -66,8 +66,8 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
   }
 
   public ComponentId getComponentId() {
-                                      return myId;
-                                                  }
+      return myId;
+  }
 
   public List<InPort> getExposedPorts() {
       List<InPort> ports = new ArrayList<>(inPorts.size());
@@ -79,12 +79,12 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
 
   @Override
   public String toString() {
-                           return name + ": -> " + inPorts + "@" + myId;
-                                                                        }
+      return name + ": -> " + inPorts + "@" + myId;
+  }
 
   public List<OutPort> getDownstreamPorts() {
-                                            return new ArrayList<>(outPorts);
-                                                                             }
+      return new ArrayList<>(outPorts);
+  }
 
   public void accept(PropertyVisitor visitor) {
       for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
@@ -131,7 +131,7 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
     return lifecycle;
   }
 
-@Override
+  @Override
   public void generateDynamicEnvVars() {
       final Map<String,String> vals = getMatchingValsFromDContext();
       DynamicEnvVarsImpl impl = DynamicEnvVarsImpl.DEPL_COMPONENT;

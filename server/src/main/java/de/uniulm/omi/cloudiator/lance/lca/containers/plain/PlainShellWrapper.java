@@ -52,13 +52,13 @@ public class PlainShellWrapper implements Shell {
         return result;
     }
 
-  @Override
-  public List<String> getExecCommandsMemory() {
-    LOGGER.error("function not implemented yet.");
-    return null;
-  }
+    @Override
+    public List<String> getExecCommandsMemory() {
+        LOGGER.error("function not implemented yet.");
+        return null;
+    }
 
-  private static void checkResult(String command, ExecutionResult result) {
+    private static void checkResult(String command, ExecutionResult result) {
         if(result.isSuccess()) {
             return;
         }
