@@ -36,6 +36,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortRegistryTranslator;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerConnector;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.HandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleActionInterceptor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
@@ -57,16 +58,13 @@ import org.slf4j.LoggerFactory;
 abstract class AbstractDockerContainerLogic implements ContainerLogic, LifecycleActionInterceptor {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(DockerContainerManager.class);
-        
   protected final ComponentInstanceId myId;
   protected final DockerConnector client;
-
   protected final DockerShellFactory shellFactory;
   protected final DeploymentContext deploymentContext;
-
   protected final NetworkHandler networkHandler;
+  protected final ExecutionContext ec;
   protected final HostContext hostContext;
-
   protected final Map<String, String> envVarsStatic;
   protected Map<String, String> envVarsDynamic;
 
@@ -88,6 +86,7 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
     this.shellFactory = builder.shellFactory;
     this.networkHandler = builder.networkHandler;
     this.hostContext = builder.hostContext;
+    this.ec = builder.ec;
     final StaticEnvVars hostVars = this.hostContext;
     this.envVarsStatic = new HashMap<String, String>(instVars.getEnvVars());
 
@@ -284,15 +283,12 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
   abstract static class Builder<T extends AbstractComponent, S extends Builder<T,S>> {
     protected ComponentInstanceId myId;
     protected DockerConnector client;
-
     protected DockerShellFactory shellFactory;
-
     protected T myComponent;
     protected DeploymentContext deploymentContext;
-
     protected NetworkHandler networkHandler;
     protected DockerConfiguration dockerConfig;
-
+    protected ExecutionContext ec;
     protected HostContext hostContext;
 
     public S cInstId(ComponentInstanceId myId) {
@@ -327,6 +323,11 @@ abstract class AbstractDockerContainerLogic implements ContainerLogic, Lifecycle
 
     public S dockerConfig(DockerConfiguration config) {
       this.dockerConfig = config;
+      return self();
+    }
+
+    public S executionContext(ExecutionContext ec) {
+      this.ec = ec;
       return self();
     }
 

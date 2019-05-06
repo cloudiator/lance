@@ -193,7 +193,6 @@ public final class ErrorAwareContainer<T extends ContainerLogic> implements Cont
     @Override
     public void startPortUpdaters() {
       network.startPortUpdaters(controller);
-
     }
 
     private void deleteInRegistry() throws ContainerConfigurationException {
