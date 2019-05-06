@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,12 @@ class DockerShellWrapper implements Shell {
         checkResult(res, result);
         return result;
     }
-    
+
+    @Override
+    public List<String> getExecCommandsMemory() {
+      return shell.getExecCommandsMemory();
+    }
+
     private static void checkResult(String command, ExecutionResult result) {
         if(result.isSuccess()) {
             return;

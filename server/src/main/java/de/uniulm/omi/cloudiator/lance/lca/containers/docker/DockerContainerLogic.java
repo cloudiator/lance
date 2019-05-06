@@ -13,6 +13,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedV
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
@@ -248,10 +249,27 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     try {
       resolveDockerEnvVars(runCmd);
       copyEnvIntoCommand(runCmd);
+      executeGenericRedeploy();
+      executeCommandMemory();
     } catch (DockerCommandException e) {
       throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
+    } catch (DockerException e) {
+      throw new ContainerException(e);
     }
-    executeGenericRedeploy();
+  }
+
+  private void executeCommandMemory() throws DockerException {
+    List<String> commandsRaw = ec.getExecCommandsMemory();
+
+    for(String cmdRaw: commandsRaw) {
+      try {
+        final String containerName = myComponent.getContainerName();
+        final String execStr = "exec -i " + containerName + " " + cmdRaw;
+        client.executeSingleDockerCommand(execStr);
+      } catch (DockerCommandException dEx) {
+        throw new DockerException(String.format("Cannot get Container Name for component: %s", myComponent.getComponentId()));
+      }
+    }
   }
 
   //Needed if a Docker env-var depends on a lance-internal env-var, e.g. PUBLIC_ReqPort=134.60.64.1:3302
@@ -341,16 +359,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       return false;
 
     return true;
-  }
-
-  private String buildEnvString(Map<String,String> vars) {
-    StringBuilder builder = new StringBuilder();
-
-    for(Entry<String, String> var: vars.entrySet()) {
-      builder.append("-e " + var.getKey()+"="+var.getValue() + " ");
-    }
-
-    return builder.toString();
   }
 
   public static class Builder extends AbstractDockerContainerLogic.Builder<DockerComponent,Builder> {

@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import java.util.List;
 
 public final class ExecutionContext {
 
@@ -38,4 +39,8 @@ public final class ExecutionContext {
         return shellFactory.createShell();
     }
 
+    public List<String> getExecCommandsMemory() {
+      Shell shell = shellFactory.createShell();
+      return shell.getExecCommandsMemory();
+    }
 }

@@ -1,16 +1,8 @@
 package de.uniulm.omi.cloudiator.lance.application.component;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public class DeployableComponent extends AbstractComponent {
-    private final LifecycleStore lifecycle;
 
   @Override
   public boolean isDynamicComponent() {
@@ -33,7 +25,6 @@ public class DeployableComponent extends AbstractComponent {
   }
 
   public static class Builder extends AbstractComponent.Builder<Builder> {
-      private volatile LifecycleStore lifecycle;
 
       public Builder(String name, ComponentId id) {
         //this.lifecycle = lifecycle;
@@ -43,11 +34,6 @@ public class DeployableComponent extends AbstractComponent {
 
       public static Builder createBuilder(String name, ComponentId componentId) {
         return new Builder(name,  componentId);
-      }
-
-      public Builder addLifecycleStore(LifecycleStore lifecycleStore) {
-        this.lifecycle = lifecycleStore;
-        return this;
       }
 
       @Override
@@ -63,10 +49,5 @@ public class DeployableComponent extends AbstractComponent {
 
     private DeployableComponent(Builder builder) {
         super(builder);
-        lifecycle = builder.lifecycle;
-    }
-
-    public LifecycleStore getLifecycleStore() {
-        return lifecycle;
     }
 }
