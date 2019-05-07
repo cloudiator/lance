@@ -100,7 +100,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
     Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
     setGlobalContainerEnv(EnvType.STATIC, envVarsStaticTmp);
-    super.setStaticEnvironment(shell,visitor);
+    setLocalContainerEnv(EnvType.STATIC, shell, visitor);
     envVarsStaticPrev = new HashMap<>(envVarsStatic);
   }
 
@@ -125,8 +125,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     this.myComponent.generateDynamicEnvVars();
     collectDynamicEnvVars();
     setGlobalContainerEnv(EnvType.DYNAMIC, envVarsDynamic);
-    networkHandler.accept(visitor);
-    this.myComponent.accept(visitor);
+    setLocalContainerEnv(EnvType.DYNAMIC, null, visitor);
     envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
   }
 
@@ -233,13 +232,25 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
-  // global env change implies redeployment if no updatehandler is present
+  // env change implies redeployment (global env is set then) if no updatehandler is present
   private void setGlobalContainerEnv(EnvType eType, Map<String,String> vars) throws ContainerException {
     if(checkEnvChange(eType) && noPortUpdateHandlerPresent()) {
       try {
         doRedeploy();
       } catch (ContainerException e) {
         LOGGER.error("cannot redeploy container " + myId + "for updating the environment");
+      }
+    }
+  }
+
+  // if updatehandler is present, set environment (even if not changed) in local (docker) shell
+  private void setLocalContainerEnv(EnvType eType, DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
+    if(! noPortUpdateHandlerPresent()) {
+      if(eType == EnvType.STATIC) {
+        super.setStaticEnvironment(shell,visitor);
+      } else {
+        networkHandler.accept(visitor);
+        this.myComponent.accept(visitor);
       }
     }
   }
