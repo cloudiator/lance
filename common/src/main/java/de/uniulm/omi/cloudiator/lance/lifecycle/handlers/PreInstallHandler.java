@@ -33,7 +33,7 @@ public interface PreInstallHandler extends LifecycleHandler {
 
 final class PreInstallDeploymentHandler implements PreInstallHandler {
 
-    private static final long serialVersionUID = 6919555061386179348L;
+    private static final long serialVersionUID = -8562389577175237292L;
     private final Deployment d;
     
     PreInstallDeploymentHandler(Deployment deploymentParam) {
@@ -43,5 +43,12 @@ final class PreInstallDeploymentHandler implements PreInstallHandler {
     @Override
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.PRE_INSTALL, ec);
+    }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: loop over all lifecycleHanlerTypes and check
+      //return d.hasLifecycleOperations(TYPE);
+      return true;
     }
 }

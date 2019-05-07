@@ -38,9 +38,4 @@ public final class ExecutionContext {
     public Shell getShell() {
         return shellFactory.createShell();
     }
-
-    public List<String> getExecCommandsMemory() {
-      Shell shell = shellFactory.createShell();
-      return shell.getExecCommandsMemory();
-    }
 }

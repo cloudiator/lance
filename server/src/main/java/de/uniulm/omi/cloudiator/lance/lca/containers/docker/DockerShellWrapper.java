@@ -48,11 +48,6 @@ class DockerShellWrapper implements Shell {
         return result;
     }
 
-    @Override
-    public List<String> getExecCommandsMemory() {
-      return shell.getExecCommandsMemory();
-    }
-
     private static void checkResult(String command, ExecutionResult result) {
         if(result.isSuccess()) {
             return;

@@ -6,6 +6,7 @@ import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifier
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -15,6 +16,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
@@ -230,7 +232,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   }
 
   private void executeEnvSetting(EnvType eType, Map<String,String> vars) throws ContainerException {
-    if(checkEnvChange(eType)) {
+    if(checkEnvChange(eType) && noPortUpdateHandlerPresent()) {
       try {
         doRedeploy();
       } catch (ContainerException e) {
@@ -244,31 +246,26 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
   }
 
+  private boolean noPortUpdateHandlerPresent() {
+    List<OutPort> outPorts = myComponent.getDownstreamPorts();
+
+    for(OutPort port: outPorts) {
+      PortUpdateHandler handler = port.getUpdateHandler();
+      if(handler != null && handler.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private void doRedeploy() throws ContainerException {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
       resolveDockerEnvVars(runCmd);
       copyEnvIntoCommand(runCmd);
       executeGenericRedeploy();
-      executeCommandMemory();
     } catch (DockerCommandException e) {
       throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
-    } catch (DockerException e) {
-      throw new ContainerException(e);
-    }
-  }
-
-  private void executeCommandMemory() throws DockerException {
-    List<String> commandsRaw = ec.getExecCommandsMemory();
-
-    for(String cmdRaw: commandsRaw) {
-      try {
-        final String containerName = myComponent.getContainerName();
-        final String execStr = "exec -i " + containerName + " " + cmdRaw;
-        client.executeSingleDockerCommand(execStr);
-      } catch (DockerCommandException dEx) {
-        throw new DockerException(String.format("Cannot get Container Name for component: %s", myComponent.getComponentId()));
-      }
     }
   }
 

@@ -34,7 +34,7 @@ public interface InstallHandler extends LifecycleHandler {
 
 final class InstallDeploymentHandler implements InstallHandler {
 
-    private static final long serialVersionUID = 61710496022872382L;
+    private static final long serialVersionUID = -8133781410935197546L;
     private final Deployment d;
     
     InstallDeploymentHandler(Deployment deploymentParam) {
@@ -44,5 +44,12 @@ final class InstallDeploymentHandler implements InstallHandler {
     @Override
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.INSTALL, ec);
+    }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: loop over all lifecycleHanlerTypes and check
+      //return d.hasLifecycleOperations(TYPE);
+      return true;
     }
 }

@@ -20,6 +20,8 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.handlers;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +32,9 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StartDetector;
 public final class DefaultHandlers implements LifecycleHandler {
     
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultHandlers.class);
-    private static final long serialVersionUID = -9123613719962377068L;
+    private static final long serialVersionUID = -5958986200429759370L;
 
-    static Logger getLogger() { 
+    static Logger getLogger() {
     	return LOGGER; 
     }
 
@@ -42,6 +44,11 @@ public final class DefaultHandlers implements LifecycleHandler {
             // throw new UnsupportedOperationException();
             getLogger().info("DEFAULT InitHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     }; 
     
     
@@ -50,6 +57,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT InstallHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final PostInstallHandler DEFAULT_POST_INSTALL_HANDLER = new PostInstallHandler() {
@@ -57,6 +69,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT PostInstallHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
 
@@ -64,7 +81,12 @@ public final class DefaultHandlers implements LifecycleHandler {
 
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT PostStartHandler doing nothing");
-        }        
+        }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final PostStopHandler DEFAULT_POST_STOP_HANDLER = new PostStopHandler() {
@@ -72,6 +94,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT PostStopHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final PreInstallHandler DEFAULT_PRE_INSTALL_HANDLER = new PreInstallHandler() {
@@ -79,6 +106,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT PreInstallHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final PreStartHandler DEFAULT_PRE_START_HANDLER = new PreStartHandler() {
@@ -86,6 +118,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT PreStartHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };    
 
     public static final PreStopHandler DEFAULT_PRE_STOP_HANDLER = new PreStopHandler() {
@@ -93,6 +130,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT PreStopHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final StartHandler DEFAULT_START_HANDLER = new StartHandler() {
@@ -100,6 +142,11 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT StartHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final StopHandler DEFAULT_STOP_HANDLER = new StopHandler() {
@@ -107,11 +154,21 @@ public final class DefaultHandlers implements LifecycleHandler {
         @Override public void execute(ExecutionContext ec) {
             getLogger().info("DEFAULT StopHandler doing nothing");
         }
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
     };
     
     public static final StartDetector DEFAULT_START_DETECTOR = new StartDetector() {
-    	
-		@Override
+
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
+
+      @Override
 		public DetectorState execute(ExecutionContext ec) {
 			getLogger().info("DEFAULT StopHandler doing nothing");
 			return DetectorState.DETECTED;
@@ -128,4 +185,9 @@ public final class DefaultHandlers implements LifecycleHandler {
     public void execute(ExecutionContext ec) throws LifecycleException {
         throw new LifecycleException("Execution not possible in default handler");
     }
+
+  @Override
+  public boolean isEmpty() {
+    return true;
+  }
 }

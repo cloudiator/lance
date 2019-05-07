@@ -29,5 +29,4 @@ public interface DockerShell extends ShellLikeInterface  {
     ExecutionResult executeBlockingCommand(String command);
     void close();
     boolean processStillRunning();
-    List<String> getExecCommandsMemory();
 }

@@ -22,6 +22,8 @@ import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * may be used for checking that required operating system
@@ -36,7 +38,7 @@ public interface PreStartHandler extends LifecycleHandler {
 
 final class PreStartDeploymentHandler implements PreStartHandler {
 
-    private static final long serialVersionUID = -2848584695480522743L;
+    private static final long serialVersionUID = -1418703118726440748L;
     private final Deployment d;
     
     PreStartDeploymentHandler(Deployment deploymentParam) {
@@ -46,5 +48,12 @@ final class PreStartDeploymentHandler implements PreStartHandler {
     @Override
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.PRE_START, ec);
+    }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: iterate over all LifecycleHandler-Types
+      //return d.hasLifecycleOperations(TYPE)
+      return true;
     }
 }
