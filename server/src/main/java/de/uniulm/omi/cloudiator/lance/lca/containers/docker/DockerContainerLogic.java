@@ -99,8 +99,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
     Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
-
-    executeEnvSetting(EnvType.STATIC, envVarsStaticTmp);
+    setGlobalContainerEnv(EnvType.STATIC, envVarsStaticTmp);
+    setLocalContainerEnv(EnvType.STATIC, shell, visitor);
+    envVarsStaticPrev = new HashMap<>(envVarsStatic);
   }
 
   private Map<String,String> buildTranslatedStaticEnvMap() {
@@ -123,7 +124,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     networkHandler.generateDynamicEnvVars(diff);
     this.myComponent.generateDynamicEnvVars();
     collectDynamicEnvVars();
-    executeEnvSetting(EnvType.DYNAMIC, envVarsDynamic);
+    setGlobalContainerEnv(EnvType.DYNAMIC, envVarsDynamic);
+    setLocalContainerEnv(EnvType.DYNAMIC, null, visitor);
+    envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
   }
 
   @Override
@@ -222,8 +225,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       LOGGER.debug(String
       .format("Redeploying container %s with docker cli command: %s.", myId, cmdStr));
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
-      BashExportBasedVisitor visitor = new BashExportBasedVisitor(null);
-      setDynamicEnvironment(visitor, null);
     } catch (DockerException de) {
       throw new ContainerException("cannot redeploy container: " + myId, de);
     } catch (DockerCommandException e) {
@@ -231,7 +232,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
-  private void executeEnvSetting(EnvType eType, Map<String,String> vars) throws ContainerException {
+  // env change implies redeployment (global env is set then) if no updatehandler is present
+  private void setGlobalContainerEnv(EnvType eType, Map<String,String> vars) throws ContainerException {
     if(checkEnvChange(eType) && noPortUpdateHandlerPresent()) {
       try {
         doRedeploy();
@@ -239,11 +241,18 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
         LOGGER.error("cannot redeploy container " + myId + "for updating the environment");
       }
     }
+  }
 
-    if(eType == EnvType.STATIC)
-      envVarsStaticPrev = new HashMap<>(envVarsStatic);
-    else
-      envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
+  // if updatehandler is present, set environment (even if not changed) in local (docker) shell
+  private void setLocalContainerEnv(EnvType eType, DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
+    if(! noPortUpdateHandlerPresent()) {
+      if(eType == EnvType.STATIC) {
+        super.setStaticEnvironment(shell,visitor);
+      } else {
+        networkHandler.accept(visitor);
+        this.myComponent.accept(visitor);
+      }
+    }
   }
 
   private boolean noPortUpdateHandlerPresent() {
@@ -251,7 +260,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
     for(OutPort port: outPorts) {
       PortUpdateHandler handler = port.getUpdateHandler();
-      if(handler != null && handler.isEmpty()) {
+      if(handler != null && !handler.isEmpty()) {
         return false;
       }
     }
