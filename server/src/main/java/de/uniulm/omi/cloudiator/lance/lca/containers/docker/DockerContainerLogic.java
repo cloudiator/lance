@@ -260,7 +260,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
     for(OutPort port: outPorts) {
       PortUpdateHandler handler = port.getUpdateHandler();
-      if(handler != null && handler.isEmpty()) {
+      if(handler != null && !handler.isEmpty()) {
         return false;
       }
     }
