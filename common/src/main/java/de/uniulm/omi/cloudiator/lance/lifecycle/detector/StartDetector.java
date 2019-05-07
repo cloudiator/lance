@@ -21,6 +21,8 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * may be used to notify USM that a started event is ready for use
@@ -29,17 +31,25 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
  */
 public interface StartDetector extends Detector {
 
+  boolean isEmpty();
 	DetectorState execute(ExecutionContext ec);
 }
 
 
 final class StartDetectorHandler implements StartDetector {
 
-    private static final long serialVersionUID = -7979324437072690746L;
+    private static final long serialVersionUID = 8566629377893017504L;
     private final Deployment d;
     
     StartDetectorHandler(Deployment deploymentParam) {
         d = deploymentParam;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: loop over all lifecycleHanlerTypes and check
+      //return d.hasLifecycleOperations(TYPE);
+      return true;
     }
 
     @Override

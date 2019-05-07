@@ -88,7 +88,7 @@ public final class BashBasedHandlerBuilder {
 
 final class BashPreInstallHandler implements PreInstallHandler {
 
-    private static final long serialVersionUID = 7232719469227703730L;
+    private static final long serialVersionUID = -9064706398101622520L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -96,7 +96,12 @@ final class BashPreInstallHandler implements PreInstallHandler {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+		@Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
     @Override
     public void execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
@@ -105,15 +110,20 @@ final class BashPreInstallHandler implements PreInstallHandler {
 
 final class BashInstallHandler implements InstallHandler {
 
-    private static final long serialVersionUID = -2546167412074322307L;
-    private final OperatingSystem os;
+  private static final long serialVersionUID = 6779258448972219752L;
+  private final OperatingSystem os;
     private final List<String[]> commands;
     
     BashInstallHandler(OperatingSystem osParam, List<String[]> commandsParam) {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
     @Override
     public void execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
@@ -122,7 +132,7 @@ final class BashInstallHandler implements InstallHandler {
 
 final class BashPostInstallHandler implements PostInstallHandler {
 
-    private static final long serialVersionUID = 1169280018441041612L;
+    private static final long serialVersionUID = 7917246945236135080L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -130,7 +140,12 @@ final class BashPostInstallHandler implements PostInstallHandler {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
     @Override
     public void execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
@@ -139,13 +154,18 @@ final class BashPostInstallHandler implements PostInstallHandler {
 
 final class BashStartHandler implements StartHandler {
 
-    private static final long serialVersionUID = 1905532285239985777L;
+    private static final long serialVersionUID = -7954979001375404230L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
     BashStartHandler(OperatingSystem osParam, List<String[]> commandsParam) {
         os = osParam;
         commands = commandsParam;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
     }
 
     @Override
@@ -156,13 +176,18 @@ final class BashStartHandler implements StartHandler {
 
 final class BashStopHandler implements StopHandler {
 
-    private static final long serialVersionUID = -5705492165282492295L;
+    private static final long serialVersionUID = -8100221497063858683L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
     BashStopHandler(OperatingSystem osParam, List<String[]> commandsParam) {
         os = osParam;
         commands = commandsParam;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
     }
 
     @Override
@@ -173,13 +198,18 @@ final class BashStopHandler implements StopHandler {
 
 final class BashPreStopHandler implements PreStopHandler {
 
-    private static final long serialVersionUID = 3138983756438002674L;
+    private static final long serialVersionUID = -8306611142699785320L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
     BashPreStopHandler(OperatingSystem osParam, List<String[]> commandsParam) {
         os = osParam;
         commands = commandsParam;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
     }
 
     @Override
@@ -190,7 +220,7 @@ final class BashPreStopHandler implements PreStopHandler {
 
 final class BashPortUpdateHandler implements PortUpdateHandler {
 
-    private static final long serialVersionUID = 1095927280515962263L;
+    private static final long serialVersionUID = 4626337516464315534L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -198,7 +228,12 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
     @Override
     public void execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);
@@ -207,7 +242,7 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
 
 final class BashStartDetectorHandler implements StartDetector {
 
-    private static final long serialVersionUID = 1123459320914315021L;
+    private static final long serialVersionUID = -1682397434146056192L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -215,7 +250,12 @@ final class BashStartDetectorHandler implements StartDetector {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+    @Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
     @Override
     public DetectorState execute(ExecutionContext ec) {
         BashExecutionHelper.executeCommands(os, ec, commands);

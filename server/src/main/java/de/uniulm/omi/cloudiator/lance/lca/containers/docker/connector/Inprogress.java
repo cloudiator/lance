@@ -71,11 +71,7 @@ class Inprogress implements DockerShell {
         return readAvailable(stdErr, -1);
     }
 
-    public List<String> getExecCommandsMemory() {
-      return execCommandsMemory;
-    }
-
-  // FIXME: change return value and interface such that
+    // FIXME: change return value and interface such that
     //  i) a StringBuilder is passed as a parameter
     // ii) return enum Status.TERMINATOR or 
     // 				   Status.EOF

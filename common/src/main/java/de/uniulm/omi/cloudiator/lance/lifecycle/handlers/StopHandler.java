@@ -35,8 +35,8 @@ public interface StopHandler extends LifecycleHandler {
 
 final class StopDeploymentHandler implements StopHandler {
 
-    private static final long serialVersionUID = -654718342624280976L;
-    private final Deployment d;
+  private static final long serialVersionUID = -3352648305120882172L;
+  private final Deployment d;
     
     StopDeploymentHandler(Deployment deploymentParam) {
         d = deploymentParam;
@@ -46,4 +46,11 @@ final class StopDeploymentHandler implements StopHandler {
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.STOP, ec);
     }
+
+  @Override
+  public boolean isEmpty() {
+    //todo: loop over all lifecycleHanlerTypes and check
+    //return d.hasLifecycleOperations(TYPE);
+    return true;
+  }
 }

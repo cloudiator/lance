@@ -24,5 +24,4 @@ public interface Shell {
 
     ExecutionResult executeCommand(String command);
     ExecutionResult executeBlockingCommand(String res);
-    List<String> getExecCommandsMemory();
 }

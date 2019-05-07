@@ -35,7 +35,7 @@ public interface InitHandler extends LifecycleHandler {
 
 final class InitDeploymentHandler implements InitHandler {
 
-    private static final long serialVersionUID = 2458020584701468809L;
+    private static final long serialVersionUID = 5079931703734523111L;
     private final Deployment d;
     
     InitDeploymentHandler(Deployment deploymentParam) {
@@ -45,5 +45,12 @@ final class InitDeploymentHandler implements InitHandler {
     @Override
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.INIT, ec);
+    }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: loop over all lifecycleHanlerTypes and check
+      //return d.hasLifecycleOperations(TYPE);
+      return true;
     }
 }

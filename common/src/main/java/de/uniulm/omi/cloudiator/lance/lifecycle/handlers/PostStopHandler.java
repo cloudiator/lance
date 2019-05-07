@@ -35,7 +35,7 @@ public interface PostStopHandler extends LifecycleHandler {
 
 final class PostStopDeploymentHandler implements PostStopHandler {
 
-    private static final long serialVersionUID = 2397092465419287154L;
+    private static final long serialVersionUID = -516774580464812193L;
     private final Deployment d;
     
     PostStopDeploymentHandler(Deployment deploymentParam) {
@@ -46,4 +46,11 @@ final class PostStopDeploymentHandler implements PostStopHandler {
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.POST_STOP, ec);
     }
+
+  @Override
+  public boolean isEmpty() {
+    //todo: loop over all lifecycleHanlerTypes and check
+    //return d.hasLifecycleOperations(TYPE);
+    return true;
+  }
 }
