@@ -22,7 +22,7 @@ import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
 
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
-import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.InPortContext;
+import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.ProvidedPortContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand;
@@ -434,17 +434,16 @@ public class ClientDockerPullTest {
 
   @Test
   public void testGLInsertExtDeplContext() {
-    ExternalContextParameters.InPortContext inpC = new InPortContext("sparkJob1Port",9999);
-    List<InPortContext> inpCList = new ArrayList<>();
-    inpCList.add(inpC);
+    ExternalContextParameters.ProvidedPortContext inpC = new ProvidedPortContext("sparkJob1Port",9999);
     ExternalContextParameters.Builder builder = new ExternalContextParameters.Builder();
-    builder.name("sparkJob1");
-    builder.appInstanceId(appInstanceId);
+    builder.taskName("sparkJob1");
+    builder.appId(appInstanceId);
     builder.compId(new ComponentId());
     builder.compInstId(new ComponentInstanceId());
     builder.pubIp(publicIp);
-    builder.inPortContext(inpCList);
-    builder.status(ContainerStatus.READY);
+    builder.providedPortContext(inpC);
+    builder.contStatus(ContainerStatus.READY);
+    builder.compInstType(LifecycleHandlerType.START);
 
     ExternalContextParameters params = builder.build();
 

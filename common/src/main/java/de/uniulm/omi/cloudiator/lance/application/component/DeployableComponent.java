@@ -46,8 +46,8 @@ public class DeployableComponent extends AbstractComponent {
 
     @Override
     public DeployableComponent build() {
-                                       return new DeployableComponent(this);
-                                                                             }
+      return new DeployableComponent(this);
+    }
 
     @Override
     protected Builder self() {

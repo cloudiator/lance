@@ -35,6 +35,7 @@
  */
 package de.uniulm.omi.cloudiator.lance.client;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -76,20 +77,20 @@ public final class LifecycleClientRegistryWrapper {
   public static void injectExternalDeploymentContext(ExternalContextParameters params)
       throws DeploymentException {
     try {
-      currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getName());
+      currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getTaskName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
           LcaRegistryConstants.regEntries.get(CONTAINER_STATUS), params.getStatus().toString());
+      currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
+          LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), params.getCompInstStatus().toString());
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
-      for (ExternalContextParameters.InPortContext inPortC : params.getInpContext()) {
         currentRegistry.addComponentProperty(
             params.getAppId(),
             params.getcId(),
             params.getcInstId(),
-            inPortC.getFullPortName(),
-            inPortC.getInernalInPortNmbr().toString());
-      }
+            params.getProvidedPortContext().getFullPortName(),
+            params.getProvidedPortContext().getPortNmbr().toString());
 
       currentRegistry.addComponentProperty(
           params.getAppId(),
@@ -98,7 +99,7 @@ public final class LifecycleClientRegistryWrapper {
           params.getFullHostName(),
           params.getPublicIp());
     } catch (RegistrationException e) {
-      e.printStackTrace();
+      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s", params.getTaskName()), e);
     }
   }
 
