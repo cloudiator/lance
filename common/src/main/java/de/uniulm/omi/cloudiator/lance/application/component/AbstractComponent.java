@@ -23,29 +23,21 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 
 public abstract class AbstractComponent implements Serializable, DynamicEnvVars {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponent.class);
-  protected final LifecycleStore lifecycle;
-  //private static final long serialVersionUID = -8078692212700712671L;
   private static final long serialVersionUID = 3136178656808565868L;
-
-
   private final String name;
   private final ComponentId myId;
   private final List<InPort> inPorts;
@@ -62,7 +54,6 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
       outPorts = new ArrayList<>(builder.outPortsParam);
       properties = new HashMap<>(builder.propertiesParam);
       defaultValues = new HashMap<>(builder.defaultValuesParam);
-      lifecycle = builder.lifecycle;
   }
 
   public ComponentId getComponentId() {
@@ -72,14 +63,14 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
   public List<InPort> getExposedPorts() {
       List<InPort> ports = new ArrayList<>(inPorts.size());
       for(InPort i : inPorts) {
-          ports.add(i);
+            ports.add(i);
       }
       return ports;
   }
 
   @Override
   public String toString() {
-      return name + ": -> " + inPorts + "@" + myId;
+      return name + ": > " + inPorts + "@" + myId;
   }
 
   public List<OutPort> getDownstreamPorts() {
@@ -88,47 +79,43 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
 
   public void accept(PropertyVisitor visitor) {
       for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
-          visitor.visit(entry.getKey(), entry.getValue());
+            visitor.visit(entry.getKey(), entry.getValue());
       }
   }
 
   public String getName() {
-      return name;
+    return name;
   }
 
   @Override
   public Map<String, String> getEnvVars() {
-                                          return getMatchingValsFromDContext();
-                                                                               }
+    return getMatchingValsFromDContext();
+  }
 
   public void injectDeploymentContext(DeploymentContext ctx) {
-                                                             this.ctx = ctx;
-                                                                            }
+     this.ctx = ctx;
+  }
 
   private Map<String,String> getMatchingValsFromDContext() {
       final Map<String,String> vals = new HashMap<>();
 
-      for(Entry<String, Class<?>> entry : properties.entrySet()) {
-          String propertyName = entry.getKey();
-          Class<?> type = entry.getValue();
-          if(type == OutPort.class)
-              continue;
-          Object o = ctx.getProperty(propertyName, type);
-          if(o == null) {
-              o = defaultValues.get(propertyName);
-          }
-          if(o == null) {
-              LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
-              continue;
-          }
-          vals.put(propertyName, o.toString());
-      }
+          for(Entry<String, Class<?>> entry : properties.entrySet()) {
+            String propertyName = entry.getKey();
+            Class<?> type = entry.getValue();
+            if(type == OutPort.class)
+                  continue;
+            Object o = ctx.getProperty(propertyName, type);
+            if(o == null) {
+                  o = defaultValues.get(propertyName);
+              }
+            if(o == null) {
+                  LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
+                  continue;
+              }
+            vals.put(propertyName, o.toString());
+        }
 
       return vals;
-  }
-
-  public LifecycleStore getLifecycleStore() {
-    return lifecycle;
   }
 
   @Override
@@ -166,7 +153,6 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
   abstract static class Builder<T extends Builder<T>> {
       protected String nameParam;
       protected ComponentId myIdParam;
-      private volatile LifecycleStore lifecycle;
       private List<InPort> inPortsParam = new ArrayList<>();
       private List<OutPort> outPortsParam = new ArrayList<>();
       private HashMap<String, Class<?>> propertiesParam = new HashMap<>();
@@ -245,11 +231,6 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
           addProperty(propertyName, propertyType);
           defaultValuesParam.put(propertyName, defaultValue);
           return self();
-      }
-
-      public T addLifecycleStore(LifecycleStore lifecycleStore) {
-        this.lifecycle = lifecycleStore;
-        return self();
       }
 
       public void addProperty(String propertyName, Class<?> propertyType) {
