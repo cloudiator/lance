@@ -70,7 +70,7 @@ public abstract class AbstractComponent implements Serializable, DynamicEnvVars 
 
   @Override
   public String toString() {
-      return name + ": > " + inPorts + "@" + myId;
+      return name + ": -> " + inPorts + "@" + myId;
   }
 
   public List<OutPort> getDownstreamPorts() {
