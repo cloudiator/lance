@@ -20,6 +20,9 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.ProvidedPortContext;
@@ -31,6 +34,7 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.lance.application.component.*;
@@ -40,6 +44,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.BeforeClass;
@@ -48,11 +53,6 @@ import org.junit.runners.MethodSorters;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
-import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
@@ -75,49 +75,240 @@ public class TwoComponentDockerTest {
 
   private static ApplicationId applicationId;
   private static ApplicationInstanceId appInstanceId;
+  private static ApplicationInstanceId wrongAppInstanceId;
 
-  private static String wordpressComponentUp, mariadbComponentDown, wordpressComponent_lifecycle;
-  private static String wordpressInternalInportNameUp, mariadbInternalInportNameDown, wordpressInternalInportName_lifecycle;
-  private static String wordpressOutportNameUp, wordpressOutportName_lifecycle;
-  private static String imageNameUp, imageNameDown, imageName_remote;
+  private static String wordpressComponentUp, mariadbComponentDown;
+  private static String wordpressInternalInportNameUp, mariadbInternalInportNameDown;
+  private static String wordpressOutportNameUp;
+  private static String imageNameUp, imageNameDown;
   private static ComponentId wordpressComponentIdUp, mariadbComponentIdDown;
-  private static int defaultWordpressInternalInportUp, defaultMariadbInternalInportDown, defaultWordpressInternalInport_lifecycle;
+  private static int defaultWordpressInternalInportUp, defaultMariadbInternalInportDown;
   private static ComponentInstanceId wordpressIdUp, mariadbIdDown;
   // adjust
   private static String publicIp = "x.x.x.x";
+  private static String wrongIp = "x.x.x.x";
   private static LifecycleClient client;
 
   @BeforeClass
   public static void configureAppContext() {
     applicationId = new ApplicationId();
     appInstanceId = new ApplicationInstanceId();
+    //should be different
+    wrongAppInstanceId = new ApplicationInstanceId();
 
     Random rand = new Random();
     wordpressComponentUp = "wordpressUp";
     mariadbComponentDown = "mariadbDown";
-    wordpressComponent_lifecycle = "wordpress_lifecycle";
     wordpressInternalInportNameUp = "WORDPRESS_INT_INP_UP";
     mariadbInternalInportNameDown = "MARIADB_INT_INP_DOWN";
-    wordpressInternalInportName_lifecycle = "WORDPRESS_INT_INP_LIFECYCLE";
     wordpressOutportNameUp = "WORDPRESS_OUT";
-    wordpressOutportName_lifecycle = "WORDPRESS_OUT_LIFECYCLE";
     imageNameUp = "wordpress";
     imageNameDown = "mariadb";
-    imageName_remote = "mariadb";
     wordpressComponentIdUp = new ComponentId();
     mariadbComponentIdDown = new ComponentId();
     defaultWordpressInternalInportUp = 80;
     // downstream-port must be opened on host
     defaultMariadbInternalInportDown =  3306;
-    defaultWordpressInternalInport_lifecycle = (rand.nextInt(65563) + 1);
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
     System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
+  @Test
+  public void testAClientGetter() {
+    try {
+      client = LifecycleClient.getClient(publicIp);
+      assertNotNull(client);
+    } catch (RemoteException ex) {
+      System.err.println("Server not reachable");
+    } catch (NotBoundException ex) {
+      System.err.println("Socket not bound");
+    }
+  }
+
+  @Ignore
+  @Test(expected = RemoteException.class)
+  public void testAClientGetterWrongIp() throws RemoteException {
+    try {
+      client = LifecycleClient.getClient(wrongIp);
+    } catch (NotBoundException ex) {
+      System.err.println("Socket not bound");
+    }
+  }
+
+  @Test
+  public void testBRegister() {
+    try {
+      client.registerApplicationInstance(appInstanceId, applicationId);
+      client.registerComponentForApplicationInstance(appInstanceId, wordpressComponentIdUp);
+      client.registerComponentForApplicationInstance(appInstanceId, mariadbComponentIdDown);
+    } catch (RegistrationException ex) {
+      System.err.println("Exception during registration");
+    }
+  }
+
+  // EtcdImpl does not throw an exception if not yet existant appId is used -> todo: refactor?
+  @Ignore
+  @Test(expected = RegistrationException.class)
+  public void testBRegisterCompWrongAppInstId() throws RegistrationException {
+    client.registerComponentForApplicationInstance(wrongAppInstanceId, wordpressComponentIdUp);
+  }
+
+  @Test
+  public void testCWordpressCompDescriptionUp() {
+    List<InportInfo> inInfs = getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
+    List<OutportInfo> outInfs = getOutPortInfos(wordpressOutportNameUp);
+    DockerComponent comp = buildDockerComponent( wordpressComponentUp, wordpressComponentIdUp, inInfs, outInfs, "latest", imageNameUp, cont_type.WORDPRESS);
+    assertEquals(comp.getName(),wordpressComponentUp);
+    assertEquals(comp.getComponentId(),wordpressComponentIdUp);
+    assertTrue(listEqualsIgnoreOrder(comp.getExposedPorts().stream()
+        .map(InPort::getPortName)
+        .collect(Collectors.toList())
+        ,inInfs.stream()
+        .map(InportInfo::getInportName)
+        .collect(Collectors.toList())));
+    assertTrue(listEqualsIgnoreOrder(comp.getDownstreamPorts().stream()
+            .map(OutPort::getName)
+            .collect(Collectors.toList())
+        ,outInfs.stream()
+            .map(OutportInfo::getOutportName)
+            .collect(Collectors.toList())));
+    assertTrue(listEqualsIgnoreOrder(comp.getDownstreamPorts().stream()
+            .map(OutPort::getLowerBound)
+            .collect(Collectors.toList())
+        ,outInfs.stream()
+            .map(OutportInfo::getMin)
+            .collect(Collectors.toList())));
+    assertEquals("latest",comp.getTag());
+    assertEquals(comp.getImageName(),imageNameUp);
+  }
+
+  @Test
+  public void testDMariadbCompDescriptionDown() {
+    List<InportInfo> inInfs = getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
+    DockerComponent comp = buildDockerComponent(mariadbComponentDown, mariadbComponentIdDown, inInfs, getOutPortInfos(), "latest", imageNameDown, cont_type.MARIADB);
+    assertEquals(comp.getName(),mariadbComponentDown);
+    assertEquals(comp.getComponentId(),mariadbComponentIdDown);
+    assertTrue(listEqualsIgnoreOrder(comp.getExposedPorts().stream()
+            .map(InPort::getPortName)
+            .collect(Collectors.toList())
+        ,inInfs.stream()
+            .map(InportInfo::getInportName)
+            .collect(Collectors.toList())));
+    assertEquals("latest",comp.getTag());
+    assertEquals(comp.getImageName(),imageNameDown);
+  }
+
+  @Test
+  public void testKDeploy() {
+    try {
+      DeploymentTypesWrapper wrapperUp = setUpWordpressUpDeploy();
+      Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            wordpressIdUp = client.deploy(wrapperUp.context, wrapperUp.comp);
+          } catch (DeploymentException e) {
+            System.err.println("Exception during deployment!");
+          };
+        }
+      });
+      t.start();
+      sleep(3000);
+
+      DeploymentTypesWrapper wrapperDown = setUpMariadbDownDeploy();
+      mariadbIdDown = client.deploy(wrapperDown.context, wrapperDown.comp);
+
+      t.join();
+    } catch (DeploymentException ex) {
+      System.err.println("Couldn't deploy docker app");
+    } catch (InterruptedException e) {
+      System.err.println("Got interrupted");
+    }
+  }
+
+  @Test(expected = DeploymentException.class)
+  public void testKDeployFail() throws DeploymentException {
+    client.deploy(createWordpressContextUpStream(), buildDockerComponent(
+        "fail",
+        new ComponentId(),
+        new ArrayList<>(),
+        new ArrayList<>(),
+        "latest",
+        "failimage",
+       cont_type.WORDPRESS
+    ));
+  }
+
+  @Test(timeout=120000)
+  public void testNComponentStatus() {
+    ContainerStatus wordpressStatusUp, mariadbStatusDown;
+    wordpressStatusUp = mariadbStatusDown = UNKNOWN;
+    do {
+      try {
+        wordpressStatusUp = client.getComponentContainerStatus(wordpressIdUp, publicIp);
+        mariadbStatusDown = client.getComponentContainerStatus(mariadbIdDown, publicIp);
+        System.out.println("WORPRESS_UP STATUS:" + wordpressStatusUp);
+        System.out.println("MARIADB_DOWN STATUS:" + mariadbStatusDown);
+        sleep(5000);
+      } catch (DeploymentException ex) {
+        System.err.println("Exception during deployment!");
+      } catch (InterruptedException ex) {
+        System.err.println("Interrupted!");
+      }
+    } while (wordpressStatusUp != READY || mariadbStatusDown != READY);
+  }
+
+  @Test(timeout=300000)
+  public void testOStopContainers() {
+    try {
+      sleep(2000);
+      Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            client.undeploy(wordpressIdUp, false);
+          } catch (DeploymentException e) {
+            System.err.println("Exception during deployment!");
+          };
+        }
+      });
+      t.start();
+      sleep(150000);
+      client.undeploy(mariadbIdDown, false);
+      t.join();
+    } catch (DeploymentException ex) {
+      System.err.println("Exception during deployment!");
+    } catch (InterruptedException ex) {
+      System.err.println("Interrupted!");
+    }
+  }
+
+  private DeploymentTypesWrapper setUpWordpressUpDeploy() {
+    List<InportInfo> inInfsUp =
+        getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
+    List<OutportInfo> outInfsUp = getOutPortInfos(wordpressOutportNameUp);
+    DockerComponent wordpressCompUp =
+        buildDockerComponent(wordpressComponentUp, wordpressComponentIdUp, inInfsUp, outInfsUp, "latest", imageNameUp, cont_type.WORDPRESS);
+    DeploymentContext wordpressContextUp = createWordpressContextUpStream();
+
+    DeploymentTypesWrapper wrapper = new DeploymentTypesWrapper(wordpressCompUp, wordpressContextUp);
+    return wrapper;
+  }
+
+  private DeploymentTypesWrapper setUpMariadbDownDeploy() {
+    List<InportInfo> inInfsDown =
+        getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
+    DockerComponent mariadbCompDown =
+        buildDockerComponent(mariadbComponentDown, mariadbComponentIdDown, inInfsDown, getOutPortInfos(), "latest", imageNameDown, cont_type.MARIADB);
+    DeploymentContext mariadbContextDown = createMariadbContextDownStream();
+
+    DeploymentTypesWrapper wrapper = new DeploymentTypesWrapper(mariadbCompDown, mariadbContextDown);
+    return wrapper;
+  }
+
   private DockerComponent.Builder buildDockerComponentBuilder(
-      LifecycleClient client,
       String compName,
       ComponentId id,
       List<InportInfo> inInfs,
@@ -157,7 +348,6 @@ public class TwoComponentDockerTest {
   }
 
   private DockerComponent.Builder buildDockerComponentBuilder(
-      LifecycleClient client,
       String compName,
       ComponentId id,
       List<InportInfo> inInfs,
@@ -166,11 +356,10 @@ public class TwoComponentDockerTest {
       String iName,
       cont_type type) {
 
-    return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, iName, type);
+    return buildDockerComponentBuilder(compName, id, inInfs, outInfs, "", tag, iName, type);
   }
 
   private DockerComponent buildDockerComponent(
-      LifecycleClient client,
       String compName,
       ComponentId id,
       List<InportInfo> inInfs,
@@ -179,43 +368,8 @@ public class TwoComponentDockerTest {
       String iName,
       cont_type type) {
 
-    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, iName, type);
+    DockerComponent.Builder builder = buildDockerComponentBuilder(compName, id, inInfs, outInfs, tag, iName, type);
     DockerComponent comp = builder.build();
-    return comp;
-  }
-
-  private DeployableComponent buildDeployableComponent(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      Callable<LifecycleStore> createLifeCycleStore) {
-
-    DeployableComponent.Builder builder = DeployableComponent.Builder.createBuilder(compName,id);
-
-    for (int i = 0; i < inInfs.size(); i++)
-      builder.addInport(
-          inInfs.get(i).inportName,
-          inInfs.get(i).portType,
-          inInfs.get(i).cardinality,
-          inInfs.get(i).inPort);
-
-    for (int i = 0; i < outInfs.size(); i++)
-      builder.addOutport(
-          outInfs.get(i).outportName,
-          outInfs.get(i).puHandler,
-          outInfs.get(i).cardinality,
-          outInfs.get(i).min);
-
-    try {
-      builder.addLifecycleStore(createLifeCycleStore.call());
-    } catch (Exception ex) {
-      System.err.println("Server not reachable");
-    }
-
-    builder.deploySequentially(true);
-    DeployableComponent comp = builder.build();
     return comp;
   }
 
@@ -224,6 +378,10 @@ public class TwoComponentDockerTest {
     public final PortProperties.PortType portType;
     public final int cardinality;
     public final int inPort;
+
+    public String getInportName() {
+      return inportName;
+    }
 
     InportInfo(String inportName, PortProperties.PortType portType, int cardinality, int inPort) {
       this.inportName = inportName;
@@ -239,6 +397,14 @@ public class TwoComponentDockerTest {
     public final int cardinality;
     public final int min;
 
+    public String getOutportName() {
+      return outportName;
+    }
+
+    public int getMin() {
+      return min;
+    }
+
     OutportInfo(String outportName, PortUpdateHandler puHandler, int cardinality, int min) {
       this.outportName = outportName;
       this.puHandler = puHandler;
@@ -247,68 +413,19 @@ public class TwoComponentDockerTest {
     }
   }
 
-  private LifecycleStore createDefaultLifecycleStore() {
-    LifecycleStoreBuilder store = new LifecycleStoreBuilder();
-    // pre-install handler //
-    BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
-    // TODO: Extend possible OSes, e.g. alpine (openjdk:8-jre)
-    builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
-    builder_pre.addCommand("apt-get -y -q update");
-    builder_pre.addCommand("apt-get -y -q upgrade");
-    builder_pre.addCommand("export STARTED=\"true\"");
-    store.setStartDetector(builder_pre.buildStartDetector());
-    // add other commands
-    store.setHandler(
-        builder_pre.build(LifecycleHandlerType.PRE_INSTALL), LifecycleHandlerType.PRE_INSTALL);
-    // weitere handler? //
-    return store.build();
-  }
+  static class DeploymentTypesWrapper {
+    public final DockerComponent comp;
+    public final DeploymentContext context;
 
-  @Test
-  public void testAClientGetter() {
-    try {
-      client = LifecycleClient.getClient(publicIp);
-    } catch (RemoteException ex) {
-      System.err.println("Server not reachable");
-    } catch (NotBoundException ex) {
-      System.err.println("Socket not bound");
+    DeploymentTypesWrapper(DockerComponent comp, DeploymentContext context) {
+      this.comp = comp;
+      this.context = context;
     }
   }
 
-  @Test
-  public void testBRegister() {
-    try {
-      client.registerApplicationInstance(appInstanceId, applicationId);
-      client.registerComponentForApplicationInstance(appInstanceId, wordpressComponentIdUp);
-      client.registerComponentForApplicationInstance(appInstanceId, mariadbComponentIdDown);
-    } catch (RegistrationException ex) {
-      System.err.println("Exception during registration");
-    }
-  }
 
-  @Test
-  public void testCWordpressCompDescriptionUp() {
-    List<InportInfo> inInfs = getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
-    List<OutportInfo> outInfs = getOutPortInfos(wordpressOutportNameUp);
-    buildDockerComponent( client, wordpressComponentUp, wordpressComponentIdUp, inInfs, outInfs, "latest", imageNameUp, cont_type.WORDPRESS);
-  }
-
-  @Test
-  public void testDMariadbCompDescriptionDown() {
-    List<InportInfo> inInfs = getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
-    buildDockerComponent( client, mariadbComponentDown, mariadbComponentIdDown, inInfs, getOutPortInfos(), "latest", imageNameDown, cont_type.MARIADB);
-  }
-
-  @Test
-  public void testEWordpressCompDescriptions_lifecycle() {
-    List<InportInfo> inInfs = getInPortInfos(wordpressInternalInportName_lifecycle, defaultWordpressInternalInport_lifecycle);
-    List<OutportInfo> outInfs = getOutPortInfos(wordpressOutportName_lifecycle);
-    buildDeployableComponent( client, wordpressComponent_lifecycle, mariadbComponentIdDown,
-        inInfs, outInfs, new Callable<LifecycleStore>() {
-          public LifecycleStore call() {
-            return createDefaultLifecycleStore();
-          }
-        });
+  public static <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+    return new HashSet<>(list1).equals(new HashSet<>(list2));
   }
 
   private static List<InportInfo> getInPortInfos(String internalInportName, int internalInport) {
@@ -371,7 +488,7 @@ public class TwoComponentDockerTest {
           "WORDPRESS_DB_PASSWORD=testpwd",
           "WORDPRESS_DB_HOST=$PUBLIC_WORDPRESS_OUT",
           "WORDPRESS_DB_NAME=testdb"
-          ));
+      ));
       String n = Integer.toString(defaultWordpressInternalInportUp);
       createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n+":"+n)));
       createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
@@ -426,125 +543,4 @@ public class TwoComponentDockerTest {
     return cmdsBuilder.build();
   }
 
-
-  @Test
-  public void testFWordpressDeploymentContextUp() {
-    createWordpressContextUpStream();
-  }
-
-  @Test
-  public void testGMariadbDeploymentContextDown() {
-    createMariadbContextDownStream();
-  }
-
-  @Ignore
-  @Test
-  public void testHWordpressDeploymentContext_lifecycle() {
-    //todo: implement
-  }
-
-  @Test
-  public void testIInsertExtDeplContext() {
-    ExternalContextParameters.ProvidedPortContext inpC = new ProvidedPortContext("sparkJob1Port",9999);
-    ExternalContextParameters.Builder builder = new ExternalContextParameters.Builder();
-    builder.taskName("sparkJob1");
-    builder.appId(appInstanceId);
-    builder.compId(new ComponentId());
-    builder.compInstId(new ComponentInstanceId());
-    builder.pubIp(publicIp);
-    builder.providedPortContext(inpC);
-    builder.contStatus(ContainerStatus.READY);
-    builder.compInstType(LifecycleHandlerType.START);
-
-    ExternalContextParameters params = builder.build();
-
-    try {
-      client.injectExternalDeploymentContext(params);
-    } catch (DeploymentException e) {
-      System.err.println("Couldn't inject ExtContext");
-    }
-  }
-
-  @Test
-  public void testKDeploy() {
-    try {
-      List<InportInfo> inInfsUp =
-          getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
-      List<OutportInfo> outInfsUp = getOutPortInfos(wordpressOutportNameUp);
-      DockerComponent wordpressCompUp =
-          buildDockerComponent( client, wordpressComponentUp, wordpressComponentIdUp, inInfsUp, outInfsUp, "latest", imageNameUp, cont_type.WORDPRESS);
-      DeploymentContext wordpressContextUp = createWordpressContextUpStream();
-
-
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            wordpressIdUp = client.deploy(wordpressContextUp, wordpressCompUp);
-          } catch (DeploymentException e) {
-            System.err.println("Exception during deployment!");
-          };
-        }
-      });
-      t.start();
-      sleep(3000);
-
-      List<InportInfo> inInfsDown =
-          getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
-      DockerComponent mariadbCompDown =
-          buildDockerComponent( client, mariadbComponentDown, mariadbComponentIdDown, inInfsDown, getOutPortInfos(), "latest", imageNameDown, cont_type.MARIADB);
-      DeploymentContext mariadbContextDown = createMariadbContextDownStream();
-      mariadbIdDown = client.deploy(mariadbContextDown, mariadbCompDown);
-
-      t.join();
-    } catch (DeploymentException ex) {
-      System.err.println("Couldn't deploy docker app");
-    } catch (InterruptedException e) {
-      System.err.println("Got interrupted");
-    }
-  }
-
-  @Test
-  public void testNComponentStatus() {
-    ContainerStatus wordpressStatusUp, mariadbStatusDown;
-    wordpressStatusUp = mariadbStatusDown = UNKNOWN;
-    do {
-      try {
-        wordpressStatusUp = client.getComponentContainerStatus(wordpressIdUp, publicIp);
-        mariadbStatusDown = client.getComponentContainerStatus(mariadbIdDown, publicIp);
-        System.out.println("WORPRESS_UP STATUS:" + wordpressStatusUp);
-        System.out.println("MARIADB_DOWN STATUS:" + mariadbStatusDown);
-        sleep(5000);
-      } catch (DeploymentException ex) {
-        System.err.println("Exception during deployment!");
-      } catch (InterruptedException ex) {
-        System.err.println("Interrupted!");
-      }
-    } while (wordpressStatusUp != READY || mariadbStatusDown != READY);
-  }
-
-  @Test
-  public void testOStopContainers() {
-    try {
-      sleep(2000);
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            client.undeploy(wordpressIdUp, false);
-          } catch (DeploymentException e) {
-            System.err.println("Exception during deployment!");
-          };
-        }
-      });
-      t.start();
-      sleep(150000);
-      client.undeploy(mariadbIdDown, false);
-      t.join();
-    } catch (DeploymentException ex) {
-      System.err.println("Exception during deployment!");
-    } catch (InterruptedException ex) {
-      System.err.println("Interrupted!");
-    }
-  }
 }
