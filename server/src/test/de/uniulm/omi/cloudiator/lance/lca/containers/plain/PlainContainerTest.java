@@ -4,7 +4,12 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -36,7 +41,11 @@ public class PlainContainerTest {
 	private void init(boolean creatRegistry) {
 		dumb = null;
 		core = new CoreElements(creatRegistry);
-		ctx = new ExecutionContext(OperatingSystem.WINDOWS_7, null);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.WINDOWS,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(7,null));
+		ctx = new ExecutionContext(os, null);
 		creator = new LifecycleStoreCreator();
 		creator.addDefaultStartDetector();
 	}

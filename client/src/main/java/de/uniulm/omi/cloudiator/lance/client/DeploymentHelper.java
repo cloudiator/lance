@@ -35,7 +35,12 @@
  */
 package de.uniulm.omi.cloudiator.lance.client;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
@@ -43,7 +48,11 @@ public final class DeploymentHelper {
 	
 	public static PortUpdateHandler getEmptyPortUpdateHandler() {  
 		BashBasedHandlerBuilder builder = new BashBasedHandlerBuilder();
-		builder.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.UBUNTU,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(1604,null));
+		builder.setOperatingSystem(os);
 		// basically empty; we do not execute anything //
 		return builder.buildPortUpdateHandler();
 	}

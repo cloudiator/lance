@@ -1,5 +1,9 @@
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -9,7 +13,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -125,7 +134,11 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(OperatingSystem.UBUNTU_14_04);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.UBUNTU,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(1604,null));
+		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(os);
 		//split for better readability
 		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
 				deplComp(core.comp).deplContext(core.ctx).
@@ -142,7 +155,11 @@ public class DockerSnapshottingTest {
 		DockerConfiguration dockerConfig = DockerConfiguration.INSTANCE;
 		DockerConnector client = ConnectorFactory.INSTANCE.createConnector(hostname);
 		DockerShellFactory shellFactory = new DockerShellFactory();
-		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(OperatingSystem.UBUNTU_14_04);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.UBUNTU,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(1604,null));
+		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(os);
 		//split for better readability
 		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
 				deplComp(core.comp).deplContext(core.ctx).
@@ -153,7 +170,7 @@ public class DockerSnapshottingTest {
 		logic.postprocess(LifecycleHandlerType.PRE_INSTALL);
 		logic.doDestroy(true, false);
 
-		LifecycleDockerContainerLogic.Builder builder2 = new LifecycleDockerContainerLogic.Builder(OperatingSystem.UBUNTU_14_04);
+		LifecycleDockerContainerLogic.Builder builder2 = new LifecycleDockerContainerLogic.Builder(os);
 		//split for better readability
 		AbstractDockerContainerLogic logic2 = builder2.cInstId(core.componentInstanceId).dockerConnector(client).
 				deplComp(core.comp).deplContext(core.ctx).

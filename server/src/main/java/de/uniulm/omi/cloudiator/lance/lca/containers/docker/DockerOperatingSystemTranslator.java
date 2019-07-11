@@ -18,37 +18,57 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 final class DockerOperatingSystemTranslator {
-    
+  private final static Logger LOGGER = LoggerFactory.getLogger(DockerOperatingSystemTranslator.class);
+
     DockerOperatingSystemTranslator(){
         
     }
     
     String translate(OperatingSystem os) {
-        switch(os.getFamily()){
-        case LINUX:
-            return translateLinux(os);
-        case WINDOWS:
-            return translateWindows(os);
-        case BSD:
-        default:
-            return translateOther(os);
-        }
-            
+      if (OperatingSystemUtils.isLinux(os.operatingSystemFamily())) {
+        return translateLinux(os);
+      } else if (os.operatingSystemFamily() == OperatingSystemFamily.WINDOWS) {
+        return  translateWindows(os);
+      } else {
+        return translateOther(os);
+      }
     }
     
     private static String translateLinux(OperatingSystem os) {
-        switch(os.getType()){
-        case UBUNTU:
-            return translateUbuntu(os);
-        case SUSE:
-        default:
-            return translateOther(os);
-        }
+      if (os.operatingSystemFamily() == OperatingSystemFamily.UBUNTU) {
+        return translateUbuntu(os);
+      }
+
+      LOGGER.info("Except ubuntu, currently only images tagged with 'latest' are used");
+      return os.operatingSystemFamily().name().toLowerCase() + ":latest";
     }
-    
+
+    private static String translateUbuntu(OperatingSystem os) {
+      final String versionStr = os.operatingSystemVersion().toString();
+
+      if (versionStr.length() != 4) {
+        throw new IllegalArgumentException(String.format("cannot translate ubuntu os for docker "
+            + "as version %s is unknown", versionStr));
+      }
+
+      final String year = versionStr.substring(0,1);
+      final String month = versionStr.substring(2,3);
+
+      return String.format("%s:%s_%s", os.operatingSystemFamily().name().toLowerCase(),
+          year, month);
+    }
+
     private static String translateOther(@SuppressWarnings("unused") OperatingSystem os) {
         throw new IllegalArgumentException("os not supported: ");
     }
@@ -56,10 +76,4 @@ final class DockerOperatingSystemTranslator {
     private static String translateWindows(OperatingSystem os) {
         return translateOther(os);
     }
-    
-    private static String translateUbuntu(OperatingSystem os) {
-        return "ubuntu:" + os.getVersion();
-    }
-    
-    
 }

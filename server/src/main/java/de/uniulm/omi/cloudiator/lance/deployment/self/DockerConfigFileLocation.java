@@ -18,7 +18,12 @@
 
 package de.uniulm.omi.cloudiator.lance.deployment.self;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.CommandResultReference;
@@ -29,7 +34,7 @@ enum DockerConfigFileLocation implements CommandResultReference {
     
     @Override
     public String getResult(OperatingSystem os, ExecutionContext ec) {
-        if(os.isLinuxOs() && os.getType() == OperatingSystemType.UBUNTU) {
+        if(os.operatingSystemFamily() == OperatingSystemFamily.UBUNTU) {
                 return "/etc/default/docker";
         }
         throw new IllegalStateException("location of config file unknown for " + os);

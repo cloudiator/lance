@@ -18,13 +18,18 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.install;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemVersion;
 
 public final class JavaSystemPackageCatalogue {
 
     public static String getJdkPackageName(String version, OperatingSystem os) {
-        switch(os.getType()){
+        switch(os.operatingSystemFamily()){
         case UBUNTU:
             return getUbuntuInstallCommand(version, os);
         case WINDOWS:
@@ -35,7 +40,7 @@ public final class JavaSystemPackageCatalogue {
     }
     
     private static String getUbuntuInstallCommand(String version, OperatingSystem os) {
-        if(OperatingSystemVersion.getUbuntuVersion(14, 4).equals(os.getVersion()) && isJava7(version)) {
+        if(OperatingSystemVersion.getUbuntuVersion(14, 4).equals(os.operatingSystemVersion()) && isJava7(version)) {
             return "openjdk-7-jdk";
         }
         throw new IllegalArgumentException("Java (" + version + ") installation for operating system " + os + " not supported");

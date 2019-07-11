@@ -18,7 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemUtils;
 
 
 public enum ContainerType {
@@ -27,12 +28,16 @@ public enum ContainerType {
 
 		@Override
 		public boolean supportsOsFamily(OperatingSystemFamily family) {
+		  if(OperatingSystemUtils.isLinux(family)) {
+		    return true;
+      }
+
 			switch(family){
-				case LINUX:
-					return true;
-				case BSD:
+        case FREEBSD:
+        case NETBSD:
+        case OPENBSD:
 				case WINDOWS:
-				case OTHER:
+        case UNKNOWN:
 					return false;
 				default: 
 					throw new IllegalArgumentException("OS type: " + family + " is not known");
@@ -62,12 +67,16 @@ public enum ContainerType {
     PLAIN("plain"){
 		@Override
 		public boolean supportsOsFamily(OperatingSystemFamily family) {
+      if(OperatingSystemUtils.isLinux(family)) {
+        return true;
+      }
+
 			switch(family){
-				case LINUX:
 				case WINDOWS:
 					return true;
-				case BSD:
-				case OTHER:
+        case FREEBSD:
+        case NETBSD:
+        case OPENBSD:
 					return false;
 				default: 
 					throw new IllegalArgumentException("OS type: " + family + " is not known");

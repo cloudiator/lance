@@ -21,6 +21,10 @@ package de.uniulm.omi.cloudiator.lance.client;
 import static de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus.*;
 import static java.lang.Thread.sleep;
 
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters.ProvidedPortContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
@@ -30,6 +34,12 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
 import java.util.ArrayList;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +62,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStoreBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
@@ -261,7 +270,11 @@ public class ClientDockerPullTest {
     // pre-install handler //
     BashBasedHandlerBuilder builder_pre = new BashBasedHandlerBuilder();
     // TODO: Extend possible OSes, e.g. alpine (openjdk:8-jre)
-    builder_pre.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+    builder_pre.setOperatingSystem(
+        new OperatingSystemImpl(
+            OperatingSystemFamily.UBUNTU,
+            OperatingSystemArchitecture.AMD64,
+            OperatingSystemVersions.of(1604,null)));
     builder_pre.addCommand("apt-get -y -q update");
     builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
@@ -518,8 +531,12 @@ public class ClientDockerPullTest {
             }
           });
       DeploymentContext zookContext = createZookeperContext(client, zookeeperComponentId, zookeeperInternalInportName, version.LIFECYCLE);
+      OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1604,null));
       zookId_lifecycle =
-          client.deploy(zookContext, zookComp, OperatingSystem.UBUNTU_14_04, ContainerType.DOCKER);
+          client.deploy(zookContext, zookComp, os, ContainerType.DOCKER);
     } catch (DeploymentException ex) {
       System.err.println("Couldn't deploy lifecycle component");
     }

@@ -3,7 +3,12 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShellImpl;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;

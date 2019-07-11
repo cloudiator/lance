@@ -21,7 +21,12 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 import java.util.EnumSet;
 import java.util.Set;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.Command;
@@ -77,8 +82,9 @@ class InstallSystemPackageCommandImpl implements InstallSystemPackageCommand {
     public void execute(ExecutionContext ec) {
         OperatingSystem os = ec.getOperatingSystem();
         String command = application.getPackageName(os);
-        command = os.getNonBlockingPackageInstallerCommand() + " " + command;
+        System.err.println("Command getNonBlockingPackageInstallerCommand() not implemented"
+            + "in OperatingSystemClass");
         
-        ec.getShell().executeCommand(command);
+        // ec.getShell().executeCommand(command);
     }
 }

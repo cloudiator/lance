@@ -45,7 +45,17 @@ import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.DefaultHandlers;
 import de.uniulm.omi.cloudiator.lance.util.application.*;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 
 //modified LcAImplementation.java
 public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
@@ -271,7 +281,11 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //PRE_INSTALL(PreInstallHandler.class, DefaultFactories.PRE_INSTALL_FACTORY),
         BashBasedHandlerBuilder builder_pre_inst = new BashBasedHandlerBuilder();
-        builder_pre_inst.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1604,null));
+        builder_pre_inst.setOperatingSystem(os);
         builder_pre_inst.addCommand("sudo apt-get -y -q update && sudo apt-get -y -q upgrade");
         //builder_pre_inst.addCommand("sudo dpkg --configure -a");
         builder_pre_inst.addCommand("sudo apt-get -y -q install zookeeperd");
@@ -285,7 +299,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //INSTALL(InstallHandler.class, DefaultFactories.INSTALL_FACTORY),
         BashBasedHandlerBuilder builder_inst = new BashBasedHandlerBuilder();
-        builder_inst.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_inst.setOperatingSystem(os);
         builder_inst.addCommand("mkdir -p /home/ubuntu/Downloads");
         //adjust
         builder_inst.addCommand(
@@ -300,7 +314,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //POST_INSTALL(PostInstallHandler.class, DefaultFactories.POST_INSTALL_FACTORY),
         BashBasedHandlerBuilder builder_post_inst = new BashBasedHandlerBuilder();
-        builder_post_inst.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_post_inst.setOperatingSystem(os);
         builder_post_inst.addCommand(
         "printf \"\\ndelete.topic.enable = true\" >> /home/ubuntu/kafka/config/server.properties");
         builder_post_inst.addCommand("printf \"\\n127.0.1.1 testvm\" | sudo tee -a /etc/hosts");
@@ -316,11 +330,11 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //START(StartHandler.class, DefaultFactories.START_FACTORY),
         BashBasedHandlerBuilder builder_start = new BashBasedHandlerBuilder();
-        builder_start.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_start.setOperatingSystem(os);
         //adjust
         builder_start.addCommand("sudo nohup ~/kafka/bin/kafka-server-start.sh ~/kafka/config/server.properties > ~/kafka/kafka.log 2>&1 &");
         BashBasedHandlerBuilder builder_start_det = new BashBasedHandlerBuilder();
-        builder_start_det.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_start_det.setOperatingSystem(os);
         store.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
         store.setHandler(builder_start.build(LifecycleHandlerType.START), LifecycleHandlerType.START);
 
@@ -355,7 +369,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         //INIT(InitHandler.class, DefaultFactories.INIT_FACTORY),
         //->not supported exception -> shift it to pre_install
         /*BashBasedHandlerBuilder builder_init = new BashBasedHandlerBuilder();
-        builder_init.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_init.setOperatingSystem(os);
         builder_init.addCommand("add-apt-repository ppa:webupd8team/java");
         builder_init.addCommand("apt-get -y -q update");
         builder_init.addCommand("apt-get -y -q install oracle-java8-set-default");
@@ -367,7 +381,11 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //PRE_INSTALL(PreInstallHandler.class, DefaultFactories.PRE_INSTALL_FACTORY),
         BashBasedHandlerBuilder builder_pre_inst = new BashBasedHandlerBuilder();
-        builder_pre_inst.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1604,null));
+        builder_pre_inst.setOperatingSystem(os);
         builder_pre_inst.addCommand("sudo apt-get -y -q update && sudo apt-get -y -q upgrade");
         builder_pre_inst.addCommand("sudo add-apt-repository -y ppa:webupd8team/java");
         builder_pre_inst.addCommand("sudo apt-get -y -q update");
@@ -387,7 +405,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //INSTALL(InstallHandler.class, DefaultFactories.INSTALL_FACTORY),
         BashBasedHandlerBuilder builder_inst = new BashBasedHandlerBuilder();
-        builder_inst.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_inst.setOperatingSystem(os);
         //adjust
         //builder_inst.addCommand("sudo apt-get -y -q install dsc22=2.2.3-1 cassandra=2.2.3");
         builder_inst.addCommand("sudo apt-get -y -q install cassandra=3.0.0");
@@ -409,7 +427,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //START(StartHandler.class, DefaultFactories.START_FACTORY),
         BashBasedHandlerBuilder builder_start = new BashBasedHandlerBuilder();
-        builder_start.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_start.setOperatingSystem(os);
         builder_start.addCommand("sudo chmod 750 /var/run/cassandra");
         builder_start.addCommand("sudo service cassandra start");
         builder_start.addCommand("touch c");
@@ -424,7 +442,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //PRE_STOP(PreStopHandler.class, DefaultFactories.PRE_STOP_FACTORY),
         BashBasedHandlerBuilder builder_pre_stop = new BashBasedHandlerBuilder();
-        builder_pre_stop.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_pre_stop.setOperatingSystem(os);
         builder_pre_stop.addCommand("sleep 10s");
         builder_pre_stop.addCommand("touch d");
         store.setHandler(builder_pre_stop.build(LifecycleHandlerType.PRE_STOP), LifecycleHandlerType.PRE_STOP);
@@ -434,7 +452,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
          */
         //STOP(StopHandler.class, DefaultFactories.STOP_FACTORY),
         BashBasedHandlerBuilder builder_stop = new BashBasedHandlerBuilder();
-        builder_stop.setOperatingSystem(OperatingSystem.UBUNTU_14_04);
+        builder_stop.setOperatingSystem(os);
         builder_stop.addCommand("sudo service cassandra stop");
         builder_stop.addCommand("touch e");
         store.setHandler(builder_stop.build(LifecycleHandlerType.STOP), LifecycleHandlerType.STOP);
