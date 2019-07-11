@@ -28,7 +28,6 @@ import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
