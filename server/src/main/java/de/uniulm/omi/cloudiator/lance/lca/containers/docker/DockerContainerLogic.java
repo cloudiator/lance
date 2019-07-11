@@ -65,7 +65,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      imageHandler.doPullImages(myId, myComponent.getFullImageName());
+      imageHandler.doPullImages(myComponent.getFullImageName());
       resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
