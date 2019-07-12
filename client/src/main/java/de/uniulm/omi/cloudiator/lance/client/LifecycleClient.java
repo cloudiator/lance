@@ -146,7 +146,7 @@ public final class LifecycleClient {
   }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
+      final DeployableComponent comp, final OperatingSystemImpl os, final ContainerType containerType)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();

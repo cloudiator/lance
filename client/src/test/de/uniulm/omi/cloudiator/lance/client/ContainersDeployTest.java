@@ -24,13 +24,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import java.util.concurrent.Callable;
+import org.junit.runners.MethodSorters;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ContainersDeployTest extends BaseTests {
 
   @Test
@@ -87,7 +90,7 @@ public class ContainersDeployTest extends BaseTests {
               });
       DeploymentContext zookContext =
           testDeploymentContext(TestUtils.zookeeperInternalInportNameDocker_lifecycle, TestUtils.defaultZookeeperInternalInportDocker_lifecycle);
-      OperatingSystem os = new OperatingSystemImpl(
+      OperatingSystemImpl os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
           OperatingSystemVersions.of(1604,null));
@@ -142,7 +145,7 @@ public class ContainersDeployTest extends BaseTests {
               });
       DeploymentContext kafkaContext =
           testDeploymentContext(TestUtils.kafkaInternalInportNamePlain_lifecycle, TestUtils.defaultKafkaInternalInportPlain_lifecycle);
-      OperatingSystem os = new OperatingSystemImpl(
+      OperatingSystemImpl os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
           OperatingSystemVersions.of(1604,null));

@@ -67,7 +67,11 @@ public class RemoteDockerShellTest {
   @BeforeClass
   public static void configureAppContext() {
     AppArchitectureBuilder builder = new AppArchitectureBuilder("ShellTestApp", new ApplicationId(), new ApplicationInstanceId());
-    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.UBUNTU,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(1604,null));
+    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), os);
     arch = builder.addComponentInfo(zookCompInfo).build();
 
     System.setProperty("lca.client.config.registry", "etcdregistry");

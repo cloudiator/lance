@@ -94,7 +94,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   //todo: check todo-remark at deployComponent
   @Override
   public ComponentInstanceId deployDeployableComponent(DeploymentContext ctx, DeployableComponent component,
-      OperatingSystem os, ContainerType containerType)
+      OperatingSystemImpl os, ContainerType containerType)
       throws RemoteException, LcaException, RegistrationException, ContainerException {
 
     componentConsistentlyRegistered(ctx, component);
