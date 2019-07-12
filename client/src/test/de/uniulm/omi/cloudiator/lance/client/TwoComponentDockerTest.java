@@ -69,12 +69,10 @@ import java.lang.Exception;
 // repository
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class TwoComponentDockerTest {
+public class TwoComponentDockerTest extends BaseTests {
 
   private enum cont_type { WORDPRESS, MARIADB };
 
-  private static ApplicationId applicationId;
-  private static ApplicationInstanceId appInstanceId;
   private static ApplicationInstanceId wrongAppInstanceId;
 
   private static String wordpressComponentUp, mariadbComponentDown;
@@ -91,8 +89,6 @@ public class TwoComponentDockerTest {
 
   @BeforeClass
   public static void configureAppContext() {
-    applicationId = new ApplicationId();
-    appInstanceId = new ApplicationInstanceId();
     //should be different
     wrongAppInstanceId = new ApplicationInstanceId();
 
@@ -116,15 +112,9 @@ public class TwoComponentDockerTest {
   }
 
   @Test
-  public void testAClientGetter() {
-    try {
-      client = LifecycleClient.getClient(publicIp);
-      assertNotNull(client);
-    } catch (RemoteException ex) {
-      System.err.println("Server not reachable");
-    } catch (NotBoundException ex) {
-      System.err.println("Socket not bound");
-    }
+  public void testABaseOne() {
+    testClientGetter();
+    testRegisterBase();
   }
 
   @Ignore
@@ -140,9 +130,8 @@ public class TwoComponentDockerTest {
   @Test
   public void testBRegister() {
     try {
-      client.registerApplicationInstance(appInstanceId, applicationId);
-      client.registerComponentForApplicationInstance(appInstanceId, wordpressComponentIdUp);
-      client.registerComponentForApplicationInstance(appInstanceId, mariadbComponentIdDown);
+      client.registerComponentForApplicationInstance(TestUtils.appInstanceId, wordpressComponentIdUp);
+      client.registerComponentForApplicationInstance(TestUtils.appInstanceId, mariadbComponentIdDown);
     } catch (RegistrationException ex) {
       System.err.println("Exception during registration");
     }
@@ -157,8 +146,8 @@ public class TwoComponentDockerTest {
 
   @Test
   public void testCWordpressCompDescriptionUp() {
-    List<InportInfo> inInfs = getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
-    List<OutportInfo> outInfs = getOutPortInfos(wordpressOutportNameUp);
+    List<TestUtils.InportInfo> inInfs = getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
+    List<TestUtils.OutportInfo> outInfs = getOutPortInfos(wordpressOutportNameUp);
     DockerComponent comp = buildDockerComponent( wordpressComponentUp, wordpressComponentIdUp, inInfs, outInfs, "latest", imageNameUp, cont_type.WORDPRESS);
     assertEquals(comp.getName(),wordpressComponentUp);
     assertEquals(comp.getComponentId(),wordpressComponentIdUp);
@@ -166,19 +155,19 @@ public class TwoComponentDockerTest {
         .map(InPort::getPortName)
         .collect(Collectors.toList())
         ,inInfs.stream()
-        .map(InportInfo::getInportName)
+        .map(TestUtils.InportInfo::getInportName)
         .collect(Collectors.toList())));
     assertTrue(listEqualsIgnoreOrder(comp.getDownstreamPorts().stream()
             .map(OutPort::getName)
             .collect(Collectors.toList())
         ,outInfs.stream()
-            .map(OutportInfo::getOutportName)
+            .map(TestUtils.OutportInfo::getOutportName)
             .collect(Collectors.toList())));
     assertTrue(listEqualsIgnoreOrder(comp.getDownstreamPorts().stream()
             .map(OutPort::getLowerBound)
             .collect(Collectors.toList())
         ,outInfs.stream()
-            .map(OutportInfo::getMin)
+            .map(TestUtils.OutportInfo::getMin)
             .collect(Collectors.toList())));
     assertEquals("latest",comp.getTag());
     assertEquals(comp.getImageName(),imageNameUp);
@@ -186,7 +175,7 @@ public class TwoComponentDockerTest {
 
   @Test
   public void testDMariadbCompDescriptionDown() {
-    List<InportInfo> inInfs = getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
+    List<TestUtils.InportInfo> inInfs = getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
     DockerComponent comp = buildDockerComponent(mariadbComponentDown, mariadbComponentIdDown, inInfs, getOutPortInfos(), "latest", imageNameDown, cont_type.MARIADB);
     assertEquals(comp.getName(),mariadbComponentDown);
     assertEquals(comp.getComponentId(),mariadbComponentIdDown);
@@ -194,7 +183,7 @@ public class TwoComponentDockerTest {
             .map(InPort::getPortName)
             .collect(Collectors.toList())
         ,inInfs.stream()
-            .map(InportInfo::getInportName)
+            .map(TestUtils.InportInfo::getInportName)
             .collect(Collectors.toList())));
     assertEquals("latest",comp.getTag());
     assertEquals(comp.getImageName(),imageNameDown);
@@ -286,9 +275,9 @@ public class TwoComponentDockerTest {
   }
 
   private DeploymentTypesWrapper setUpWordpressUpDeploy() {
-    List<InportInfo> inInfsUp =
+    List<TestUtils.InportInfo> inInfsUp =
         getInPortInfos(wordpressInternalInportNameUp, defaultWordpressInternalInportUp);
-    List<OutportInfo> outInfsUp = getOutPortInfos(wordpressOutportNameUp);
+    List<TestUtils.OutportInfo> outInfsUp = getOutPortInfos(wordpressOutportNameUp);
     DockerComponent wordpressCompUp =
         buildDockerComponent(wordpressComponentUp, wordpressComponentIdUp, inInfsUp, outInfsUp, "latest", imageNameUp, cont_type.WORDPRESS);
     DeploymentContext wordpressContextUp = createWordpressContextUpStream();
@@ -298,7 +287,7 @@ public class TwoComponentDockerTest {
   }
 
   private DeploymentTypesWrapper setUpMariadbDownDeploy() {
-    List<InportInfo> inInfsDown =
+    List<TestUtils.InportInfo> inInfsDown =
         getInPortInfos(mariadbInternalInportNameDown, defaultMariadbInternalInportDown);
     DockerComponent mariadbCompDown =
         buildDockerComponent(mariadbComponentDown, mariadbComponentIdDown, inInfsDown, getOutPortInfos(), "latest", imageNameDown, cont_type.MARIADB);
@@ -311,8 +300,8 @@ public class TwoComponentDockerTest {
   private DockerComponent.Builder buildDockerComponentBuilder(
       String compName,
       ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
+      List<TestUtils.InportInfo> inInfs,
+      List<TestUtils.OutportInfo> outInfs,
       String imageFolder,
       String tag,
       String iName,
@@ -350,8 +339,8 @@ public class TwoComponentDockerTest {
   private DockerComponent.Builder buildDockerComponentBuilder(
       String compName,
       ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
+      List<TestUtils.InportInfo> inInfs,
+      List<TestUtils.OutportInfo> outInfs,
       String tag,
       String iName,
       cont_type type) {
@@ -362,8 +351,8 @@ public class TwoComponentDockerTest {
   private DockerComponent buildDockerComponent(
       String compName,
       ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
+      List<TestUtils.InportInfo> inInfs,
+      List<TestUtils.OutportInfo> outInfs,
       String tag,
       String iName,
       cont_type type) {
@@ -371,46 +360,6 @@ public class TwoComponentDockerTest {
     DockerComponent.Builder builder = buildDockerComponentBuilder(compName, id, inInfs, outInfs, tag, iName, type);
     DockerComponent comp = builder.build();
     return comp;
-  }
-
-  static class InportInfo {
-    public final String inportName;
-    public final PortProperties.PortType portType;
-    public final int cardinality;
-    public final int inPort;
-
-    public String getInportName() {
-      return inportName;
-    }
-
-    InportInfo(String inportName, PortProperties.PortType portType, int cardinality, int inPort) {
-      this.inportName = inportName;
-      this.portType = portType;
-      this.cardinality = cardinality;
-      this.inPort = inPort;
-    }
-  }
-
-  static class OutportInfo {
-    public final String outportName;
-    public final PortUpdateHandler puHandler;
-    public final int cardinality;
-    public final int min;
-
-    public String getOutportName() {
-      return outportName;
-    }
-
-    public int getMin() {
-      return min;
-    }
-
-    OutportInfo(String outportName, PortUpdateHandler puHandler, int cardinality, int min) {
-      this.outportName = outportName;
-      this.puHandler = puHandler;
-      this.cardinality = cardinality;
-      this.min = min;
-    }
   }
 
   static class DeploymentTypesWrapper {
@@ -428,19 +377,19 @@ public class TwoComponentDockerTest {
     return new HashSet<>(list1).equals(new HashSet<>(list2));
   }
 
-  private static List<InportInfo> getInPortInfos(String internalInportName, int internalInport) {
-    List<InportInfo> inInfs = new ArrayList<>();
-    InportInfo inInf =
-        new InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 1, internalInport);
+  private static List<TestUtils.InportInfo> getInPortInfos(String internalInportName, int internalInport) {
+    List<TestUtils.InportInfo> inInfs = new ArrayList<>();
+    TestUtils.InportInfo inInf =
+        new TestUtils.InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 1, internalInport);
     inInfs.add(inInf);
 
     return inInfs;
   }
 
-  private static List<OutportInfo> getOutPortInfos(String outPortName) {
-    List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
+  private static List<TestUtils.OutportInfo> getOutPortInfos(String outPortName) {
+    List<TestUtils.OutportInfo> outInfs = new ArrayList<>();
+    TestUtils.OutportInfo outInf =
+        new TestUtils.OutportInfo(
             outPortName,
             DeploymentHelper.getEmptyPortUpdateHandler(),
             1,
@@ -450,15 +399,15 @@ public class TwoComponentDockerTest {
     return outInfs;
   }
 
-  private static List<OutportInfo> getOutPortInfos() {
-    List<OutportInfo> outInfs = new ArrayList<>();
+  private static List<TestUtils.OutportInfo> getOutPortInfos() {
+    List<TestUtils.OutportInfo> outInfs = new ArrayList<>();
 
     return outInfs;
   }
 
   private static DeploymentContext createWordpressContextUpStream() {
     DeploymentContext wordpress_context =
-        client.initDeploymentContext(applicationId, appInstanceId);
+        client.initDeploymentContext(TestUtils.applicationId, TestUtils.appInstanceId);
     wordpress_context.setProperty(
         wordpressInternalInportNameUp,(Object) defaultWordpressInternalInportUp, InPort.class);
     wordpress_context.setProperty(
@@ -471,7 +420,7 @@ public class TwoComponentDockerTest {
 
   private static DeploymentContext createMariadbContextDownStream() {
     DeploymentContext wordpress_context =
-        client.initDeploymentContext(applicationId, appInstanceId);
+        client.initDeploymentContext(TestUtils.applicationId, TestUtils.appInstanceId);
     wordpress_context.setProperty(
         mariadbInternalInportNameDown,(Object) defaultMariadbInternalInportDown, InPort.class);
     return wordpress_context;

@@ -32,22 +32,4 @@ public abstract class BaseTests {
       System.err.println("Exception during registration");
     }
   }
-
-  protected DockerComponent testCompDescriptionsDocker(String internalInportName, String outportName,
-      String componentName, ComponentId compId, String tag) {
-    List<TestUtils.InportInfo> inInfs = TestUtils.getInPortInfos(internalInportName);
-    List<TestUtils.OutportInfo> outInfs = TestUtils.getOutPortInfos(outportName);
-    return TestUtils.buildDockerComponent(componentName, compId, inInfs, outInfs, tag);
-  }
-
-  protected DeployableComponent testCompDescriptions_lifecycle(String internalInportName, String outportName,
-      String componentName, ComponentId compId, Callable<LifecycleStore> storeCreateFct) {
-    List<TestUtils.InportInfo> inInfs = TestUtils.getInPortInfos(internalInportName);
-    List<TestUtils.OutportInfo> outInfs = TestUtils.getOutPortInfos(outportName);
-    return TestUtils.buildDeployableComponent(componentName, compId, inInfs, outInfs, storeCreateFct);
-  }
-
-  protected DeploymentContext testDeploymentContext(String internalInportName, int defaultInternalInport ) {
-    return TestUtils.createContext(internalInportName, defaultInternalInport);
-  }
 }

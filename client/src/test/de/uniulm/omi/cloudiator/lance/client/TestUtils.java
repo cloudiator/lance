@@ -81,82 +81,6 @@ public class TestUtils {
     System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
-  public static DockerComponent.Builder buildDockerComponentBuilder(
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String imageFolder,
-      String tag) {
-    DockerComponent.Builder builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
-    builder.name(compName);
-    builder.imageFolder(imageFolder);
-    builder.tag(tag);
-    builder.myId(id);
-
-    for (int i = 0; i < inInfs.size(); i++)
-      builder.addInport(
-          inInfs.get(i).inportName,
-          inInfs.get(i).portType,
-          inInfs.get(i).cardinality,
-          inInfs.get(i).inPort);
-
-
-    for (int i = 0; i < outInfs.size(); i++)
-      builder.addOutport(
-          outInfs.get(i).outportName,
-          outInfs.get(i).puHandler,
-          outInfs.get(i).cardinality,
-          outInfs.get(i).min);
-
-    builder.deploySequentially(true);
-    return builder;
-  }
-
-  public static List<InportInfo> getInPortInfos(String internalInportName) {
-    List<InportInfo> inInfs = new ArrayList<>();
-    InportInfo inInf =
-        new InportInfo(internalInportName, PortProperties.PortType.INTERNAL_PORT, 2, 3888);
-    inInfs.add(inInf);
-
-    return inInfs;
-  }
-
-  public static List<OutportInfo> getOutPortInfos(String outPortName) {
-    List<OutportInfo> outInfs = new ArrayList<>();
-    OutportInfo outInf =
-        new OutportInfo(
-            outPortName,
-            DeploymentHelper.getEmptyPortUpdateHandler(),
-            1,
-            OutPort.NO_SINKS);
-    outInfs.add(outInf);
-
-    return outInfs;
-  }
-
-  public static DeploymentContext createContext (String internalInportName, int defaultInternalInport) {
-    DeploymentContext context =
-        client.initDeploymentContext(applicationId, appInstanceId);
-    // saying that we want to use the default port as the actual port number //
-    context.setProperty(
-        internalInportName ,(Object) defaultInternalInport, InPort.class);
-
-    return context;
-  }
-
-  public static DockerComponent buildDockerComponent(
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String tag) {
-
-    DockerComponent.Builder builder = buildDockerComponentBuilder(compName, id, inInfs, outInfs,"", tag);
-    DockerComponent comp = builder.build();
-    return comp;
-  }
-
   public static DeployableComponent buildDeployableComponent(
       String compName,
       ComponentId id,
@@ -197,6 +121,10 @@ public class TestUtils {
     public final int cardinality;
     public final int inPort;
 
+    public String getInportName() {
+      return inportName;
+    }
+
     InportInfo(String inportName, PortProperties.PortType portType, int cardinality, int inPort) {
       this.inportName = inportName;
       this.portType = portType;
@@ -210,6 +138,14 @@ public class TestUtils {
     public final PortUpdateHandler puHandler;
     public final int cardinality;
     public final int min;
+
+    public String getOutportName() {
+      return outportName;
+    }
+
+    public int getMin() {
+      return min;
+    }
 
     OutportInfo(String outportName, PortUpdateHandler puHandler, int cardinality, int min) {
       this.outportName = outportName;
@@ -334,33 +270,6 @@ public class TestUtils {
     return store.build();
   }
 
-  static EntireDockerCommands buildEntireDockerCommands() {
-    Random rand = new Random();
-    EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
-    try {
-      Map<Option,List<String>> createOptionMap = new HashMap<>();
-      createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
-      String  n = Integer.toString(rand.nextInt(65536) + 1);
-      createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n)));
-      createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
-      createOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      List<OsCommand> createOsCommandList = new ArrayList<>();
-      createOsCommandList.add(OsCommand.BASH);
-      List<String> createArgsList = new ArrayList<>();
-      createArgsList.add("--noediting");
-      cmdsBuilder.setOptions(Type.CREATE, createOptionMap);
-      cmdsBuilder.setCommand(Type.CREATE, createOsCommandList);
-      cmdsBuilder.setArgs(Type.CREATE, createArgsList);
-
-      Map<Option,List<String>> startOptionMap = new HashMap<>();
-      startOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      cmdsBuilder.setOptions(Type.START, startOptionMap);
-    } catch (DockerCommandException ce) {
-      System.err.println("Error in creating docker commands");
-    }
-
-    return cmdsBuilder.build();
-  }
 
   private static void printCommandParts(EntireDockerCommands cmds) {
     try {
