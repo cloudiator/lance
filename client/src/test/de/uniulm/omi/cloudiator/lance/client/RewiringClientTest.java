@@ -91,10 +91,6 @@ public class RewiringClientTest {
     OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 0);
     HashSet<OutportInfo> kafkaOutSet = new HashSet<>();
     kafkaOutSet.add(kafkaOutportInfo);
-    OperatingSystem os = new OperatingSystemImpl(
-        OperatingSystemFamily.UBUNTU,
-        OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
     ComponentInfo kafkaCompInfo = new ComponentInfo("kafka", new ComponentId(), new ComponentInstanceId(), kafkaInSet, kafkaOutSet, os);
     //setup Architecture
     arch = builder.addComponentInfo(kafkaCompInfo).addComponentInfo(cassCompInfo).build();

@@ -14,9 +14,6 @@ import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
-import de.uniulm.omi.cloudiator.lance.application.component.PortProperties.PortLinkage;
-import de.uniulm.omi.cloudiator.lance.application.component.PortReference;
-import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
@@ -45,14 +42,13 @@ public class TestUtils {
 
   public static ApplicationId applicationId;
   public static ApplicationInstanceId appInstanceId;
-
-  public static String zookeeperComponent, zookeeperComponent_lifecycle, rubyComponent_remote;
-  public static String zookeeperInternalInportName, zookeeperInternalInportName_lifecycle, rubyInternalInportName_remote;
-  public static String zookeeperOutportName, zookeeperOutportName_lifecycle, rubyOutportName_remote;
-  public static String imageName, imageName_remote;
-  public static ComponentId zookeeperComponentId, zookeeperComponentId_lifecycle, rubyComponentId_remote;
-  public static int defaultZookeeperInternalInport, defaultZookeeperInternalInport_lifecycle, defaultRubyInternalInport_remote;
-  public static ComponentInstanceId zookId, zookId_lifecycle, zookId_remote;
+  public static String zookeeperComponentDocker, zookeeperComponentDocker_lifecycle, kafkaComponentPlain_lifecycle;
+  public static String zookeeperInternalInportNameDocker, zookeeperInternalInportNameDocker_lifecycle, kafkaInternalInportNamePlain_lifecycle;
+  public static String zookeeperOutportNameDocker, zookeeperOutportNameDocker_lifecycle, kafkaOutportNamePlain_lifecycle;
+  public static String imageName, tag;
+  public static ComponentId zookeeperComponentIdDocker, zookeeperComponentIdDocker_lifecycle, kafkaComponentIdPlain_lifecycle;
+  public static int defaultZookeeperInternalInportDocker, defaultZookeeperInternalInportDocker_lifecycle, defaultKafkaInternalInportPlain_lifecycle;
+  public static ComponentInstanceId zookIdDocker, zookIdDocker_lifecycle, kafkaIdPlain_lifecycle;
   // adjust
   public static String publicIp = "x.x.x.x";
   public static LifecycleClient client;
@@ -62,23 +58,23 @@ public class TestUtils {
     appInstanceId = new ApplicationInstanceId();
 
     Random rand = new Random();
-    zookeeperComponent = "zookeeper";
-    zookeeperComponent_lifecycle = "zookeeper_lifecycle";
-    rubyComponent_remote = "ruby_remote";
-    zookeeperInternalInportName = "ZOOK_INT_INP";
-    zookeeperInternalInportName_lifecycle = "ZOOK_INT_INP_LIFECYCLE";
-    rubyInternalInportName_remote = "RUBY_INT_INP_REMOTE";
-    zookeeperOutportName = "ZOOK_OUT";
-    zookeeperOutportName_lifecycle = "ZOOK_OUT_LIFECYCLE";
-    rubyOutportName_remote = "RUBY_OUT_REMOTE";
+    zookeeperComponentDocker = "zookeeper";
+    zookeeperComponentDocker_lifecycle = "zookeeper_lifecycle";
+    kafkaComponentPlain_lifecycle = "kafka";
+    zookeeperInternalInportNameDocker = "ZOOK_INT_INP";
+    zookeeperInternalInportNameDocker_lifecycle = "ZOOK_INT_INP_LIFECYCLE";
+    kafkaInternalInportNamePlain_lifecycle = "KAFKA_INT_INP_LIFECYCLE";
+    zookeeperOutportNameDocker = "ZOOK_OUT";
+    zookeeperOutportNameDocker_lifecycle = "ZOOK_OUT_LIFECYCLE";
+    kafkaOutportNamePlain_lifecycle = "KAFKA_OUT_LIFECYCLE";
     imageName = "zookeeper";
-    imageName_remote = "mysql";
-    zookeeperComponentId = new ComponentId();
-    zookeeperComponentId_lifecycle = new ComponentId();
-    rubyComponentId_remote = new ComponentId();
-    defaultZookeeperInternalInport = 3888;
-    defaultZookeeperInternalInport_lifecycle = (rand.nextInt(65563) + 1);
-    defaultRubyInternalInport_remote = (rand.nextInt(65563) + 1);
+    tag = "latest";
+    zookeeperComponentIdDocker = new ComponentId();
+    zookeeperComponentIdDocker_lifecycle = new ComponentId();
+    kafkaComponentIdPlain_lifecycle = new ComponentId();
+    defaultZookeeperInternalInportDocker = 3888;
+    defaultZookeeperInternalInportDocker_lifecycle = (rand.nextInt(65563) + 1);
+    defaultKafkaInternalInportPlain_lifecycle = (rand.nextInt(65563) + 1);
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
@@ -86,20 +82,13 @@ public class TestUtils {
   }
 
   public static DockerComponent.Builder buildDockerComponentBuilder(
-      LifecycleClient client,
       String compName,
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
       String imageFolder,
-      String tag, boolean isRemote,
-      boolean isDynComp, boolean isDynHandler) {
-    DockerComponent.Builder builder;
-    if (isRemote) {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(isDynComp, isDynHandler), imageName_remote);
-    } else {
-      builder = new DockerComponent.Builder(buildEntireDockerCommands(isDynComp, isDynHandler), imageName);
-    }
+      String tag) {
+    DockerComponent.Builder builder = new DockerComponent.Builder(buildEntireDockerCommands(), imageName);
     builder.name(compName);
     builder.imageFolder(imageFolder);
     builder.tag(tag);
@@ -124,18 +113,6 @@ public class TestUtils {
     return builder;
   }
 
-  public static DockerComponent.Builder buildDockerComponentBuilder(
-      LifecycleClient client,
-      String compName,
-      ComponentId id,
-      List<InportInfo> inInfs,
-      List<OutportInfo> outInfs,
-      String tag, boolean isRemote,
-      boolean isDynComp, boolean isDynHandler) {
-
-    return buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, "", tag, isRemote, isDynComp, isDynHandler);
-  }
-
   public static List<InportInfo> getInPortInfos(String internalInportName) {
     List<InportInfo> inInfs = new ArrayList<>();
     InportInfo inInf =
@@ -158,66 +135,29 @@ public class TestUtils {
     return outInfs;
   }
 
-  public static DeploymentContext createZookeperContext(LifecycleClient client, ComponentId otherComponentId, String otherInternalInportName, version v) {
-    String internalInportName;
-    int defaultInternalInport;
-    String outportName;
-
-    if(v == version.DOCKER) {
-      internalInportName = zookeeperInternalInportName;
-      defaultInternalInport = defaultZookeeperInternalInport;
-      outportName = zookeeperOutportName;
-    } else if(v == version.LIFECYCLE) {
-      internalInportName = zookeeperInternalInportName_lifecycle;
-      defaultInternalInport = defaultZookeeperInternalInport_lifecycle;
-      outportName = zookeeperOutportName_lifecycle;
-    } else {
-      internalInportName = rubyInternalInportName_remote;
-      defaultInternalInport = defaultRubyInternalInport_remote;
-      outportName = rubyOutportName_remote;
-    }
-
-    DeploymentContext zookeeper_context =
+  public static DeploymentContext createContext (String internalInportName, int defaultInternalInport) {
+    DeploymentContext context =
         client.initDeploymentContext(applicationId, appInstanceId);
     // saying that we want to use the default port as the actual port number //
-    zookeeper_context.setProperty(
+    context.setProperty(
         internalInportName ,(Object) defaultInternalInport, InPort.class);
-    // saying that we wire this outgoing port to the incoming ports of CASSANDRA //
-    zookeeper_context.setProperty(
-        outportName ,
-        (Object)
-            new PortReference(otherComponentId, otherInternalInportName , PortLinkage.ALL),
-        OutPort.class);
-    return zookeeper_context;
+
+    return context;
   }
 
-
   public static DockerComponent buildDockerComponent(
-      LifecycleClient client,
       String compName,
       ComponentId id,
       List<InportInfo> inInfs,
       List<OutportInfo> outInfs,
-      String tag,
-      boolean isDynComp, boolean isDynHandler) {
+      String tag) {
 
-    DockerComponent.Builder builder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, tag, false, isDynComp, isDynHandler);
+    DockerComponent.Builder builder = buildDockerComponentBuilder(compName, id, inInfs, outInfs,"", tag);
     DockerComponent comp = builder.build();
     return comp;
   }
 
-  public static RemoteDockerComponent buildRemoteDockerComponent( LifecycleClient client, String compName, ComponentId id, List<InportInfo> inInfs,
-      List<OutportInfo> outInfs, String imageFolder, String tag, String hostName, int port, boolean useCredentials) {
-
-    DockerComponent.Builder dCompBuilder = buildDockerComponentBuilder(client, compName, id, inInfs, outInfs, imageFolder, tag, true, false, false);
-    RemoteDockerComponent.DockerRegistry dReg = new RemoteDockerComponent.DockerRegistry(hostName, port, "xxxxx", "xxxxx", useCredentials);
-    RemoteDockerComponent rDockerComp = new RemoteDockerComponent(dCompBuilder, dReg);
-
-    return rDockerComp;
-  }
-
   public static DeployableComponent buildDeployableComponent(
-      LifecycleClient client,
       String compName,
       ComponentId id,
       List<InportInfo> inInfs,
@@ -394,18 +334,12 @@ public class TestUtils {
     return store.build();
   }
 
-  static EntireDockerCommands buildEntireDockerCommands(boolean isDynComp, boolean isDynHandler) {
+  static EntireDockerCommands buildEntireDockerCommands() {
     Random rand = new Random();
     EntireDockerCommands.Builder cmdsBuilder = new EntireDockerCommands.Builder();
     try {
       Map<Option,List<String>> createOptionMap = new HashMap<>();
       createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe"));
-      if (isDynComp) {
-        createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe","dynamicgroup=group1"));
-      }
-      if (isDynHandler) {
-        createOptionMap.put(Option.ENVIRONMENT, Arrays.asList("foo=bar","john=doe","dynamichandler=group1","updatescript=/the/script.sh"));
-      }
       String  n = Integer.toString(rand.nextInt(65536) + 1);
       createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n)));
       createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
