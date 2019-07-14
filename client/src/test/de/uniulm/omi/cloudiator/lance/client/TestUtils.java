@@ -50,7 +50,7 @@ public class TestUtils {
   public static int defaultZookeeperInternalInportDocker, defaultZookeeperInternalInportDocker_lifecycle, defaultKafkaInternalInportPlain_lifecycle;
   public static ComponentInstanceId zookIdDocker, zookIdDocker_lifecycle, kafkaIdPlain_lifecycle;
   // adjust
-  public static String publicIp = "134.60.64.131";
+  public static String publicIp = "x.x.x.x";
   public static LifecycleClient client;
 
   static {
@@ -78,7 +78,7 @@ public class TestUtils {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "134.60.64.131:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
   }
 
   public static DeployableComponent buildDeployableComponent(

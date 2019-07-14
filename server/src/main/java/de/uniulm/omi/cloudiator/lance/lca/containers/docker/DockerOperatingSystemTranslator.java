@@ -65,7 +65,7 @@ final class DockerOperatingSystemTranslator {
       final String year = versionStr.substring(0,2);
       final String month = versionStr.substring(2,4);
 
-      return String.format("%s:%s_%s", os.operatingSystemFamily().name().toLowerCase(),
+      return String.format("%s:%s.%s", os.operatingSystemFamily().name().toLowerCase(),
           year, month);
     }
 
