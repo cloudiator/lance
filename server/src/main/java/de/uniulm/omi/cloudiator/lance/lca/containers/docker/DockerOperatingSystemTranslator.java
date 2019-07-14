@@ -55,7 +55,7 @@ final class DockerOperatingSystemTranslator {
     }
 
     private static String translateUbuntu(OperatingSystem os) {
-      final String versionStr = os.operatingSystemVersion().toString();
+      final String versionStr = os.operatingSystemVersion().version().toString();
 
       if (versionStr.length() != 4) {
         throw new IllegalArgumentException(String.format("cannot translate ubuntu os for docker "

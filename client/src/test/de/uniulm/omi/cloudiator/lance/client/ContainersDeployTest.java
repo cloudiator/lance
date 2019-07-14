@@ -16,8 +16,6 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.OsCommand
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Type;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.EntireDockerCommands;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
