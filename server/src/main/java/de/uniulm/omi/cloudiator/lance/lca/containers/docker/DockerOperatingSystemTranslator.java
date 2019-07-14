@@ -62,8 +62,8 @@ final class DockerOperatingSystemTranslator {
             + "as version %s is unknown", versionStr));
       }
 
-      final String year = versionStr.substring(0,1);
-      final String month = versionStr.substring(2,3);
+      final String year = versionStr.substring(0,2);
+      final String month = versionStr.substring(2,4);
 
       return String.format("%s:%s_%s", os.operatingSystemFamily().name().toLowerCase(),
           year, month);
