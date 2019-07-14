@@ -6,7 +6,6 @@ import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
-import de.uniulm.omi.cloudiator.domain.OperatingSystem;
 
 import de.uniulm.omi.cloudiator.lance.application.component.*;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
