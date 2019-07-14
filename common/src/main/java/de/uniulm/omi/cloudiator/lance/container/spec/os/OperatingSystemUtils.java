@@ -26,6 +26,7 @@ public class OperatingSystemUtils {
         || family == OperatingSystemFamily.DEBIAN
         || family == OperatingSystemFamily.FEDORA
         || family == OperatingSystemFamily.GENTOO
+        || family == OperatingSystemFamily.UBUNTU
         || family == OperatingSystemFamily.MANDRIVA
         || family == OperatingSystemFamily.RHEL
         || family == OperatingSystemFamily.OEL

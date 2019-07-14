@@ -175,13 +175,13 @@ public class ContainersDeployTest extends BaseTests {
 
   private static List<TestUtils.OutportInfo> getOutPortInfos(String outPortName) {
     List<TestUtils.OutportInfo> outInfs = new ArrayList<>();
-    TestUtils.OutportInfo outInf =
+    /* TestUtils.OutportInfo outInf =
         new TestUtils.OutportInfo(
             outPortName,
             DeploymentHelper.getEmptyPortUpdateHandler(),
             1,
             OutPort.NO_SINKS);
-    outInfs.add(outInf);
+    outInfs.add(outInf);*/
 
     return outInfs;
   }
