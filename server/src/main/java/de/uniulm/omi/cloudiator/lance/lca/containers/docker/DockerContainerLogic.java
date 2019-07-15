@@ -43,8 +43,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public DockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(new DockerOperatingSystemTranslator(),
-        builder.client, builder.myComponent, builder.dockerConfig);
+    this.imageHandler = new DockerImageHandler(builder.client, builder.myComponent,
+        builder.dockerConfig);
     try {
       myComponent.setContainerName(this.myId);
     } catch (DockerCommandException ce) {
@@ -65,7 +65,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      imageHandler.doPullImages(myId, myComponent.getFullImageName());
+      imageHandler.doPullImages(myComponent.getFullImageName());
       resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
@@ -223,7 +223,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
       final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
       LOGGER.debug(String
-      .format("Redeploying container %s with docker cli command: %s.", myId, cmdStr));
+      .format("Starting container %s with docker cli command: %s.", myId, cmdStr));
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
     } catch (DockerException de) {
       throw new ContainerException("cannot redeploy container: " + myId, de);

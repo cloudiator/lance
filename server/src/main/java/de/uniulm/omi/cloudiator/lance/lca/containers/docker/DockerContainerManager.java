@@ -33,7 +33,12 @@ import org.slf4j.LoggerFactory;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
@@ -220,7 +225,11 @@ public class DockerContainerManager implements ContainerManager {
         DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super(comp, hostContext, client, ctx, dockerConfig);
 
-      ExecutionContext ec = new ExecutionContext(OperatingSystem.UBUNTU_14_04, shellFactory);
+      OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1604, "16.04"));
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
       this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
           nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
@@ -240,7 +249,11 @@ public class DockerContainerManager implements ContainerManager {
         DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super(comp, hostContext, client, ctx, dockerConfig);
 
-      ExecutionContext ec = new ExecutionContext(OperatingSystem.UBUNTU_14_04, shellFactory);
+      OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1604, "16.04"));
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
       builder = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
           nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).

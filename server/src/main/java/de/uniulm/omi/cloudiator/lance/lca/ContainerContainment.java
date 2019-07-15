@@ -10,7 +10,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lca.container.BasicContainer;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
@@ -48,7 +53,7 @@ final class ContainerContainment implements BasicContainer {
 
 	//Returns reference to DockerContainerManager object if ContainerType==DOCKER/DOCKER-REMOTE else to PlainContainerManager object
   public ContainerManager getLifecycleContainerManager(HostContext context, OperatingSystem operatingSystem, ContainerType containerType) throws LcaException{
-    if(containerType.supportsOsFamily(operatingSystem.getFamily())) {
+    if(containerType.supportsOsFamily(operatingSystem.operatingSystemFamily())) {
       return getContainerManager(context, containerType);
     }
     throw new LcaException("Operating System and container do not match: " + operatingSystem.toString());

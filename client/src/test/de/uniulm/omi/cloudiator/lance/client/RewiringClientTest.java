@@ -25,7 +25,12 @@ import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.PortProperties;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
@@ -72,7 +77,11 @@ public class RewiringClientTest {
     InportInfo cassInportInfo = new InportInfo("CASS_INT_INP", PortProperties.PortType.INTERNAL_PORT, 9160, 0, 1);
     HashSet<InportInfo> cassInSet = new HashSet<>();
     cassInSet.add(cassInportInfo);
-    ComponentInfo cassCompInfo = new ComponentInfo("cassandra", new ComponentId(), new ComponentInstanceId(), cassInSet, new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.UBUNTU,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(1604,"16.04"));
+    ComponentInfo cassCompInfo = new ComponentInfo("cassandra", new ComponentId(), new ComponentInstanceId(), cassInSet, new HashSet<OutportInfo>(), os);
     //kafka
     InportInfo kafkaInportInfo = new InportInfo("KAFKA_INP", PortProperties.PortType.PUBLIC_PORT, 9092, 1, 1);
     HashSet<InportInfo> kafkaInSet = new HashSet<>();
@@ -82,7 +91,7 @@ public class RewiringClientTest {
     OutportInfo kafkaOutportInfo = new OutportInfo("KAFKA_OUT", DeploymentHelper.getEmptyPortUpdateHandler(), 0, 1, 0);
     HashSet<OutportInfo> kafkaOutSet = new HashSet<>();
     kafkaOutSet.add(kafkaOutportInfo);
-    ComponentInfo kafkaCompInfo = new ComponentInfo("kafka", new ComponentId(), new ComponentInstanceId(), kafkaInSet, kafkaOutSet, OperatingSystem.UBUNTU_14_04);
+    ComponentInfo kafkaCompInfo = new ComponentInfo("kafka", new ComponentId(), new ComponentInstanceId(), kafkaInSet, kafkaOutSet, os);
     //setup Architecture
     arch = builder.addComponentInfo(kafkaCompInfo).addComponentInfo(cassCompInfo).build();
 

@@ -23,7 +23,12 @@ import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -62,7 +67,11 @@ public class RemoteDockerShellTest {
   @BeforeClass
   public static void configureAppContext() {
     AppArchitectureBuilder builder = new AppArchitectureBuilder("ShellTestApp", new ApplicationId(), new ApplicationInstanceId());
-    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), OperatingSystem.UBUNTU_14_04);
+    OperatingSystem os = new OperatingSystemImpl(
+        OperatingSystemFamily.UBUNTU,
+        OperatingSystemArchitecture.AMD64,
+        OperatingSystemVersions.of(1604,"16.04"));
+    ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), os);
     arch = builder.addComponentInfo(zookCompInfo).build();
 
     System.setProperty("lca.client.config.registry", "etcdregistry");

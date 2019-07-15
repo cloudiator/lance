@@ -18,11 +18,16 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.command;
 
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemUtils;
 import java.util.EnumSet;
 import java.util.Set;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemType;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
@@ -134,7 +139,7 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
     public void execute(ExecutionContext ec) {
         OperatingSystem os = ec.getOperatingSystem();
         Shell shell = ec.getShell();
-        if(os.isLinuxOs()) {
+      if(OperatingSystemUtils.isLinux(os)) {
             String command = buildLinuxCommand(os);
             shell.executeCommand(command);
         } else {
@@ -152,7 +157,7 @@ final class SetFilePropertiesCommandImpl implements SetFilePropertiesCommand {
         String string = getUserString(props[1], getAccessString(props[0]));
         
         String command = "chmod " + string + " " + filename;
-        if(os.getType() == OperatingSystemType.UBUNTU) {
+      if(os.operatingSystemFamily() == OperatingSystemFamily.UBUNTU) {
             if(USE_ROOT) {
                 return "sudo " + command;
             }

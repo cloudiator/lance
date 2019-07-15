@@ -52,7 +52,12 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
@@ -141,7 +146,7 @@ public final class LifecycleClient {
   }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
+      final DeployableComponent comp, final OperatingSystemImpl os, final ContainerType containerType)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();

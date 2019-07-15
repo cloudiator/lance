@@ -18,8 +18,13 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemUtils;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,14 +51,14 @@ public class PlainShellImpl implements PlainShell {
     public PlainShellImpl(OperatingSystem operatingSystem) {
     	opSys = operatingSystem;
         //add the os respective shells for execution
-        if (operatingSystem.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+      if (operatingSystem.operatingSystemFamily() == OperatingSystemFamily.WINDOWS) {
             this.osShell.add("powershell.exe");
             this.osShell.add("-command");
-        } else if (operatingSystem.getFamily().equals(OperatingSystemFamily.LINUX)) {
+      } else if (OperatingSystemUtils.isLinux(operatingSystem.operatingSystemFamily())) {
             this.osShell.add("/bin/bash");
             this.osShell.add("-c");
         } else {
-            throw new IllegalStateException("Unkown OS family: " + operatingSystem.getFamily().name());
+            throw new IllegalStateException("Unkown OS family: " + operatingSystem.operatingSystemFamily().name());
         }
     }
 
