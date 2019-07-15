@@ -36,7 +36,6 @@ final class DockerImageHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDockerContainerLogic.class);
 
-    private final DockerOperatingSystemTranslator translator;
     private OperatingSystem os;
     private final DockerConnector client;
     private final AbstractComponent myComponent;
@@ -44,23 +43,21 @@ final class DockerImageHandler {
 
     private volatile ImageCreationType initSource;
 
-    DockerImageHandler(OperatingSystem osParam, DockerOperatingSystemTranslator translatorParam,
-                DockerConnector clientParam, AbstractComponent componentParam, DockerConfiguration dockerConfigParam) {
+    DockerImageHandler(OperatingSystem osParam, DockerConnector clientParam,
+        AbstractComponent componentParam, DockerConfiguration dockerConfigParam) {
         if(osParam == null)
             throw new NullPointerException("operating system has to be set.");
 
         dockerConfig = dockerConfigParam;
         os = osParam;
-        translator = translatorParam;
         client = clientParam;
         myComponent = componentParam;
     }
 
-    DockerImageHandler(DockerOperatingSystemTranslator translatorParam,
-        DockerConnector clientParam, AbstractComponent componentParam, DockerConfiguration dockerConfigParam) {
+    DockerImageHandler(DockerConnector clientParam, AbstractComponent componentParam,
+        DockerConfiguration dockerConfigParam) {
 
         dockerConfig = dockerConfigParam;
-        translator = translatorParam;
         client = clientParam;
         myComponent = componentParam;
     }
@@ -80,7 +77,7 @@ final class DockerImageHandler {
             key = imageFromComponent(componentInstallId);
             break;
         case OPERATING_SYSTEM:
-            key = translator.translate(os);
+            key = os.operatingSystemFamily().dockerImageFunction().get().apply(os.operatingSystemVersion());
             break;
         case COMPONENT_INSTANCE:
             throw new UnsupportedOperationException();

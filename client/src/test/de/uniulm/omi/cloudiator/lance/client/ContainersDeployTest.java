@@ -90,7 +90,7 @@ public class ContainersDeployTest extends BaseTests {
       OperatingSystemImpl os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
-          OperatingSystemVersions.of(1604,null));
+          OperatingSystemVersions.of(1604,"16.04"));
       TestUtils.zookIdDocker_lifecycle =
           TestUtils.client.deploy(zookContext, zookComp, os, ContainerType.DOCKER);
       boolean isReady = false;
@@ -145,7 +145,7 @@ public class ContainersDeployTest extends BaseTests {
       OperatingSystemImpl os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
-          OperatingSystemVersions.of(1604,null));
+          OperatingSystemVersions.of(1604,"16.04"));
       TestUtils.kafkaIdPlain_lifecycle =
           TestUtils.client.deploy(kafkaContext, kafkaComp, os, ContainerType.PLAIN);
       boolean isReady = false;

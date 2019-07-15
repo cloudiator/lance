@@ -23,7 +23,7 @@ public class LifecycleDockerContainerLogic extends AbstractDockerContainerLogic 
   private LifecycleDockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(builder.osParam, new DockerOperatingSystemTranslator(),
+    this.imageHandler = new DockerImageHandler(builder.osParam,
         builder.client, builder.myComponent, builder.dockerConfig);
   }
 

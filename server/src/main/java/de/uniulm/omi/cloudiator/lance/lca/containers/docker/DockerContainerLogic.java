@@ -43,8 +43,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public DockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(new DockerOperatingSystemTranslator(),
-        builder.client, builder.myComponent, builder.dockerConfig);
+    this.imageHandler = new DockerImageHandler(builder.client, builder.myComponent,
+        builder.dockerConfig);
     try {
       myComponent.setContainerName(this.myId);
     } catch (DockerCommandException ce) {
