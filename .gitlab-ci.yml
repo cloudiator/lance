@@ -1,9 +1,27 @@
-image: maven:3.3-jdk-8
+image: maven:latest
+
+cache:
+  paths:
+    - .m2/repository/
+    - target/
 
 build:
-  script: mvn install -U -Dmaven.javadoc.skip=true
+  stage: build
+  script:
+    - mvn -q compile
+
+test:
+  stage: test
+  script:
+    - mvn -q test
+
+deploy:
+  stage: deploy
+  script:
+    - mvn -q install -Dmaven.javadoc.skip=true -DskipTests=true
+  only:
+    - master
   artifacts:
     paths:
-      - server/target/lance-server-jar-with-dependencies.jar
-      - install/docker_retry.sh
+      - server/target/server-0.3.0-SNAPSHOT.jar
 
