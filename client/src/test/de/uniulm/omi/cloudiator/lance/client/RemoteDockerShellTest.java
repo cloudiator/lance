@@ -70,7 +70,7 @@ public class RemoteDockerShellTest {
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
+        OperatingSystemVersions.of(1604,"16.04"));
     ComponentInfo zookCompInfo = new ComponentInfo("zookeeper", new ComponentId(), new ComponentInstanceId(), new HashSet<InportInfo> (), new HashSet<OutportInfo>(), os);
     arch = builder.addComponentInfo(zookCompInfo).build();
 

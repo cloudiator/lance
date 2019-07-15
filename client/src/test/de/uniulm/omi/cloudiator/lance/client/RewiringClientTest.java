@@ -80,7 +80,7 @@ public class RewiringClientTest {
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
+        OperatingSystemVersions.of(1604,"16.04"));
     ComponentInfo cassCompInfo = new ComponentInfo("cassandra", new ComponentId(), new ComponentInstanceId(), cassInSet, new HashSet<OutportInfo>(), os);
     //kafka
     InportInfo kafkaInportInfo = new InportInfo("KAFKA_INP", PortProperties.PortType.PUBLIC_PORT, 9092, 1, 1);

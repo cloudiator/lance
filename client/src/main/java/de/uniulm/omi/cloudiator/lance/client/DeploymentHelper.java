@@ -51,7 +51,7 @@ public final class DeploymentHelper {
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
+        OperatingSystemVersions.of(1604,"16.04"));
 		builder.setOperatingSystem(os);
 		// basically empty; we do not execute anything //
 		return builder.buildPortUpdateHandler();

@@ -137,7 +137,7 @@ public class DockerSnapshottingTest {
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
+        OperatingSystemVersions.of(1604, "16.04"));
 		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(os);
 		//split for better readability
 		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).
@@ -158,7 +158,7 @@ public class DockerSnapshottingTest {
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
+        OperatingSystemVersions.of(1604, "16.04"));
 		LifecycleDockerContainerLogic.Builder builder = new LifecycleDockerContainerLogic.Builder(os);
 		//split for better readability
 		AbstractDockerContainerLogic logic = builder.cInstId(core.componentInstanceId).dockerConnector(client).

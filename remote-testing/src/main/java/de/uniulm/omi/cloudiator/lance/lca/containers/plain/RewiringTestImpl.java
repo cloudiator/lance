@@ -284,7 +284,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         OperatingSystem os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
-          OperatingSystemVersions.of(1604,null));
+          OperatingSystemVersions.of(1604,"16.04"));
         builder_pre_inst.setOperatingSystem(os);
         builder_pre_inst.addCommand("sudo apt-get -y -q update && sudo apt-get -y -q upgrade");
         //builder_pre_inst.addCommand("sudo dpkg --configure -a");
@@ -384,7 +384,7 @@ public class RewiringTestImpl extends TestImpl implements RewiringTestAgent {
         OperatingSystem os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
-          OperatingSystemVersions.of(1604,null));
+          OperatingSystemVersions.of(1604,"16.04"));
         builder_pre_inst.setOperatingSystem(os);
         builder_pre_inst.addCommand("sudo apt-get -y -q update && sudo apt-get -y -q upgrade");
         builder_pre_inst.addCommand("sudo add-apt-repository -y ppa:webupd8team/java");

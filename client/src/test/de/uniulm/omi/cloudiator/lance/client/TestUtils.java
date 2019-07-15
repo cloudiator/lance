@@ -153,7 +153,7 @@ public class TestUtils {
         new OperatingSystemImpl(
             OperatingSystemFamily.UBUNTU,
             OperatingSystemArchitecture.AMD64,
-            OperatingSystemVersions.of(1604,null)));
+            OperatingSystemVersions.of(1604, "16.04")));
     builder_pre.addCommand("apt-get -y -q update");
     builder_pre.addCommand("apt-get -y -q upgrade");
     builder_pre.addCommand("export STARTED=\"true\"");
@@ -185,7 +185,7 @@ public class TestUtils {
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1604,null));
+        OperatingSystemVersions.of(1604, "16.04"));
     builder_pre_inst.setOperatingSystem(os);
     builder_pre_inst.addCommand("sudo apt-get -y -q update && sudo apt-get -y -q upgrade");
     //builder_pre_inst.addCommand("sudo dpkg --configure -a");
