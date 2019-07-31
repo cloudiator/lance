@@ -56,6 +56,6 @@ public class PlainShellWrapper implements Shell {
         if(result.isSuccess()) {
             return;
         }
-        LOGGER.warn("unsuccessull command '" + command + "': " + result.toString());
+        LOGGER.warn("unsuccessful command '" + command + "': " + result.toString());
     }
 }

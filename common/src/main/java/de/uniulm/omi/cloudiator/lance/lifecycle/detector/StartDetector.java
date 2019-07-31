@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lifecycle.detector;
 
 import de.uniulm.omi.cloudiator.lance.deployment.Deployment;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
 public interface StartDetector extends Detector {
 
   boolean isEmpty();
-	DetectorState execute(ExecutionContext ec);
+	DetectorState execute(ExecutionContext ec) throws LifecycleException;
 }
 
 
