@@ -1,6 +1,7 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
 import com.typesafe.config.Config;
+import de.uniulm.omi.cloudiator.lance.util.application.FailFastConfigTmp;
 import java.util.concurrent.ScheduledFuture;
 
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import de.uniulm.omi.cloudiator.util.configuration.Configuration;
 final class StopDetectorHandler implements Runnable {
     
 	private static final Logger LOGGER = LoggerFactory.getLogger(StopDetectorHandler.class);
-  private static final Config config = Configuration.conf().getConfig("failfast");
+  private static final boolean failFast = FailFastConfigTmp.failFast;
 
 	// /** waiting 5 minutes per default */
 	private static final int MAXIMUM_STOP_WAIT_TIME = 900000;
@@ -81,7 +82,6 @@ final class StopDetectorHandler implements Runnable {
          getLogger().warn("detection failed with exception", ce);
         return DetectorState.DETECTION_FAILED;
       } catch (LifecycleException e) {
-        final boolean failFast = config.getBoolean("failfast");
 
         if (failFast) {
           LOGGER.error(String.format("Commands of type: %s contained return values unequal to zero", detector), e);

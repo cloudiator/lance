@@ -27,6 +27,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
+import de.uniulm.omi.cloudiator.lance.util.application.FailFastConfigTmp;
 import de.uniulm.omi.cloudiator.util.configuration.Configuration;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareStateMachine;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 public final class LifecycleController {
 
-    private static final Config config = Configuration.conf().getConfig("failfast");
+    private static final boolean failFast = FailFastConfigTmp.failFast;
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
 
     static Logger getLogger() {
@@ -189,7 +190,6 @@ public final class LifecycleController {
             // set error state
             // updateStateInRegistry(LifecycleHandlerType.START);
         } catch (LifecycleException e) {
-          final boolean failFast = config.getBoolean("failfast");
 
           if (failFast) {
             throw new ContainerException(e);
