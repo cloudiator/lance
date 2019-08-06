@@ -18,6 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.bash;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.uniulm.omi.cloudiator.domain.OperatingSystem;
@@ -55,18 +57,25 @@ final class BashExecutionHelper {
         return shell.executeCommand(command); 
     }
     
-    static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
-          if(!osMatches(osParam, ec))
-              return;
-          
-          Shell shell = ec.getShell();
-          for(String[] cmd : commands) {
-              String res = buildStringFromCommandLine(cmd);
-              doExecuteCommand(false, res, shell);
-          }
+    static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) throws LifecycleException {
+      final List<String> errCommandsList = new ArrayList<>();
+      if(!osMatches(osParam, ec))
+          return;
+
+      Shell shell = ec.getShell();
+      for(String[] cmd : commands) {
+          String res = buildStringFromCommandLine(cmd);
+          ExecutionResult result = doExecuteCommand(false, res, shell);
+          processExecResult(result, res, errCommandsList);
+      }
+
+      if(errCommandsList.size() > 0) {
+        throw new LifecycleException(String.join("\n", errCommandsList));
+      }
     }
     
-    static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) {
+    static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) throws LifecycleException {
+        final List<String> errCommandsList = new ArrayList<>();
         if(!osMatches(osParam, ec))
             return;
         
@@ -77,7 +86,20 @@ final class BashExecutionHelper {
         for(String[] cmd : commands) {
             String res = buildStringFromCommandLine(cmd);
             counter++;
-            doExecuteCommand(counter == commandSize, res, shell);
+            ExecutionResult result = doExecuteCommand(counter == commandSize, res, shell);
+            processExecResult(result, res, errCommandsList);
         }
+
+        if(errCommandsList.size() > 0) {
+          throw new LifecycleException(String.join("\n", errCommandsList));
+        }
+    }
+
+    private static void processExecResult(ExecutionResult result, String commandString, List<String> errCommandsList) {
+      if(result.isSuccess() || errCommandsList == null) {
+        return;
+      }
+
+      errCommandsList.add(commandString);
     }
 }

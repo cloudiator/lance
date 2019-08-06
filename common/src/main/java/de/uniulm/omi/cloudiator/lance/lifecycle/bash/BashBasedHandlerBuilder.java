@@ -18,6 +18,7 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.bash;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,7 +109,7 @@ final class BashPreInstallHandler implements PreInstallHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
@@ -130,7 +131,7 @@ final class BashInstallHandler implements InstallHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
@@ -152,7 +153,7 @@ final class BashPostInstallHandler implements PostInstallHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
@@ -174,7 +175,7 @@ final class BashStartHandler implements StartHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
@@ -196,7 +197,7 @@ final class BashStopHandler implements StopHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
@@ -218,7 +219,7 @@ final class BashPreStopHandler implements PreStopHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
@@ -240,7 +241,7 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
@@ -262,7 +263,7 @@ final class BashStartDetectorHandler implements StartDetector {
     }
 
     @Override
-    public DetectorState execute(ExecutionContext ec) {
+    public DetectorState execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
         //TODO: In case, a plain-shell is used: "export STARTED=true" doesn't work out -> refactor PlainShellImpl, so that the variable gets exported into the following shell context
         ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());

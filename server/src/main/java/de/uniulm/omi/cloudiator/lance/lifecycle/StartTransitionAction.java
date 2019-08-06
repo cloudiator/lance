@@ -1,12 +1,19 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import com.typesafe.config.Config;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareTransitionBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
+import de.uniulm.omi.cloudiator.util.configuration.Configuration;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class StartTransitionAction implements TransitionAction {
-	
+
+  private static final Config config = Configuration.conf().getConfig("failfast");
+  private final static Logger LOGGER = LoggerFactory.getLogger(DefaultLifecycleTransition.class);
+
 	private final LifecycleStore store;
 	private final ExecutionContext ctx;
 	private final LifecycleActionInterceptor interceptor;
@@ -29,13 +36,17 @@ final class StartTransitionAction implements TransitionAction {
 	@Override
 	public void transit(Object[] params) throws TransitionException {
 		StartHandler startHandler = store.getHandler(LifecycleHandlerType.START, StartHandler.class);
-        try { 
-        	startHandler.execute(ctx);
-        	StartDetectorHandler.runStartDetector(interceptor, store.getStartDetector(), ctx);
-        } catch(LifecycleException lce) {
-        	throw new TransitionException(lce);
-        }
+    try {
+      startHandler.execute(ctx);
+      StartDetectorHandler.runStartDetector(interceptor, store.getStartDetector(), ctx);
+    } catch(LifecycleException lce) {
+      final boolean failFast = config.getBoolean("failfast");
 
-	}
+      if (failFast) {
+        throw new TransitionException(lce);
+      }
 
+      LOGGER.warn(String.format("Commands of type: %s contained return values unequal to zero", LifecycleHandlerType.START), lce);
+    }
+  }
 }

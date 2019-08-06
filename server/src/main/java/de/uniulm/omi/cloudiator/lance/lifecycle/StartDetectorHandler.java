@@ -62,7 +62,7 @@ final class StartDetectorHandler {
 		}
     }
     
-    private DetectorState runStartDetectorLoop() {
+    private DetectorState runStartDetectorLoop() throws LifecycleException {
     	boolean preprocessed = false;
     	 try {
     		 getLogger().info("running start detector");
@@ -71,19 +71,19 @@ final class StartDetectorHandler {
     		 return detector.execute(ec);
     	 } catch (ContainerException ce) {
     		 getLogger().warn("detection failed with exception", ce);
- 			return DetectorState.DETECTION_FAILED;
- 		} finally {
-			if(preprocessed) {
-				try {
-					interceptor.postprocessDetector(DetectorType.START);
-				} catch (ContainerException ce) {
-					// FIXME: what shall we do here? easiest is to disallow
-					// exceptions in postprocessing ... 
-					getLogger().warn("error when postprocessing detection", ce);
-					throw new IllegalStateException("wrong state: should be in error state?", ce);
-				}
-			}
-		}
+        return DetectorState.DETECTION_FAILED;
+      } finally {
+        if(preprocessed) {
+          try {
+            interceptor.postprocessDetector(DetectorType.START);
+          } catch (ContainerException ce) {
+            // FIXME: what shall we do here? easiest is to disallow
+            // exceptions in postprocessing ...
+            getLogger().warn("error when postprocessing detection", ce);
+            throw new IllegalStateException("wrong state: should be in error state?", ce);
+          }
+        }
+      }
     }
 	
 	private StartDetectorHandler(LifecycleActionInterceptor interceptorP, StartDetector detectorP, ExecutionContext ecP) {
