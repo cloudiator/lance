@@ -18,7 +18,6 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
-import com.typesafe.config.Config;
 import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
@@ -27,8 +26,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.util.application.FailFastConfigTmp;
-import de.uniulm.omi.cloudiator.util.configuration.Configuration;
+import de.uniulm.omi.cloudiator.lance.application.FailFastConfig;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareStateMachine;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareStateMachineBuilder;
@@ -38,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public final class LifecycleController {
 
-    private static final boolean failFast = FailFastConfigTmp.failFast;
+    private static final boolean failFast = FailFastConfig.failFast;
     private static final Logger LOGGER = LoggerFactory.getLogger(LifecycleController.class);
 
     static Logger getLogger() {

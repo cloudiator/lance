@@ -84,7 +84,12 @@ public class DockerSnapshottingTest {
 			throw new UnsupportedOperationException();
 		}
 
-		@Override
+    @Override
+    public String getFailFast() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
 		public Map<String,String> getEnvVars() {
 			throw new UnsupportedOperationException();
 		}

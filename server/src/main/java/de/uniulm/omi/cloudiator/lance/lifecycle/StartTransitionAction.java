@@ -1,18 +1,16 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
-import com.typesafe.config.Config;
 import de.uniulm.omi.cloudiator.lance.lifecycle.handlers.StartHandler;
-import de.uniulm.omi.cloudiator.lance.util.application.FailFastConfigTmp;
+import de.uniulm.omi.cloudiator.lance.application.FailFastConfig;
 import de.uniulm.omi.cloudiator.lance.util.state.ErrorAwareTransitionBuilder;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionAction;
-import de.uniulm.omi.cloudiator.util.configuration.Configuration;
 import de.uniulm.omi.cloudiator.lance.util.state.TransitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class StartTransitionAction implements TransitionAction {
 
-  private static final boolean failFast = FailFastConfigTmp.failFast;
+  private static final boolean failFast = FailFastConfig.failFast;
   private final static Logger LOGGER = LoggerFactory.getLogger(DefaultLifecycleTransition.class);
 
 	private final LifecycleStore store;

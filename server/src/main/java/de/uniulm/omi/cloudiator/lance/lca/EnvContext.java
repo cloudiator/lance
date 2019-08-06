@@ -19,6 +19,7 @@
 package de.uniulm.omi.cloudiator.lance.lca;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import de.uniulm.omi.cloudiator.lance.application.FailFastConfig;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.util.execution.LoggingScheduledThreadPoolExecutor;
 import java.util.HashMap;
@@ -49,10 +50,11 @@ final class EnvContext implements HostContext {
   public static final String VM_ID_KEY = "host.vm.id";
   public static final String CLOUD_ID_KEY = "host.vm.cloud.id";
   //public static final String CONTAINER_TYPE = "host.container.type";
+  public static final String LANCE_FAIL_FAST_KEY = "lance.fail.fast";
 
   private static final String[] VALUES =
        new String[]{PUBLIC_IP_KEY , PRIVATE_IP_KEY , /*HOST_OS_KEY, */ TENANT_ID_KEY, VM_ID_KEY
-  /*, CONTAINER_TYPE*/, CLOUD_ID_KEY};
+  /*, CONTAINER_TYPE*/, CLOUD_ID_KEY, LANCE_FAIL_FAST_KEY};
 
   private final Map<String, String> hostContext;
   private final ScheduledExecutorService executorService;
@@ -82,6 +84,7 @@ final class EnvContext implements HostContext {
     }
     EnvContext ctx = new EnvContext(values);
     ctx.registerRmiAddress();
+    FailFastConfig.failFast = (values.get(LANCE_FAIL_FAST_KEY) == "true") ? true : false;
     return ctx;
   }
 
@@ -160,6 +163,11 @@ final class EnvContext implements HostContext {
   }
 
   @Override
+  public String getFailFast() {
+    return hostContext.get(LANCE_FAIL_FAST_KEY);
+  }
+
+  @Override
   public Map<String, String> getEnvVars() {
     final Map<String,String> vals = new HashMap<>();
     vals.put(PUBLIC_IP_KEY,getPublicIp());
@@ -167,6 +175,7 @@ final class EnvContext implements HostContext {
     vals.put(TENANT_ID_KEY ,getTenantId());
     vals.put(VM_ID_KEY ,getVMIdentifier());
     vals.put(CLOUD_ID_KEY ,getCloudIdentifier());
+    vals.put(LANCE_FAIL_FAST_KEY ,getFailFast());
     return vals;
   }
 }

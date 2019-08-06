@@ -41,6 +41,8 @@ public interface HostContext extends StaticEnvVars {
 
   String getVMIdentifier();
 
+  String getFailFast();
+
   void close() throws InterruptedException;
 
   Future<?> run(Runnable runner);
