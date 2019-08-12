@@ -228,7 +228,7 @@ public class DockerContainerManager implements ContainerManager {
       OperatingSystem os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
-          OperatingSystemVersions.of(1604, "16.04"));
+          OperatingSystemVersions.of(1404, "14.04"));
       ExecutionContext ec = new ExecutionContext(os, shellFactory);
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
       this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
@@ -252,7 +252,7 @@ public class DockerContainerManager implements ContainerManager {
       OperatingSystem os = new OperatingSystemImpl(
           OperatingSystemFamily.UBUNTU,
           OperatingSystemArchitecture.AMD64,
-          OperatingSystemVersions.of(1604, "16.04"));
+          OperatingSystemVersions.of(1404, "14.04"));
       ExecutionContext ec = new ExecutionContext(os, shellFactory);
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
       builder = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
