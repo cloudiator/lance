@@ -23,7 +23,12 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
@@ -80,7 +85,7 @@ class DownloadCommandImpl implements DownloadCommand {
     @Override
     public void execute(ExecutionContext ec) {
         OperatingSystem os = ec.getOperatingSystem();
-        if(os.isLinuxOs()) {
+      if(os.operatingSystemFamily() == OperatingSystemFamily.UBUNTU) {
             Shell shell = ec.getShell();
             // ExecutionResult exec_result = 
             shell.executeCommand("wget -O " + filename + " " + uri.toString());

@@ -23,106 +23,100 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVars;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsImpl;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
+import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
+import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
-import de.uniulm.omi.cloudiator.lance.lca.container.environment.PropertyVisitor;
-import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
-
 public abstract class AbstractComponent implements Serializable, DynamicEnvVars {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponent.class);
-    //private static final long serialVersionUID = -8078692212700712671L;
-    private static final long serialVersionUID = 3136178656808565868L;
+  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractComponent.class);
+  private static final long serialVersionUID = 3136178656808565868L;
+  private final String name;
+  private final ComponentId myId;
+  private final List<InPort> inPorts;
+  private final List<OutPort> outPorts;
+  private final HashMap<String, Class<?>> properties;
+  private final HashMap<String, ? extends Serializable> defaultValues;
+  private DeploymentContext ctx;
+  private DynamicEnvVarsImpl currentEnvVarsDynamic;
 
+  AbstractComponent(Builder<?> builder) {
+      name = builder.nameParam;
+      myId = builder.myIdParam;
+      inPorts = new ArrayList<>(builder.inPortsParam);
+      outPorts = new ArrayList<>(builder.outPortsParam);
+      properties = new HashMap<>(builder.propertiesParam);
+      defaultValues = new HashMap<>(builder.defaultValuesParam);
+  }
 
-    private final String name;
-    private final ComponentId myId;
-    private final List<InPort> inPorts;
-    private final List<OutPort> outPorts;
-    private final HashMap<String, Class<?>> properties;
-    private final HashMap<String, ? extends Serializable> defaultValues;
-    private DeploymentContext ctx;
-    private DynamicEnvVarsImpl currentEnvVarsDynamic;
+  public ComponentId getComponentId() {
+      return myId;
+  }
 
-    AbstractComponent(Builder<?> builder) {
-        name = builder.nameParam;
-        myId = builder.myIdParam;
-        inPorts = new ArrayList<>(builder.inPortsParam);
-        outPorts = new ArrayList<>(builder.outPortsParam);
-        properties = new HashMap<>(builder.propertiesParam);
-        defaultValues = new HashMap<>(builder.defaultValuesParam);
-    }
-
-    public ComponentId getComponentId() {
-    	return myId; 
-    }
-
-    public List<InPort> getExposedPorts() {
-        List<InPort> ports = new ArrayList<>(inPorts.size());
-        for(InPort i : inPorts) {
+  public List<InPort> getExposedPorts() {
+      List<InPort> ports = new ArrayList<>(inPorts.size());
+      for(InPort i : inPorts) {
             ports.add(i);
-        }
-        return ports;
-    }
-    
-    @Override
-    public String toString() {
-        return name + ": -> " + inPorts + "@" + myId; 
-    }
+      }
+      return ports;
+  }
 
-    public List<OutPort> getDownstreamPorts() {
-        return new ArrayList<>(outPorts); 
-    }
-    
-    public void accept(PropertyVisitor visitor) {
-        for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
+  @Override
+  public String toString() {
+      return name + ": -> " + inPorts + "@" + myId;
+  }
+
+  public List<OutPort> getDownstreamPorts() {
+      return new ArrayList<>(outPorts);
+  }
+
+  public void accept(PropertyVisitor visitor) {
+      for(Entry<String, String> entry : currentEnvVarsDynamic.getEnvVars().entrySet()) {
             visitor.visit(entry.getKey(), entry.getValue());
-        }
-    }
+      }
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    @Override
-    public Map<String, String> getEnvVars() {
-        return getMatchingValsFromDContext();
-    }
+  @Override
+  public Map<String, String> getEnvVars() {
+    return getMatchingValsFromDContext();
+  }
 
-    public void injectDeploymentContext(DeploymentContext ctx) {
-        this.ctx = ctx;
-    }
+  public void injectDeploymentContext(DeploymentContext ctx) {
+     this.ctx = ctx;
+  }
 
-    private Map<String,String> getMatchingValsFromDContext() {
-        final Map<String,String> vals = new HashMap<>();
+  private Map<String,String> getMatchingValsFromDContext() {
+      final Map<String,String> vals = new HashMap<>();
 
-        for(Entry<String, Class<?>> entry : properties.entrySet()) {
+          for(Entry<String, Class<?>> entry : properties.entrySet()) {
             String propertyName = entry.getKey();
             Class<?> type = entry.getValue();
             if(type == OutPort.class)
-                continue;
+                  continue;
             Object o = ctx.getProperty(propertyName, type);
             if(o == null) {
-                o = defaultValues.get(propertyName);
-            }
+                  o = defaultValues.get(propertyName);
+              }
             if(o == null) {
-                LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
-                continue;
-            }
+                  LOGGER.warn("propery '" + propertyName + "' has not been defined for the application");
+                  continue;
+              }
             vals.put(propertyName, o.toString());
         }
 
-        return vals;
-    }
+      return vals;
+  }
 
   @Override
   public void generateDynamicEnvVars() {

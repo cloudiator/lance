@@ -30,7 +30,12 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 

@@ -6,6 +6,7 @@ import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifier
 
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -13,7 +14,9 @@ import de.uniulm.omi.cloudiator.lance.lca.container.environment.BashExportBasedV
 import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.PortDiff;
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector.DockerException;
+import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
+import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommand.Option;
 import de.uniulm.omi.cloudiator.lance.lifecycle.language.DockerCommandException;
@@ -40,8 +43,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   public DockerContainerLogic(Builder builder) {
     super(builder);
     this.myComponent = builder.myComponent;
-    this.imageHandler = new DockerImageHandler(new DockerOperatingSystemTranslator(),
-        builder.client, builder.myComponent, builder.dockerConfig);
+    this.imageHandler = new DockerImageHandler(builder.client, builder.myComponent,
+        builder.dockerConfig);
     try {
       myComponent.setContainerName(this.myId);
     } catch (DockerCommandException ce) {
@@ -62,7 +65,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   public void doCreate() throws ContainerException {
     try {
-      imageHandler.doPullImages(myId, myComponent.getFullImageName());
+      imageHandler.doPullImages(myComponent.getFullImageName());
       resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
@@ -96,8 +99,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   @Override
   void setStaticEnvironment(DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
     Map<String,String> envVarsStaticTmp = buildTranslatedStaticEnvMap();
-
-    executeEnvSetting(EnvType.STATIC, envVarsStaticTmp);
+    setGlobalContainerEnv(EnvType.STATIC, envVarsStaticTmp);
+    setLocalContainerEnv(EnvType.STATIC, shell, visitor);
+    envVarsStaticPrev = new HashMap<>(envVarsStatic);
   }
 
   private Map<String,String> buildTranslatedStaticEnvMap() {
@@ -120,7 +124,9 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     networkHandler.generateDynamicEnvVars(diff);
     this.myComponent.generateDynamicEnvVars();
     collectDynamicEnvVars();
-    executeEnvSetting(EnvType.DYNAMIC, envVarsDynamic);
+    setGlobalContainerEnv(EnvType.DYNAMIC, envVarsDynamic);
+    setLocalContainerEnv(EnvType.DYNAMIC, null, visitor);
+    envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
   }
 
   @Override
@@ -217,10 +223,8 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
       final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
       LOGGER.debug(String
-      .format("Redeploying container %s with docker cli command: %s.", myId, cmdStr));
+      .format("Starting container %s with docker cli command: %s.", myId, cmdStr));
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.RUN));
-      BashExportBasedVisitor visitor = new BashExportBasedVisitor(null);
-      setDynamicEnvironment(visitor, null);
     } catch (DockerException de) {
       throw new ContainerException("cannot redeploy container: " + myId, de);
     } catch (DockerCommandException e) {
@@ -228,19 +232,39 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
-  private void executeEnvSetting(EnvType eType, Map<String,String> vars) throws ContainerException {
-    if(checkEnvChange(eType)) {
+  // env change implies redeployment (global env is set then) if no updatehandler is present
+  private void setGlobalContainerEnv(EnvType eType, Map<String,String> vars) throws ContainerException {
+    if(checkEnvChange(eType) && noPortUpdateHandlerPresent()) {
       try {
         doRedeploy();
       } catch (ContainerException e) {
         LOGGER.error("cannot redeploy container " + myId + "for updating the environment");
       }
     }
+  }
 
-    if(eType == EnvType.STATIC)
-      envVarsStaticPrev = new HashMap<>(envVarsStatic);
-    else
-      envVarsDynamicPrev = new HashMap<>(envVarsDynamic);
+  // if updatehandler is present, set environment (even if not changed) in local (docker) shell
+  private void setLocalContainerEnv(EnvType eType, DockerShell shell, BashExportBasedVisitor visitor) throws ContainerException {
+    if(! noPortUpdateHandlerPresent()) {
+      if(eType == EnvType.STATIC) {
+        super.setStaticEnvironment(shell,visitor);
+      } else {
+        networkHandler.accept(visitor);
+        this.myComponent.accept(visitor);
+      }
+    }
+  }
+
+  private boolean noPortUpdateHandlerPresent() {
+    List<OutPort> outPorts = myComponent.getDownstreamPorts();
+
+    for(OutPort port: outPorts) {
+      PortUpdateHandler handler = port.getUpdateHandler();
+      if(handler != null && !handler.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void doRedeploy() throws ContainerException {
@@ -248,10 +272,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     try {
       resolveDockerEnvVars(runCmd);
       copyEnvIntoCommand(runCmd);
+      executeGenericRedeploy();
     } catch (DockerCommandException e) {
       throw new ContainerException("cannot redeploy container " + myId + " because of failing to create the run command", e);
     }
-    executeGenericRedeploy();
   }
 
   //Needed if a Docker env-var depends on a lance-internal env-var, e.g. PUBLIC_ReqPort=134.60.64.1:3302
@@ -341,16 +365,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       return false;
 
     return true;
-  }
-
-  private String buildEnvString(Map<String,String> vars) {
-    StringBuilder builder = new StringBuilder();
-
-    for(Entry<String, String> var: vars.entrySet()) {
-      builder.append("-e " + var.getKey()+"="+var.getValue() + " ");
-    }
-
-    return builder.toString();
   }
 
   public static class Builder extends AbstractDockerContainerLogic.Builder<DockerComponent,Builder> {

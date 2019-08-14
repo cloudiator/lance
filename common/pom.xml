@@ -28,4 +28,16 @@
     <artifactId>common</artifactId>
     <packaging>jar</packaging>
 
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.cloudiator.common</groupId>
+      <artifactId>common-domain</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.cloudiator.common</groupId>
+      <artifactId>common-util</artifactId>
+    </dependency>
+  </dependencies>
+
 </project>

@@ -33,7 +33,12 @@ import org.slf4j.LoggerFactory;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.container.standard.ErrorAwareContainer;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
@@ -71,7 +76,7 @@ public class DockerContainerManager implements ContainerManager {
       System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_USE_KEY, "true");
       System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_HOST_KEY, dReg.hostName);
       System.setProperty(DockerConfigurationFields.DOCKER_REGISTRY_PORT_KEY, Integer.toString(dReg.port));
-    DockerConfiguration dConf =
+      DockerConfiguration dConf =
         new DockerConfiguration(
             dReg.userName,
             dReg.password,
@@ -184,7 +189,8 @@ public class DockerContainerManager implements ContainerManager {
     private final GlobalRegistryAccessor accessor;
     private final LifecycleDockerContainerLogic logic;
 
-    LifecycleContainerComponents(DeployableComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
+    LifecycleContainerComponents(DeployableComponent comp, HostContext hostContext, DockerConnector client,
+        DeploymentContext ctx, DockerConfiguration dockerConfig, OperatingSystem os) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
@@ -202,7 +208,8 @@ public class DockerContainerManager implements ContainerManager {
     protected final NetworkHandler networkHandler;
     protected final GlobalRegistryAccessor accessor;
 
-    DefaultDockerContainerComponents(AbstractComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+    DefaultDockerContainerComponents(AbstractComponent comp, HostContext hostContext, DockerConnector client,
+        DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super();
 
       this.accessor = new GlobalRegistryAccessor(ctx, comp, id);
@@ -214,16 +221,22 @@ public class DockerContainerManager implements ContainerManager {
     private final DockerContainerLogic logic;
     private final LifecycleController controller;
 
-    DockerContainerComponents(DockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+    DockerContainerComponents(DockerComponent comp, HostContext hostContext, DockerConnector client,
+        DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super(comp, hostContext, client, ctx, dockerConfig);
 
+      OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1404, "14.04"));
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
       this.logic = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
-          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext).build();
+          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
+          executionContext(ec).hostContext(hostContext).build();
       LifecycleStoreBuilder storeBuilder = new LifecycleStoreBuilder();
       storeBuilder.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
       LifecycleStore store = storeBuilder.build();
-      ExecutionContext ec = new ExecutionContext(OperatingSystem.UBUNTU_14_04, shellFactory);
       this.controller = new LifecycleController(store, logic, accessor, ec, hostContext);
     }
   }
@@ -232,18 +245,24 @@ public class DockerContainerManager implements ContainerManager {
     private final RemoteDockerContainerLogic logic;
     private final LifecycleController controller;
 
-    RemoteDockerContainerComponents(RemoteDockerComponent comp, HostContext hostContext, DockerConnector client, DeploymentContext ctx, DockerConfiguration dockerConfig) {
+    RemoteDockerContainerComponents(RemoteDockerComponent comp, HostContext hostContext, DockerConnector client,
+        DeploymentContext ctx, DockerConfiguration dockerConfig) {
       super(comp, hostContext, client, ctx, dockerConfig);
 
+      OperatingSystem os = new OperatingSystemImpl(
+          OperatingSystemFamily.UBUNTU,
+          OperatingSystemArchitecture.AMD64,
+          OperatingSystemVersions.of(1404, "14.04"));
+      ExecutionContext ec = new ExecutionContext(os, shellFactory);
       DockerContainerLogic.Builder builder = new DockerContainerLogic.Builder();
       builder = builder.cInstId(id).dockerConnector(client).deplComp(comp).deplContext(ctx).
-          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).hostContext(hostContext);
+          nwHandler(networkHandler).dockerShellFac(shellFactory).dockerConfig(dockerConfig).
+          executionContext(ec).hostContext(hostContext);
 
       this.logic = new RemoteDockerContainerLogic(builder, comp);
       LifecycleStoreBuilder storeBuilder = new LifecycleStoreBuilder();
       storeBuilder.setStartDetector(DefaultHandlers.DEFAULT_START_DETECTOR);
       LifecycleStore store = storeBuilder.build();
-      ExecutionContext ec = new ExecutionContext(OperatingSystem.UBUNTU_14_04, shellFactory);
       this.controller = new LifecycleController(store, logic, accessor, ec, hostContext);
     }
   }

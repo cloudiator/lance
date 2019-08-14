@@ -20,6 +20,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker;
 
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.ShellLikeInterface;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
+import java.util.List;
 
 public interface DockerShell extends ShellLikeInterface  {
 

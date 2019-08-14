@@ -35,7 +35,7 @@ public interface PostInstallHandler extends LifecycleHandler {
 
 final class PostInstallDeploymentHandler implements PostInstallHandler {
 
-    private static final long serialVersionUID = 2414469559255275798L;
+    private static final long serialVersionUID = -4987635140740679262L;
     private final Deployment d;
     
     PostInstallDeploymentHandler(Deployment deploymentParam) {
@@ -45,5 +45,12 @@ final class PostInstallDeploymentHandler implements PostInstallHandler {
     @Override
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.POST_INSTALL, ec);
+    }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: loop over all lifecycleHanlerTypes and check
+      //return d.hasLifecycleOperations(TYPE);
+      return true;
     }
 }

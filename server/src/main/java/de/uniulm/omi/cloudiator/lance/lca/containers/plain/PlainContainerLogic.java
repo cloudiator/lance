@@ -21,8 +21,13 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.InPort;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemUtils;
 import de.uniulm.omi.cloudiator.lance.container.standard.ContainerLogic;
 import de.uniulm.omi.cloudiator.lance.lca.GlobalRegistryAccessor;
 import de.uniulm.omi.cloudiator.lance.lca.container.environment.StaticEnvVars;
@@ -191,13 +196,13 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
     setHomeDir(plainShellWrapper.plainShell);
 
     //TODO: move os switch to a central point (currently here and in PlainShellImpl)
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+    if (os.operatingSystemFamily() == OperatingSystemFamily.WINDOWS) {
 
       PowershellExportBasedVisitor visitor =
           new PowershellExportBasedVisitor(plainShellWrapper.plainShell);
       networkHandler.accept(visitor);
       this.deployableComponent.accept(visitor);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+    } else if (OperatingSystemUtils.isLinux(os.operatingSystemFamily())) {
       BashExportBasedVisitor visitor =
           new BashExportBasedVisitor(plainShellWrapper.plainShell);
 
@@ -225,9 +230,9 @@ public class PlainContainerLogic implements ContainerLogic, LifecycleActionInter
   }
 
   private void setStaticEnvironment(PlainShell plainShell)  throws ContainerException {
-    if (this.os.getFamily().equals(OperatingSystemFamily.WINDOWS)) {
+    if (os.operatingSystemFamily() == OperatingSystemFamily.WINDOWS) {
       setStaticWindowsEnvironment(plainShell);
-    } else if (this.os.getFamily().equals(OperatingSystemFamily.LINUX)) {
+    } else if (OperatingSystemUtils.isLinux(os.operatingSystemFamily())) {
       setStaticLinuxEnvironment(plainShell);
     }
   }

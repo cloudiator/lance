@@ -18,9 +18,10 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import java.util.List;
+
 public interface Shell {
 
     ExecutionResult executeCommand(String command);
-
     ExecutionResult executeBlockingCommand(String res);
 }

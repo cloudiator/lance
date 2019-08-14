@@ -21,6 +21,7 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.plain;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,6 @@ public class PlainShellWrapper implements Shell {
         if(result.isSuccess()) {
             return;
         }
-        LOGGER.warn("unsuccessull command '" + command + "': " + result.toString());
+        LOGGER.warn("unsuccessful command '" + command + "': " + result.toString());
     }
 }

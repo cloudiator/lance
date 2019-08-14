@@ -29,10 +29,15 @@ import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
  */
 public final class VoidHandler implements LifecycleHandler {
 
-    private static final long serialVersionUID = 4272500624436850060L;
+  private static final long serialVersionUID = -5211567790846020329L;
 
-    @Override
+  @Override
     public void execute(ExecutionContext ec) {
         throw new UnsupportedOperationException("method should never be called");
     }
+
+  @Override
+  public boolean isEmpty() {
+    return true;
+  }
 }

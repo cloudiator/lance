@@ -20,6 +20,8 @@ package de.uniulm.omi.cloudiator.lance.lca.containers.docker.connector;
 
 import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +38,16 @@ class Inprogress implements DockerShell {
     private final BufferedReader stdOut;
     private final BufferedReader stdErr;
     private final BufferedWriter stdIn;
+    private final List<String> execCommandsMemory;
 
     Inprogress(Process procParam, BufferedReader stdOutParam, BufferedReader stdErrParam) {
         proc = procParam;
         stdOut = stdOutParam;
         stdErr = stdErrParam;
         stdIn = new BufferedWriter(new OutputStreamWriter(proc.getOutputStream()));
+        execCommandsMemory = new ArrayList<>();
     }
-    
+
     /*private String readInLine() {
         try {
             return stdOut.readLine();
@@ -120,6 +124,7 @@ class Inprogress implements DockerShell {
             String tmpOut = readOutAvailable();
             String tmpErr = readErrAvailable();
             if (processStillRunning()) {
+                execCommandsMemory.add(command);
                 return ExecutionResult.success(tmpOut, tmpErr);
             }
             return ExecutionResult.systemFailure(tmpErr);

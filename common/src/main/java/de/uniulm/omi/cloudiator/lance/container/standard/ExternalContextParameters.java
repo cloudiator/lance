@@ -2,35 +2,35 @@ package de.uniulm.omi.cloudiator.lance.container.standard;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
-import java.util.List;
-import java.util.Map;
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 public class ExternalContextParameters {
-  private final String name;
-  private final ApplicationInstanceId appId;
+  private final String taskName;
+  ApplicationInstanceId appId;
   private final ComponentId cId;
   private final ComponentInstanceId cInstId;
   private final String publicIp;
-  private final List<InPortContext> inpContext;
+  private final ProvidedPortContext providedPortContext;
   //private final List<OutPortContext> outpContext;
-  private final ContainerStatus status;
+  private final ContainerStatus contStatus;
+  private final LifecycleHandlerType compInstType;
 
   private ExternalContextParameters(Builder builder) {
-    this.name = builder.name_;
-    this.appId = builder.appInstId;
+    this.taskName = builder.taskName_;
+    this.appId = builder.appId;
     this.cId = builder.cId;
     this.cInstId = builder.cInstId;
     this.publicIp = builder.publicIp;
-    this.inpContext = builder.inpContext;
+    this.providedPortContext = builder.providedPortContext;
     //this.outpContext = builder.outpContext;
-    this.status = builder.status_;
+    this.contStatus = builder.contStatus_;
+    this.compInstType = builder.compInstType_;
   }
 
-  public String getName() {
-    return name;
+  public String getTaskName() {
+    return taskName;
   }
 
   public ApplicationInstanceId getAppId() {
@@ -49,8 +49,8 @@ public class ExternalContextParameters {
     return publicIp;
   }
 
-  public List<InPortContext> getInpContext() {
-    return inpContext;
+  public ProvidedPortContext getProvidedPortContext() {
+    return providedPortContext;
   }
 
   /*public List<OutPortContext> getOutpContext() {
@@ -58,7 +58,11 @@ public class ExternalContextParameters {
   }*/
 
   public ContainerStatus getStatus() {
-    return status;
+    return contStatus;
+  }
+
+  public LifecycleHandlerType getCompInstStatus() {
+    return compInstType;
   }
 
   public String getFullHostName() {
@@ -66,17 +70,17 @@ public class ExternalContextParameters {
     return name;
   }
 
-  public static class InPortContext {
+  public static class ProvidedPortContext {
     String portName;
-    int inernalInPortNmbr;
+    int portNmbr;
 
-    public InPortContext(String portName, int inernalInPortNmbr) {
+    public ProvidedPortContext(String portName, int inernalInPortNmbr) {
       this.portName = portName;
-      this.inernalInPortNmbr = inernalInPortNmbr;
+      this.portNmbr = inernalInPortNmbr;
     }
 
-    public Integer getInernalInPortNmbr() {
-      return inernalInPortNmbr;
+    public Integer getPortNmbr() {
+      return portNmbr;
     }
 
     public String getFullPortName() {
@@ -92,24 +96,25 @@ public class ExternalContextParameters {
   }*/
 
   public static class Builder {
-    private String name_;
-    private ApplicationInstanceId appInstId;
+    private String taskName_;
+    ApplicationInstanceId appId;
     private ComponentId cId;
     private ComponentInstanceId cInstId;
     private String publicIp;
-    private List<InPortContext> inpContext;
+    private ProvidedPortContext providedPortContext;
     //private List<OutPortContext> outpContext;
-    private ContainerStatus status_;
+    private ContainerStatus contStatus_;
+    private LifecycleHandlerType compInstType_;
 
     public Builder() {}
 
-    public Builder name(String name_) {
-      this.name_ = name_;
+    public Builder taskName(String taskName_) {
+      this.taskName_ = taskName_;
       return this;
     }
 
-    public Builder appInstanceId(ApplicationInstanceId appInstId) {
-      this.appInstId = appInstId;
+    public Builder appId(ApplicationInstanceId appId) {
+      this.appId = appId;
       return this;
     }
 
@@ -128,8 +133,8 @@ public class ExternalContextParameters {
       return this;
     }
 
-    public Builder inPortContext(List<InPortContext> inpContext) {
-      this.inpContext = inpContext;
+    public Builder providedPortContext(ProvidedPortContext providedPortContext) {
+      this.providedPortContext = providedPortContext;
       return this;
     }
 
@@ -138,8 +143,13 @@ public class ExternalContextParameters {
       return this;
     }*/
 
-    public Builder status(ContainerStatus status_) {
-      this.status_ = status_;
+    public Builder contStatus(ContainerStatus contStatus_) {
+      this.contStatus_ = contStatus_;
+      return this;
+    }
+
+    public Builder compInstType(LifecycleHandlerType compInstType_) {
+      this.compInstType_ = compInstType_;
       return this;
     }
 

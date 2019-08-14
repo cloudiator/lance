@@ -18,7 +18,13 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
+import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystemUtils;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 
 
@@ -29,16 +35,13 @@ public final class MultiContainerManagerFactory {
 
     public static ContainerManager createContainerManager(HostContext contex, OperatingSystem operatingSystem, ContainerType containerType){
 
-        switch (operatingSystem.getFamily()){
-            case WINDOWS: return createWindowsContainerManager(contex);
-
-            case LINUX: return createLinuxContainerManager(contex, containerType);
-
-            default: throw new IllegalStateException("No matching Operating System found: " + operatingSystem.toString());
+        if (OperatingSystemUtils.isLinux(operatingSystem.operatingSystemFamily())) {
+          return createLinuxContainerManager(contex, containerType);
+        } else if (operatingSystem.operatingSystemFamily() == OperatingSystemFamily.WINDOWS) {
+          return createWindowsContainerManager(contex);
         }
 
-
-
+        throw new IllegalStateException("No matching Operating System found: " + operatingSystem.toString());
     }
 
     private static ContainerManager createWindowsContainerManager(HostContext hostContext){

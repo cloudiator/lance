@@ -18,10 +18,16 @@
 
 package de.uniulm.omi.cloudiator.lance.lifecycle.bash;
 
+import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleException;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.uniulm.omi.cloudiator.lance.container.spec.os.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
+import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
+
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandler;
@@ -88,7 +94,7 @@ public final class BashBasedHandlerBuilder {
 
 final class BashPreInstallHandler implements PreInstallHandler {
 
-    private static final long serialVersionUID = 7232719469227703730L;
+    private static final long serialVersionUID = -9064706398101622520L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -96,33 +102,43 @@ final class BashPreInstallHandler implements PreInstallHandler {
         os = osParam;
         commands = commandsParam;
     }
-    
+
+		@Override
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
     @Override
-    public void execute(ExecutionContext ec) {
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
 final class BashInstallHandler implements InstallHandler {
 
-    private static final long serialVersionUID = -2546167412074322307L;
-    private final OperatingSystem os;
+  private static final long serialVersionUID = 6779258448972219752L;
+  private final OperatingSystem os;
     private final List<String[]> commands;
     
     BashInstallHandler(OperatingSystem osParam, List<String[]> commandsParam) {
         os = osParam;
         commands = commandsParam;
     }
-    
+
     @Override
-    public void execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
 final class BashPostInstallHandler implements PostInstallHandler {
 
-    private static final long serialVersionUID = 1169280018441041612L;
+    private static final long serialVersionUID = 7917246945236135080L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -130,16 +146,21 @@ final class BashPostInstallHandler implements PostInstallHandler {
         os = osParam;
         commands = commandsParam;
     }
-    
+
     @Override
-    public void execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
 final class BashStartHandler implements StartHandler {
 
-    private static final long serialVersionUID = 1905532285239985777L;
+    private static final long serialVersionUID = -7954979001375404230L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
@@ -149,14 +170,19 @@ final class BashStartHandler implements StartHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
 
 final class BashStopHandler implements StopHandler {
 
-    private static final long serialVersionUID = -5705492165282492295L;
+    private static final long serialVersionUID = -8100221497063858683L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
@@ -166,14 +192,19 @@ final class BashStopHandler implements StopHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
 
 final class BashPreStopHandler implements PreStopHandler {
 
-    private static final long serialVersionUID = 3138983756438002674L;
+    private static final long serialVersionUID = -8306611142699785320L;
     private final OperatingSystem os;
     private final List<String[]> commands;
 
@@ -183,14 +214,19 @@ final class BashPreStopHandler implements PreStopHandler {
     }
 
     @Override
-    public void execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeBlockingCommands(os, ec, commands);
     }
 }
 
 final class BashPortUpdateHandler implements PortUpdateHandler {
 
-    private static final long serialVersionUID = 1095927280515962263L;
+    private static final long serialVersionUID = 4626337516464315534L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -198,16 +234,21 @@ final class BashPortUpdateHandler implements PortUpdateHandler {
         os = osParam;
         commands = commandsParam;
     }
-    
+
     @Override
-    public void execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public void execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
     }
 }
 
 final class BashStartDetectorHandler implements StartDetector {
 
-    private static final long serialVersionUID = 1123459320914315021L;
+    private static final long serialVersionUID = -1682397434146056192L;
     private final OperatingSystem os;
     private final List<String[]> commands;
     
@@ -215,9 +256,14 @@ final class BashStartDetectorHandler implements StartDetector {
         os = osParam;
         commands = commandsParam;
     }
-    
+
     @Override
-    public DetectorState execute(ExecutionContext ec) {
+    public boolean isEmpty() {
+      return commands.isEmpty();
+    }
+
+    @Override
+    public DetectorState execute(ExecutionContext ec) throws LifecycleException {
         BashExecutionHelper.executeCommands(os, ec, commands);
         //TODO: In case, a plain-shell is used: "export STARTED=true" doesn't work out -> refactor PlainShellImpl, so that the variable gets exported into the following shell context
         ExecutionResult result = BashExecutionHelper.doExecuteCommand(false, "echo -n \"$STARTED\"", ec.getShell());

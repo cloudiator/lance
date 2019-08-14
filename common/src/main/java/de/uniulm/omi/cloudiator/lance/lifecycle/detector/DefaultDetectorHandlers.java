@@ -35,7 +35,12 @@ public final class DefaultDetectorHandlers {
     
     public static final StartDetector DEFAULT_START_DETECTOR = new StartDetector() {
 
-		@Override
+      @Override
+      public boolean isEmpty() {
+        return true;
+      }
+
+      @Override
 		public DetectorState execute(ExecutionContext ec) {
 			getLogger().info("DEFAULT StopHandler doing nothing");
 			return DetectorState.DETECTED;

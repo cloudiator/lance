@@ -46,4 +46,11 @@ final class StartDeploymentHandler implements StartHandler {
     public void execute(ExecutionContext ec) {
         d.execute(LifecycleHandlerType.START, ec);
     }
+
+    @Override
+    public boolean isEmpty() {
+      //todo: loop over all lifecycleHanlerTypes and check
+      //return d.hasLifecycleOperations(TYPE);
+      return true;
+    }
 }

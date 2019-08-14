@@ -1,20 +1,26 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle;
 
+import com.typesafe.config.Config;
+import de.uniulm.omi.cloudiator.lance.util.application.FailFastConfigTmp;
 import java.util.concurrent.ScheduledFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.typesafe.config.Config;
 import de.uniulm.omi.cloudiator.lance.lca.HostContext;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorState;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.DetectorType;
+import de.uniulm.omi.cloudiator.util.configuration.Configuration;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.StopDetector;
+import de.uniulm.omi.cloudiator.util.configuration.Configuration;
 
 final class StopDetectorHandler implements Runnable {
     
 	private static final Logger LOGGER = LoggerFactory.getLogger(StopDetectorHandler.class);
-	
+  private static final boolean failFast = FailFastConfigTmp.failFast;
+
 	// /** waiting 5 minutes per default */
 	private static final int MAXIMUM_STOP_WAIT_TIME = 900000;
 	// /** waiting 30 seconds per loop */
@@ -52,41 +58,49 @@ final class StopDetectorHandler implements Runnable {
 	 * @throws LifecycleException
 	 */
     private void doRun() {
-		DetectorState state = runStopDetector();
-		callback.state(state);
+      DetectorState state = runStopDetector();
+      callback.state(state);
     }
     
-    private DetectorState runDetector() {
+    private DetectorState runDetector() throws LifecycleException {
     	if(detector != null) {
-    		return detector.execute(ec);
-    	} else {
+        return detector.execute(ec);
+      } else {
     		getLogger().info("no stop detector set. assuming that application has not stopped.");
-        	return DetectorState.NOT_DETECTED;
+        return DetectorState.NOT_DETECTED;
     	}
     }
     
     private DetectorState runStopDetector() {
-    	boolean preprocessed = false;
-    	 try {
+      boolean preprocessed = false;
+      try {
     		 getLogger().info("running stop detector");
     		 interceptor.preprocessDetector(DetectorType.STOP);
     		 preprocessed = true;
     		 return runDetector();
-    	 } catch (ContainerException ce) {
-    		 getLogger().warn("detection failed with exception", ce);
- 			return DetectorState.DETECTION_FAILED;
- 		} finally {
-			if(preprocessed) {
-				try {
-					interceptor.postprocessDetector(DetectorType.STOP);
-				} catch (ContainerException ce) {
-					// FIXME: what shall we do here? easiest is to disallow
-					// exceptions in postprocessing ... 
-					getLogger().warn("error when postprocessing stop detection", ce);
-					throw new IllegalStateException("wrong state: should be in error state?", ce);
-				}
-			}
-		}
+      } catch (ContainerException ce) {
+         getLogger().warn("detection failed with exception", ce);
+        return DetectorState.DETECTION_FAILED;
+      } catch (LifecycleException e) {
+
+        if (failFast) {
+          LOGGER.error(String.format("Commands of type: %s contained return values unequal to zero", detector), e);
+          return DetectorState.DETECTION_FAILED;
+        }
+
+        return DetectorState.DETECTED;
+      } finally {
+        if(preprocessed) {
+          try {
+            interceptor.postprocessDetector(DetectorType.STOP);
+          } catch (ContainerException ce) {
+            // FIXME: what shall we do here? easiest is to disallow
+            // exceptions in postprocessing ...
+            getLogger().warn("error when postprocessing stop detection", ce);
+            throw new IllegalStateException("wrong state: should be in error state?", ce);
+          }
+        }
+      }
     }
 	
 	private StopDetectorHandler(LifecycleActionInterceptor interceptorP, StopDetector detector2, ExecutionContext ecP, StopDetectorCallback callbackParam) {
