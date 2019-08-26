@@ -18,16 +18,10 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
-import java.util.List;
-
+import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.uniulm.omi.cloudiator.lance.application.component.OutPort;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkVisitor;
-import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchyLevel;
-import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 
 public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVisitor {
 	
@@ -59,6 +53,12 @@ public final class BashExportBasedVisitor implements NetworkVisitor, PropertyVis
     public void visitOutPort(String name, String sinkValues) {
         LOGGER.info("exporting out port as environment variable: " + name + " = " + sinkValues);
         addEnvironmentVariable(name, sinkValues);
+    }
+
+    @Override
+    public void visitInFunctionHandler(String name, String functionHandler) {
+        LOGGER.info("exporting functionHandler as environment variable: " + name + " = " + functionHandler);
+        addEnvironmentVariable(name, functionHandler);
     }
 
     @Override
