@@ -17,18 +17,18 @@ import java.util.regex.Pattern;
 public class DockerCommand implements Serializable {
 
   public enum Option {
-    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY, DETACH, VOLUME};
+    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY, DETACH, VOLUME, ADD_HOST};
   public enum OsCommand {
     EMPTY, BASH
   }
 
   public enum Type {
     CREATE(new Option[]{Option.NAME, Option.PORT, Option.RESTART,Option.INTERACTIVE, Option.ENVIRONMENT,
-        Option.NETWORK, Option.TTY, Option.VOLUME}, new OsCommand[]{OsCommand.BASH}),
+        Option.NETWORK, Option.TTY, Option.VOLUME, Option.ADD_HOST}, new OsCommand[]{OsCommand.BASH}),
     START(new Option[]{Option.INTERACTIVE}, new OsCommand[]{}),
     STOP(new Option[]{}, new OsCommand[]{}),
     RUN(new Option[]{Option.NAME, Option.PORT, Option.INTERACTIVE, Option.ENVIRONMENT,
-        Option.NETWORK, Option.DETACH, Option.VOLUME}, new OsCommand[]{}),
+        Option.NETWORK, Option.DETACH, Option.VOLUME, Option.ADD_HOST}, new OsCommand[]{}),
     REMOVE(new Option[]{}, new OsCommand[]{});
 
     private static final String createCommandName = "create";
@@ -280,6 +280,8 @@ public class DockerCommand implements Serializable {
         return "--detach";
       case VOLUME:
         return "--volume";
+      case ADD_HOST:
+        return "--add-host";
       default:
         return "";
     }
