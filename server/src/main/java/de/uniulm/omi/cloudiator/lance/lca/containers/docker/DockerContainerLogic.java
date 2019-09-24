@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DockerContainerLogic extends AbstractDockerContainerLogic {
+  private final static String invalidIp = "0.0.0.0";
   private final DockerComponent myComponent;
   protected final DockerImageHandler imageHandler;
   //Needed to check for redeployment
@@ -308,10 +309,10 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
 
     for(Entry<String, String> vars: filterNeedResolveAddHostNames.entrySet()) {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
-      if(resolvedVarVal.equals("")) {
-        continue;
+      String newHostVar = vars.getKey() + ":" + invalidIp;
+      if(!resolvedVarVal.equals("")) {
+        newHostVar = vars.getKey() + ":" + resolvedVarVal;
       }
-      String newHostVar = vars.getKey() + ":" + resolvedVarVal;
       //todo: escape regex special-chars in String
       cmd.replaceAddHostVar(newHostVar);
     }
@@ -354,16 +355,20 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
   private static Map<String,String> getFilterNeedResolveAddHostNames(List<String> setDockerHostVars) {
     Map<String,String> needResolveAddHostNames = new HashMap<>();
     //todo: make pattern more general, e.g. "$..." ,"${...}"
-    Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+):\\$([^\\s]+)[\\s]*$");
+    Pattern pattern1 = Pattern.compile("^[\\s]*([^\\s]+):\\$([^\\s]+)[\\s]*$");
+    Pattern pattern2 = Pattern.compile("^[\\s]*([^\\s]+):" + invalidIp + "[\\s]*$");
 
     if(setDockerHostVars == null) {
       return needResolveAddHostNames ;
     }
 
     for(String hostVar: setDockerHostVars) {
-      Matcher matcher = pattern.matcher(hostVar);
-      if (matcher.find()) {
-        needResolveAddHostNames.put(matcher.group(1),matcher.group(2));
+      Matcher matcher1 = pattern1.matcher(hostVar);
+      Matcher matcher2 = pattern2.matcher(hostVar);
+      if (matcher1.find()) {
+        needResolveAddHostNames.put(matcher1.group(1), matcher1.group(2));
+      } else if (matcher2.find()) {
+        needResolveAddHostNames.put(matcher2.group(1),"CLOUD_IP");
       }
     }
 
