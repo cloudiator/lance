@@ -67,7 +67,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     try {
       imageHandler.doPullImages(myComponent.getFullImageName());
       resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
-      resolveAddHostOption(myComponent.getEntireDockerCommands().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
       //myComponent.setPort(portsToSet);
@@ -220,7 +219,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
       resolveDockerEnvVars(runCmd);
-      resolveAddHostOption(runCmd);
       copyEnvIntoCommand(runCmd);
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
       final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
@@ -273,7 +271,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
       resolveDockerEnvVars(runCmd);
-      resolveAddHostOption(runCmd);
       copyEnvIntoCommand(runCmd);
       executeGenericRedeploy();
     } catch (DockerCommandException e) {
@@ -287,7 +284,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     List<String> setDockerEnvVars = setOptions.get(Option.ENVIRONMENT);
 
     //Map entry for ENV_DOCK=$ENV_LANCE: entry.key()=="ENV_DOCK", entry.val()=="ENV_LANCE"
-    Map<String,String> filterNeedResolveDockerVarNames = getFilterNeedResolveEnvVarNames(setDockerEnvVars);
+    Map<String,String> filterNeedResolveDockerVarNames = getFilterNeedResolveDockerVarNames(setDockerEnvVars);
 
     for(Entry<String, String> vars: filterNeedResolveDockerVarNames.entrySet()) {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
@@ -297,23 +294,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
       String newEnvVar = vars.getKey() + "=" + resolvedVarVal;
       //todo: escape regex special-chars in String
       cmd.replaceEnvVar(newEnvVar);
-    }
-  }
-
-  private void resolveAddHostOption(DockerCommand cmd) throws DockerCommandException {
-    Map<Option, List<String>> setOptions = cmd.getSetOptions();
-    List<String> setDockerHostVars = setOptions.get(Option.ADD_HOST);
-
-    Map<String,String> filterNeedResolveAddHostNames = getFilterNeedResolveAddHostNames(setDockerHostVars);
-
-    for(Entry<String, String> vars: filterNeedResolveAddHostNames.entrySet()) {
-      String resolvedVarVal = findVarVal(vars.getValue().trim());
-      if(resolvedVarVal.equals("")) {
-        continue;
-      }
-      String newHostVar = vars.getKey() + ":" + resolvedVarVal;
-      //todo: escape regex special-chars in String
-      cmd.replaceAddHostVar(newHostVar);
     }
   }
 
@@ -332,7 +312,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     return "";
   }
 
-  private static Map<String,String> getFilterNeedResolveEnvVarNames(List<String> setDockerEnvVars) {
+  private static Map<String,String> getFilterNeedResolveDockerVarNames(List<String> setDockerEnvVars) {
     Map<String,String> needResolveDockerVarNames = new HashMap<>();
     //todo: make pattern more general, e.g. "$..." ,"${...}"
     Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+)=\\$([^\\s]+)[\\s]*$");
@@ -349,25 +329,6 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
 
     return needResolveDockerVarNames;
-  }
-
-  private static Map<String,String> getFilterNeedResolveAddHostNames(List<String> setDockerHostVars) {
-    Map<String,String> needResolveAddHostNames = new HashMap<>();
-    //todo: make pattern more general, e.g. "$..." ,"${...}"
-    Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+):\\$([^\\s]+)[\\s]*$");
-
-    if(setDockerHostVars == null) {
-      return needResolveAddHostNames ;
-    }
-
-    for(String hostVar: setDockerHostVars) {
-      Matcher matcher = pattern.matcher(hostVar);
-      if (matcher.find()) {
-        needResolveAddHostNames.put(matcher.group(1),matcher.group(2));
-      }
-    }
-
-    return needResolveAddHostNames;
   }
 
   private void executeGenericRedeploy() throws ContainerException {
