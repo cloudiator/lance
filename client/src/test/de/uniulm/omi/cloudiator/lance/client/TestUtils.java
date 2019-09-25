@@ -67,7 +67,7 @@ public class TestUtils {
 
     System.setProperty("lca.client.config.registry", "etcdregistry");
     // adjust
-    System.setProperty("lca.client.config.registry.etcd.hosts", "x.x.x.x:4001");
+    System.setProperty("lca.client.config.registry.etcd.hosts",  "x.x.x.x:4001");
   }
 
   public static DeployableComponent buildDeployableComponent(
