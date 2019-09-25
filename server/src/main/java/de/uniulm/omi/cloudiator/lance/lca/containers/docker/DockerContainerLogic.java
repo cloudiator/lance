@@ -68,6 +68,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     try {
       imageHandler.doPullImages(myComponent.getFullImageName());
       resolveDockerEnvVars(myComponent.getEntireDockerCommands().getCreate());
+      resolveAddHostOption(myComponent.getEntireDockerCommands().getCreate());
       //todo: Create function to check, if these ports match the ports given in docker command
       //Map<Integer, Integer> portsToSet = networkHandler.findPortsToSet(deploymentContext);
       //myComponent.setPort(portsToSet);
@@ -220,6 +221,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
       resolveDockerEnvVars(runCmd);
+      resolveAddHostOption(runCmd);
       copyEnvIntoCommand(runCmd);
       client.executeSingleDockerCommand(myComponent.getFullDockerCommand(DockerCommand.Type.REMOVE));
       final String cmdStr = myComponent.getFullDockerCommand(DockerCommand.Type.RUN);
@@ -272,6 +274,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     DockerCommand runCmd = myComponent.getEntireDockerCommands().getRun();
     try {
       resolveDockerEnvVars(runCmd);
+      resolveAddHostOption(runCmd);
       copyEnvIntoCommand(runCmd);
       executeGenericRedeploy();
     } catch (DockerCommandException e) {
@@ -285,7 +288,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     List<String> setDockerEnvVars = setOptions.get(Option.ENVIRONMENT);
 
     //Map entry for ENV_DOCK=$ENV_LANCE: entry.key()=="ENV_DOCK", entry.val()=="ENV_LANCE"
-    Map<String,String> filterNeedResolveDockerVarNames = getFilterNeedResolveDockerVarNames(setDockerEnvVars);
+    Map<String,String> filterNeedResolveDockerVarNames = getFilterNeedResolveEnvVarNames(setDockerEnvVars);
 
     for(Entry<String, String> vars: filterNeedResolveDockerVarNames.entrySet()) {
       String resolvedVarVal = findVarVal(vars.getValue().trim());
@@ -330,7 +333,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     return "";
   }
 
-  private static Map<String,String> getFilterNeedResolveDockerVarNames(List<String> setDockerEnvVars) {
+  private static Map<String,String> getFilterNeedResolveEnvVarNames(List<String> setDockerEnvVars) {
     Map<String,String> needResolveDockerVarNames = new HashMap<>();
     //todo: make pattern more general, e.g. "$..." ,"${...}"
     Pattern pattern = Pattern.compile("^[\\s]*([^\\s]+)=\\$([^\\s]+)[\\s]*$");
