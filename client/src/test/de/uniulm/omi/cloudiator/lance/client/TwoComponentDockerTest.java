@@ -443,7 +443,8 @@ public class TwoComponentDockerTest extends BaseTests {
       createOptionMap.put(Option.PORT, new ArrayList<>(Arrays.asList(n+":"+n)));
       createOptionMap.put(Option.RESTART, new ArrayList<>(Arrays.asList("no")));
       createOptionMap.put(Option.INTERACTIVE, new ArrayList<>(Arrays.asList("")));
-      createOptionMap.put(Option.ADD_HOST, new ArrayList<>(Arrays.asList("host:$CLOUD_IP")));
+      createOptionMap.put(
+          Option.ADD_HOST, new ArrayList<>(Arrays.asList("host.cloudiator.com:$CLOUD_IP")));
       List<OsCommand> createOsCommandList = new ArrayList<>();
       createOsCommandList.add(OsCommand.BASH);
       List<String> createArgsList = new ArrayList<>();
