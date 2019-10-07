@@ -31,9 +31,12 @@ import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionContext;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import de.uniulm.omi.cloudiator.lance.lifecycle.Shell;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class BashExecutionHelper {
-    
+  private final static Logger LOGGER = LoggerFactory.getLogger(BashExecutionHelper.class);
+
     private BashExecutionHelper() {
         // no instances of this class //
     }
@@ -76,9 +79,11 @@ final class BashExecutionHelper {
     
     static void executeBlockingCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) throws LifecycleException {
         final List<String> errCommandsList = new ArrayList<>();
-        if(!osMatches(osParam, ec))
-            return;
-        
+        if(!osMatches(osParam, ec)) {
+          LOGGER.error(String.format("Cannot execute commands %s as operatingsystems %s and %s do not match", commands.toString(), osParam, ec.getOperatingSystem()));
+          return;
+        }
+
         Shell shell = ec.getShell();
         final int commandSize = commands.size();
         int counter = 0;
