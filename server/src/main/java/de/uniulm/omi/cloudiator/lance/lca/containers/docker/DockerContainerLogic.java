@@ -301,7 +301,7 @@ public class DockerContainerLogic extends AbstractDockerContainerLogic {
     }
   }
 
-  private void resolveAddHostOption(DockerCommand cmd) throws DockerCommandException {
+  protected void resolveAddHostOption(DockerCommand cmd) throws DockerCommandException {
     Map<Option, List<String>> setOptions = cmd.getSetOptions();
     List<String> setDockerHostVars = setOptions.get(Option.ADD_HOST);
 
