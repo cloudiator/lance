@@ -17,18 +17,18 @@ import java.util.regex.Pattern;
 public class DockerCommand implements Serializable {
 
   public enum Option {
-    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY, DETACH, VOLUME};
+    NAME, PORT, RESTART, INTERACTIVE, NETWORK, ENVIRONMENT, TTY, DETACH, VOLUME, ADD_HOST};
   public enum OsCommand {
     EMPTY, BASH
   }
 
   public enum Type {
     CREATE(new Option[]{Option.NAME, Option.PORT, Option.RESTART,Option.INTERACTIVE, Option.ENVIRONMENT,
-        Option.NETWORK, Option.TTY, Option.VOLUME}, new OsCommand[]{OsCommand.BASH}),
+        Option.NETWORK, Option.TTY, Option.VOLUME, Option.ADD_HOST}, new OsCommand[]{OsCommand.BASH}),
     START(new Option[]{Option.INTERACTIVE}, new OsCommand[]{}),
     STOP(new Option[]{}, new OsCommand[]{}),
     RUN(new Option[]{Option.NAME, Option.PORT, Option.INTERACTIVE, Option.ENVIRONMENT,
-        Option.NETWORK, Option.DETACH, Option.VOLUME}, new OsCommand[]{}),
+        Option.NETWORK, Option.DETACH, Option.VOLUME, Option.ADD_HOST}, new OsCommand[]{}),
     REMOVE(new Option[]{}, new OsCommand[]{});
 
     private static final String createCommandName = "create";
@@ -176,7 +176,7 @@ public class DockerCommand implements Serializable {
     lst = new ArrayList<>(setOptions.get(Option.ENVIRONMENT));
 
     //todo: escape regex special-chars in String
-    int index = getEnvVarIndex(setOptions.get(Option.ENVIRONMENT), envVar);
+    int index = getVarIndex(setOptions.get(Option.ENVIRONMENT), envVar, "=");
 
     if(index == -1) {
       throw new DockerCommandException("Cannot override an environmental variable with " + envVar + ", because it does not exist.");
@@ -186,16 +186,41 @@ public class DockerCommand implements Serializable {
     setOptions.put(Option.ENVIRONMENT,lst);
   }
 
-  private static int getEnvVarIndex(List<String> envVars, String replaceVar) {
-    String[] parts = replaceVar.split("=");
+  // todo: merge this method with replaceEnvVar to make it more generic
+  public void replaceAddHostVar(String hostVar) throws DockerCommandException {
+    if(!cmdType.possibleOptions.contains(Option.ADD_HOST))
+      throw new DockerCommandException(cmdType.name() + "cannot have add-host option set");
+
+    List<String> lst;
+
+    if (setOptions.get(Option.ADD_HOST) == null) {
+      throw new DockerCommandException( "Cannot override an add-host arg with " + hostVar
+          + " when there is no arg set yet");
+    }
+
+    lst = new ArrayList<>(setOptions.get(Option.ADD_HOST));
+
+    //todo: escape regex special-chars in String
+    int index = getVarIndex(setOptions.get(Option.ADD_HOST), hostVar, ":");
+
+    if(index == -1) {
+      throw new DockerCommandException("Cannot override an add-host arg with " + hostVar + ", because it does not exist.");
+    }
+
+    lst.set(index, hostVar);
+    setOptions.put(Option.ADD_HOST,lst);
+  }
+
+  private static int getVarIndex(List<String> vars, String replaceVar, String del) {
+    String[] parts = replaceVar.split(del);
     String replaceVarName = parts[0];
     //todo: make pattern more general, e.g. "$..." ,"${...}"
     //todo: escape regex special-chars in replaceVarName
-    final String regexStr = "^[\\s]*" + replaceVarName +"=.*$";
+    final String regexStr = "^[\\s]*" + replaceVarName + del + ".*$";
     Pattern pattern = Pattern.compile(regexStr);
 
-    for(int i=0; i<envVars.size(); ++i) {
-      Matcher matcher = pattern.matcher(envVars.get(i));
+    for(int i=0; i<vars.size(); ++i) {
+      Matcher matcher = pattern.matcher(vars.get(i));
       if (matcher.find()) {
         return i;
       }
@@ -280,6 +305,8 @@ public class DockerCommand implements Serializable {
         return "--detach";
       case VOLUME:
         return "--volume";
+      case ADD_HOST:
+        return "--add-host";
       default:
         return "";
     }
