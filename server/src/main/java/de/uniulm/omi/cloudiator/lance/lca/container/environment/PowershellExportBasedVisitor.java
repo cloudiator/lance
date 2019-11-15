@@ -18,11 +18,15 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
+import de.uniulm.omi.cloudiator.lance.lca.container.port.DownstreamAddress;
 import de.uniulm.omi.cloudiator.lance.lca.container.port.NetworkVisitor;
+import de.uniulm.omi.cloudiator.lance.lca.container.port.PortHierarchyLevel;
 import de.uniulm.omi.cloudiator.lance.lca.containers.plain.shell.PlainShell;
 import de.uniulm.omi.cloudiator.lance.lifecycle.ExecutionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Created by Daniel Seybold on 10.09.2015.
@@ -66,11 +70,6 @@ public class PowershellExportBasedVisitor implements NetworkVisitor, PropertyVis
     @Override
     public void visitOutPort(String name, String sinkValues) {
         addEnvironmentVariable(name, sinkValues);
-    }
-
-    @Override
-    public void visitInFunctionHandler(String name, String functionHandler) {
-        addEnvironmentVariable(name, functionHandler);
     }
 
     @Override
