@@ -20,10 +20,10 @@ package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
+import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,19 +43,24 @@ public final class PortRegistryTranslator {
     private static final String PORT_HIERARCHY_0_NAME = "PUBLIC";
     private static final String PORT_HIERARCHY_1_NAME = "CLOUD";
     private static final String PORT_HIERARCHY_2_NAME = "CONTAINER";
-        
+
     public static final PortHierarchyLevel PORT_HIERARCHY_0 = PortHierarchyLevel.create(PORT_HIERARCHY_0_NAME);
     public static final PortHierarchyLevel PORT_HIERARCHY_1 = PortHierarchyLevel.create(PORT_HIERARCHY_1_NAME);
     public static final PortHierarchyLevel PORT_HIERARCHY_2 = PortHierarchyLevel.create(PORT_HIERARCHY_2_NAME);
-    
+
+    public static final PortHierarchyLevel PORT_HIERARCHY_FUNCTION_HANDLER = PortHierarchyLevel.create("FUNCTION_HANDLER");
+    public static final PortHierarchyLevel PORT_HIERARCHY_FUNCTION_NAME = PortHierarchyLevel.create("FUNCTION_NAME");
+
     public static final PortHierarchy PORT_HIERARCHY = new PortHierarchyBuilder().addLevel(PortRegistryTranslator.PORT_HIERARCHY_0).
             addLevel(PortRegistryTranslator.PORT_HIERARCHY_1).addLevel(PORT_HIERARCHY_2).build();
 
-    
+    public static final PortHierarchy PORT_HIERARCHY_LAMBDA = new PortHierarchy(Arrays.asList(PORT_HIERARCHY_FUNCTION_NAME, PORT_HIERARCHY_FUNCTION_HANDLER));
+
     public static final Integer UNSET_PORT = Integer.valueOf(-1);
     public static final String PORT_PREFIX = "ACCESS_";
     public static final String HOST_PREFIX = "HOST_";
-    
+    public static final String ENDPOINT_PREFIX = "ENDPOINT_";
+
     private static final String buildFullPortName(String portName){
         return PORT_PREFIX + portName;
     }
@@ -67,7 +72,11 @@ public final class PortRegistryTranslator {
     public static final String buildFullHostName(PortHierarchyLevel level){
         return HOST_PREFIX + level.getName().toUpperCase() + "_IP";
     }
-    
+
+    public static final String buildFullLambdaName(PortReference sinkReference, PortHierarchyLevel level){
+        return ENDPOINT_PREFIX + level.getName() + "_" + sinkReference.getPortName();
+    }
+
     public static boolean isValidPort(Integer i) {
         if(i == null) 
             return false;
@@ -131,7 +140,68 @@ public final class PortRegistryTranslator {
         Map<ComponentInstanceId, Map<String, String>> dump = accessor.retrieveComponentDump(sinkReference);
         return getHierarchicalPorts(sinkReference, dump, portHierarchy);
     }
-    
+
+    public Map<ComponentInstanceId, HierarchyLevelState<String>> findDownstreamInstances2(OutPort out, PortHierarchy portHierarchy) throws RegistrationException {
+        PortReference sinkReference;
+        Object o = accessor.getLocalProperty(out.getName(), OutPort.class);
+        try {
+            sinkReference = (PortReference) o;
+        } catch(ClassCastException cce) {
+            throw new IllegalStateException("sink unknown: port '" + out.getName() + "' not correctly wired.", cce);
+        }
+
+        Map<ComponentInstanceId, Map<String, String>> dump;
+        String key = LcaRegistryConstants.regEntries.get(LcaRegistryConstants.Identifiers.CONTAINER_STATUS);
+        boolean allSet;
+        do {
+            dump = accessor.retrieveComponentDump(sinkReference);
+
+            printDump(dump);
+
+            List<Boolean> results = new ArrayList<>();
+            for (ComponentInstanceId componentInstanceId : dump.keySet()) {
+                Map<String, String> properties = dump.get(componentInstanceId);
+
+                boolean isSet = properties.containsKey(key) && ContainerStatus.READY.name().equals(properties.get(key));
+
+                if (!isSet) {
+                    LOGGER.info("Container is not in {} state for ComponentInstanceId {}",  ContainerStatus.READY.name(), componentInstanceId);
+                }
+                results.add(isSet);
+            }
+
+            boolean isEmpty = results.isEmpty();
+            allSet = !isEmpty && results.stream().allMatch(Boolean::booleanValue);
+
+            LOGGER.info("Collection of statuses is {}, final result is {}", isEmpty ? "empty" : "not empty", allSet);
+
+            if (!allSet) {
+                final long delayTime = 10_000L;
+                LOGGER.info("Waiting {} ms for next check", delayTime);
+                try {
+                    Thread.sleep(delayTime);
+                } catch (InterruptedException e) {
+                }
+            }
+
+        } while (!allSet);
+        LOGGER.info("All ContainerInstances are in {} state", ContainerStatus.READY.name());
+
+        return getHierarchicalPorts2(sinkReference, dump, portHierarchy);
+    }
+
+    private void printDump(Map<ComponentInstanceId, Map<String, String>> dump) {
+        LOGGER.debug("Printing dump... begin");
+        for (ComponentInstanceId componentInstanceId : dump.keySet()) {
+            LOGGER.debug("\tfor ComponentInstanceId: {}", componentInstanceId);
+            final Map<String, String> properties = dump.get(componentInstanceId);
+            properties.forEach((key, value) -> {
+                LOGGER.debug("\t\tkey: {}, value: {}", key, value);
+            });
+        }
+        LOGGER.debug("Printing dump... end");
+    }
+
     private static boolean isValidPortOrUnset(Integer i) {
         if(i == null) 
             return false;
@@ -170,6 +240,27 @@ public final class PortRegistryTranslator {
         return addresses;
     }
 
+    private static Map<ComponentInstanceId, HierarchyLevelState<String>> getHierarchicalPorts2(PortReference sinkReference, Map<ComponentInstanceId, Map<String, String>> dump, PortHierarchy portHierarchy) throws RegistrationException {
+
+        Map<ComponentInstanceId,HierarchyLevelState<String>> addresses = new HashMap<>();
+        for(Entry<ComponentInstanceId, Map<String, String>> entry : dump.entrySet()) {
+            ComponentInstanceId id = entry.getKey();
+            Map<String,String> map = entry.getValue();
+            boolean isReady = GlobalRegistryAccessor.dumpMapHasContainerStatus(map, ContainerStatus.READY);
+            if(!isReady) {
+                LOGGER.info("dropping data (ports and ips of component instance " + id + " as it is not in ready state");
+                continue;
+            }
+            HierarchyLevelState<String> state = new HierarchyLevelState<>(id.toString(), portHierarchy);
+            for(PortHierarchyLevel level : portHierarchy.levels()) {
+                String hierarchicalLambdaName = getHierarchicalLambdaName(sinkReference, level, map);
+                state.registerValueAtLevel(level, hierarchicalLambdaName);
+            }
+            addresses.put(id, state);
+        }
+        return addresses;
+    }
+
 	private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
         String key = buildFullPortName(sinkReference.getPortName(), level);
         String value = dump.get(key);
@@ -203,5 +294,14 @@ public final class PortRegistryTranslator {
         } catch(UnknownHostException uhe) { 
             throw new RegistrationException("illegal IP address: " + value, uhe);
         } return value;
+    }
+
+    public static String getHierarchicalLambdaName(PortReference sinkReference, PortHierarchyLevel level, Map<String, String> dump) throws RegistrationException {
+        String key = buildFullLambdaName(sinkReference, level);
+        String value = dump.get(key);
+        if(value == null) {
+            throw new RegistrationException("lambda for '" + key + "' has not been found. Value was null.");
+        }
+        return value;
     }
 }

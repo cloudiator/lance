@@ -18,15 +18,8 @@
 
 package de.uniulm.omi.cloudiator.lance.lca.container.port;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
 import org.slf4j.Logger;
@@ -52,6 +45,7 @@ public final class NetworkHandler implements DynamicEnvVars {
     private volatile ScheduledFuture<?> updateFuture = null;
     
     private final PortHierarchy portHierarchy;
+    private final PortHierarchy portHierarchyLambda;
     private final AbstractComponent myComponent;
     private final PortRegistryTranslator portAccessor;
     
@@ -60,16 +54,19 @@ public final class NetworkHandler implements DynamicEnvVars {
     private final Map<String,HierarchyLevelState<Integer>> inPorts = new HashMap<>();
     
     private final OutPortHandler outPorts;
+    private final OutLambdaHandler outLambdaHandler;
     private Set<DynamicEnvVarsImpl> currentEnvVarsDynamic;
 
     public NetworkHandler(GlobalRegistryAccessor accessorParam, AbstractComponent myComponentParam, HostContext hostContextParam) {
         
         portHierarchy = PortRegistryTranslator.PORT_HIERARCHY;
+        portHierarchyLambda = PortRegistryTranslator.PORT_HIERARCHY_LAMBDA;
         myComponent = myComponentParam;
         hostContext = hostContextParam;
         portAccessor = new PortRegistryTranslator(accessorParam, hostContext);
         ipAddresses = new HierarchyLevelState<>("ip_address", portHierarchy);
         outPorts =  new OutPortHandler(myComponent);
+        outLambdaHandler = new OutLambdaHandler(myComponent);
         currentEnvVarsDynamic = new HashSet<>();
     }
 
@@ -93,6 +90,7 @@ public final class NetworkHandler implements DynamicEnvVars {
         registerAddress(PortRegistryTranslator.PORT_HIERARCHY_2, valueParam);
         initInPorts();
         outPorts.initPortStates(portAccessor, portHierarchy);
+        outLambdaHandler.initLambdaStates(portAccessor, portHierarchyLambda);
         portAccessor.registerLocalAddressAtLevel(PortRegistryTranslator.PORT_HIERARCHY_2, valueParam);
     }
 
@@ -238,6 +236,7 @@ public final class NetworkHandler implements DynamicEnvVars {
         }
 
         outPorts.accept(visitor);
+        outLambdaHandler.accept(visitor);
     }
 
     public void updateAddress(PortHierarchyLevel level2Param, String containerIp) {
@@ -245,10 +244,7 @@ public final class NetworkHandler implements DynamicEnvVars {
     }
 
     private static Map<String,String> buildSingleElementMap(String key, String value) {
-        Map<String,String> map = new HashMap<>();
-        map.put(key,value);
-
-        return map;
+        return Collections.singletonMap(key, value);
     }
 
     //OutPortHandler vars included
@@ -298,5 +294,6 @@ public final class NetworkHandler implements DynamicEnvVars {
         }
 
         outPorts.generateDynamicEnvVars(diff);
+        outLambdaHandler.generateDynamicEnvVars();
     }
 }
