@@ -1,6 +1,8 @@
 package de.uniulm.omi.cloudiator.lance.lca.container.environment;
 
 import com.google.common.net.InetAddresses;
+import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,8 +40,10 @@ public enum DynamicEnvVarsImpl implements DynamicEnvVars {
     return true;
   }),
   //todo: implement
-  DEPL_COMPONENT((String str) -> true),
-  FUNCTION_HANDLER((String str) -> true);
+  DEPL_COMPONENT((String str) ->
+  {
+    return true;
+  });
 
 
   private final static Logger LOGGER = LoggerFactory.getLogger(DynamicEnvVarsImpl.class);

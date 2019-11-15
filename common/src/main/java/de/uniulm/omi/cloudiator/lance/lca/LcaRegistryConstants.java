@@ -18,17 +18,27 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CLOUD_IP;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CLOUD_PORT;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_IP;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_PORT;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_GROUP_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.DYN_HANDLER_KEY;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.INSTANCE_NR;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.PUBLIC_IP;
+import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.PUBLIC_PORT;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.*;
 
 public final class LcaRegistryConstants {
 
     public enum Identifiers { CONTAINER_STATUS, COMPONENT_INSTANCE_STATUS,
       PUBLIC_IP, CLOUD_IP, CONTAINER_IP, PUBLIC_PORT, CLOUD_PORT, CONTAINER_PORT,
-      DYN_GROUP_KEY, DYN_HANDLER_KEY, INSTANCE_NR, FUNCTION_HANDLER};
+      DYN_GROUP_KEY, DYN_HANDLER_KEY, INSTANCE_NR};
 
     public static final Map<Identifiers, String> regEntries;
     static {
@@ -44,7 +54,6 @@ public final class LcaRegistryConstants {
       aMap.put(DYN_GROUP_KEY, "dynamicgroup");
       aMap.put(DYN_HANDLER_KEY, "dynamichandler");
       aMap.put(INSTANCE_NR, "Instance_Number");
-      aMap.put(FUNCTION_HANDLER, "FUNCTION_HANDLER");
       regEntries = Collections.unmodifiableMap(aMap);
     }
 

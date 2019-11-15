@@ -24,13 +24,13 @@ import de.uniulm.omi.cloudiator.lance.lca.container.environment.DynamicEnvVarsIm
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import java.util.function.Predicate;
-
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +44,7 @@ final class OutPortHandler implements DynamicEnvVars {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutPort.class);
     
     private static final Map<PortHierarchyLevel, List<DownstreamAddress>> EMPTY_VISIT_MAP;
-
-    private static final Predicate<OutPort> FUNCTION_HANDLER_PREDICATE = outPort -> outPort.getName().contains("Lambda");
-
+    
     static {
         Map<PortHierarchyLevel, List<DownstreamAddress>> map = new HashMap<>();
         map.put(PortRegistryTranslator.PORT_HIERARCHY_0, Collections.<DownstreamAddress>emptyList());
@@ -86,10 +84,6 @@ final class OutPortHandler implements DynamicEnvVars {
         }
         
         for(OutPort out : outPorts) {
-            if (FUNCTION_HANDLER_PREDICATE.test(out)) {
-                continue;
-            }
-
             Map<ComponentInstanceId, HierarchyLevelState<DownstreamAddress>> instances = accessor.findDownstreamInstances(out, portHierarchy);
             OutPortState state = new OutPortState(out, instances);
             portStates.add(state);
