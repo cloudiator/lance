@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import com.google.common.base.MoreObjects;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -7,6 +8,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 public class ExternalContextParameters {
+
   private final String taskName;
   ApplicationInstanceId appId;
   private final ComponentId cId;
@@ -71,6 +73,7 @@ public class ExternalContextParameters {
   }
 
   public static class ProvidedPortContext {
+
     String portName;
     int portNmbr;
 
@@ -96,6 +99,7 @@ public class ExternalContextParameters {
   }*/
 
   public static class Builder {
+
     private String taskName_;
     ApplicationInstanceId appId;
     private ComponentId cId;
@@ -106,7 +110,8 @@ public class ExternalContextParameters {
     private ContainerStatus contStatus_;
     private LifecycleHandlerType compInstType_;
 
-    public Builder() {}
+    public Builder() {
+    }
 
     public Builder taskName(String taskName_) {
       this.taskName_ = taskName_;
@@ -156,5 +161,19 @@ public class ExternalContextParameters {
     public ExternalContextParameters build() {
       return new ExternalContextParameters(this);
     }
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("taskName", taskName)
+        .add("appId", appId)
+        .add("cId", cId)
+        .add("cInstId", cInstId)
+        .add("publicIp", publicIp)
+        .add("providedPortContext", providedPortContext)
+        .add("contStatus", contStatus)
+        .add("compInstType", compInstType)
+        .toString();
   }
 }
