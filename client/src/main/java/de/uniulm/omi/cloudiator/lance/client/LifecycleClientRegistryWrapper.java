@@ -37,6 +37,7 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
+import static java.lang.Thread.sleep;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -77,6 +78,11 @@ public final class LifecycleClientRegistryWrapper {
   public static void injectExternalDeploymentContext(ExternalContextParameters params)
       throws DeploymentException {
     try {
+      // do not insert context if registry does not exist yet, the creation is the job of the lance user/orchestrator
+      while(!currentRegistry.applicationInstanceExists(params.getAppId())) {
+        sleep(1500);
+      }
+
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getTaskName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
@@ -85,12 +91,12 @@ public final class LifecycleClientRegistryWrapper {
           LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), params.getCompInstStatus().toString());
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
-        currentRegistry.addComponentProperty(
-            params.getAppId(),
-            params.getcId(),
-            params.getcInstId(),
-            params.getProvidedPortContext().getFullPortName(),
-            params.getProvidedPortContext().getPortNmbr().toString());
+      currentRegistry.addComponentProperty(
+          params.getAppId(),
+          params.getcId(),
+          params.getcInstId(),
+          params.getProvidedPortContext().getFullPortName(),
+          params.getProvidedPortContext().getPortNmbr().toString());
 
       currentRegistry.addComponentProperty(
           params.getAppId(),
@@ -99,7 +105,11 @@ public final class LifecycleClientRegistryWrapper {
           params.getFullHostName(),
           params.getPublicIp());
     } catch (RegistrationException e) {
-      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s", params.getTaskName()), e);
+      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s due"
+          + "to resgistry issues", params.getTaskName()), e);
+    } catch (InterruptedException e) {
+      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s due"
+          + "to an interruption while waiting for the registry to become accessible", params.getTaskName()), e);
     }
   }
 

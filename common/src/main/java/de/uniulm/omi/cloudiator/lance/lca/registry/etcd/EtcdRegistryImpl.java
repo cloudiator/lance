@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 import mousio.etcd4j.EtcdClient;
 import mousio.etcd4j.responses.EtcdException;
 import mousio.etcd4j.responses.EtcdKeysResponse;
@@ -75,7 +74,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
              in the registry.
      */
     public boolean addApplicationInstance(ApplicationInstanceId instId, ApplicationId appId, String name) throws RegistrationException {
-        String dirName = generateApplicationInstanceDirectory(instId);
+        String dirName = generateApplicationInstanceDirectoryName(instId);
         boolean b = createDirectorIfItDoesNotExist(dirName);
         if(b) { // only add properties if this is a new directory //
             setPropertyInDirectory(dirName, DESCRIPTION, APP_INSTANCE_DESCRIPTION);
@@ -179,7 +178,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
     
     @Override
     public boolean applicationInstanceExists(ApplicationInstanceId appInstId) throws RegistrationException {
-        final String dirName = generateApplicationInstanceDirectory(appInstId);
+        final String dirName = generateApplicationInstanceDirectoryName(appInstId);
         return directoryDoesExist(dirName);
     }
 
@@ -272,12 +271,12 @@ final class EtcdRegistryImpl implements LcaRegistry {
         }
     }
 
-    private final static String generateApplicationInstanceDirectory(ApplicationInstanceId instId) {
+    private final static String generateApplicationInstanceDirectoryName(ApplicationInstanceId instId) {
         return "/lca/" + instId.toString();
     }
 
     private final static String generateComponentDirectory(ApplicationInstanceId instId, ComponentId cid) {
-        return generateApplicationInstanceDirectory(instId) + "/" + cid.toString();
+        return generateApplicationInstanceDirectoryName(instId) + "/" + cid.toString();
     }
 
     private final static String generateComponentInstanceDirectory(ApplicationInstanceId instId, ComponentId cid, ComponentInstanceId cinstId) {
@@ -334,7 +333,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
 
   private List<ComponentId> readFirstLevelDirs(ApplicationInstanceId appInstId) throws RegistrationException {
     List<ComponentId> retVal = new ArrayList<>();
-    String dirNameApp = generateApplicationInstanceDirectory(appInstId);
+    String dirNameApp = generateApplicationInstanceDirectoryName(appInstId);
     EtcdKeysResponse ccc = null;
     try {
       ccc = etcd.getDir(dirNameApp).recursive().sorted().send().get();
