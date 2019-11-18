@@ -67,12 +67,30 @@ public class ExternalContextParameters {
     return compInstType;
   }
 
-  public String getFullHostName() {
-    final String name = "HOST_PUBLIC_IP";
-    return name;
+  public static class IpContext {
+
+    final static String IP_IDENTIFIER_PREFIX = "HOST";
+    final static String IP_IDENTIFIER_POSTFIX = "IP";
+
+    public static String getFullIpNamePublic() {
+      final String fullIpName = IP_IDENTIFIER_PREFIX + "_" + "PUBLIC_" + IP_IDENTIFIER_POSTFIX;
+      return fullIpName;
+    }
+
+    public static String getFullIpNameCloud() {
+      final String fullIpName = IP_IDENTIFIER_PREFIX + "_" + "CLOUD_" + IP_IDENTIFIER_POSTFIX;
+      return fullIpName;
+    }
+
+    public static String getFullIpNameContainer() {
+      final String fullIpName = IP_IDENTIFIER_PREFIX + "_" + "CONTAINER_" + IP_IDENTIFIER_POSTFIX;
+      return fullIpName;
+    }
   }
 
   public static class ProvidedPortContext {
+
+    final static String PORT_IDENTIFIER_PREFIX = "ACCESS";
 
     String portName;
     int portNmbr;
@@ -86,8 +104,18 @@ public class ExternalContextParameters {
       return portNmbr;
     }
 
-    public String getFullPortName() {
-      final String fullPortName = "ACCESS_" + "PUBLIC_" + portName;
+    public String getFullPortNamePublic() {
+      final String fullPortName = PORT_IDENTIFIER_PREFIX + "_" + "PUBLIC_" + portName;
+      return fullPortName;
+    }
+
+    public String getFullPortNameCloud() {
+      final String fullPortName = PORT_IDENTIFIER_PREFIX + "_" + "CLOUD_" + portName;
+      return fullPortName;
+    }
+
+    public String getFullPortNameContainer() {
+      final String fullPortName = PORT_IDENTIFIER_PREFIX + "_" + "CONTAINER_" + portName;
       return fullPortName;
     }
   }

@@ -170,7 +170,7 @@ public final class PortRegistryTranslator {
         return addresses;
     }
 
-	private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
+    private static Integer getHierarchicalPort(PortReference sinkReference, Map<String, String> dump, PortHierarchyLevel level) throws RegistrationException {
         String key = buildFullPortName(sinkReference.getPortName(), level);
         String value = dump.get(key);
         try {
