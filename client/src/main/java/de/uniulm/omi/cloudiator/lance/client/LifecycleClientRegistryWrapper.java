@@ -78,11 +78,7 @@ public final class LifecycleClientRegistryWrapper {
   public static void injectExternalDeploymentContext(ExternalContextParameters params)
       throws DeploymentException {
     try {
-      // do not insert context if registry does not exist yet, the creation is the job of the lance user/orchestrator
-      while(!currentRegistry.applicationInstanceExists(params.getAppId())) {
-        sleep(1500);
-      }
-
+      waitForAppInstanceRegistered(params.getAppId(), params.getTaskName());
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getTaskName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
@@ -96,9 +92,32 @@ public final class LifecycleClientRegistryWrapper {
     } catch (RegistrationException e) {
       throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s due"
           + "to resgistry issues", params.getTaskName()), e);
+    }
+  }
+
+  public static void removeExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
+    try {
+      waitForAppInstanceRegistered(params.getAppId(), params.getTaskName());
+      currentRegistry.deleteComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
+    } catch (RegistrationException e) {
+      throw new DeploymentException(String.format("Cannot remove external deployment context for task: %s due"
+          + "to resgistry issues", params.getTaskName()), e);
+    }
+  }
+
+  private static void waitForAppInstanceRegistered(ApplicationInstanceId appId, String taskName) throws DeploymentException {
+    try {
+      // do not insert/remove context if appInstance is not registered yet, the registration is the job of the lance user/orchestrator
+      while(!currentRegistry.applicationInstanceExists(appId)) {
+        sleep(1500);
+      }
+    } catch (RegistrationException e) {
+      throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
+          + "to resgistry issues", taskName), e);
     } catch (InterruptedException e) {
-      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s due"
-          + "to an interruption while waiting for the registry to become accessible", params.getTaskName()), e);
+      throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
+          + "to an interruption while waiting for the registry to become accessible", taskName), e);
     }
   }
 
