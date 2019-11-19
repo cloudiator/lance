@@ -219,6 +219,11 @@ public final class LifecycleClient {
     regWrapper.injectExternalDeploymentContext(params);
   }
 
+  public void removeExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
+    regWrapper.removeExternalDeploymentContext(params);
+  }
+
   public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
       throws DeploymentException {
     try {
