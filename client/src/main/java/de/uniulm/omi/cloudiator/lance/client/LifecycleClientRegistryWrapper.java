@@ -37,7 +37,6 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.COMPONENT_INSTANCE_STATUS;
 import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
-import static java.lang.Thread.sleep;
 
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -65,7 +64,8 @@ public final class LifecycleClientRegistryWrapper {
     return currentRegistry;
   }
 
-  private LifecycleClientRegistryWrapper() {}
+  private LifecycleClientRegistryWrapper() {
+  }
 
   static {
     try {
@@ -84,14 +84,16 @@ public final class LifecycleClientRegistryWrapper {
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
           LcaRegistryConstants.regEntries.get(CONTAINER_STATUS), params.getStatus().toString());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
-          LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), params.getCompInstStatus().toString());
+          LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS),
+          params.getCompInstStatus().toString());
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
       insertIpHierarchyParams(params);
       insertPortHierarchyParams(params);
     } catch (RegistrationException e) {
-      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s due"
-          + "to resgistry issues", params.getTaskName()), e);
+      throw new DeploymentException(
+          String.format("Cannot inject external deployment context for task: %s due"
+              + "to resgistry issues", params.getTaskName()), e);
     }
   }
 
@@ -99,29 +101,37 @@ public final class LifecycleClientRegistryWrapper {
       throws DeploymentException {
     try {
       waitForAppInstanceRegistered(params.getAppId(), params.getTaskName());
-      currentRegistry.deleteComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
+      currentRegistry
+          .deleteComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
     } catch (RegistrationException e) {
-      throw new DeploymentException(String.format("Cannot remove external deployment context for task: %s due"
-          + "to resgistry issues", params.getTaskName()), e);
+      throw new DeploymentException(
+          String.format("Cannot remove external deployment context for task: %s due"
+              + "to resgistry issues", params.getTaskName()), e);
     }
   }
 
-  private static void waitForAppInstanceRegistered(ApplicationInstanceId appId, String taskName) throws DeploymentException {
-    try {
-      // do not insert/remove context if appInstance is not registered yet, the registration is the job of the lance user/orchestrator
-      while(!currentRegistry.applicationInstanceExists(appId)) {
-        sleep(1500);
-      }
-    } catch (RegistrationException e) {
-      throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
-          + "to resgistry issues", taskName), e);
-    } catch (InterruptedException e) {
-      throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
-          + "to an interruption while waiting for the registry to become accessible", taskName), e);
-    }
+  private static void waitForAppInstanceRegistered(ApplicationInstanceId appId, String taskName)
+      throws DeploymentException {
+
+    /**
+
+     try {
+     // do not insert/remove context if appInstance is not registered yet, the registration is the job of the lance user/orchestrator
+     while(!currentRegistry.applicationInstanceExists(appId)) {
+     sleep(1500);
+     }
+     } catch (RegistrationException e) {
+     throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
+     + "to resgistry issues", taskName), e);
+     } catch (InterruptedException e) {
+     throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
+     + "to an interruption while waiting for the registry to become accessible", taskName), e);
+     }
+     **/
   }
 
-  private static void insertIpHierarchyParams(ExternalContextParameters params) throws RegistrationException {
+  private static void insertIpHierarchyParams(ExternalContextParameters params)
+      throws RegistrationException {
     currentRegistry.addComponentProperty(
         params.getAppId(),
         params.getcId(),
@@ -144,7 +154,8 @@ public final class LifecycleClientRegistryWrapper {
         params.getPublicIp());
   }
 
-  private static void insertPortHierarchyParams(ExternalContextParameters params) throws RegistrationException {
+  private static void insertPortHierarchyParams(ExternalContextParameters params)
+      throws RegistrationException {
     currentRegistry.addComponentProperty(
         params.getAppId(),
         params.getcId(),
@@ -167,7 +178,8 @@ public final class LifecycleClientRegistryWrapper {
         params.getProvidedPortContext().getPortNmbr().toString());
   }
 
-  public static final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
+  public static final void unRegisterInstance(ApplicationInstanceId appInstId,
+      ComponentId componentId,
       ComponentInstanceId componentInstanceId) throws RegistrationException, DeploymentException {
     currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
   }
