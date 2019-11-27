@@ -65,14 +65,14 @@ final class DockerImageHandler {
     return createComponentInstallId(myComponent);
   }
 
-  private String buildImageTagName(ImageCreationType type, String componentInstallId) {
+  private String buildImageTagName(ImageCreationType type, String componentInstallId) throws DockerException {
     final String key;
     switch (type) {
       case COMPONENT:
         key = imageFromComponent(componentInstallId);
         break;
       case OPERATING_SYSTEM:
-        key = os.dockerImage().orElseThrow(() -> new UnsupportedOperationException(
+        key = os.dockerImage().orElseThrow(() -> new DockerException(
             String.format("Operating system %s does not provide a docker image", os)));
         break;
       case COMPONENT_INSTANCE:
