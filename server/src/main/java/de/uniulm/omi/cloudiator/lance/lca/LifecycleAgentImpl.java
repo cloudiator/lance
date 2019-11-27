@@ -18,19 +18,13 @@
 
 package de.uniulm.omi.cloudiator.lance.lca;
 
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.DeploymentContext;
 import de.uniulm.omi.cloudiator.lance.application.component.AbstractComponent;
-import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
+import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
-import de.uniulm.omi.cloudiator.domain.OperatingSystem;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
-
-import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerController;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
@@ -41,9 +35,7 @@ import de.uniulm.omi.cloudiator.lance.lca.containers.docker.DockerContainerManag
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleStore;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,12 +85,14 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
   //todo: check todo-remark at deployComponent
   @Override
-  public ComponentInstanceId deployDeployableComponent(DeploymentContext ctx, DeployableComponent component,
-      OperatingSystemImpl os, ContainerType containerType)
+  public ComponentInstanceId deployDeployableComponent(DeploymentContext ctx,
+      DeployableComponent component,
+      OperatingSystem os, ContainerType containerType)
       throws RemoteException, LcaException, RegistrationException, ContainerException {
 
     componentConsistentlyRegistered(ctx, component);
-    ContainerManager manager = containers.getLifecycleContainerManager(hostContext, os, containerType);
+    ContainerManager manager = containers
+        .getLifecycleContainerManager(hostContext, os, containerType);
 
     LOGGER.info(String
         .format("Creating new container using context %s, os %s and containerType %s.",
@@ -127,7 +121,9 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     ContainerController cc = manager.createNewDockerContainer(ctx, component, false);
 
     LOGGER.info(String
-        .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));
+        .format(
+            "Dispatching handling of container controller %s for DockerComponent to execution handler.",
+            cc));
     doRunContainer(cc, hostContext, component);
     LOGGER.info(String.format("Returning ID %s of %s", cc.getId(), cc));
     return cc.getId();
@@ -148,7 +144,9 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     ContainerController cc = manager.createNewRemoteDockerContainer(ctx, component, false);
 
     LOGGER.info(String
-        .format("Dispatching handling of container controller %s for DockerComponent to execution handler.", cc));
+        .format(
+            "Dispatching handling of container controller %s for DockerComponent to execution handler.",
+            cc));
     doRunContainer(cc, hostContext, component);
     LOGGER.info(String.format("Returning ID %s of %s", cc.getId(), cc));
     return cc.getId();
@@ -157,7 +155,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
 
   @Override
   public boolean stopComponentInstance(
-      ComponentInstanceId instanceId, boolean forceRegDel) throws RemoteException, LcaException, ContainerException {
+      ComponentInstanceId instanceId, boolean forceRegDel)
+      throws RemoteException, LcaException, ContainerException {
     ContainerController cid = getController(instanceId);
     ContainerStatus state = cid.getState();
     if (state != ContainerStatus.READY) {
@@ -185,7 +184,7 @@ public class LifecycleAgentImpl implements LifecycleAgent {
   public void updateDownStreamPorts() throws RemoteException, LcaException, ContainerException {
     List<ComponentInstanceId> containerIds = containers.getAllContainers();
 
-    for(ComponentInstanceId cId: containerIds) {
+    for (ComponentInstanceId cId : containerIds) {
       ContainerController cc = getController(cId);
       cc.startPortUpdaters();
     }
@@ -218,7 +217,8 @@ public class LifecycleAgentImpl implements LifecycleAgent {
     throw new LcaException("cannot proceed: application instance is not known.");
   }
 
-  private static void doRunContainer(ContainerController cc, HostContext hostContext_, AbstractComponent component_, LifecycleStore store) {
+  private static void doRunContainer(ContainerController cc, HostContext hostContext_,
+      AbstractComponent component_, LifecycleStore store) {
     hostContext_.run(() -> {
       try {
         runPreInit(cc);
@@ -228,14 +228,17 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         LOGGER.info(String.format("Awaiting Initialisation of %s.", cc));
         cc.awaitInitialisation();
       } catch (ContainerException e) {
-        LOGGER.error("Error occurred in container controller " + cc + " for Lifecycle Component", e);
+        LOGGER
+            .error("Error occurred in container controller " + cc + " for Lifecycle Component", e);
       } catch (Exception e) {
-        LOGGER.error("Unexpected exception occured in container controller " + cc + " for Lifecycle Component", e);
+        LOGGER.error("Unexpected exception occured in container controller " + cc
+            + " for Lifecycle Component", e);
       }
     });
   }
 
-  private static void doRunContainer(ContainerController cc, HostContext hostContext_, AbstractComponent component_) {
+  private static void doRunContainer(ContainerController cc, HostContext hostContext_,
+      AbstractComponent component_) {
     hostContext_.run(() -> {
       try {
         runPreInit(cc);
@@ -245,24 +248,26 @@ public class LifecycleAgentImpl implements LifecycleAgent {
         LOGGER.info(String.format("Awaiting Initialisation of %s.", cc));
         cc.awaitInitialisation();
       } catch (ContainerException e) {
-        LOGGER.error("Error occurred in container controller " + cc + " for Lifecycle Component", e);
+        LOGGER
+            .error("Error occurred in container controller " + cc + " for Lifecycle Component", e);
       } catch (Exception e) {
-        LOGGER.error("Unexpected exception occured in container controller " + cc + " for Lifecycle Component", e);
+        LOGGER.error("Unexpected exception occured in container controller " + cc
+            + " for Lifecycle Component", e);
       }
     });
   }
 
   private static void runPreInit(ContainerController cc) throws ContainerException {
-      LOGGER.info(String.format("Awaiting creation of %s.", cc));
-      cc.awaitCreation();
-      LOGGER.info(String.format("Bootstrapping %s.", cc));
-      cc.bootstrap();
-      LOGGER.info(String.format("Awaiting Bootstrapping %s.", cc));
-      cc.awaitBootstrap();
+    LOGGER.info(String.format("Awaiting creation of %s.", cc));
+    cc.awaitCreation();
+    LOGGER.info(String.format("Bootstrapping %s.", cc));
+    cc.bootstrap();
+    LOGGER.info(String.format("Awaiting Bootstrapping %s.", cc));
+    cc.awaitBootstrap();
   }
 
   private static void componentPartOfApplication(DeploymentContext ctx,
-     AbstractComponent component) throws RegistrationException, LcaException {
+      AbstractComponent component) throws RegistrationException, LcaException {
     LcaRegistry reg = ctx.getRegistry();
     ApplicationInstanceId appInstId = ctx.getApplicationInstanceId();
 
