@@ -62,12 +62,12 @@ final class BashExecutionHelper {
     
     static void executeCommands(OperatingSystem osParam, ExecutionContext ec, List<String[]> commands) throws LifecycleException {
       final List<String> errCommandsList = new ArrayList<>();
-        if (!osMatches(osParam, ec)) {
-          LOGGER.warn(String.format("Cannot execute lifecylce-commands: %s as set os %s and os from"
-              + "ExecutionContext %s do not match",
-              commands, osParam.toString(), ec.getOperatingSystem().toString()));
-          return;
-        }
+      if (!osMatches(osParam, ec)) {
+        LOGGER.warn(String.format("Cannot execute lifecylce-commands: %s as set os %s and os from"
+            + "ExecutionContext %s do not match",
+            commands, osParam.toString(), ec.getOperatingSystem().toString()));
+        return;
+      }
 
       Shell shell = ec.getShell();
       for(String[] cmd : commands) {
