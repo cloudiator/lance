@@ -1,5 +1,6 @@
 package de.uniulm.omi.cloudiator.lance.container.standard;
 
+import com.google.common.base.MoreObjects;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
 import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
@@ -7,6 +8,7 @@ import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lifecycle.LifecycleHandlerType;
 
 public class ExternalContextParameters {
+
   private final String taskName;
   ApplicationInstanceId appId;
   private final ComponentId cId;
@@ -65,12 +67,31 @@ public class ExternalContextParameters {
     return compInstType;
   }
 
-  public String getFullHostName() {
-    final String name = "HOST_PUBLIC_IP";
-    return name;
+  public static class IpContext {
+
+    final static String IP_IDENTIFIER_PREFIX = "HOST";
+    final static String IP_IDENTIFIER_POSTFIX = "IP";
+
+    public static String getFullIpNamePublic() {
+      final String fullIpName = IP_IDENTIFIER_PREFIX + "_" + "PUBLIC_" + IP_IDENTIFIER_POSTFIX;
+      return fullIpName;
+    }
+
+    public static String getFullIpNameCloud() {
+      final String fullIpName = IP_IDENTIFIER_PREFIX + "_" + "CLOUD_" + IP_IDENTIFIER_POSTFIX;
+      return fullIpName;
+    }
+
+    public static String getFullIpNameContainer() {
+      final String fullIpName = IP_IDENTIFIER_PREFIX + "_" + "CONTAINER_" + IP_IDENTIFIER_POSTFIX;
+      return fullIpName;
+    }
   }
 
   public static class ProvidedPortContext {
+
+    final static String PORT_IDENTIFIER_PREFIX = "ACCESS";
+
     String portName;
     int portNmbr;
 
@@ -83,8 +104,18 @@ public class ExternalContextParameters {
       return portNmbr;
     }
 
-    public String getFullPortName() {
-      final String fullPortName = "ACCESS_" + "PUBLIC_" + portName;
+    public String getFullPortNamePublic() {
+      final String fullPortName = PORT_IDENTIFIER_PREFIX + "_" + "PUBLIC_" + portName;
+      return fullPortName;
+    }
+
+    public String getFullPortNameCloud() {
+      final String fullPortName = PORT_IDENTIFIER_PREFIX + "_" + "CLOUD_" + portName;
+      return fullPortName;
+    }
+
+    public String getFullPortNameContainer() {
+      final String fullPortName = PORT_IDENTIFIER_PREFIX + "_" + "CONTAINER_" + portName;
       return fullPortName;
     }
   }
@@ -96,6 +127,7 @@ public class ExternalContextParameters {
   }*/
 
   public static class Builder {
+
     private String taskName_;
     ApplicationInstanceId appId;
     private ComponentId cId;
@@ -106,7 +138,8 @@ public class ExternalContextParameters {
     private ContainerStatus contStatus_;
     private LifecycleHandlerType compInstType_;
 
-    public Builder() {}
+    public Builder() {
+    }
 
     public Builder taskName(String taskName_) {
       this.taskName_ = taskName_;
@@ -156,5 +189,19 @@ public class ExternalContextParameters {
     public ExternalContextParameters build() {
       return new ExternalContextParameters(this);
     }
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("taskName", taskName)
+        .add("appId", appId)
+        .add("cId", cId)
+        .add("cInstId", cInstId)
+        .add("publicIp", publicIp)
+        .add("providedPortContext", providedPortContext)
+        .add("contStatus", contStatus)
+        .add("compInstType", compInstType)
+        .toString();
   }
 }

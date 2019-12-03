@@ -37,13 +37,13 @@ package de.uniulm.omi.cloudiator.lance.client;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants.Identifiers.CONTAINER_STATUS;
 
 import com.github.rholder.retry.RetryException;
 import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
+import de.uniulm.omi.cloudiator.domain.OperatingSystem;
 import de.uniulm.omi.cloudiator.lance.LcaConstants;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationId;
 import de.uniulm.omi.cloudiator.lance.application.ApplicationInstanceId;
@@ -52,24 +52,15 @@ import de.uniulm.omi.cloudiator.lance.application.component.ComponentId;
 import de.uniulm.omi.cloudiator.lance.application.component.DeployableComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.DockerComponent;
 import de.uniulm.omi.cloudiator.lance.application.component.RemoteDockerComponent;
-import de.uniulm.omi.cloudiator.domain.OperatingSystem;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
-
 import de.uniulm.omi.cloudiator.lance.container.standard.ExternalContextParameters;
 import de.uniulm.omi.cloudiator.lance.lca.DeploymentException;
 import de.uniulm.omi.cloudiator.lance.lca.LcaException;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistry;
-import de.uniulm.omi.cloudiator.lance.lca.LcaRegistryConstants;
 import de.uniulm.omi.cloudiator.lance.lca.LifecycleAgent;
 import de.uniulm.omi.cloudiator.lance.lca.container.ComponentInstanceId;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerException;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerStatus;
 import de.uniulm.omi.cloudiator.lance.lca.container.ContainerType;
 import de.uniulm.omi.cloudiator.lance.lca.registry.RegistrationException;
-import de.uniulm.omi.cloudiator.lance.lca.registry.RegistryFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -142,11 +133,11 @@ public final class LifecycleClient {
   }
 
   static {
-   regWrapper = LifecycleClientRegistryWrapper.getInstance();
+    regWrapper = LifecycleClientRegistryWrapper.getInstance();
   }
 
   public final ComponentInstanceId deploy(final DeploymentContext ctx,
-      final DeployableComponent comp, final OperatingSystemImpl os, final ContainerType containerType)
+      final DeployableComponent comp, final OperatingSystem os, final ContainerType containerType)
       throws DeploymentException {
 
     final Retryer<ComponentInstanceId> retryer = buildRetryerComponent();
@@ -217,6 +208,11 @@ public final class LifecycleClient {
   public void injectExternalDeploymentContext(ExternalContextParameters params)
       throws DeploymentException {
     regWrapper.injectExternalDeploymentContext(params);
+  }
+
+  public void removeExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
+    regWrapper.removeExternalDeploymentContext(params);
   }
 
   public ContainerStatus getComponentContainerStatus(ComponentInstanceId cid, String serverIp)
@@ -342,7 +338,8 @@ public final class LifecycleClient {
 
   public void registerComponentForApplicationInstance(ApplicationInstanceId myInstanceId,
       ComponentId zookeeperComponentId, String componentName) throws RegistrationException {
-    regWrapper.registerComponentForApplicationInstance(myInstanceId, zookeeperComponentId, componentName);
+    regWrapper
+        .registerComponentForApplicationInstance(myInstanceId, zookeeperComponentId, componentName);
   }
 
   public DeploymentContext initDeploymentContext(ApplicationId appId,

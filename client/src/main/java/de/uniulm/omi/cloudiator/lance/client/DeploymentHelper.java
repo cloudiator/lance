@@ -40,24 +40,23 @@ import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
-
 import de.uniulm.omi.cloudiator.lance.lifecycle.bash.BashBasedHandlerBuilder;
 import de.uniulm.omi.cloudiator.lance.lifecycle.detector.PortUpdateHandler;
 
 public final class DeploymentHelper {
-	
-	public static PortUpdateHandler getEmptyPortUpdateHandler() {  
-		BashBasedHandlerBuilder builder = new BashBasedHandlerBuilder();
+
+  public static PortUpdateHandler getEmptyPortUpdateHandler() {
+    BashBasedHandlerBuilder builder = new BashBasedHandlerBuilder();
     OperatingSystem os = new OperatingSystemImpl(
         OperatingSystemFamily.UBUNTU,
         OperatingSystemArchitecture.AMD64,
-        OperatingSystemVersions.of(1404,"14.04"));
-		builder.setOperatingSystem(os);
-		// basically empty; we do not execute anything //
-		return builder.buildPortUpdateHandler();
-	}
-	
-	private DeploymentHelper() {
-		//no instances // 
-	}
+        OperatingSystemVersions.ofNameAndVersion(1404, "14.04"));
+    builder.setOperatingSystem(os);
+    // basically empty; we do not execute anything //
+    return builder.buildPortUpdateHandler();
+  }
+
+  private DeploymentHelper() {
+    //no instances //
+  }
 }

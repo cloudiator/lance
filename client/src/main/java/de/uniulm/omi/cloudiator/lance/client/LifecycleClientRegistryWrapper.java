@@ -64,7 +64,8 @@ public final class LifecycleClientRegistryWrapper {
     return currentRegistry;
   }
 
-  private LifecycleClientRegistryWrapper() {}
+  private LifecycleClientRegistryWrapper() {
+  }
 
   static {
     try {
@@ -77,33 +78,108 @@ public final class LifecycleClientRegistryWrapper {
   public static void injectExternalDeploymentContext(ExternalContextParameters params)
       throws DeploymentException {
     try {
+      waitForAppInstanceRegistered(params.getAppId(), params.getTaskName());
       currentRegistry.addComponent(params.getAppId(), params.getcId(), params.getTaskName());
       currentRegistry.addComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
           LcaRegistryConstants.regEntries.get(CONTAINER_STATUS), params.getStatus().toString());
       currentRegistry.addComponentProperty(params.getAppId(), params.getcId(), params.getcInstId(),
-          LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS), params.getCompInstStatus().toString());
+          LcaRegistryConstants.regEntries.get(COMPONENT_INSTANCE_STATUS),
+          params.getCompInstStatus().toString());
       //do I need to create a DeploymentContext for this and do setProperty instead?
 
-        currentRegistry.addComponentProperty(
-            params.getAppId(),
-            params.getcId(),
-            params.getcInstId(),
-            params.getProvidedPortContext().getFullPortName(),
-            params.getProvidedPortContext().getPortNmbr().toString());
-
-      currentRegistry.addComponentProperty(
-          params.getAppId(),
-          params.getcId(),
-          params.getcInstId(),
-          params.getFullHostName(),
-          params.getPublicIp());
+      insertIpHierarchyParams(params);
+      insertPortHierarchyParams(params);
     } catch (RegistrationException e) {
-      throw new DeploymentException(String.format("Cannot inject external deployment context for task: %s", params.getTaskName()), e);
+      throw new DeploymentException(
+          String.format("Cannot inject external deployment context for task: %s due"
+              + "to resgistry issues", params.getTaskName()), e);
     }
   }
 
-  public static final void unRegisterInstance(ApplicationInstanceId appInstId, ComponentId componentId,
+  public static void removeExternalDeploymentContext(ExternalContextParameters params)
+      throws DeploymentException {
+    try {
+      waitForAppInstanceRegistered(params.getAppId(), params.getTaskName());
+      currentRegistry
+          .deleteComponentInstance(params.getAppId(), params.getcId(), params.getcInstId());
+    } catch (RegistrationException e) {
+      throw new DeploymentException(
+          String.format("Cannot remove external deployment context for task: %s due"
+              + "to resgistry issues", params.getTaskName()), e);
+    }
+  }
+
+  private static void waitForAppInstanceRegistered(ApplicationInstanceId appId, String taskName)
+      throws DeploymentException {
+
+    /**
+
+     try {
+     // do not insert/remove context if appInstance is not registered yet, the registration is the job of the lance user/orchestrator
+     while(!currentRegistry.applicationInstanceExists(appId)) {
+     sleep(1500);
+     }
+     } catch (RegistrationException e) {
+     throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
+     + "to resgistry issues", taskName), e);
+     } catch (InterruptedException e) {
+     throw new DeploymentException(String.format("Cannot modify external deployment context for task: %s due"
+     + "to an interruption while waiting for the registry to become accessible", taskName), e);
+     }
+     **/
+  }
+
+  private static void insertIpHierarchyParams(ExternalContextParameters params)
+      throws RegistrationException {
+    currentRegistry.addComponentProperty(
+        params.getAppId(),
+        params.getcId(),
+        params.getcInstId(),
+        ExternalContextParameters.IpContext.getFullIpNamePublic(),
+        params.getPublicIp());
+
+    currentRegistry.addComponentProperty(
+        params.getAppId(),
+        params.getcId(),
+        params.getcInstId(),
+        ExternalContextParameters.IpContext.getFullIpNameCloud(),
+        params.getPublicIp());
+
+    currentRegistry.addComponentProperty(
+        params.getAppId(),
+        params.getcId(),
+        params.getcInstId(),
+        ExternalContextParameters.IpContext.getFullIpNameContainer(),
+        params.getPublicIp());
+  }
+
+  private static void insertPortHierarchyParams(ExternalContextParameters params)
+      throws RegistrationException {
+    currentRegistry.addComponentProperty(
+        params.getAppId(),
+        params.getcId(),
+        params.getcInstId(),
+        params.getProvidedPortContext().getFullPortNamePublic(),
+        params.getProvidedPortContext().getPortNmbr().toString());
+
+    currentRegistry.addComponentProperty(
+        params.getAppId(),
+        params.getcId(),
+        params.getcInstId(),
+        params.getProvidedPortContext().getFullPortNameCloud(),
+        params.getProvidedPortContext().getPortNmbr().toString());
+
+    currentRegistry.addComponentProperty(
+        params.getAppId(),
+        params.getcId(),
+        params.getcInstId(),
+        params.getProvidedPortContext().getFullPortNameContainer(),
+        params.getProvidedPortContext().getPortNmbr().toString());
+  }
+
+  public static final void unRegisterInstance(ApplicationInstanceId appInstId,
+      ComponentId componentId,
       ComponentInstanceId componentInstanceId) throws RegistrationException, DeploymentException {
     currentRegistry.deleteComponentInstance(appInstId, componentId, componentInstanceId);
   }

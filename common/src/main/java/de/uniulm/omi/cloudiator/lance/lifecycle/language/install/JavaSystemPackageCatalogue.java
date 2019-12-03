@@ -19,52 +19,49 @@
 package de.uniulm.omi.cloudiator.lance.lifecycle.language.install;
 
 import de.uniulm.omi.cloudiator.domain.OperatingSystem;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemArchitecture;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemFamily;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemImpl;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemVersion;
-import de.uniulm.omi.cloudiator.domain.OperatingSystemVersionImpl;
 import de.uniulm.omi.cloudiator.domain.OperatingSystemVersions;
 
 public final class JavaSystemPackageCatalogue {
 
-    public static String getJdkPackageName(String version, OperatingSystem os) {
-        switch(os.operatingSystemFamily()){
-        case UBUNTU:
-            return getUbuntuInstallCommand(version, os);
-        case WINDOWS:
-        default:
-            return null;
-            // new IllegalArgumentException("Java installation for operating system " + os + " not supported");
-        }
+  public static String getJdkPackageName(String version, OperatingSystem os) {
+    switch (os.operatingSystemFamily()) {
+      case UBUNTU:
+        return getUbuntuInstallCommand(version, os);
+      case WINDOWS:
+      default:
+        return null;
+      // new IllegalArgumentException("Java installation for operating system " + os + " not supported");
     }
-    
-    private static String getUbuntuInstallCommand(String version, OperatingSystem os) {
-      OperatingSystemVersion os1404Version = OperatingSystemVersions.of(1404, null);
-        if(os1404Version.equals(os.operatingSystemVersion()) && isJava7(version)) {
-            return "openjdk-7-jdk";
-        }
-        throw new IllegalArgumentException("Java (" + version + ") installation for operating system " + os + " not supported");
-    }
-    
-    private JavaSystemPackageCatalogue() {
-        // no instances //
-    }
-    
-    private static boolean isJava7(String version) {
-        return "7".equals(version);
-    }
+  }
 
-    static SystemApplication getSystemApplication(final String version) {
-        if(isJava7(version)) {
-            return new SystemApplication() {
-
-                @Override
-                public String getPackageName(OperatingSystem os) {
-                    return getJdkPackageName(version, os);
-                }
-            };
-        }
-        throw new IllegalArgumentException("version " + version + " currently not supported for Java.");
+  private static String getUbuntuInstallCommand(String version, OperatingSystem os) {
+    OperatingSystemVersion os1404Version = OperatingSystemVersions.ofNameAndVersion(1404, null);
+    if (os1404Version.equals(os.operatingSystemVersion()) && isJava7(version)) {
+      return "openjdk-7-jdk";
     }
+    throw new IllegalArgumentException(
+        "Java (" + version + ") installation for operating system " + os + " not supported");
+  }
+
+  private JavaSystemPackageCatalogue() {
+    // no instances //
+  }
+
+  private static boolean isJava7(String version) {
+    return "7".equals(version);
+  }
+
+  static SystemApplication getSystemApplication(final String version) {
+    if (isJava7(version)) {
+      return new SystemApplication() {
+
+        @Override
+        public String getPackageName(OperatingSystem os) {
+          return getJdkPackageName(version, os);
+        }
+      };
+    }
+    throw new IllegalArgumentException("version " + version + " currently not supported for Java.");
+  }
 }
