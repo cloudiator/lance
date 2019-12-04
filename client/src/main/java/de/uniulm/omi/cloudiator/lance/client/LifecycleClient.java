@@ -73,6 +73,7 @@ import java.rmi.server.RMISocketFactory;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,9 +228,21 @@ public final class LifecycleClient {
     }
   }
 
-  public void waitForDeployment(ComponentInstanceId cid) {
+
+  public void waitForDeployment(ComponentInstanceId cid, Long timeout, TimeUnit unit)
+      throws TimeoutException {
+
     try {
       while (!Thread.currentThread().isInterrupted()) {
+
+        if (timeout != null && unit != null) {
+          final long waitInMillis = unit.toMillis(timeout);
+          final long endTime = System.currentTimeMillis() + waitInMillis;
+          if (endTime > System.currentTimeMillis()) {
+            throw new TimeoutException(
+                String.format("Waiting for deployment exceeded timeout of %s %s", timeout, unit));
+          }
+        }
         final ContainerStatus componentContainerStatus =
             lifecycleAgent.getComponentContainerStatus(cid);
         if (ContainerStatus.READY.equals(componentContainerStatus)) {
@@ -248,6 +261,15 @@ public final class LifecycleClient {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException("Got interrupted while waiting for container to be ready.");
+    }
+  }
+
+  public void waitForDeployment(ComponentInstanceId cid) {
+    try {
+      waitForDeployment(cid, null, null);
+    } catch (TimeoutException e) {
+      throw new AssertionError(
+          "Programming Error. Received timeout while calling without set timeout");
     }
   }
 
