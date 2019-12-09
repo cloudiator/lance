@@ -235,14 +235,6 @@ public final class LifecycleClient {
     try {
       while (!Thread.currentThread().isInterrupted()) {
 
-        if (timeout != null && unit != null) {
-          final long waitInMillis = unit.toMillis(timeout);
-          final long endTime = System.currentTimeMillis() + waitInMillis;
-          if (endTime > System.currentTimeMillis()) {
-            throw new TimeoutException(
-                String.format("Waiting for deployment exceeded timeout of %s %s", timeout, unit));
-          }
-        }
         final ContainerStatus componentContainerStatus =
             lifecycleAgent.getComponentContainerStatus(cid);
         if (ContainerStatus.READY.equals(componentContainerStatus)) {
@@ -252,6 +244,14 @@ public final class LifecycleClient {
           throw new IllegalStateException(String
               .format("Container reached illegal state %s while waiting for state %s",
                   componentContainerStatus, ContainerStatus.READY));
+        }
+        if (timeout != null && unit != null) {
+          final long waitInMillis = unit.toMillis(timeout);
+          final long endTime = System.currentTimeMillis() + waitInMillis;
+          if (System.currentTimeMillis() > endTime) {
+            throw new TimeoutException(
+                String.format("Waiting for deployment exceeded timeout of %s %s", timeout, unit));
+          }
         }
         Thread.sleep(10000);
       }
