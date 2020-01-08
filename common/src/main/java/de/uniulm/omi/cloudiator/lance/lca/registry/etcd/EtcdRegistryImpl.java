@@ -40,8 +40,12 @@ import mousio.etcd4j.responses.EtcdKeysResponse;
 import mousio.etcd4j.responses.EtcdKeysResponse.EtcdNode;
 import mousio.etcd4j.transport.EtcdNettyClient;
 import mousio.etcd4j.transport.EtcdNettyConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class EtcdRegistryImpl implements LcaRegistry {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(EtcdRegistryImpl.class);
 
   private static final long serialVersionUID = -7017922645290003357L;
   private static String DESCRIPTION = "Description";
@@ -60,8 +64,10 @@ final class EtcdRegistryImpl implements LcaRegistry {
     uris = urisParam;
 
     final EtcdNettyConfig etcdNettyConfig = new EtcdNettyConfig();
-    etcdNettyConfig.setMaxFrameSize(etcdNettyConfig.getMaxFrameSize() * 1000);
+    etcdNettyConfig.setMaxFrameSize(etcdNettyConfig.getMaxFrameSize() * 100);
     final EtcdNettyClient etcdNettyClient = new EtcdNettyClient(etcdNettyConfig, null, uris);
+
+    LOGGER.debug("Set max frame size to " + etcdNettyConfig.getMaxFrameSize());
 
     etcd = new EtcdClient(etcdNettyClient);
     init();
