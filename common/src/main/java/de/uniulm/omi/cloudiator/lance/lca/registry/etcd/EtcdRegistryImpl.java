@@ -38,6 +38,8 @@ import mousio.etcd4j.EtcdClient;
 import mousio.etcd4j.responses.EtcdException;
 import mousio.etcd4j.responses.EtcdKeysResponse;
 import mousio.etcd4j.responses.EtcdKeysResponse.EtcdNode;
+import mousio.etcd4j.transport.EtcdNettyClient;
+import mousio.etcd4j.transport.EtcdNettyConfig;
 
 final class EtcdRegistryImpl implements LcaRegistry {
 
@@ -56,7 +58,12 @@ final class EtcdRegistryImpl implements LcaRegistry {
 
   public EtcdRegistryImpl(URI[] urisParam) throws RegistrationException {
     uris = urisParam;
-    etcd = new EtcdClient(uris);
+
+    final EtcdNettyConfig etcdNettyConfig = new EtcdNettyConfig();
+    etcdNettyConfig.setMaxFrameSize(etcdNettyConfig.getMaxFrameSize() * 1000);
+    final EtcdNettyClient etcdNettyClient = new EtcdNettyClient(etcdNettyConfig, null, uris);
+
+    etcd = new EtcdClient(etcdNettyClient);
     init();
   }
 
