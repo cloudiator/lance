@@ -38,8 +38,14 @@ import mousio.etcd4j.EtcdClient;
 import mousio.etcd4j.responses.EtcdException;
 import mousio.etcd4j.responses.EtcdKeysResponse;
 import mousio.etcd4j.responses.EtcdKeysResponse.EtcdNode;
+import mousio.etcd4j.transport.EtcdNettyClient;
+import mousio.etcd4j.transport.EtcdNettyConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class EtcdRegistryImpl implements LcaRegistry {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(EtcdRegistryImpl.class);
 
   private static final long serialVersionUID = -7017922645290003357L;
   private static String DESCRIPTION = "Description";
@@ -56,8 +62,18 @@ final class EtcdRegistryImpl implements LcaRegistry {
 
   public EtcdRegistryImpl(URI[] urisParam) throws RegistrationException {
     uris = urisParam;
-    etcd = new EtcdClient(uris);
+    etcd = generateClient(uris);
     init();
+  }
+
+  private EtcdClient generateClient(URI[] uris) {
+    final EtcdNettyConfig etcdNettyConfig = new EtcdNettyConfig();
+    etcdNettyConfig.setMaxFrameSize(etcdNettyConfig.getMaxFrameSize() * 100);
+    final EtcdNettyClient etcdNettyClient = new EtcdNettyClient(etcdNettyConfig, null, uris);
+
+    LOGGER.debug("Set max frame size to " + etcdNettyConfig.getMaxFrameSize());
+
+    return new EtcdClient(etcdNettyClient);
   }
 
   private void init() throws RegistrationException {
@@ -259,7 +275,7 @@ final class EtcdRegistryImpl implements LcaRegistry {
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
-    etcd = new EtcdClient(uris);
+    etcd = generateClient(uris);
   }
 
   private String readPropertyFromDirectory(String dirName, String prop)
